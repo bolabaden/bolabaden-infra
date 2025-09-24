@@ -1,0 +1,51 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: session-manager
+description: Session manager for HoloScript development
+type: container
+
+spec:
+  image: alpine:latest
+  env:
+    TZ: ${var.tz}
+    DOMAIN: ${var.domain}
+    SESSION_MANAGER_PORT: ${var.SESSION_MANAGER_PORT:-8080}
+    INACTIVITY_TIMEOUT: 3600
+    DEFAULT_WORKSPACE: /workspace
+    EXT_PATH: ${var.config-path}/extensions/holo-lsp-1.0.0.vsix
+  ports:
+    - name: http
+      containerPort: 8080
+  volumes:
+    - name: docker-sock
+      containerPath: /var/run/docker.sock
+      sourcePath: ${var.docker-socket}
+    - name: extensions
+      containerPath: ${var.config-path}/extensions
+      sourcePath: ${var.config-path}/extensions
+    - name: session-manager-py
+      containerPath: /session_manager.py
+      sourcePath: ${var.root-path}/projects/kotor/kotorscript-session-manager/session_manager.py
+    - name: index-html
+      containerPath: /tmp/templates/index.html
+      sourcePath: ${var.root-path}/projects/kotor/kotorscript-session-manager/index.html
+    - name: waiting-html
+      containerPath: /tmp/templates/waiting.html
+      sourcePath: ${var.root-path}/projects/kotor/kotorscript-session-manager/waiting.html
+  command:
+    - sh
+    - -c
+    - |
+      apk add python3 py3-pip docker-cli zip unzip &&
+      pip install fastapi uvicorn httpx websockets docker jinja2 python-multipart --break-system-packages --root-user-action=ignore &&
+      mkdir -p /tmp/templates &&
+      python3 session_manager.py
+  ingresses:
+    - path: /
+      port: http
+      hostname: holoscript.${var.domain}
+  healthCheck:
+    httpGet:
+      path: /health
+      port: http
+  restartPolicy: always

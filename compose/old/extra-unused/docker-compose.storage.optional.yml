@@ -1,0 +1,240 @@
+
+services:
+  rclone-amazon-s3:
+    image: rclone/rclone
+    container_name: rclone-amazon-s3
+    hostname: rclone-amazon-s3
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${ROOT_DIR:-..}/rclone/config:/config
+      - ${ROOT_DIR:-..}/data/cloud_amazon_s3:/data/cloud_amazon_s3
+    command: mount "Amazon S3:/cloud_amazon_s3" /data/cloud_amazon_s3 --allow-other --allow-non-empty --vfs-cache-mode writes
+    restart: always
+
+  rclone-backblaze:
+    image: rclone/rclone
+    container_name: rclone-backblaze
+    hostname: rclone-backblaze
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${ROOT_DIR:-..}/rclone/config:/config
+      - ${ROOT_DIR:-..}/data/cloud_backblaze:/data/cloud_backblaze
+    command: mount "Backblaze:/cloud_backblaze" /data/cloud_backblaze --allow-other --allow-non-empty --vfs-cache-mode writes
+    restart: always
+
+  rclone-cloud-storage:
+    # 🔹🔹 Rclone Cloud Storage 🔹🔹
+    # Mounts multiple cloud storage providers to a single directory.
+    image: rclone/rclone
+    container_name: rclone-cloud-storage
+    hostname: rclone-cloud-storage
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${ROOT_DIR:-.}/configs/rclone/config:/config
+      - ${ROOT_DIR:-.}/cloud-storage:/data
+      - ${ROOT_DIR:-.}/configs/rclone/rclone.conf:/config/rclone.conf
+    command: mount "union-cloud:/" /data --allow-other --allow-non-empty --vfs-cache-mode writes
+    restart: always
+
+  rclone-box:
+    image: rclone/rclone
+    container_name: rclone-box
+    hostname: rclone-box
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${ROOT_DIR:-..}/rclone/config:/config
+      - ${ROOT_DIR:-..}/data/cloud_box:/data/cloud_box
+    command: mount "Box:/cloud_box" /data/cloud_box --allow-other --allow-non-empty --vfs-cache-mode writes
+    restart: always
+
+  rclone-dropbox:
+    image: rclone/rclone
+    container_name: rclone-dropbox
+    hostname: rclone-dropbox
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${ROOT_DIR:-..}/rclone/config:/config
+      - ${ROOT_DIR:-..}/data/cloud_dropbox:/data/cloud_dropbox
+    command: mount "DropBox:/cloud_dropbox" /data/cloud_dropbox --allow-other --allow-non-empty --vfs-cache-mode writes
+    restart: always
+
+  rclone-google-drive:
+    image: rclone/rclone
+    container_name: rclone-google-drive
+    hostname: rclone-google-drive
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${ROOT_DIR:-..}/rclone/config:/config
+      - ${ROOT_DIR:-..}/data/cloud_google_drive:/data/cloud_google_drive
+    command: mount "Google Drive:/cloud_google_drive" /data/cloud_google_drive --allow-other --allow-non-empty --vfs-cache-mode writes
+    restart: always
+
+  rclone-koofr:
+    image: rclone/rclone
+    container_name: rclone-koofr
+    hostname: rclone-koofr
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${ROOT_DIR:-..}/rclone/config:/config
+      - ${ROOT_DIR:-..}/data/cloud_koofr:/data/cloud_koofr
+    command: mount "Koofr:/cloud_koofr" /data/cloud_koofr --allow-other --allow-non-empty --vfs-cache-mode writes
+    restart: always
+
+  rclone-mega:
+    image: rclone/rclone
+    container_name: rclone-mega
+    hostname: rclone-mega
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${ROOT_DIR:-..}/rclone/config:/config
+      - ${ROOT_DIR:-..}/data/cloud_mega:/data/cloud_mega
+    command: mount "Mega:/cloud_mega" /data/cloud_mega --allow-other --allow-non-empty --vfs-cache-mode writes
+    restart: always
+
+  rclone-onedrive:
+    image: rclone/rclone
+    container_name: rclone-onedrive
+    hostname: rclone-onedrive
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${ROOT_DIR:-..}/rclone/config:/config
+      - ${ROOT_DIR:-..}/data/cloud_onedrive:/data/cloud_onedrive
+    command: mount "OneDrive:/cloud_onedrive" /data/cloud_onedrive --allow-other --allow-non-empty --vfs-cache-mode writes
+    restart: always
+
+  rclone-pcloud:
+    image: rclone/rclone
+    container_name: rclone-pcloud
+    hostname: rclone-pcloud
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${ROOT_DIR:-..}/rclone/config:/config
+      - ${ROOT_DIR:-..}/data/cloud_pcloud:/data/cloud_pcloud
+    command: mount "pCloud:/cloud_pcloud" /data/cloud_pcloud --allow-other --allow-non-empty --vfs-cache-mode writes
+    restart: always
+
+  rclone-premiumize:
+    image: rclone/rclone
+    container_name: rclone-premiumize
+    hostname: rclone-premiumize
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${ROOT_DIR:-..}/rclone/config:/config
+      - ${ROOT_DIR:-..}/data/cloud_premiumize:/data/cloud_premiumize
+    command: mount "Premiumize:/cloud_premiumize" /data/cloud_premiumize --allow-other --allow-non-empty --vfs-cache-mode writes
+    restart: always
+
+  rclone-proton:
+    image: rclone/rclone
+    container_name: rclone-proton
+    hostname: rclone-proton
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${ROOT_DIR:-..}/rclone/config:/config
+      - ${ROOT_DIR:-..}/data/cloud_proton:/data/cloud_proton
+    command: mount "Proton.me:/cloud_proton" /data/cloud_proton --allow-other --allow-non-empty --vfs-cache-mode writes
+    restart: always
+
+  rclone-yandex:
+    image: rclone/rclone
+    container_name: rclone-yandex
+    hostname: rclone-yandex
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${ROOT_DIR:-..}/rclone/config:/config
+      - ${ROOT_DIR:-..}/data/cloud_yandex:/data/cloud_yandex
+    command: mount "Yandex:/cloud_yandex" /data/cloud_yandex --allow-other --allow-non-empty --vfs-cache-mode writes
+    restart: always

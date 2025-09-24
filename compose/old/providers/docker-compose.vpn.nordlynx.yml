@@ -1,0 +1,64 @@
+x-defaultEnvironment: &defaultEnvironment
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+  TZ: ${TZ:-America/Chicago}
+
+x-commonKeys: &commonOptions
+  restart: always
+  stdin_open: true
+  tty: true
+
+x-dnsServers: &dnsServers
+  dns:
+    - 45.90.28.29
+    - 45.90.30.29
+
+x-dependsOnVPN: &dependsOnVPN
+  network_mode: service:vpn
+  depends_on:
+    vpn:
+      condition: service_healthy
+
+networks:
+  proxy-network:
+    name: proxy-network
+    external: true
+
+services:
+  vpn:
+    container_name: vpn
+    image: ghcr.io/bubuntux/nordlynx
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_MODULE
+    environment:
+      - PRIVATE_KEY=${NordVPNPrivateKey:?err}
+      - ALLOWED_IPS=0.0.0.0/1,128.0.0.0/2
+      - NET_LOCAL=192.168.1.0/24,192.168.20.0/24,100.0.0.0/16
+      - TZ=Etc/UTC
+      - "POST_UP=ip -4 route add $$(wg | awk -F'[: ]' '/endpoint/ {print $$5}') via $$(ip route | awk '/default/ {print $$3}')"
+      - "PRE_DOWN=ip -4 route del $$(route -n | awk '/255.255.255.255/ {print $$1}') via $$(ip route | awk '/default/ {print $$3}')"
+      - DNS=45.90.28.29,45.90.30.29
+    volumes:
+      - /lib/modules:/lib/modules:ro
+    networks:
+      proxy-network:
+    ports:
+      - ${QBitTorrentPort:?err}:8080
+      - ${QBitTorrentTCPPorts:?err}
+      - ${QBitTorrentUDPPorts:?err}
+      - ${SABnzbdPort:?err}:6799
+      - ${SubtitlesPort:?err}:6767
+    security_opt:
+      - no-new-privileges:true
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv4.conf.all.rp_filter=2
+      - net.ipv6.conf.all.disable_ipv6=1
+    healthcheck:
+      interval: 60s
+      timeout: 30s
+      retries: 5
+    <<: [*dnsServers, *commonOptions]

@@ -1,0 +1,32 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: portainer
+description: Docker container management UI
+type: container
+
+spec:
+  image: docker.io/portainer/portainer-ce:latest
+  env:
+    TZ: ${var.tz}
+  ports:
+    - name: api
+      containerPort: 8000
+    - name: ui
+      containerPort: 9000
+    - name: https
+      containerPort: 9443
+      hostPort: 9443
+      hostIp: 127.0.0.1
+  volumes:
+    - name: docker-sock
+      containerPath: /var/run/docker.sock
+      sourcePath: ${var.docker-socket}
+    - name: data
+      containerPath: /data
+      sourcePath: ${var.config-path}/portainer/data
+  ingresses:
+    - path: /
+      port: ui
+      hostname: portainer.${var.domain}
+  restartPolicy: always
+

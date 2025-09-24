@@ -1,0 +1,41 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: headscale-server
+description: Headscale server for Tailscale
+type: container
+
+spec:
+  image: docker.io/headscale/headscale
+  env:
+    TZ: ${var.tz}
+  ports:
+    - name: stun
+      containerPort: 3478
+    - name: http
+      containerPort: 8081
+    - name: metrics
+      containerPort: 8080
+    - name: grpc
+      containerPort: 9090
+  volumes:
+    - name: private-key
+      containerPath: /var/lib/headscale/private.key
+      sourcePath: ${var.certs-path}/private/${var.domain}.key
+    - name: config
+      containerPath: /etc/headscale
+      sourcePath: ${var.config-path}/headscale/config
+    - name: lib
+      containerPath: /var/lib/headscale
+      sourcePath: ${var.config-path}/headscale/lib
+    - name: run
+      containerPath: /var/run/headscale
+      sourcePath: ${var.config-path}/headscale/run
+  command: [serve, --config, /etc/headscale/config.yaml]
+  ingresses:
+    - path: /
+      port: http
+      hostname: headscale.${var.domain}
+    - path: /metrics
+      port: metrics
+      hostname: headscale.${var.domain}
+  restartPolicy: always

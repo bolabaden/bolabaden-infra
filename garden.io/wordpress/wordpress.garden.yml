@@ -1,0 +1,32 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: wordpress
+description: WordPress CMS
+type: container
+dependencies:
+  - deploy.mariadb
+
+spec:
+  image: docker.io/wordpress:latest
+  env:
+    WORDPRESS_DB_HOST: mariadb
+    WORDPRESS_DB_USER: ${var.WORDPRESS_DB_USER}
+    WORDPRESS_DB_PASSWORD: ${var.WORDPRESS_DB_PASSWORD}
+    WORDPRESS_DB_NAME: ${var.WORDPRESS_DB_NAME:-wordpress}
+  ports:
+    - name: http
+      containerPort: 80
+  volumes:
+    - name: wordpress-files
+      containerPath: /var/www/html
+      sourcePath: ${var.config-path}/wordpress/wordpress-files
+  ingresses:
+    - path: /
+      port: http
+      hostname: wordpress.${var.domain}
+  healthCheck:
+    httpGet:
+      path: /
+      port: http
+  restartPolicy: always
+

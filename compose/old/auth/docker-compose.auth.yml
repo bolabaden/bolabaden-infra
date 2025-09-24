@@ -1,0 +1,114 @@
+# 🔹🔹 Auth 🔹🔹
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago}  # Your Timezone
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: 'true'
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: 'true'
+    swarm.autoscaler: 'true'
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: '0.10'
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-google-forward-auth-labels: &google-forward-auth-labels
+  traefik.enable: "true"
+  traefik.http.services.google-forward-auth.loadbalancer.server.port: 4180
+
+services:
+  dex:
+    # 🔹🔹 Dex 🔹🔹
+    depends_on:
+      - etcd
+    image: ghcr.io/dexidp/dex
+    container_name: dex
+    hostname: dex
+    ports:
+      - ${DEX_PORT:-4190}:4190/tcp
+    networks:
+      dex:
+        aliases:
+          - dex.localtest.me
+      etcd: {}
+    command: dex serve /dex.yaml
+    volumes:
+      - "${CONFIG_PATH:-./volumes}/dex/dex.yaml:/dex.yaml"
+    restart: always
+
+  etcd:
+    # 🔹🔹 Etcd 🔹🔹  # https://github.com/etcd-development/etcd
+    image: gcr.io/etcd-development/etcd
+    entrypoint: /usr/local/bin/etcd
+    container_name: etcd
+    hostname: etcd
+    networks:
+      - etcd
+    command:
+      - --listen-client-urls=http://0.0.0.0:${ETCD_PORT:-2379}
+      - --advertise-client-urls=http://etcd:${ETCD_PORT:-2379}
+
+  httpbin:
+    # 🔹🔹 Httpbin 🔹🔹
+    image: kennethreitz/httpbin
+    container_name: httpbin
+    hostname: httpbin
+    ports:
+      - ${HTTPBIN_PORT:-8075}:80/tcp
+    networks:
+      httpbin:
+        aliases:
+          - httpbin.localtest.me
+
+  oauth2-proxy:
+    depends_on:
+      - dex
+      - httpbin
+    image: quay.io/oauth2-proxy/oauth2-proxy
+    container_name: oauth2-proxy
+    hostname: oauth2-proxy
+    ports:
+      - ${OAUTH2_PROXY_PORT:-4180}:4180/tcp
+    networks:
+      - auth-net
+    command: --config /config/oauth2-proxy.cfg
+    volumes:
+      - "${CONFIG_PATH:-./volumes}/oauth2-proxy/config/oauth2-proxy.cfg:/config/oauth2-proxy.cfg"
+    restart: always
+
+networks:
+  dex:
+    name: dex
+  httpbin:
+    name: httpbin
+  etcd:
+    name: etcd

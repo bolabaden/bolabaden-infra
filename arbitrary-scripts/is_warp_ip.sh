@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -euo pipefail
+
+EXT_IP=$(curl -4 -s ifconfig.me)
+echo $EXT_IP | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' && ( \
+    ipcalc -nb $EXT_IP 103.21.244.0/22   | grep -q 'NETWORK:.*103.21.244.0'   && ipcalc -nb $EXT_IP 103.21.244.0/22   | grep -q 'NETMASK:.*255.255.252.0'   && ipcalc -nb $EXT_IP 103.21.244.0/22   | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 103.21.244.0/22   | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 103.22.200.0/22   | grep -q 'NETWORK:.*103.22.200.0'   && ipcalc -nb $EXT_IP 103.22.200.0/22   | grep -q 'NETMASK:.*255.255.252.0'   && ipcalc -nb $EXT_IP 103.22.200.0/22   | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 103.22.200.0/22   | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 103.31.4.0/22     | grep -q 'NETWORK:.*103.31.4.0'     && ipcalc -nb $EXT_IP 103.31.4.0/22     | grep -q 'NETMASK:.*255.255.252.0'   && ipcalc -nb $EXT_IP 103.31.4.0/22     | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 103.31.4.0/22     | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 104.16.0.0/13     | grep -q 'NETWORK:.*104.16.0.0'     && ipcalc -nb $EXT_IP 104.16.0.0/13     | grep -q 'NETMASK:.*255.248.0.0'     && ipcalc -nb $EXT_IP 104.16.0.0/13     | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 104.16.0.0/13     | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 104.24.0.0/14     | grep -q 'NETWORK:.*104.24.0.0'     && ipcalc -nb $EXT_IP 104.24.0.0/14     | grep -q 'NETMASK:.*255.252.0.0'     && ipcalc -nb $EXT_IP 104.24.0.0/14     | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 104.24.0.0/14     | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 108.162.192.0/18  | grep -q 'NETWORK:.*108.162.192.0'  && ipcalc -nb $EXT_IP 108.162.192.0/18  | grep -q 'NETMASK:.*255.255.192.0'   && ipcalc -nb $EXT_IP 108.162.192.0/18  | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 108.162.192.0/18  | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 131.0.72.0/22     | grep -q 'NETWORK:.*131.0.72.0'     && ipcalc -nb $EXT_IP 131.0.72.0/22     | grep -q 'NETMASK:.*255.255.252.0'   && ipcalc -nb $EXT_IP 131.0.72.0/22     | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 131.0.72.0/22     | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 141.101.64.0/18   | grep -q 'NETWORK:.*141.101.64.0'   && ipcalc -nb $EXT_IP 141.101.64.0/18   | grep -q 'NETMASK:.*255.255.192.0'   && ipcalc -nb $EXT_IP 141.101.64.0/18   | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 141.101.64.0/18   | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 162.158.0.0/15    | grep -q 'NETWORK:.*162.158.0.0'    && ipcalc -nb $EXT_IP 162.158.0.0/15    | grep -q 'NETMASK:.*255.254.0.0'     && ipcalc -nb $EXT_IP 162.158.0.0/15    | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 162.158.0.0/15    | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 172.64.0.0/13     | grep -q 'NETWORK:.*172.64.0.0'     && ipcalc -nb $EXT_IP 172.64.0.0/13     | grep -q 'NETMASK:.*255.248.0.0'     && ipcalc -nb $EXT_IP 172.64.0.0/13     | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 172.64.0.0/13     | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 173.245.48.0/20   | grep -q 'NETWORK:.*173.245.48.0'   && ipcalc -nb $EXT_IP 173.245.48.0/20   | grep -q 'NETMASK:.*255.255.240.0'   && ipcalc -nb $EXT_IP 173.245.48.0/20   | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 173.245.48.0/20   | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 188.114.96.0/20   | grep -q 'NETWORK:.*188.114.96.0'   && ipcalc -nb $EXT_IP 188.114.96.0/20   | grep -q 'NETMASK:.*255.255.240.0'   && ipcalc -nb $EXT_IP 188.114.96.0/20   | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 188.114.96.0/20   | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 190.93.240.0/20   | grep -q 'NETWORK:.*190.93.240.0'   && ipcalc -nb $EXT_IP 190.93.240.0/20   | grep -q 'NETMASK:.*255.255.240.0'   && ipcalc -nb $EXT_IP 190.93.240.0/20   | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 190.93.240.0/20   | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 197.234.240.0/22  | grep -q 'NETWORK:.*197.234.240.0'  && ipcalc -nb $EXT_IP 197.234.240.0/22  | grep -q 'NETMASK:.*255.255.252.0'   && ipcalc -nb $EXT_IP 197.234.240.0/22  | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 197.234.240.0/22  | grep -q 'HostMax:' || \
+    ipcalc -nb $EXT_IP 198.41.128.0/17   | grep -q 'NETWORK:.*198.41.128.0'   && ipcalc -nb $EXT_IP 198.41.128.0/17   | grep -q 'NETMASK:.*255.255.128.0'   && ipcalc -nb $EXT_IP 198.41.128.0/17   | grep -q 'HostMin:' && ipcalc -nb $EXT_IP 198.41.128.0/17   | grep -q 'HostMax:' \
+) && echo "IP is in Cloudflare IP range: $EXT_IP" && exit 0 || echo "IP is not in Cloudflare IP range: $EXT_IP" && exit 1

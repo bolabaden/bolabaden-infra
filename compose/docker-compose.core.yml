@@ -1,0 +1,233 @@
+services:
+  mongodb:
+    # 🔹🔹 MongoDB 🔹🔹
+    image: mongo:latest
+    container_name: mongodb
+    hostname: ${MONGODB_HOSTNAME:-mongodb}
+    networks:
+      publicnet:
+        ipv4_address: ${MONGODB_IPV4_ADDRESS:-10.76.0.50}
+    expose:
+      - 27017
+    volumes:
+      - container_configs/mongodb/data:/data/db
+    environment:
+      <<: *common-env
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand(\"ping\").ok' > /dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.enable: "true"
+      traefik.http.routers.mongodb.middlewares: nginx-auth@file
+      traefik.http.routers.mongodb.rule: Host(`mongodb.$DOMAIN`) || Host(`mongodb.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.mongodb.loadbalancer.server.port: 27017
+      homepage.group: Databases
+      homepage.name: MongoDB
+      homepage.icon: mongodb.png
+      homepage.href: https://mongodb.$DOMAIN/
+      homepage.description: MongoDB is a NoSQL database that uses JSON-like documents with optional schemas.
+    restart: always
+
+  redis:
+    # 🔹🔹 Redis 🔹🔹
+    # NOTE: If you want to use Valkey (open source) instead of Redis (source available),
+    # uncomment the Valkey statement and comment out the Redis statement.
+    # Using Valkey with Firecrawl is untested and not guaranteed to work. Use with caution.
+    image: redis:alpine
+    # image: valkey/valkey:alpine
+    container_name: redis
+    hostname: redis
+    networks:
+      publicnet:
+        ipv4_address: ${REDIS_IPV4_ADDRESS:-10.76.128.87}
+    expose:
+      - 6379
+    volumes:
+      - container_configs/redis:/data
+    environment:
+      <<: *common-env
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_DATABASE: ${REDIS_DATABASE:-0}
+      REDIS_USERNAME: ${REDIS_USERNAME:-default}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis}
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.enable: "true"
+      traefik.http.routers.redis.middlewares: nginx-auth@file
+      traefik.http.routers.redis.rule: Host(`redis.$DOMAIN`) || Host(`redis.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.redis.loadbalancer.server.port: 6379
+      homepage.group: Databases
+      homepage.name: Redis
+      homepage.icon: redis.png
+      homepage.href: https://redis.$DOMAIN/
+      homepage.description: Redis is an in-memory data structure store, used as a database, cache, and message broker.
+    command: redis-server --appendonly yes --save 60 1 --bind 0.0.0.0
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping > /dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    cpu_shares: 10
+    mem_reservation: 200M
+    deploy:
+      resources:
+        reservations:
+          cpus: 0
+          memory: 200M
+        limits:
+          cpus: 0.5
+          memory: 4G
+    restart: always
+  searxng:
+    # 🔹🔹 SearxNG 🔹🔹  # https://hub.docker.com/r/searxng/searxng
+    # SearxNG is a privacy-respecting, hackable, open-source metasearch engine.
+    image: docker.io/searxng/searxng:latest
+    container_name: searxng
+    hostname: ${SEARXNG_HOSTNAME:-searxng}
+    networks:
+      publicnet:
+        ipv4_address: ${SEARXNG_IPV4_ADDRESS:-10.76.128.90}
+    expose:
+      - 8080
+    volumes:
+      # touch ${CONFIG_PATH:-./volumes}/searxng/limiter.toml
+      - container_configs/searxng:/etc/searxng
+    environment:
+      <<: *common-env
+      SEARXNG_BASE_URL: ${SEARXNG_URL:-http://searxng:8080}
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.enable: "true"
+      traefik.http.routers.searxng.middlewares: nginx-auth@file
+      traefik.http.routers.searxng.rule: Host(`searxng.$DOMAIN`) || Host(`searxng.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.searxng.loadbalancer.server.port: 8080
+      homepage.group: Search
+      homepage.name: SearxNG
+      homepage.icon: searxng.png
+      homepage.href: https://searxng.$DOMAIN/
+      homepage.description: SearxNG is a privacy-respecting, hackable, open-source metasearch engine.
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: always
+
+  warp:
+    # 🔹🔹 Cloudflare WARP 🔹🔹
+    # Cloudflare WARP is a VPN service that allows you to bypass censorship and access the internet privately.
+    # Use this for all services that don't need listening ports exposed
+#    build:
+#      context: https://github.com/cmj2002/warp-docker.git#main
+#      dockerfile: Dockerfile
+#      tags:
+#        - caomingjun/warp:latest
+    image: caomingjun/warp:latest
+    container_name: warp
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      publicnet:
+        ipv4_address: ${WARP_IPV4_ADDRESS:-10.76.128.97}
+    # add removed rule back (https://github.com/opencontainers/runc/pull/3468)
+    device_cgroup_rules:
+      - 'c 10:200 rwm'
+    expose:
+      - 1080  # WARP SOCKS5 Proxy
+      - ${COMET_PORT:-2020}  # Comet
+      - 3128  # warp-fetch-proxy
+      - 8000  # MediaFusion
+      - 8112  # Deluge
+      - ${MEDIAFLOW_PROXY_PORT:-8888}  # Mediaflow Proxy
+      - 9091  # Transmission
+      - 9117  # Jackett
+      - 9696  # Prowlarr
+      - 9999  # Zurg
+      - 8080  # Stremio WebUI
+      - 11470  # Stremio HTTP Streaming Server
+      - 12470  # Stremio HTTPS Streaming Server
+    ports:
+      - 1080:1080  # WARP SOCKS5 Proxy
+      - 9999:9999    # Zurg
+      - 11470:11470  # Stremio HTTP Streaming Server (HTTP)
+      - 12470:12470  # Stremio HTTPS Streaming Server (HTTPS)
+    environment:
+      - WARP_SLEEP=2
+      - WARP_LICENSE_KEY=${WARP_LICENSE_KEY:-}
+      #- WARP_ENABLE_NAT=1 # enable nat
+      - TUNNEL_TOKEN=${WARP_TUNNEL_TOKEN:-}
+    cap_add:
+      # Docker already have them, these are for podman users
+      - MKNOD
+      - AUDIT_WRITE
+      # additional required cap for warp, both for podman and docker
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+      - net.ipv4.conf.all.src_valid_mark=1
+      # uncomment for nat
+      #- net.ipv4.ip_forward=1
+      #- net.ipv6.conf.all.forwarding=1
+      #- net.ipv6.conf.all.accept_ra=2
+    volumes:
+      - container_configs/warp/data:/var/lib/cloudflare-warp
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.enable: "true"
+    restart: always
+
+  qdrant:
+    # 🔹🔹 Qdrant 🔹🔹
+    profiles:
+      - extras
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    hostname: qdrant
+    networks:
+      publicnet:
+        ipv4_address: ${QDRANT_IPV4_ADDRESS:-10.76.128.44}
+    expose:
+      - 6333
+    volumes:
+      - container_configs/qdrant/storage:/qdrant/storage
+    environment:
+      <<: *common-env
+      QDRANT_STORAGE_PATH: /qdrant/storage
+      QDRANT_STORAGE_TYPE: disk
+      QDRANT_STORAGE_DISK_PATH: /qdrant/storage
+      QDRANT_STORAGE_DISK_TYPE: disk
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.enable: "true"
+      traefik.http.routers.qdrant.rule: Host(`qdrant.$DOMAIN`) || Host(`qdrant.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.qdrant.loadbalancer.server.port: 6333
+      homepage.group: AI
+      homepage.name: Qdrant
+      homepage.icon: qdrant.png
+      homepage.href: https://qdrant.$DOMAIN/
+      homepage.description: Qdrant is a vector database for storing and querying vectors.
+    restart: always
+
+volumes:
+  meili_data:
+  qdrant_storage:
+  container_configs:
+  container_backups:
+  container_certs:
+  tmp:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=100g
+  shared:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=100m

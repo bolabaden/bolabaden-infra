@@ -1,0 +1,81 @@
+FROM alpine:3.18
+
+# Install cron and other necessary packages
+RUN apk add --no-cache \
+    dcron \
+    curl \
+    bash \
+    && rm -rf /var/cache/apk/*
+
+# Create app directory
+WORKDIR /app
+
+# Create cron directory
+RUN mkdir -p /var/spool/cron/crontabs
+
+RUN echo '#!/bin/bash' > /app/scheduler.sh && \
+    echo 'set -e' >> /app/scheduler.sh && \
+    echo 'log() {' >> /app/scheduler.sh && \
+    echo '    echo "[$$(date '+%Y-%m-%d %H:%M:%S')] $$1" | tee -a /var/log/model-updater.log' >> /app/scheduler.sh && \
+    echo '}' >> /app/scheduler.sh && \
+    echo 'TIMESTAMP=$$(date '+%Y-%m-%d %H:%M:%S')' >> /app/scheduler.sh && \
+    echo 'log "Starting daily model update at $$TIMESTAMP"' >> /app/scheduler.sh && \
+    echo 'if ! docker ps --format "table {{.Names}}" | grep -q "model-updater"; then' >> /app/scheduler.sh && \
+    echo '    log "Model updater service is not running, starting it..."' >> /app/scheduler.sh && \
+    echo '    SCRIPT_DIR="$$(cd "$$(dirname "$${BASH_SOURCE[0]}")" && pwd)"' >> /app/scheduler.sh && \
+    echo '    cd "$$SCRIPT_DIR/../../compose"' >> /app/scheduler.sh && \
+    echo '    docker-compose -f docker-compose.llm.yml up -d model-updater' >> /app/scheduler.sh && \
+    echo '    log "Model updater service started successfully"' >> /app/scheduler.sh && \
+    echo '    log "Waiting for model updater to complete..."' >> /app/scheduler.sh && \
+    echo '    timeout 300 docker-compose -f docker-compose.llm.yml logs -f model-updater | while read line; do' >> /app/scheduler.sh && \
+    echo '        echo "$$line"' >> /app/scheduler.sh && \
+    echo '        if echo "$$line" | grep -q "Saving free_chat_models.json"; then' >> /app/scheduler.sh && \
+    echo '            log "Model update completed successfully"' >> /app/scheduler.sh && \
+    echo '            break' >> /app/scheduler.sh && \
+    echo '        fi' >> /app/scheduler.sh && \
+    echo '    done' >> /app/scheduler.sh && \
+    echo '    docker-compose -f docker-compose.llm.yml stop model-updater' >> /app/scheduler.sh && \
+    echo '    log "Model updater service stopped"' >> /app/scheduler.sh && \
+    echo 'else' >> /app/scheduler.sh && \
+    echo '    log "Model updater service is already running, triggering update..."' >> /app/scheduler.sh && \
+    echo '    cd "$$SCRIPT_DIR/../../compose"' >> /app/scheduler.sh && \
+    echo '    docker-compose -f docker-compose.llm.yml restart model-updater' >> /app/scheduler.sh && \
+    echo '    log "Waiting for completion..."' >> /app/scheduler.sh && \
+    echo '    timeout 300 docker-compose -f docker-compose.llm.yml logs -f model-updater | while read line; do' >> /app/scheduler.sh && \
+    echo '        echo "$$line"' >> /app/scheduler.sh && \
+    echo '        if echo "$$line" | grep -q "Saving free_chat_models.json"; then' >> /app/scheduler.sh && \
+    echo '            log "Model update completed successfully"' >> /app/scheduler.sh && \
+    echo '            break' >> /app/scheduler.sh && \
+    echo '        fi' >> /app/scheduler.sh && \
+    echo '    done' >> /app/scheduler.sh && \
+    echo 'fi' >> /app/scheduler.sh && \
+    echo 'if [ -f "../../configs/litellm/free_chat_models.json"]; then' >> /app/scheduler.sh && \
+    echo '    FILE_SIZE=$$(stat -c%s "../../configs/litellm/free_chat_models.json")' >> /app/scheduler.sh && \
+    echo '    FILE_MOD=$$(stat -c%Y "../../configs/litellm/free_chat_models.json")' >> /app/scheduler.sh && \
+    echo '    CURRENT_TIME=$$(date +%s)' >> /app/scheduler.sh && \
+    echo '    if [ $$((CURRENT_TIME - FILE_MOD)) -lt 3600 ]; then' >> /app/scheduler.sh && \
+    echo '        log "SUCCESS: free_chat_models.json updated successfully (size: $${FILE_SIZE} bytes)"' >> /app/scheduler.sh && \
+    echo '    else' >> /app/scheduler.sh && \
+    echo '        log "WARNING: free_chat_models.json exists but may not have been updated recently"' >> /app/scheduler.sh && \
+    echo '    fi' >> /app/scheduler.sh && \
+    echo 'else' >> /app/scheduler.sh && \
+    echo '    log "ERROR: free_chat_models.json not found after update"' >> /app/scheduler.sh && \
+    echo '    exit 1' >> /app/scheduler.sh && \
+    echo 'fi' >> /app/scheduler.sh && \
+    echo 'log "Daily model update completed at $$(date '+%Y-%m-%d %H:%M:%S')"' >> /app/scheduler.sh && \
+    echo 'exit 0' >> /app/scheduler.sh
+
+# Make the script executable
+RUN chmod +x scheduler.sh
+
+# Create cron job file - run daily at 5 AM
+RUN echo "0 5 * * * /app/scheduler.sh" > /var/spool/cron/crontabs/root
+
+# Create log directory
+RUN mkdir -p /var/log
+
+# Expose port for health checks
+EXPOSE 8080
+
+# Start cron daemon and keep container running
+CMD ["crond", "-f", "-d", "8"]

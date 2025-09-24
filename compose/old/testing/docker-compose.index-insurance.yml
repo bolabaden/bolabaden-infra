@@ -1,0 +1,100 @@
+# 🔹🔹 Index Insurance 🔹🔹
+x-common-env: &common-env
+  PGID: ${PGID:-988} # 'docker' Group ID
+  PUID: ${PUID:-1002} # A non-root user ID
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-index-insurance-labels: &index-insurance-labels
+  traefik.enable: "true"
+  traefik.http.services.index-insurance.loadbalancer.server.port: 8000
+
+services:
+  index-insurance:
+    # 🔹🔹 Index Insurance 🔹🔹
+    build:
+      context: ./src/index-insurance
+      dockerfile: Dockerfile
+    image: index-insurance:latest
+    container_name: index-insurance
+    hostname: index-insurance
+    networks:
+      - infranet
+      - traefik_public
+    ports:
+      - ${INDEX_INSURANCE_PORT:-8000}:8000
+    volumes:
+      - ${SRC_DIR:-./src}/index-insurance:/app
+      - ${CONFIG_PATH:-./volumes}/index-insurance/data:/app/data
+      - ${CONFIG_PATH:-./volumes}/index-insurance/logs:/app/logs
+    environment:
+      <<: *common-env
+      # API Keys and URLs - using internal container names and ports
+      SONARR_API_KEY: $SONARR_API_KEY
+      SONARR_URL: http://sonarr:8989
+      RADARR_API_KEY: $RADARR_API_KEY
+      RADARR_URL: http://radarr:7878
+      PROWLARR_API_KEY: $PROWLARR_API_KEY
+      PROWLARR_URL: http://prowlarr:9696
+      QBITTORRENT_URL: http://qbittorrent:${QB_WEBUI_PORT:-8084}
+      QBITTORRENT_USERNAME: ${QBITTORRENT_USERNAME:-admin}
+      QBITTORRENT_PASSWORD: ${QBITTORRENT_PASSWORD:-adminadmin}
+      
+      # LLM Configuration
+      LLM_MODEL: ${INDEX_INSURANCE_LLM_MODEL:-google/flan-t5-base}
+      HUGGINGFACE_TOKEN: ${HUGGINGFACE_TOKEN:-}
+      USE_LOCAL_LLM: ${INDEX_INSURANCE_USE_LOCAL_LLM:-false}
+      LOCAL_LLM_URL: ${INDEX_INSURANCE_LOCAL_LLM_URL:-http://ollama:11434/api}
+      
+      # Application settings
+      MAX_SEARCH_ATTEMPTS: ${INDEX_INSURANCE_MAX_SEARCH_ATTEMPTS:-3}
+      MIN_DOWNLOAD_SPEED: ${INDEX_INSURANCE_MIN_DOWNLOAD_SPEED:-100}
+      CHECK_INTERVAL_MINUTES: ${INDEX_INSURANCE_CHECK_INTERVAL_MINUTES:-15}
+      STALLED_THRESHOLD_MINUTES: ${INDEX_INSURANCE_STALLED_THRESHOLD_MINUTES:-60}
+      LOGGING_LEVEL: ${INDEX_INSURANCE_LOGGING_LEVEL:-INFO}
+    labels:
+      <<: *index-insurance-labels
+      homepage.group: Media Management
+      homepage.name: Index Insurance
+      homepage.icon: radarr.png
+      homepage.href: http://index-insurance:8000
+      homepage.description: Enhances the Servarr stack with intelligent search capabilities using LLMs to handle stalled/failed downloads.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *index-insurance-labels
+    restart: always

@@ -1,0 +1,252 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-worker-priority: &swarm-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-opengist-labels: &opengist-labels
+  traefik.enable: "true"
+  traefik.http.services.opengist.loadbalancer.server.port: 6157
+
+x-rsshub-labels: &rsshub-labels
+  traefik.enable: "true"
+  traefik.http.services.rsshub.loadbalancer.server.port: 1200
+
+x-vaultwarden-labels: &vaultwarden-labels
+  traefik.enable: "true"
+  traefik.docker.network: vaultwarden-net
+
+x-whiteboardonline-labels: &whiteboardonline-labels
+  traefik.enable: "true"
+  traefik.http.services.whiteboardonline.loadbalancer.server.port: 80
+
+services:
+  miniflux:
+    # 🔹🔹 Miniflux 🔹🔹  # https://github.com/miniflux/miniflux
+    # minimalist and opinionated feed reader written in Go.
+    depends_on:
+      miniflux_postgres:
+        condition: service_healthy
+    image: ghcr.io/miniflux/miniflux
+    container_name: miniflux
+    hostname: miniflux
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/miniflux/config:/config
+    environment:
+      <<: *common-env
+      BASE_URL: ${MINIFLUX_BASE_URL:-https://miniflux.$DOMAIN}
+      DATABASE_URL: ${MINIFLUX_DATABASE_URL:-postgres://miniflux:miniflux@miniflux_postgres/miniflux?sslmode=disable}
+      RUN_MIGRATIONS: ${MINIFLUX_RUN_MIGRATIONS:-"1"}
+      CREATE_ADMIN: ${MINIFLUX_CREATE_ADMIN:-"1"}
+      ADMIN_USERNAME: ${MINIFLUX_ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${MINIFLUX_ADMIN_PASSWORD:-miniflux}
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    healthcheck:
+      test: ["CMD", "/usr/bin/miniflux", "-healthcheck", "auto"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  miniflux_postgres:
+    image: postgres:17.4
+    container_name: miniflux_postgres
+    hostname: miniflux_postgres
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/miniflux/postgres:/var/lib/postgresql/data
+    environment:
+      <<: *common-env
+      POSTGRES_DB: ${MINIFLUX_POSTGRES_DB:-miniflux}
+      POSTGRES_USER: ${MINIFLUX_POSTGRES_USER:-miniflux}
+      POSTGRES_PASSWORD: ${MINIFLUX_POSTGRES_PASSWORD:-miniflux}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:?POSTGRES_USER required} -d $${POSTGRES_DB:?POSTGRES_DB required}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  opengist:
+    # 🔹🔹 openGIST 🔹🔹  # https://github.com/thomiceli/opengist
+    # Self-hosted Pastebin powered by Git
+    image: ghcr.io/thomiceli/opengist:1
+    container_name: opengist
+    hostname: opengist
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    ports:
+      - ${OPENGIST_HTTP_PORT:-6157}:6157 # HTTP port
+      - ${OPENGIST_SSH_PORT:-2222}:2222 # SSH port, can be removed if you don't use SSH
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/opengist:/opengist
+    environment:
+      <<: *common-env
+      CONFIG: |
+        log-level: ${OPENGIST_LOG_LEVEL:-info}
+        ssh.git-enabled: ${OPENGIST_SSH_GIT_ENABLED:-false}
+        disable-signup: ${OPENGIST_DISABLE_SIGNUP:-false}  # You may wish to change this to true after you sign up the first time.
+    labels:
+      <<: *opengist-labels
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-constraints-worker-only]
+      labels:
+        <<: *opengist-labels
+    healthcheck:
+      test: curl -fSs http://localhost:6157 > /dev/null || exit 1
+      start_period: 20s
+      timeout: 5s
+      interval: 5s
+    restart: always
+
+  rsshub:
+    # 🔹🔹 RSSHub 🔹🔹
+    # World's largest RSS network, consisting of over 5,000 global instances.
+    # Delivers millions of contents aggregated from all kinds of sources
+    depends_on:
+      redis:
+        condition: service_healthy
+    image: diygod/rsshub:chromium-bundled
+    container_name: rsshub
+    hostname: rsshub
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    ports:
+      - ${RSSHUB_PORT:-1200}:1200
+    environment:
+      <<: *common-env
+      CACHE_TYPE: ${RSSHUB_CACHE_TYPE:-redis}
+      NODE_ENV: ${RSSHUB_NODE_ENV:-production}
+      REDIS_URL: ${RSSHUB_REDIS_URL:-redis://redis:${REDIS_PORT:-6379}}
+    labels:
+      <<: *rsshub-labels
+      homepage.group: RSS Feeds
+      homepage.name: RSSHub
+      homepage.icon: rsshub.png
+      homepage.href: https://rsshub.$DOMAIN
+      homepage.description: World's largest RSS network, consisting of over 5,000 global instances.  Delivers millions of contents aggregated from all kinds of sources
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *rsshub-labels
+    restart: always
+
+  stremio:
+    # 🔹🔹 Stremio 🔹🔹
+    # Stream Movies/TV over debrid instantly.
+    depends_on:
+      - gluetun
+    image: tsaridas/stremio-docker
+    container_name: stremio
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    network_mode: service:gluetun
+    # uncomment only if you are not using torrent plugins. (comment above network_mode list first)
+    #    ports:
+    #      - ${STREMIO_PORT:-8086}:8080
+    #      - 11470:11470
+    #      - 12470:12470
+    #    labels:
+    #      traefik.http.services.stremio.loadbalancer.server.port: 8080
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/stremio-server:/root/.stremio-server
+    environment:
+      <<: *common-env
+    labels:
+      homepage.group: Media Streaming
+      homepage.name: Stremio
+      homepage.icon: stremio.png
+      homepage.href: https://stremio.$DOMAIN
+      homepage.description: A one-stop hub for video content aggregation, allowing you to stream movies, series, and more from various sources.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-worker-priority]
+    restart: always
+
+  vaultwarden:
+    # 🔹🔹 Vaultwarden 🔹🔹
+    # A self-hosted, open-source password manager.
+    image: vaultwarden/server
+    container_name: vaultwarden
+    user: ${PUID:-1002}
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/vaultwarden/data:/data
+    environment:
+      <<: *common-env
+      WEBSOCKET_ENABLED: ${VAULTWARDEN_WEBSOCKET_ENABLED:-true}
+    networks:
+      - traefik_public
+    labels:
+      <<: *vaultwarden-labels
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *vaultwarden-labels
+    restart: always
+
+  whiteboardonline:
+    # 🔹🔹 WhiteboardOnline 🔹🔹
+    image: lovasoa/wbo
+    container_name: whiteboardonline
+    hostname: whiteboardonline
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    ports:
+      - ${WHITEBOARDONLINE_PORT:-5005}:80
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/whiteboardonline:/opt/app/server-data
+    environment:
+      <<: *common-env
+    labels:
+      <<: *whiteboardonline-labels
+      homepage.group: Whiteboard
+      homepage.name: Whiteboard Online
+      homepage.icon: whiteboardonline.png
+      homepage.href: https://whiteboard.$DOMAIN
+      homepage.description: A whiteboard online tool for creating and sharing whiteboards with others.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-constraints-worker-only]
+      labels:
+        <<: *whiteboardonline-labels
+    restart: always

@@ -1,0 +1,167 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-audiobookshelf-labels: &audiobookshelf-labels
+  traefik.enable: "true"
+  traefik.http.services.audiobookshelf.loadbalancer.server.port: 80
+
+x-calibre-labels: &calibre-labels
+  traefik.enable: "true"
+  traefik.http.services.calibre.loadbalancer.server.port: 8080
+
+x-kavita-labels: &kavita-labels
+  traefik.enable: "true"
+  traefik.http.services.kavita.loadbalancer.server.port: 5000
+
+x-posterr-labels: &posterr-labels
+  traefik.enable: "true"
+  traefik.http.services.posterr.loadbalancer.server.port: 3000
+
+services:
+  audiobookshelf:
+    # 🔹🔹 Audiobookshelf 🔹🔹  # https://github.com/advplyr/audiobookshelf
+    image: ghcr.io/advplyr/audiobookshelf
+    container_name: audiobookshelf
+    hostname: audiobookshelf
+    networks:
+      - traefik_public
+    ports:
+      - ${AUDIOBOOKSHELF_PORT:-13378}:80
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/audiobookshelf/audiobooks:/audiobooks
+      - ${CONFIG_PATH:-./volumes}/audiobookshelf/config:/config
+      - ${CONFIG_PATH:-./volumes}/audiobookshelf/metadata:/metadata
+    environment:
+      <<: *common-env
+      AUDIOBOOKSHELF_UID: ${PUID:-1002}
+      AUDIOBOOKSHELF_GID: ${PGID:-988}
+      AUDIOBOOKSHELF_TZ: ${TZ:-America/Chicago}
+    labels:
+      <<: *audiobookshelf-labels
+    deploy:
+      <<: [ *common-deploy, *swarm-resource-limits, *swarm-constraints-manager-only ]
+      labels:
+        <<: *audiobookshelf-labels
+    restart: always
+
+  calibre:
+    # 🔹🔹 Calibre 🔹🔹
+    image: linuxserver/calibre-web
+    container_name: calibre
+    hostname: calibre
+    networks:
+      - traefik_public
+    ports:
+      - ${CALIBRE_WEB_PORT:-8083}:8083
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/calibre:/config
+      - ${DATA_DIR:-./data}/media/books:/books
+    environment:
+      <<: *common-env
+      DOCKER_MODS: ${CALIBRE_DOCKER_MODS:-linuxserver/mods:universal-calibre}
+      OAUTHLIB_RELAX_TOKEN_SCOPE: ${CALIBRE_OAUTHLIB_RELAX_TOKEN_SCOPE:-1}
+    labels:
+      <<: *calibre-labels
+    deploy:
+      <<: [ *common-deploy, *swarm-resource-limits, *swarm-constraints-manager-only ]
+      labels:
+        <<: *calibre-labels
+    restart: always
+
+  kavita:
+    # 🔹🔹 Kavita 🔹🔹
+    # Free and open source web based Comic and Book Server.
+    image: jvmilazz0/kavita
+    container_name: kavita
+    hostname: kavita
+    networks:
+      - traefik_public
+    ports:
+      - ${KAVITA_PORT:-5002}:5000
+    volumes:
+      - ${DATA_DIR:-./data}/media/books:/media/books
+      - ${DATA_DIR:-./data}/media/comics:/media/comics
+      - ${DATA_DIR:-./data}/media/manga:/media/manga
+      - ${CONFIG_PATH:-./volumes}/kavita/config:/kavita/config
+    environment:
+      <<: *common-env
+      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: ${KAVITA_DOTNET_SYSTEM_GLOBALIZATION_INVARIANT:-true}
+    labels:
+      <<: *kavita-labels
+      homepage.group: E-books & Comics
+      homepage.name: Kavita Reader
+      homepage.icon: kavita.png
+      homepage.href: https://kavita.$DOMAIN/
+      homepage.description: A fast and feature rich server to manage and read your digital books, comics, and manga with a modern web interface.
+    deploy:
+      <<: [ *common-deploy, *swarm-resource-limits, *swarm-constraints-manager-only ]
+      labels:
+        <<: *kavita-labels
+    restart: always
+
+  posterr:
+    # Media display software for Plex, Sonarr, Radarr, and Readarr. (Just like the display screens in movie theatre foyers)
+    profiles:
+      - make_stateless_before_swarm_use
+    image: petersem/posterr
+    container_name: posterr
+    hostname: posterr
+    networks:
+      - traefik_public
+    environment:
+      <<: *common-env
+      hostIP: ${POSTERR_HOST_IP:-0.0.0.0}
+      BASEPATH: ${POSTERR_BASEPATH:-.}
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/posterr/config:/usr/src/app/config
+      - ${CONFIG_PATH:-./volumes}/posterr/custom:/usr/src/app/public/custom
+    ports:
+      - ${POSTERR_PORT:-9876}:3000
+    labels:
+      <<: *posterr-labels
+    deploy:
+      <<: [ *common-deploy, *swarm-resource-limits, *swarm-preferences-worker-priority]
+      labels:
+        <<: *posterr-labels
+    restart: always

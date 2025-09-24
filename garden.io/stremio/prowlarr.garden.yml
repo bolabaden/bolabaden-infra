@@ -1,0 +1,40 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: prowlarr
+description: Prowlarr indexer proxy and manager
+type: container
+
+spec:
+  image: lscr.io/linuxserver/prowlarr
+  env:
+    TZ: ${var.tz}
+    PUID: ${var.PUID:-1001}
+    PGID: ${var.PGID:-988}
+  ports:
+    - name: http
+      containerPort: 9696
+      hostPort: 9696
+      hostIp: 127.0.0.1
+  volumes:
+    - name: config
+      containerPath: /config
+      sourcePath: ${var.config-path}/prowlarr/config
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 6Gi
+    requests:
+      memory: 128Mi
+  ingresses:
+    - path: /
+      port: http
+      hostname: prowlarr.${var.domain}
+  healthCheck:
+    httpGet:
+      path: /api/v1/system/status
+      port: http
+      httpHeaders:
+        - name: Authorization
+          value: Bearer ${var.PROWLARR_API_KEY}
+  restartPolicy: always
+

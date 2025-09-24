@@ -1,0 +1,129 @@
+[
+  {
+    "fs": "pm:",
+    "mountPoint": "/mnt/remote/premiumize",
+    "LogLevel": "DEBUG",
+    "mainOpt": {
+      "LogLevel": "DEBUG"
+    },
+    "mountOpt": {
+      "AllowNonEmpty": true,
+      "AllowOther": true,
+      "AttrTimeout": "87600h",
+      "DirCacheTime": "60s",
+      "DirPerms": "0777",
+      "ExtraFlags": [
+        "--config=/config/rclone/rclone.conf",
+        "--log-level=DEBUG",
+        "--log-file=/config/rclone/rclone.log"
+      ],
+      "FilePerms": "0666",
+      "GID": 1000,
+      "PollInterval": "30s",
+      "UID": 1000
+    },
+    "vfsOpt": {
+      "BufferSize": "128M",
+      "CacheMaxAge": "2m",
+      "CacheMaxSize": "100G",
+      "CacheMode": "full",
+      "CachePollInterval": "30s",
+      "ChunkSize": "2M",
+      "ChunkSizeLimit": "64M",
+      "DiskSpaceTotalSize": "1T",
+      "ExtraOptions": [
+        "--vfs-refresh",
+        "--transfers=16",
+        "--checkers=16",
+        "--multi-thread-streams=4",
+        "--cache-dir=/mnt/remote/cache/realdebrid"
+      ],
+      "FastFingerprint": true,
+      "MinFreeSpace": "1G",
+      "ReadAhead": "128M",
+      "ReadWait": "40ms"
+    }
+  },
+  {
+    "fs": "alldebrid:",
+    "mountPoint": "/mnt/remote/alldebrid",
+    "LogLevel": "DEBUG",
+    "mainOpt": {
+      "ExtraFlags": [
+        "--cutoff-mode=cautious",
+        "--network-mode",
+        "--config=/config/rclone/rclone.conf",
+        "--log-level=DEBUG",
+        "--log-file=/config/rclone/rclone.log"
+      ],
+      "LogLevel": "DEBUG",
+      "MultiThreadStreams": 0,
+      "TPSLimit": 12,
+      "Transfers": 8
+    },
+    "mountOpt": {
+      "AllowNonEmpty": true,
+      "AllowOther": true,
+      "DirPerms": "0777",
+      "ExtraFlags": [
+        "--cache-dir=/mnt/remote/cache/alldebrid"
+      ],
+      "FilePerms": "0666",
+      "VolumeName": "AllDebrid"
+    },
+    "vfsOpt": {
+      "BufferSize": "128M",
+      "CacheMaxAge": "1h",
+      "CacheMaxSize": "100G",
+      "CacheMode": "full",
+      "ChunkSize": "128M",
+      "ChunkSizeLimit": "0",
+      "DirCacheTime": "160h",
+      "ExtraOptions": [],
+      "ReadAhead": "0"
+    }
+  },
+  {
+    "fs": "zurg:",
+    "mountPoint": "${ZURG_MOUNT_PATH:-/mnt/remote/zurg}",
+    "mainOpt": {
+      "LogLevel": "INFO"
+    },
+    "LogLevel": "INFO",
+    "mountOpt": {
+      "AllowNonEmpty": true,
+      "AllowOther": true,
+      "AttrTimeout": "87600h",
+      "DirCacheTime": "60s",
+      "DirPerms": "0777",
+      "FilePerms": "0666",
+      "PollInterval": "30s",
+      "ExtraFlags": [
+        "--config=/config/rclone/rclone.conf",
+        "--log-level=INFO",
+        "--log-file=/config/rclone/rclone.log"
+      ]
+    },
+    "vfsOpt": {
+      "BufferSize": "128M",
+      "CacheMaxAge": "2m",
+      "CacheMaxSize": "100G",
+      "CacheMode": "full",
+      "CachePollInterval": "30s",
+      "ChunkSize": "2M",
+      "ChunkSizeLimit": "64M",
+      "DiskSpaceTotalSize": "1T",
+      "FastFingerprint": true,
+      "MinFreeSpace": "1G",
+      "ReadAhead": "128M",
+      "ReadWait": "40ms",
+      "ExtraOptions": [
+        "--vfs-refresh",
+        "--transfers=16",
+        "--checkers=16",
+        "--multi-thread-streams=${CPU_COUNT:-4}",
+        "--cache-dir=${ZURG_CACHE_DIR:-/mnt/remote/cache/zurg}"
+      ]
+    }
+  }
+]

@@ -1,0 +1,47 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: homepage
+description: Homepage dashboard for service overview
+type: container
+
+spec:
+  image: ghcr.io/gethomepage/homepage
+  env:
+    TZ: ${var.tz}
+    HOMEPAGE_ALLOWED_HOSTS: "*"
+    HOMEPAGE_VAR_TITLE: Bolabaden
+    HOMEPAGE_VAR_SEARCH_PROVIDER: duckduckgo
+    HOMEPAGE_VAR_HEADER_STYLE: glass
+    HOMEPAGE_VAR_THEME: dark
+    HOMEPAGE_CUSTOM_CSS: /app/config/custom.css
+    HOMEPAGE_CUSTOM_JS: /app/config/custom.js
+    HOMEPAGE_VAR_WEATHER_CITY: Iowa City
+    HOMEPAGE_VAR_WEATHER_LAT: 41.661129
+    HOMEPAGE_VAR_WEATHER_LONG: -91.5302
+    HOMEPAGE_VAR_WEATHER_UNIT: fahrenheit
+  ports:
+    - name: http
+      containerPort: 3000
+  volumes:
+    - name: docker-sock
+      containerPath: /var/run/docker.sock
+      sourcePath: ${var.docker-socket}
+      readOnly: true
+    - name: config
+      containerPath: /app/config
+      sourcePath: ${var.config-path}/homepage
+  resources:
+    limits:
+      cpu: 250m
+      memory: 1Gi
+    requests:
+      memory: 128Mi
+  ingresses:
+    - path: /
+      port: http
+      hostname: homepage.${var.domain}
+  healthCheck:
+    httpGet:
+      path: /
+      port: http
+  restartPolicy: always

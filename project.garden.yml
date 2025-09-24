@@ -1,0 +1,23 @@
+apiVersion: garden.io/v2
+kind: Project
+name: my-media-stack
+
+environments:
+  - name: default
+    variables:
+      base-hostname: my-media-stack.local.demo.garden
+      domain: ${var.base-hostname}
+      ts-hostname: ${local.hostname}
+      config-path: ./volumes
+      certs-path: ./certs
+      docker-socket: /var/run/docker.sock
+      tz: America/Chicago
+
+providers:
+  - name: local-kubernetes
+    environments: [default]
+    buildMode: cluster-buildkit
+    defaultHostname: ${var.base-hostname}
+    copySecrets:
+      - name: docker-config
+        namespace: default

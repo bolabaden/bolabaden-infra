@@ -1,0 +1,215 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-changedetection-labels: &changedetection-labels
+  traefik.enable: "true"
+  traefik.http.services.changedetection.loadbalancer.server.port: 5000
+
+x-notifiarr-labels: &notifiarr-labels
+  traefik.enable: "true"
+  traefik.http.services.notifiarr.loadbalancer.server.port: 5454
+
+x-ntfy-labels: &ntfy-labels
+  traefik.enable: "true"
+  traefik.http.services.ntfy.loadbalancer.server.port: 80
+
+services:
+  alertmanager:
+    depends_on:
+      - prometheus
+    image: prom/alertmanager
+    container_name: alertmanager
+    hostname: alertmanager
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/alertmanager/data:/data
+      - ${CONFIG_PATH:-./volumes}/alertmanager/config:/config
+    environment:
+      <<: *common-env
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    command: '--config.file=/config/alertmanager.yml'
+    security_opt:
+      - no-new-privileges:true
+    restart: always
+
+  apprise:
+    build: .
+    container_name: apprise
+    environment:
+      - APPRISE_STATEFUL_MODE=simple
+    ports:
+      - 8000:8000
+    volumes:
+      - ./apprise_api:/opt/apprise/webapp:ro
+      # if uncommenting the below, you will need to type the following
+      # Note: if you opt for bind mount config file consider setting env var APPRISE_STATEFUL_MODE to simple with appropriate file format
+      # otherwise the django instance won't have permissions to write
+      # to the directory correctly:
+      #   $> chown -R 33:33 ./config
+      #   $> chmod -R 775 ./config
+      # - ./config:/config:rw
+      # Note: The attachment directory can be exposed outside of the container if required
+      #   $> chown -R 33:33 ./attach
+      #   $> chmod -R 775 ./attach
+      # - ./attach:/attach:rw
+
+  ## Un-comment the below and then access a testing environment with:
+  ##    docker-compose run test.py310 build
+  ##    docker-compose run --service-ports --rm test.py310 bash
+  ##
+  ## From here you
+  ## > Check for any lint errors
+  ##    flake8 apprise_api
+  ##
+  ## > Run unit tests
+  ##    pytest apprise_api
+  ##
+  ## > Host service (visit http://localhost on host pc to access):
+  ##   ./manage.py runserver 0.0.0.0:8000
+  # test.py312:
+  #   ports:
+  #     - 8000:8000
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.py312
+  #   volumes:
+  #     - ./:/apprise-api
+
+  changedetection:
+    # 🔹🔹 Changedetection 🔹🔹  https://github.com/dgtlmoon/changedetection.io
+    # Detect website content changes and perform
+    # meaningful actions - trigger notifications via
+    #  Discord, Email, Slack, Telegram, API calls and many more.
+    image: ghcr.io/dgtlmoon/changedetection.io
+    container_name: changedetection
+    hostname: changedetection
+    networks:
+      - traefik_public
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/changedetection/datastore:/datastore
+    environment:
+      <<: *common-env
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    labels:
+      <<: *changedetection-labels
+      homepage.group: Utilities
+      homepage.name: Change Detection
+      homepage.icon: changedetection.png
+      homepage.href: https://changedetection.$DOMAIN/
+      homepage.description: Monitor websites for changes and receive notifications, ensuring you're always up-to-date with the latest information.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *changedetection-labels
+    restart: always
+
+  notifiarr:
+    # 🔹🔹 Notifiarr 🔹🔹
+    # Client for Notifiarr.com
+    image: golift/notifiarr
+    container_name: notifiarr
+    hostname: notifiarr
+    security_opt:
+      - no-new-privileges:true
+    privileged: true
+    ports:
+      - ${NOTIFIARR_PORT:-5454}:5454
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/notifiarr/notifiarr.conf:/config/notifiarr.conf
+      - /var/run/utmp:/var/run/utmp
+      - /etc/machine-id:/etc/machine-id
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+      DN_AUTO_UPDATE: ${NOTIFIARR_AUTO_UPDATE:-"off"}
+    labels:
+      <<: *notifiarr-labels
+      homepage.group: Notifications
+      homepage.name: Notifiarr
+      homepage.icon: notifiarr.png
+      homepage.href: https://notifiarr.$DOMAIN
+      homepage.description: Centralized notification system for various services, keeping you informed in real-time.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *notifiarr-labels
+    restart: always
+
+  ntfy:
+    # 🔹🔹 Ntfy 🔹🔹
+    image: binwiederhier/ntfy
+    container_name: ntfy
+    hostname: ntfy
+    networks:
+      - traefik_public
+    ports:
+      - ${NTFY_PORT:-8586}:80
+    command:
+      - serve
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/ntfy/cache:/var/cache/ntfy
+      - ${CONFIG_PATH:-./volumes}/ntfy:/etc/ntfy
+      - ${CONFIG_PATH:-./volumes}/ntfy/cache.db:/var/cache/ntfy/cache.db
+    environment:
+      <<: *common-env
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    labels:
+      <<: *ntfy-labels
+      homepage.group: Notifications
+      homepage.name: Ntfy
+      homepage.icon: ntfy.png
+      homepage.href: https://ntfy.$DOMAIN
+    healthcheck: # optional: remember to adapt the host:port to your environment
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --tries=1 http://ntfy:${NTFY_PORT:-8586}/v1/health -O - | grep -Eo '\"healthy\"\\s*:\\s*true' || exit 1",
+        ]
+      interval: 60s
+      timeout: 10s
+      start_period: 40s
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *ntfy-labels
+    restart: always

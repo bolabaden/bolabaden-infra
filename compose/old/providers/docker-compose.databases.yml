@@ -1,0 +1,127 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+services:
+  mariadb:
+    image: mariadb:11.7.2
+    container_name: mariadb
+    hostname: mariadb
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    ports:
+      - ${MARIADB_PORT:-3306}:3306
+    networks:
+      - auth-net
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/mariadb:/var/lib/mysql
+    environment:
+      <<: *common-env
+      MYSQL_DATABASE: ${MARIADB_DB_NAME:-glauthui}
+      MYSQL_USER: ${MARIADB_DB_USER:-glauthui}
+      MYSQL_PASSWORD: $MARIADB_DB_PASSWORD
+      MYSQL_ROOT_PASSWORD: $MARIADB_DB_ROOT_PASSWORD
+    restart: always
+
+  mongodb:
+    # 🔹🔹 MongoDB 🔹🔹
+    image: mongo
+    container_name: mongodb
+    hostname: mongodb
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - infranet
+    ports:
+      - ${MONGODB_PORT:-27017}:27017
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/mongodb/data-node:/data/db
+    command: mongod --noauth
+    environment:
+      <<: *common-env
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  postgresql:
+    # 🔹🔹 PostgreSQL 🔹🔹
+    image: postgres:17.4
+    container_name: postgresql
+    hostname: postgresql
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - infranet
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/postgresql:/var/lib/postgresql/data
+    environment:
+      <<: *common-env
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  vectordb:
+    # 🔹🔹 VectorDB 🔹🔹
+    image: pgvector/pgvector
+    container_name: vectordb
+    hostname: vectordb
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - infranet
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/vectordb:/var/lib/postgresql/data
+    environment:
+      <<: *common-env
+      VECTORDB_POSTGRES_DB: ${VECTORDB_POSTGRES_DB:-vectordb}
+      VECTORDB_POSTGRES_USER: ${VECTORDB_POSTGRES_USER:-vectordb-postgres}
+      VECTORDB_POSTGRES_PASSWORD: ${VECTORDB_POSTGRES_PASSWORD:-vectordb-postgres}
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always

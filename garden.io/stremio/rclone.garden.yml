@@ -1,0 +1,76 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: rclone
+description: Rclone cloud storage mount service
+type: container
+
+spec:
+  image: docker.io/rclone/rclone:1.71
+  capAdd:
+    - SYS_ADMIN
+  securityOpt:
+    - apparmor:unconfined
+  env:
+    TZ: ${var.tz}
+  ports:
+    - name: http
+      containerPort: 5572
+  volumes:
+    - name: hostfs
+      containerPath: /hostfs
+      hostPath: /
+    - name: etc-group
+      containerPath: /etc/group
+      hostPath: /etc/group
+      readOnly: true
+    - name: etc-passwd
+      containerPath: /etc/passwd
+      hostPath: /etc/passwd
+      readOnly: true
+    - name: remote-mounts
+      containerPath: /mnt/remote
+      hostPath: /mnt/remote
+    - name: cache
+      containerPath: /.cache
+      sourcePath: ${var.config-path}/rclone/.cache
+    - name: config
+      containerPath: /config/rclone
+      sourcePath: ${var.config-path}/rclone/config/rclone
+    - name: rclonefm-js
+      containerPath: /var/lib/rclonefm/js
+      sourcePath: ${var.config-path}/rclonefm/js
+    - name: rclone-conf
+      containerPath: /config/rclone/rclone.conf
+      sourcePath: ${var.config-path}/rclone/rclone.conf
+    - name: fuse-conf
+      containerPath: /etc/fuse.conf
+      hostPath: /etc/fuse.conf
+      readOnly: true
+  devices:
+    - name: fuse
+      hostPath: /dev/fuse
+      containerPath: /dev/fuse
+  command:
+    - rcd
+    - --rc-web-gui
+    - --rc-web-gui-no-open-browser
+    - --rc-addr=:${var.RCLONE_PORT:-5572}
+    - --log-level=INFO
+    - --rc-no-auth
+    - --config=/config/rclone/rclone.conf
+    - --cache-dir=/.cache/rclone
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      memory: 60Mi
+  ingresses:
+    - path: /
+      port: http
+      hostname: rclone.${var.domain}
+  healthCheck:
+    exec:
+      command: [mountpoint, -q, /mnt/remote]
+  restartPolicy: always
+

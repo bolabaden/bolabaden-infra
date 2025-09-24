@@ -1,0 +1,246 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+services:
+  autobrr:
+    # 🔹🔹 Autobrr 🔹🔹  # https://github.com/autobrr/autobrr
+    # Modern, easy to use download automation for torrents and usenet.
+    image: ghcr.io/autobrr/autobrr
+    container_name: autobrr
+    network_mode: service:gluetun
+    #logging:
+    #  driver: json-file
+    #  options:
+    #    max-file: ${DOCKERLOGGING_MAXFILE:-10}
+    #    max-size: ${DOCKERLOGGING_MAXSIZE:-10m}
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/autobrr/config:/config
+      - ${CONFIG_PATH:-./volumes}/autobrr/logs:/logs
+      - ${DATA_DIR:-./data}/media:/media
+    <<: [*common-uidgid, *resource-limits]
+    environment:
+      <<: *common-env
+      AUTOBRR__BASE_URL: ${AUTOBRR__BASE_URL:-}
+      AUTOBRR__CHECK_FOR_UPDATES: ${AUTOBRR__CHECK_FOR_UPDATES:-true}
+      AUTOBRR__CUSTOM_DEFINITIONS: ${AUTOBRR__CUSTOM_DEFINITIONS:-}
+      AUTOBRR__DATABASE_TYPE: ${AUTOBRR__DATABASE_TYPE:-sqlite}
+      AUTOBRR__HOST: ${AUTOBRR__HOST:-0.0.0.0}
+      AUTOBRR__LOG_LEVEL: ${AUTOBRR__LOG_LEVEL:-info}
+      AUTOBRR__LOG_MAX_BACKUPS: ${AUTOBRR__LOG_MAX_BACKUPS:-8}
+      AUTOBRR__LOG_MAX_SIZE: ${AUTOBRR__LOG_MAX_SIZE:-2}
+      AUTOBRR__LOG_PATH: ${AUTOBRR__LOG_PATH:-logs/autobrr.log}
+      AUTOBRR__METRICS_BASIC_AUTH_USERS: ${AUTOBRR__METRICS_BASIC_AUTH_USERS:-}
+      AUTOBRR__METRICS_ENABLED: ${AUTOBRR__METRICS_ENABLED:-false}
+      AUTOBRR__METRICS_HOST: ${AUTOBRR__METRICS_HOST:-0.0.0.0}
+      AUTOBRR__METRICS_PORT: ${AUTOBRR__METRICS_PORT:-9092}
+      AUTOBRR__OIDC_CLIENT_ID: ${AUTOBRR__OIDC_CLIENT_ID:-}
+      AUTOBRR__OIDC_CLIENT_SECRET: ${AUTOBRR__OIDC_CLIENT_SECRET:-}
+      AUTOBRR__OIDC_DISABLE_BUILT_IN_LOGIN: ${AUTOBRR__OIDC_DISABLE_BUILT_IN_LOGIN:-false}
+      AUTOBRR__OIDC_ENABLED: ${AUTOBRR__OIDC_ENABLED:-false}
+      AUTOBRR__OIDC_ISSUER: ${AUTOBRR__OIDC_ISSUER:-}
+      AUTOBRR__OIDC_REDIRECT_URL: ${AUTOBRR__OIDC_REDIRECT_URL:-}
+      AUTOBRR__PORT: ${AUTOBRR__PORT:-7474}
+      AUTOBRR__POSTGRES_DATABASE: ${AUTOBRR__POSTGRES_DATABASE:-autobrr}
+      AUTOBRR__POSTGRES_EXTRA_PARAMS: ${AUTOBRR__POSTGRES_EXTRA_PARAMS:-}
+      AUTOBRR__POSTGRES_HOST: ${AUTOBRR__POSTGRES_HOST:-postgres}
+      AUTOBRR__POSTGRES_PASS: ${AUTOBRR__POSTGRES_PASS:-autobrr}
+      AUTOBRR__POSTGRES_PORT: ${AUTOBRR__POSTGRES_PORT:-5432}
+      AUTOBRR__POSTGRES_SSLMODE: ${AUTOBRR__POSTGRES_SSLMODE:-disable}
+      AUTOBRR__POSTGRES_USER: ${AUTOBRR__POSTGRES_USER:-autobrr}
+      AUTOBRR__SESSION_SECRET: ${AUTOBRR__SESSION_SECRET:-}
+    labels:
+      homepage.group: Source Aggregator
+      homepage.name: Autobrr
+      homepage.icon: autobrr.png
+      homepage.href: https://autobrr.$DOMAIN
+      homepage.description: Redefines download automation for torrents and Usenet
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  jackett:
+    # 🔹🔹 Jackett 🔹🔹
+    image: linuxserver/jackett
+    container_name: jackett
+    <<: [*common-uidgid, *resource-limits]
+    network_mode: service:gluetun
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/jackett/config:/config
+      - ${DATA_DIR:-./data}/downloads:/downloads
+    environment:
+      <<: *common-env
+    labels:
+      homepage.group: Source Aggregator
+      homepage.name: Jackett Indexer
+      homepage.icon: jackett.png
+      homepage.href: https://jackett.$DOMAIN/
+      homepage.description: Connects your download applications with various source providers and indexers, making it easier to find and download content through your download clients.
+      homepage.weight: 1
+      homepage.widget.type: jackett
+      homepage.widget.url: https://jackett.$DOMAIN
+      homepage.widget.key: $JACKETT_API_KEY
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    healthcheck:
+      test: curl --fail http://localhost:9117/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=$JACKETT_API_KEY || exit 1
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+    restart: always
+
+  prowlarr:
+    # 🔹🔹 Prowlarr 🔹🔹
+    image: linuxserver/prowlarr
+    container_name: prowlarr
+    <<: [*common-uidgid, *resource-limits]
+    network_mode: service:gluetun
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/prowlarr/config:/config
+    environment:
+      <<: *common-env
+    labels:
+      homepage.group: Source Aggregator
+      homepage.name: Prowlarr Indexer
+      homepage.icon: prowlarr.png
+      homepage.href: https://prowlarr.$DOMAIN
+      homepage.description: Manages multiple torrent indexers, making it easier to find and download content through your download clients.
+      homepage.weight: 1
+      homepage.widget.type: prowlarr
+      homepage.widget.url: https://prowlarr.$DOMAIN
+      homepage.widget.key: $PROWLARR_API_KEY
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  prowlarr-exporter:
+    # 🔹🔹 Prowlarr Exporter 🔹🔹  # https://github.com/onedr0p/exportarr
+    # Prowlarr metrics for Prometheus
+    depends_on:
+      - prometheus
+      - prowlarr
+    # image: ghcr.io/onedr0p/exportarr
+    # use this one with arm:
+    image: ghcr.io/onedr0p/exportarr:master@sha256:22bc953901430c69d4b489fe071b16c9eba9d80ed1963e1c5bf2d08e11b4e70a
+    container_name: prowlarr-exporter
+    hostname: prowlarr-exporter
+    <<: [*common-uidgid, *resource-limits]
+    networks:
+      - gluenet
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${PROWLARR_EXPORTER_PORT:-9705}:${PROWLARR_EXPORTER_PORT:-9705}
+    environment:
+      <<: *common-env
+      PORT: ${PROWLARR_EXPORTER_PORT:-9705}
+      URL: "http://prowlarr:${PROWLARR_PORT:-9696}"
+      APIKEY: $PROWLARR_API_KEY
+      ENABLE_ADDITIONAL_METRICS: ${PROWLARR_EXPORTER_ENABLE_ADDITIONAL_METRICS:-true}
+    command: ["prowlarr"]
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  sabnzbd:
+    # 🔹🔹 SABnzbd 🔹🔹
+    # Binary newsgrabber (NZB downloader)
+    # NOTE: Disable SABNnzbd's built-in HTTPS support for traefik proxy to work
+    # NOTE: Needs trailing / if using PathPrefix
+    image: linuxserver/sabnzbd
+    container_name: sabnzbd
+    <<: [*resource-limits]
+    network_mode: service:gluetun
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/sabnzbd:/config
+      - ${DATA_DIR:-./data}/downloads:/downloads
+      - ${DATA_DIR:-./data}/downloads/incomplete:/incomplete-downloads
+    environment:
+      <<: *common-env
+    labels:
+      homepage.group: Source Aggregator
+      homepage.name: Sabnzbd Downloader
+      homepage.icon: sabnzbd.png
+      homepage.href: https://sabnzbd.$DOMAIN
+      homepage.description: Downloads files from Usenet newsgroups, providing a fast and reliable way to access a wide range of content.
+      homepage.weight: 3
+      homepage.widget.type: sabnzbd
+      homepage.widget.url: https://sabnzbd.$DOMAIN
+      homepage.widget.key: $SABNZBD_API_KEY
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  sabnzbd-exporter:
+    # 🔹🔹 SABnzbd Exporter 🔹🔹  # https://github.com/onedr0p/exportarr
+    # SABnzbd metrics for Prometheus
+    depends_on:
+      - prometheus
+      - sabnzbd
+    # image: ghcr.io/onedr0p/exportarr
+    # use this one with arm:
+    image: ghcr.io/onedr0p/exportarr:master@sha256:22bc953901430c69d4b489fe071b16c9eba9d80ed1963e1c5bf2d08e11b4e70a
+    container_name: sabnzbd-exporter
+    hostname: sabnzbd-exporter
+    <<: [*common-uidgid, *resource-limits]
+    networks:
+      - gluetun_network
+    ports:
+      - ${SABNZBD_EXPORTER_PORT:-9712}:9707
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      <<: *common-env
+      APIKEY: $SABNZBD_API_KEY
+      ENABLE_ADDITIONAL_METRICS: ${SABNZBD_EXPORTER_ENABLE_ADDITIONAL_METRICS:-true}
+      URL: "http://gluetun:${SABNZBD_PORT:-8085}"
+    command: ["sabnzbd"]
+
+networks:
+  gluenet:
+    external: true
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always

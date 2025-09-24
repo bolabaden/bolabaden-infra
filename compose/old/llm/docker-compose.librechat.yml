@@ -1,0 +1,158 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-librechat-labels: &librechat-labels
+  traefik.enable: "true"
+  traefik.http.services.librechat.loadbalancer.server.port: 3080
+
+services:
+  librechat:
+    # 🔹🔹 LibreChat 🔹🔹  # https://github.com/danny-avila/librechat
+    depends_on:
+      - mongodb
+      - librechat-rag_api
+    image: ghcr.io/danny-avila/librechat-dev
+    container_name: librechat
+    hostname: librechat
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - infranet
+      - traefik_public
+    ports:
+      - ${LIBRECHAT_PORT:-3080}:3080
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/librechat/.env:/app/.env
+      - ${CONFIG_PATH:-./volumes}/librechat/librechat.yaml:/app/librechat.yaml
+      - ${CONFIG_PATH:-./volumes}/librechat/images:/app/client/public/images
+      - ${CONFIG_PATH:-./volumes}/librechat/logs:/app/api/logs
+      - ${CONFIG_PATH:-./volumes}/librechat/uploads:/app/uploads
+    environment:
+      <<: *common-env
+      API_KEY_FILE: /run/secrets/librechat_api_key
+      CREDS_IV_FILE: /run/secrets/librechat_creds_iv
+      CREDS_KEY_FILE: /run/secrets/librechat_creds_key
+      JWT_REFRESH_SECRET_FILE: /run/secrets/librechat_jwt_refresh_secret
+      JWT_SECRET_FILE: /run/secrets/librechat_jwt_secret
+      SESSION_SECRET_FILE: /run/secrets/librechat_session_secret
+      ALLOW_EMAIL_LOGIN: ${LIBRECHAT_ALLOW_EMAIL_LOGIN:-true}
+      ALLOW_REGISTRATION: ${LIBRECHAT_ALLOW_REGISTRATION:-true}
+      ALLOW_SOCIAL_LOGIN: ${LIBRECHAT_ALLOW_SOCIAL_LOGIN:-true}
+      ALLOW_SOCIAL_REGISTRATION: ${LIBRECHAT_ALLOW_SOCIAL_REGISTRATION:-true}
+      HOST: ${LIBRECHAT_HOST_IP:-0.0.0.0}
+      MEILI_HOST: http://meili:${MEILI_PORT:-7700}
+      MONGO_URI: ${LIBRECHAT_MONGO_URI:-mongodb://mongodb:27017/LibreChat}
+      RAG_API_URL: http://librechat-rag_api:${LIBRECHAT_RAG_PORT:-8005}
+      RAG_PORT: ${LIBRECHAT_RAG_PORT:-8005}
+      REFRESH_TOKEN_EXPIRY: ${LIBRECHAT_REFRESH_TOKEN_EXPIRY:-54000000} # 15 hours
+      SESSION_EXPIRY: ${LIBRECHAT_SESSION_EXPIRY:-604800000} # 7 days
+    labels:
+      <<: *librechat-labels
+      homepage.group: Chatbots
+      homepage.name: LibreChat
+      homepage.icon: librechat.png
+      homepage.href: https://librechat.$DOMAIN
+      homepage.description: A WebUI for various LLM AI APIs with a large variety of features and providers.
+      homepage.weight: 2
+      homepage.widget.type: librechat
+      homepage.widget.url: https://librechat.$DOMAIN
+      homepage.widget.key: /run/secrets/librechat_api_key
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *librechat-labels
+    secrets:
+      - librechat_api_key
+      - librechat_creds_iv
+      - librechat_creds_key
+      - librechat_jwt_refresh_secret
+      - librechat_jwt_secret
+      - librechat_session_secret
+    restart: always
+
+  librechat-rag_api:
+    # 🔹🔹 LibreChat RAG API 🔹🔹  # https://github.com/danny-avila/librechat
+    depends_on:
+      - vectordb
+    image: ghcr.io/danny-avila/librechat-rag-api-dev-lite
+    container_name: librechat-rag_api
+    hostname: librechat-rag_api
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - infranet
+    env_file:
+      - ${CONFIG_PATH:-./volumes}/librechat/.env
+    environment:
+      <<: *common-env
+      DB_HOST: ${LIBRECHAT_DB_HOST:-vectordb}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?not set}
+      RAG_PORT: ${LIBRECHAT_RAG_PORT:-8005}
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+secrets:
+  librechat_api_key:
+    file: ${SECRETS_DIR:-./secrets}/librechat_api_key
+  librechat_creds_iv:
+    file: ${SECRETS_DIR:-./secrets}/librechat_creds_iv
+  librechat_creds_key:
+    file: ${SECRETS_DIR:-./secrets}/librechat_creds_key
+  librechat_jwt_refresh_secret:
+    file: ${SECRETS_DIR:-./secrets}/librechat_jwt_refresh_secret
+  librechat_jwt_secret:
+    file: ${SECRETS_DIR:-./secrets}/librechat_jwt_secret
+  librechat_session_secret:
+    file: ${SECRETS_DIR:-./secrets}/librechat_session_secret
+
+networks:
+  infranet:
+    external: true
+
+# to build the secrets:
+# openssl rand -base64 8 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/librechat_api_key
+# openssl rand -base64 8 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/librechat_creds_iv
+# openssl rand -base64 8 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/librechat_creds_key
+# openssl rand -base64 32 > ${SECRETS_DIR:-./secrets}/librechat_jwt_refresh_secret
+# openssl rand -base64 32 > ${SECRETS_DIR:-./secrets}/librechat_jwt_secret
+# openssl rand -base64 32 > ${SECRETS_DIR:-./secrets}/librechat_session_secret

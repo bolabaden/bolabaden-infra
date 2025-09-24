@@ -1,0 +1,427 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 1024M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-bobarr-labels: &bobarr-labels
+  traefik.enable: "true"
+  traefik.http.services.bobarr.loadbalancer.server.port: 3000
+
+x-calibre-labels: &calibre-labels
+  traefik.enable: "true"
+  traefik.http.services.calibre.loadbalancer.server.port: 8080
+
+x-mylar3-labels: &mylar3-labels
+  traefik.enable: "true"
+  traefik.http.services.mylar3.loadbalancer.server.port: 8090
+  homepage.group: E-books & Comics
+  homepage.name: Mylar3
+  homepage.icon: mylar3.png
+  homepage.href: https://mylar3.$DOMAIN
+  homepage.description: Manages and streams your digital comics, manga, and books, providing a clean and organized reading experience.
+
+x-opengist-labels: &opengist-labels
+  traefik.enable: "true"
+  traefik.http.services.opengist.loadbalancer.server.port: 6157
+
+x-sickgear-labels: &sickgear-labels
+  traefik.enable: "true"
+  traefik.http.services.sickgear.loadbalancer.server.port: 8081
+
+services:
+  bobarr-api:
+    # 🔹🔹 Bobarr API 🔹🔹  # https://github.com/iam4x/bobarr
+    # Movies and TV Show collection manager for BitTorrent users.
+    # Uses https://themoviedb.org to search movies and tv shows to add to your library
+    image: iam4x/bobarr-api
+    container_name: bobarr-api
+    hostname: bobarr-api
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    ports:
+      - ${BOBARR_PORT:-4000}:4000
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/bobarr/api:/usr/library
+    command: yarn start:prod
+    environment:
+      <<: *common-env
+    labels:
+      <<: *bobarr-labels
+    deploy:
+      <<: [ *common-deploy, *swarm-resource-limits, *swarm-constraints-manager-only]
+      labels:
+        <<: *bobarr-labels
+    restart: always
+
+  bobarr-postgres:
+    image: postgres:12-alpine
+    container_name: bobarr-postgresql
+    hostname: bobarr-postgresql
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    env_file: .env
+    environment:
+      <<: *common-env
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/bobarr/postgres:/var/lib/postgresql/data
+    deploy:
+      <<: [ *common-deploy, *swarm-resource-limits, *swarm-constraints-manager-only]
+    restart: always
+
+  bobarr-redis:
+    image: bitnami/redis:5.0.6
+    container_name: bobarr-redis
+    hostname: bobarr-redis
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/bobarr/redis:/bitnami/redis/data
+    deploy:
+      <<: [ *common-deploy, *swarm-resource-limits, *swarm-constraints-manager-only]
+    restart: always
+
+  bobarr-web:
+    image: iam4x/bobarr-web
+    container_name: bobarr-web
+    hostname: bobarr-web
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    ports:
+      - ${BOBARR_PORT:-3004}:3000
+    command: yarn start
+    environment:
+      <<: *common-env
+    deploy:
+      <<: [ *common-deploy, *swarm-resource-limits, *swarm-constraints-manager-only]
+      labels:
+        <<: *bobarr-labels
+    restart: always
+
+  calibre:
+    # 🔹🔹 Calibre 🔹🔹
+    image: linuxserver/calibre
+    container_name: calibre
+    hostname: calibre
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/calibre/config:/config
+      - ${DATA_DIR:-./data}/media/books:/books:rw
+      - ${DATA_DIR:-./data}/downloads/books:/downloads:rw
+    ports:
+      - ${CALIBRE_PORT:-7080}:8080
+      - ${CALIBRE_PORT2:-7081}:8081
+    environment:
+      <<: *common-env
+      CALIBRE_USE_DARK_PALETTE: ${CALIBRE_USE_DARK_PALETTE:-"1"}
+      DISABLE_AUTH: ${CALIBRE_DISABLE_AUTH:-true}
+      KEEP_APP_RUNNING: ${CALIBRE_KEEP_APP_RUNNING:-"1"}
+    labels:
+      <<: *calibre-labels
+      homepage.group: E-books
+      homepage.name: Calibre
+      homepage.icon: calibre.png
+      homepage.href: https://calibre.$DOMAIN/
+      homepage.description: Comprehensive e-book management tool that allows you to organize, read, and convert e-books in various formats.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *calibre-labels
+    healthcheck:
+      test: curl -fSs http://localhost:8080 || exit 1
+      start_period: 360s
+      timeout: 10s
+      interval: 15s
+    restart: always
+
+  calibre-web:
+    image: linuxserver/calibre-web:latest
+    container_name: calibre-web
+    hostname: calibre-web
+    <<: [*common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+      DOCKER_MODS: linuxserver/mods:universal-calibre #optional
+      OAUTHLIB_RELAX_TOKEN_SCOPE: 1 #optional
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/calibre-web/data:/config
+      - ${DATA_DIR:-./data}/media/books:/books
+      - ${DATA_DIR:-./data}/media/comics:/comics
+      - ${DATA_DIR:-./data}/media/manga:/manga
+    ports:
+      - ${CALIBRE_WEB_PORT:-8083}:8083
+    restart: always
+
+  excludarr:
+    # 🔹🔹 Excludarr 🔹🔹  https://github.com/haijeploeg/excludarr
+    # CLI that interacts with Radarr and Sonarr instances. It completely manages
+    # your library in Sonarr and Radarr to only consist out of movies and series that are
+    # not present on any of the configured streaming providers.
+    image: haijeploeg/excludarr
+    container_name: excludarr
+    hostname: excludarr
+    networks:
+      - infranet
+    <<: [*resource-limits, *common-uidgid]
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/excludarr/crontab:/etc/excludarr/crontab
+    environment:
+      <<: *common-env
+      CRON_MODE: ${CRON_MODE:-true}
+      GENERAL_FAST_SEARCH: ${GENERAL_FAST_SEARCH:-true}
+      GENERAL_LOCALE: ${GENERAL_LOCALE:-en_US}  # The locale to use, can also be a two letter country code.
+      GENERAL_PROVIDERS: ${GENERAL_PROVIDERS:-netflix, amazon prime video}  # Comma seperated list of providers. e.g. `GENERAL_PROVIDERS=netflix, amazon prime video`.
+      RADARR_API_KEY: $RADARR_API_KEY
+      RADARR_EXCLUDE: ${RADARR_EXCLUDE:-}  # Comma seperated list of movies to exclude in the process of Excludarr, e.g. RADARR_EXCLUDE=The Matrix, F9.
+      RADARR_URL: http://radarr:${RADARR_PORT:-7878}
+      RADARR_VERIFY_SSL: ${RADARR_VERIFY_SSL:-false}
+      SONARR_API_KEY: $SONARR_API_KEY
+      SONARR_EXCLUDE: ${SONARR_EXCLUDE:-}
+      SONARR_URL: http://sonarr:${SONARR_PORT:-8989}
+      SONARR_VERIFY_SSL: ${SONARR_VERIFY_SSL:-false}
+      TMDB_API_KEY: $TMDB_API_KEY  # Your TMDB API key. This setting is optional and only used in fallback scenario's.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-preferences-worker-priority]
+    restart: always
+
+  mylar3:
+    image: lscr.io/linuxserver/mylar3
+    container_name: mylar3
+    hostname: mylar3
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/mylar3/config:/config
+      - ${DATA_DIR:-./data}/media/comics:/comics
+      - ${DATA_DIR:-./data}/media/downloads:/downloads
+    ports:
+      - ${MYLAR3_PORT:-8090}:8090
+    labels:
+      <<: *mylar3-labels
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *mylar3-labels
+    restart: always
+
+  opengist:
+    # 🔹🔹 Opengist 🔹🔹  # https://github.com/thomiceli/opengist
+    # Self-hosted Pastebin powered by Git
+    image: ghcr.io/thomiceli/opengist:1
+    container_name: opengist
+    hostname: opengist
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    ports:
+      - ${OPENGIST_HTTP_PORT:-6157}:6157 # HTTP port
+      - ${OPENGIST_SSH_PORT:-2222}:2222 # SSH port, can be removed if you don't use SSH
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/opengist:/opengist
+    environment:
+      <<: *common-env
+      CONFIG: |
+        log-level: ${OPENGIST_LOG_LEVEL:-info}
+        ssh.git-enabled: ${OPENGIST_SSH_GIT_ENABLED:-false}
+        disable-signup: ${OPENGIST_DISABLE_SIGNUP:-false}  # You may wish to change this to true after you sign up the first time.
+    labels:
+      <<: *opengist-labels
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-constraints-worker-only]
+      labels:
+        <<: *opengist-labels
+    healthcheck:
+      test: curl -fSs http://localhost:6157 > /dev/null || exit 1
+      start_period: 20s
+      timeout: 5s
+      interval: 5s
+    restart: always
+
+  plex-sync:
+    # 🔹🔹 Plex-Sync 🔹🔹
+    # For Syncing watched status between plex servers
+    depends_on:
+      plex:
+        condition: service_healthy
+    image: patsissons/plex-sync:develop # x64/x86 only.
+    container_name: plex-sync
+    hostname: plex-sync
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - infranet
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      <<: *common-env
+      INITIAL_RUN: ${PLEX_SYNC_INITIAL_RUN:-true}
+      CRON_SCHEDULE: ${PLEX_SYNC_CRON_SCHEDULE:-"*/30 * * * *"}
+      DRY_RUN: ${PLEX_SYNC_DRY_RUN:-"0"}
+      SECTION_MAPS: >
+        ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_MOVDOC:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_MOVDOC:-} |  ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_MOVFOR:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_MOVFOR:-} |  ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_MOVHOL:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_MOVHOL:-} |  ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_MOVIND:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_MOVIND:-} |  ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_MOVKID:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_MOVKID:-} |  ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_MOVKOL:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_MOVKOL:-} |  ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_SHODOC:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_SHODOC:-} |  ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_SHOFOR:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_SHOFOR:-} |  ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_SHOIND:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_SHOIND:-} | ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_SHOKID:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_SHOKID:-} | ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_SHOTV:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_SHOTV:-}
+    restart: always
+
+  sickgear:
+    # 🔹🔹 Sickgear 🔹🔹
+    # Automates TV management
+    image: sickgear/sickgear
+    container_name: sickgear
+    hostname: sickgear
+    networks:
+      - traefik_public
+    ports:
+      - ${SICKGEAR_PORT:-8081}:8081/tcp
+    volumes:
+      - ${DATA_DIR:-./data}/media/movies:/movies
+      - ${DATA_DIR:-./data}/media/tv:/tv
+      - ${DATA_DIR:-./data}/downloads/tv:/incoming
+      - ${CONFIG_PATH:-./volumes}/sickgear/config:/data
+    environment:
+      <<: *common-env
+      APP_GID: ${PGID:-988}
+      APP_UID: ${PUID:-1002}
+    labels:
+      <<: *sickgear-labels
+      homepage.group: TV Management
+      homepage.name: SickGear TV
+      homepage.icon: sickgear.png
+      homepage.href: https://sickgear.$DOMAIN
+      homepage.description: Automates TV show downloads, finding new episodes and adding them to your collection, ensuring you never miss a show.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *sickgear-labels
+    restart: always
+
+  unifi_controller:
+    image: ghcr.io/linuxserver/unifi-controller
+    container_name: unifi_controller
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+      MEM_LIMIT: "1024"
+    ports:
+      - "3478:3478/udp"   # STUN
+      - "10001:10001/udp" # Discovery
+      - "8080:8080"       # Unifi Controller Device comms
+      - "6789:6789"       # Mobile speedtest
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.ubiq-svc.loadbalancer.server.port: 8443
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/unifi/config:/config
+    networks:
+      - infranet
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  webdav:
+    image: bytemark/webdav
+    container_name: webdav
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    restart: always
+    environment:
+      <<: *common-env
+      AUTH_TYPE: ${WEB_DAV_AUTH_TYPE:-Digest}
+      USERNAME: ${WEB_DAV_USERNAME:-admin}
+      PASSWORD: ${WEB_DAV_PASSWORD:-password}
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/webdav:/var/lib/dav
+    networks:
+      - webdav-net
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=webdav-net
+      - traefik.http.routers.webdav-rtr.entrypoints=websecure
+      - traefik.http.routers.webdav-rtr.rule=Host(`webdav.$DOMAIN`)
+      - traefik.http.routers.webdav-rtr.service=webdav-svc
+      - traefik.http.services.webdav-svc.loadbalancer.server.port=80
+      - traefik.http.routers.webdav-rtr.middlewares=ipwhitelist-mddl@docker
+
+  zerotier:
+    # 🔹🔹 ZeroTier-One 🔹🔹
+    # Private Network over Internet
+    image: zerotier/zerotier-synology
+    container_name: zerotier
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    security_opt:
+      - no-new-privileges:true
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    devices:
+      - /dev/net/tun
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/zerotier:/var/lib/zerotier-one
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  zigbee2mqtt:
+    # 🔹🔹 Zigbee2MQTT 🔹🔹  # https://github.com/Koenkk/zigbee2mqtt
+    # Zigbee2MQTT is a lightweight MQTT broker that allows you to control your Zigbee devices.
+    image: koenkk/zigbee2mqtt
+    container_name: zigbee2mqtt
+    hostname: zigbee2mqtt
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - infranet
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/zigbee2mqtt/data:/app/data
+      - /run/udev:/run/udev:ro
+    ports:
+      - ${ZIGBEE2MQTT_PORT:-6080}:8080
+    environment:
+      <<: *common-env
+    # devices:
+    #   - /dev/ttyUSB0:/dev/ttyUSB0
+    depends_on:
+      - mqtt
+    labels:
+      autoheal: "true"
+    healthcheck:
+      test: curl -fSs http://127.0.0.1:${ZIGBEE2MQTT_PORT:-6080} || exit 1
+      start_period: 90s
+      timeout: 10s
+      interval: 5s
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always

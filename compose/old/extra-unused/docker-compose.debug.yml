@@ -1,0 +1,9 @@
+version: '3.4'
+
+services:
+  mymediastack:
+    image: mymediastack
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+

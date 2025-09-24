@@ -1,0 +1,160 @@
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+services:
+  swarmpit:
+    image: swarmpit/swarmpit
+    container_name: swarmpit
+    hostname: swarmpit
+    environment:
+      - SWARMPIT_DB=${SWARMPIT_DB:-http://swarmpit-db:5984}
+      - SWARMPIT_INFLUXDB=${SWARMPIT_INFLUXDB:-http://swarmpit-influxdb:8086}
+    volumes:
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    ports:
+      - ${SWARMPIT_PORT:-888}:8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 60s
+      timeout: 10s
+    networks:
+      - infranet
+    deploy:
+      <<: *swarm-constraints-manager-only
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  swarmpit-influxdb:
+    image: influxdb:1.8
+    container_name: swarmpit-influxdb
+    hostname: swarmpit-influxdb
+    volumes:
+      - influx-data:/var/lib/influxdb
+    networks:
+      - infranet
+    deploy:
+      resources:
+        limits:
+          cpus: '0.60'
+          memory: 512M
+        reservations:
+          cpus: '0.30'
+          memory: 128M
+
+  swarmpit-db:
+    image: couchdb:2.3.1  # 3.0.0 not supported
+    container_name: swarmpit-db
+    hostname: swarmpit-db
+    volumes:
+      - db-data:/opt/couchdb/data
+    networks:
+      - infranet
+    deploy:
+      resources:
+        limits:
+          cpus: '0.30'
+          memory: 256M
+        reservations:
+          cpus: '0.15'
+          memory: 128M
+
+  swarmpit-agent-arm:
+    profiles:
+      - arm
+    image: swarmpit/agent:latest
+    container_name: swarmpit-agent-arm
+    hostname: swarmpit-agent-arm
+    networks:
+      - infranet
+    environment:
+      - DOCKER_API_VERSION=${DOCKER_API_VERSION:-1.35}
+    volumes:
+      - ${SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock:z:ro
+    deploy:
+      mode: global
+      <<: *swarm-constraints-manager-only
+      labels:
+        swarmpit.agent: 'true'
+      resources:
+        limits:
+          memory: 64M
+        reservations:
+          memory: 32M
+
+  swarmpit-agent:
+    profiles:
+      - x86_64
+    image: swarmpit/agent
+    container_name: swarmpit-agent
+    hostname: swarmpit-agent
+    networks:
+      - infranet
+    environment:
+      - DOCKER_API_VERSION=${DOCKER_API_VERSION:-1.35}
+    volumes:
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    deploy:
+      mode: global
+      <<: *swarm-constraints-manager-only
+      labels:
+        swarmpit.agent: 'true'
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 64M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+
+volumes:
+  db-data:
+    driver: local
+  influx-data:
+    driver: local

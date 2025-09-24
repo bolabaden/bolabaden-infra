@@ -1,0 +1,110 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-worker-priority: &swarm-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+# Define a YAML anchor for the NFS volume definition. This allows us to reuse this configuration.
+x-nfs-volume-definition: &nfs-volume-definition
+  driver: local  # Use NFS driver if NFS is enabled, otherwise use the 'local' driver.
+  driver_opts:
+    type: none
+    o: bind
+    device: ${ROOT_DIR:-.}
+
+include:
+  - ${ROOT_DIR:-.}/compose/infrastructure/docker-compose.nfs.yml
+  - ${ROOT_DIR:-.}/compose/auth/docker-compose.local.yml
+  - ${ROOT_DIR:-.}/compose/dl-indexers/docker-compose.dl_clients.yml
+  - ${ROOT_DIR:-.}/compose/dl-indexers/docker-compose.dl_indexers.yml
+  - ${ROOT_DIR:-.}/compose/docker/docker-compose.maintainers.yml
+  - ${ROOT_DIR:-.}/compose/docker/docker-compose.portainer.yml
+  - ${ROOT_DIR:-.}/compose/features/docker-compose.backend.yml
+  - ${ROOT_DIR:-.}/compose/features/docker-compose.notify.yml
+  - ${ROOT_DIR:-.}/compose/health-fixers/docker-compose.docker.yml
+  - ${ROOT_DIR:-.}/compose/health-fixers/docker-compose.media.yml
+  - ${ROOT_DIR:-.}/compose/llm/docker-compose.khoj.yml
+  - ${ROOT_DIR:-.}/compose/llm/docker-compose.librechat.yml
+  - ${ROOT_DIR:-.}/compose/llm/docker-compose.ollama.yml
+  - ${ROOT_DIR:-.}/compose/management/docker-compose.docker.yml
+  - ${ROOT_DIR:-.}/compose/management/docker-compose.management.yml
+  - ${ROOT_DIR:-.}/compose/management/docker-compose.metrics.yml
+  - ${ROOT_DIR:-.}/compose/providers/docker-compose.databases.yml
+  - ${ROOT_DIR:-.}/compose/providers/docker-compose.networks.yml
+  - ${ROOT_DIR:-.}/compose/providers/docker-compose.web_crawl.yml
+  - ${ROOT_DIR:-.}/compose/public/docker-compose.apps.yml
+  - ${ROOT_DIR:-.}/compose/public/docker-compose.dashboards.yml
+  - ${ROOT_DIR:-.}/compose/public/docker-compose.maintainers.yml
+  - ${ROOT_DIR:-.}/compose/reverse_proxy/docker-compose.traefik.duckdns.yml
+  - ${ROOT_DIR:-.}/compose/servarr/docker-compose.backup.yml
+  - ${ROOT_DIR:-.}/compose/servarr/docker-compose.jellyfin.yml
+  - ${ROOT_DIR:-.}/compose/servarr/docker-compose.maintainers.yml
+  - ${ROOT_DIR:-.}/compose/servarr/docker-compose.management.yml
+  - ${ROOT_DIR:-.}/compose/servarr/docker-compose.metrics.yml
+  - ${ROOT_DIR:-.}/compose/servarr/docker-compose.plex.yml
+  - ${ROOT_DIR:-.}/compose/servarr/docker-compose.public.yml
+  - ${ROOT_DIR:-.}/compose/servarr/docker-compose.servarr.yml
+  - ${ROOT_DIR:-.}/compose/swarm/docker-compose.maintainers.yml
+  - ${ROOT_DIR:-.}/compose/swarm/docker-compose.swarmpit.yml
+  - ${ROOT_DIR:-.}/compose/testing/docker-compose.index-insurance.yml
+#  - ${ROOT_DIR:-.}/compose/swarm/docker-compose.dockge.yml
+#  - ${ROOT_DIR:-.}/compose/public/docker-compose.hassio.yml
+#  - ${ROOT_DIR:-.}/compose/reverse_proxy/docker-compose.auth.yml
+#  - ${ROOT_DIR:-.}/compose/reverse_proxy/docker-compose.authelia.yml
+#  - ${ROOT_DIR:-.}/compose/reverse_proxy/docker-compose.authentik.yml
+#  - ${ROOT_DIR:-.}/compose/reverse_proxy/docker-compose.forward-auth-alt.yml
+#  - ${ROOT_DIR:-.}/compose/reverse_proxy/docker-compose.forward-auth.yml
+#  - ${ROOT_DIR:-.}/compose/reverse_proxy/docker-compose.keycloak.yml
+#  - ${ROOT_DIR:-.}/compose/reverse_proxy/docker-compose.traefik.cloudflare.yml
+#  - ${ROOT_DIR:-.}/compose/reverse_proxy/docker-compose.traefik.extras.yml
+#  - ${ROOT_DIR:-.}/compose/swarm/docker-compose.swarm.portainer.yml
+
+networks:
+  auth_net: # External network for authentication services.
+    name: auth_net
+    external: true
+
+  agent_network: # External network for inter-service communication, including NFS.
+    attachable: true  # Allows standalone containers to attach to this network.
+    external: true
+
+volumes:
+  nfs-data:
+    driver: local
+  media_stack_root:
+    <<: *nfs-volume-definition

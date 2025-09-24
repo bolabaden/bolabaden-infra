@@ -1,0 +1,121 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-worker-priority: &swarm-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-homeassistant-labels: &homeassistant-labels
+  traefik.enable: "true"
+  traefik.http.services.homeassistant.loadbalancer.server.port: 8123
+
+services:
+  homeassistant:
+    # 🔹🔹 Home Assistant 🔹🔹  # https://github.com/home-assistant/home-assistant
+    # Home Assistant is a home automation platform that allows you to control your home from your phone or computer.
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    hostname: homeassistant
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    privileged: true
+    networks:
+      - traefik_public
+    ports:
+      - ${HOMEASSISTANT_PORT:-8123}:8123
+    environment:
+      <<: *common-env
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/homeassistant/config:/config
+      - ${DATA_DIR:-./data}/media:/media
+    labels:
+      <<: *homeassistant-labels
+      homepage.group: Apps
+      homepage.name: Home Assistant
+      homepage.icon: home-assistant.png
+      homepage.href: https://homeassistant.$DOMAIN/
+      homepage.description: Open source home automation that puts local control and privacy first
+      homepage.weight: 3
+      homepage.widget.type: homeassistant
+      homepage.widget.url: https://homeassistant.$DOMAIN/
+      homepage.widget.key: $HOMEASSISTANT_ACCESS_TOKEN
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-constraints-manager-only]
+      labels:
+        <<: *homeassistant-labels
+    restart: always
+
+  homeassistant-backup:
+    # 🔹🔹 Home Assistant Backup 🔹🔹  # https://github.com/adrienpoupa/rclone-backup
+    image: adrienpoupa/rclone-backup
+    container_name: homeassistant-backup
+    hostname: homeassistant-backup
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/homeassistant/backups:/backups
+      - ${CONFIG_PATH:-./volumes}/homeassistant/backup:/config
+    environment:
+      <<: *common-env
+      BACKUP_FOLDER_NAME: ${BACKUP_FOLDER_NAME:-backups}
+      BACKUP_FOLDER_PATH: ${BACKUP_FOLDER_PATH:-/backups}
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-constraints-manager-only]
+    restart: always
+
+  mosquitto: 
+    # 🔹🔹 Mosquitto 🔹🔹
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    hostname: mosquitto
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ${CONFIG_PATH:-./volumes}/mosquitto/data:/mosquitto/data
+      - ${CONFIG_PATH:-./volumes}/mosquitto/log:/mosquitto/log
+    ports:
+      - ${MOSQUITTO_PORT:-1883}:1883
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always

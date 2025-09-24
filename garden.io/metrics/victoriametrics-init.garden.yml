@@ -1,0 +1,14 @@
+kind: Run
+apiVersion: garden.io/v2
+name: victoriametrics-init
+description: VictoriaMetrics storage initialization
+type: container
+
+spec:
+  image: docker.io/victoriametrics/victoria-metrics:v1.119.0
+  command: ["/bin/sh", "-c", "chown -R 65534:65534 /storage && chmod -R 755 /storage"]
+  volumes:
+    - name: storage
+      containerPath: /storage
+      sourcePath: ${var.config-path}/victoriametrics
+  user: root

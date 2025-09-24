@@ -1,0 +1,29 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: authentik-postgresql
+description: PostgreSQL database for Authentik
+type: container
+
+spec:
+  image: docker.io/postgres:16.3-alpine
+  env:
+    POSTGRES_PASSWORD: authentik
+    POSTGRES_USER: authentik
+    POSTGRES_DB: authentik
+  ports:
+    - name: db
+      containerPort: 5432
+  volumes:
+    - name: data
+      containerPath: /var/lib/postgresql/data
+      sourcePath: ${var.config-path}/authentik/postgresql
+  healthCheck:
+    exec:
+      command:
+        - pg_isready
+        - -d
+        - authentik
+        - -U
+        - authentik
+  restartPolicy: always
+

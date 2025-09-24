@@ -1,0 +1,140 @@
+# 🔹🔹 Forward Auth 🔹🔹
+# Forward Auths are simple and effective ways to authenticate users with e.g. Google OAuth2.
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-google-forward-auth-labels: &google-forward-auth-labels
+  traefik.enable: "true"
+  traefik.http.services.google-forward-auth.loadbalancer.server.port: 4180
+
+x-google-forward-auth-env: &google-forward-auth-env
+  AUTH_HOST: "google-forward-auth.$DOMAIN"
+  CLIENT_ID: "$PROVIDERS_GOOGLE_CLIENT_ID"
+  CLIENT_SECRET: "$PROVIDERS_GOOGLE_CLIENT_SECRET"
+  COOKIE_DOMAIN: "$DOMAIN"
+  COOKIE_SECRET: "$PROVIDERS_GOOGLE_COOKIE_SECRET"
+  DEFAULT_ACTION: ${GOOGLE_FORWARD_AUTH_DEFAULT_ACTION:-auth}
+  DEFAULT_PROVIDER: ${GOOGLE_FORWARD_AUTH_DEFAULT_PROVIDER:-google}
+  EMAIL_DOMAINS: "*"
+  HTTP_ADDRESS: "0.0.0.0:${GOOGLE_FORWARD_AUTH_PORT:-4180}"
+  INSECURE_COOKIE: ${GOOGLE_FORWARD_AUTH_INSECURE_COOKIE:-false}
+  LIFETIME: ${GOOGLE_FORWARD_AUTH_LIFETIME:-86400} # 1 day
+  LOG_FORMAT: ${GOOGLE_FORWARD_AUTH_LOG_FORMAT:-text}
+  LOG_LEVEL: ${GOOGLE_FORWARD_AUTH_LOG_LEVEL:-info} # set to trace while testing bypass rules
+  OIDC_ISSUER_URL: "${GOOGLE_FORWARD_AUTH_OIDC_ISSUER_URL:-https://accounts.google.com}"
+  PROVIDER: "google"
+  REDIRECT_URL: "https://google-forward-auth.$DOMAIN/oauth2/callback"
+  SECRET: $GOOGLE_FORWARD_AUTH_SECRET
+  UPSTREAMS: "static://202"
+  URL_PATH: ${GOOGLE_FORWARD_AUTH_URL_PATH:-/_oauth}
+  WHITELIST_DOMAINS: "${GOOGLE_FORWARD_AUTH_WHITELIST_DOMAINS:-.google-forward-auth.localhost}" # Required to allow redirection back to original requested target.
+  # Mandatory option when using oauth2-proxy with traefik
+  REVERSE_PROXY: "${GOOGLE_FORWARD_AUTH_REVERSE_PROXY:-true}"
+  # The following option skip the page requesting the user
+  # to click on a button to be redirected to the identity provider
+  # It can be activated only when traefik is not configure with
+  # the error redirection middleware as this example.
+  SKIP_PROVIDER_BUTTON: "${GOOGLE_FORWARD_AUTH_SKIP_PROVIDER_BUTTON:-true}"
+  # Required for traefik with ForwardAuth and static upstream configuration
+
+x-google-forward-auth-common: &google-forward-auth-common
+    container_name: google-forward-auth
+    hostname: google-forward-auth
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      <<: *common-env
+      AUTH_HOST: "google-forward-auth.$DOMAIN"
+      CLIENT_ID: "$PROVIDERS_GOOGLE_CLIENT_ID"
+      CLIENT_SECRET: "$PROVIDERS_GOOGLE_CLIENT_SECRET"
+      COOKIE_DOMAIN: "$DOMAIN"
+      COOKIE_SECRET: "$PROVIDERS_GOOGLE_COOKIE_SECRET"
+      DEFAULT_ACTION: ${GOOGLE_OAUTH2_DEFAULT_ACTION:-auth}
+      DEFAULT_PROVIDER: ${GOOGLE_OAUTH2_DEFAULT_PROVIDER:-google}
+      EMAIL_DOMAINS: "*"
+      HTTP_ADDRESS: "0.0.0.0:${GOOGLE_OAUTH2_PORT:-4180}"
+      INSECURE_COOKIE: ${GOOGLE_OAUTH2_INSECURE_COOKIE:-false}
+      LIFETIME: ${GOOGLE_OAUTH2_LIFETIME:-86400} # 1 day
+      LOG_FORMAT: ${GOOGLE_OAUTH2_LOG_FORMAT:-text}
+      LOG_LEVEL: ${GOOGLE_OAUTH2_LOG_LEVEL:-trace} # set to trace while testing bypass rules
+      OIDC_ISSUER_URL: "${GOOGLE_OAUTH2_OIDC_ISSUER_URL:-https://accounts.google.com}"
+      PROVIDER: "google"
+      REDIRECT_URL: "https://google-forward-auth.$DOMAIN/oauth2/callback"
+      SECRET: $GOOGLE_OAUTH2_SECRET
+      UPSTREAMS: "static://202"
+      URL_PATH: ${GOOGLE_OAUTH2_URL_PATH:-/_oauth}
+      WHITELIST_DOMAINS: "${GOOGLE_OAUTH2_WHITELIST_DOMAINS:-.google-forward-auth.localhost}" # Required to allow redirection back to original requested target.
+      # Mandatory option when using oauth2-proxy with traefik
+      REVERSE_PROXY: ${GOOGLE_OAUTH2_REVERSE_PROXY:-true}
+      # The following option skip the page requesting the user
+      # to click on a button to be redirected to the identity provider
+      # It can be activated only when traefik is not configure with
+      # the error redirection middleware as this example.
+      SKIP_PROVIDER_BUTTON: ${GOOGLE_OAUTH2_SKIP_PROVIDER_BUTTON:-true}
+      # Required for traefik with ForwardAuth and static upstream configuration
+    labels:
+      <<: *google-forward-auth-labels
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *google-forward-auth-labels
+    restart: always
+
+services:
+  google-forward-auth-arm:
+    profiles: [arm]
+    image: thomseddon/traefik-forward-auth:2.2.0-arm
+    <<: *google-forward-auth-common
+
+  google-forward-auth:
+    # 🔹🔹 Google Forward Auth 🔹🔹
+    profiles: [x86_64]
+    image: thomseddon/traefik-forward-auth
+    <<: *google-forward-auth-common
+
+secrets:
+  traefik_forward_auth:
+    file: ${SECRETS_DIR:-../../secrets}/traefik_forward_auth

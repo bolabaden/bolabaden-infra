@@ -1,0 +1,686 @@
+http:
+  middlewares:
+    crowdsec:
+      plugin:
+        crowdsec-bouncer-traefik-plugin:
+          crowdsecAppsecEnabled: 'true'
+          crowdsecAppsecHost: 'crowdsec:7422'
+          crowdsecLapiKey: usvi2urbIG5obProVWwcf2ImTrtB93x668jWDvrH
+          enabled: 'true'
+    error-mw:
+      errors:
+        query: '/api/error/{status}.html'
+        service: error-service
+        status:
+          - 400-599
+    nginx-auth:
+      forwardAuth:
+        address: 'http://nginx-auth:80/auth'
+        authResponseHeaders:
+          - X-Auth-Method
+          - X-Auth-Passed
+          - X-Middleware-Name
+        maxBodySize: -1
+        trustForwardHeader: true
+    openwebui-redirect:
+      redirectRegex:
+        permanent: true
+        regex: '^https://([^.]+)\.openwebui\.bolabaden.org/(.*)'
+        replacement: 'https://$1.open-webui.bolabaden.org/$2'
+    tinyauth:
+      forwardAuth:
+        address: 'http://auth:3000/api/auth/traefik'
+        maxBodySize: -1
+  routers:
+    aiostreams:
+      rule: >-
+        Host(`aiostreams.bolabaden.org`) ||
+        Host(`aiostreams.micklethefickle.bolabaden.org`)
+      service: aiostreams
+    bolabaden-embed:
+      rule: >-
+        Host(`embed.bolabaden.org`) ||
+        Host(`embed.micklethefickle.bolabaden.org`)
+      service: bolabaden-nextjs
+    bolabaden-nextjs:
+      middlewares:
+        - error-mw@docker
+      rule: >-
+        Host(`bolabaden.org`) ||
+        Host(`micklethefickle.bolabaden.org`)
+      service: bolabaden-nextjs
+    code-server:
+      rule: >-
+        Host(`code-server.bolabaden.org`) ||
+        Host(`code-server.micklethefickle.bolabaden.org`)
+      service: code-server
+    comet:
+      rule: >-
+        Host(`comet.bolabaden.org`) ||
+        Host(`comet.micklethefickle.bolabaden.org`)
+      service: comet
+    crowdsec:
+      middlewares:
+        - nginx-auth@docker
+      rule: >-
+        Host(`crowdsec.bolabaden.org`) ||
+        Host(`crowdsec.micklethefickle.bolabaden.org`)
+      service: crowdsec
+    deluge:
+      rule: >-
+        Host(`deluge.bolabaden.org`) ||
+        Host(`deluge.micklethefickle.bolabaden.org`)
+      service: deluge
+    dozzle:
+      middlewares:
+        - nginx-auth@docker
+      rule: >-
+        Host(`dozzle.bolabaden.org`) ||
+        Host(`dozzle.micklethefickle.bolabaden.org`)
+      service: dozzle
+    error-router:
+      middlewares:
+        - error-mw@docker
+      rule: >-
+        Host(`errors.bolabaden.org`) ||
+        Host(`errors.micklethefickle.bolabaden.org`)
+      service: error-service
+    flaresolverr:
+      middlewares:
+        - nginx-auth@docker
+      rule: >-
+        Host(`flaresolverr.bolabaden.org`) ||
+        Host(`flaresolverr.micklethefickle.bolabaden.org`)
+      service: flaresolverr
+    headscale-server:
+      rule: >-
+        Host(`headscale-server.bolabaden.org`) ||
+        Host(`headscale-server.micklethefickle.bolabaden.org`)
+      service: headscale-server
+    headscale-ui:
+      rule: >-
+        Host(`headscale.bolabaden.org`) ||
+        Host(`headscale.micklethefickle.bolabaden.org`)
+      service: headscale-ui
+    homepage:
+      middlewares:
+        - nginx-auth@docker
+      rule: >-
+        Host(`homepage.bolabaden.org`) ||
+        Host(`homepage.micklethefickle.bolabaden.org`)
+      service: homepage
+    homer:
+      rule: >-
+        Host(`homer.bolabaden.org`) ||
+        Host(`homer.micklethefickle.bolabaden.org`)
+      service: homer
+    jackett:
+      rule: >-
+        Host(`jackett.bolabaden.org`) ||
+        Host(`jackett.micklethefickle.bolabaden.org`)
+      service: jackett
+    litellm:
+      rule: >-
+        Host(`litellm.bolabaden.org`) ||
+        Host(`litellm.micklethefickle.bolabaden.org`)
+      service: litellm
+    mcpo:
+      rule: >-
+        Host(`mcpo.bolabaden.org`) ||
+        Host(`mcpo.micklethefickle.bolabaden.org`)
+      service: mcpo
+    mediaflow-proxy:
+      rule: >-
+        Host(`mediaflow-proxy.bolabaden.org`) ||
+        Host(`mediaflow-proxy.micklethefickle.bolabaden.org`)
+      service: mediaflow-proxy
+    mediafusion:
+      rule: >-
+        Host(`mediafusion.bolabaden.org`) ||
+        Host(`mediafusion.micklethefickle.bolabaden.org`)
+      service: mediafusion
+    mongodb:
+      middlewares:
+        - nginx-auth@docker
+      rule: >-
+        Host(`mongodb.bolabaden.org`) ||
+        Host(`mongodb.micklethefickle.bolabaden.org`)
+      service: mongodb
+    nginx-auth:
+      rule: >-
+        Host(`nginx-auth.bolabaden.org`) ||
+        Host(`nginx-auth.micklethefickle.bolabaden.org`)
+      service: nginx-auth
+    notifiarr:
+      rule: >-
+        Host(`notifiarr.bolabaden.org`) ||
+        Host(`notifiarr.micklethefickle.bolabaden.org`)
+      service: notifiarr
+    open-webui:
+      middlewares:
+        - openwebui-redirect@docker
+      rule: >-
+        Host(`openwebui.bolabaden.org`) ||
+        Host(`openwebui.micklethefickle.bolabaden.org`) ||
+        Host(`open-webui.bolabaden.org`) ||
+        Host(`open-webui.micklethefickle.bolabaden.org`) ||
+        Host(`chat.bolabaden.org`) ||
+        Host(`chat.micklethefickle.bolabaden.org`)
+      service: open-webui
+    overseerr:
+      rule: >-
+        Host(`overseerr.bolabaden.org`) ||
+        Host(`overseerr.micklethefickle.bolabaden.org`)
+      service: overseerr
+    plex:
+      rule: >-
+        Host(`plex.bolabaden.org`) ||
+        Host(`plex.micklethefickle.bolabaden.org`)
+      service: plex
+    prometheus:
+      rule: >-
+        Host(`prometheus.bolabaden.org`) ||
+        Host(`prometheus.micklethefickle.bolabaden.org`)
+      service: prometheus
+    prowlarr:
+      rule: >-
+        Host(`prowlarr.bolabaden.org`) ||
+        Host(`prowlarr.micklethefickle.bolabaden.org`)
+      service: prowlarr
+    qbittorrent:
+      rule: >-
+        Host(`qbittorrent.bolabaden.org`) ||
+        Host(`qbittorrent.micklethefickle.bolabaden.org`)
+      service: qbittorrent
+    rclone:
+      rule: >-
+        Host(`rclone.bolabaden.org`) ||
+        Host(`rclone.micklethefickle.bolabaden.org`)
+      service: rclone
+    redis:
+      middlewares:
+        - nginx-auth@docker
+      rule: >-
+        Host(`redis.bolabaden.org`) ||
+        Host(`redis.micklethefickle.bolabaden.org`)
+      service: redis
+    riven:
+      middlewares:
+        - nginx-auth@docker
+      rule: >-
+        Host(`riven-backend.bolabaden.org`) ||
+        Host(`riven-backend.micklethefickle.bolabaden.org`)
+      service: riven
+    riven-db:
+      middlewares:
+        - nginx-auth@docker
+      rule: >-
+        Host(`riven-db.bolabaden.org`) ||
+        Host(`riven-db.micklethefickle.bolabaden.org`)
+      service: riven-db
+    riven-frontend:
+      middlewares:
+        - nginx-auth@docker
+      rule: >-
+        Host(`riven.bolabaden.org`) ||
+        Host(`riven.micklethefickle.bolabaden.org`)
+      service: riven-frontend
+    searxng:
+      middlewares:
+        - nginx-auth@docker
+      rule: >-
+        Host(`searxng.bolabaden.org`) ||
+        Host(`searxng.micklethefickle.bolabaden.org`)
+      service: searxng
+    speedtest:
+      rule: >-
+        Host(`speedtest.bolabaden.org`) ||
+        Host(`speedtest.micklethefickle.bolabaden.org`)
+      service: speedtest
+    stremio-api-http-server:
+      priority: 100
+      rule: >-
+        Host(`stremio-api.bolabaden.org`) ||
+        Host(`stremio-api.micklethefickle.bolabaden.org`)
+      service: stremio-api-http-server
+    stremio-api-https-server:
+      priority: 100
+      rule: >-
+        Host(`stremio.bolabaden.org`) ||
+        Host(`stremio.micklethefickle.bolabaden.org`)
+      service: stremio-api-https-server
+    stremio-web:
+      priority: 10
+      rule: >-
+        Host(`stremio-web.bolabaden.org`) ||
+        Host(`stremio-web.micklethefickle.bolabaden.org`)
+      service: stremio-web
+    stremthru:
+      rule: >-
+        Host(`stremthru.bolabaden.org`) ||
+        Host(`stremthru.micklethefickle.bolabaden.org`)
+      service: stremthru
+    tautulli:
+      middlewares:
+        - nginx-auth@docker
+      rule: >-
+        Host(`tautulli.bolabaden.org`) ||
+        Host(`tautulli.micklethefickle.bolabaden.org`)
+      service: tautulli
+    tinyauth:
+      rule: >-
+        Host(`auth.bolabaden.org`) ||
+        Host(`auth.micklethefickle.bolabaden.org`)
+      service: tinyauth-my-media-stack
+    traefik:
+      rule: >-
+        Host(`traefik.bolabaden.org`) ||
+        Host(`traefik.micklethefickle.bolabaden.org`) ||
+        Host(`traefik.bolabaden.duckdns.org`) ||
+        Host(`traefik.micklethefickle.bolabaden.duckdns.org`)
+        || Host(`traefik.micklethefickle.duckdns.org`)
+      service: api@internal
+    transmission:
+      rule: >-
+        Host(`transmission.bolabaden.org`) ||
+        Host(`transmission.micklethefickle.bolabaden.org`)
+      service: transmission
+    warp-proxy:
+      middlewares:
+        - nginx-auth@docker
+      rule: >-
+        Host(`warp-proxy.bolabaden.org`) ||
+        Host(`warp-proxy.micklethefickle.bolabaden.org`)
+      service: warp-proxy
+    whoami-my-media-stack:
+      rule: >-
+        Host(`whoami.bolabaden.org`) ||
+        Host(`whoami.micklethefickle.bolabaden.org`) ||
+        Host(`whoami.bolabaden.duckdns.org`) ||
+        Host(`whoami.micklethefickle.bolabaden.duckdns.org`) ||
+        Host(`whoami.micklethefickle.duckdns.org`)
+      service: whoami-my-media-stack
+    wizarr:
+      rule: >-
+        Host(`wizarr.bolabaden.org`) ||
+        Host(`wizarr.micklethefickle.bolabaden.org`)
+      service: wizarr
+    zurg:
+      middlewares:
+        - nginx-auth@docker
+      rule: >-
+        Host(`zurg.bolabaden.org`) ||
+        Host(`zurg.micklethefickle.bolabaden.org`)
+      service: zurg
+  services:
+    aiostreams:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.0.2:3005'
+        strategy: wrr
+    bolabaden-nextjs:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.45:3000'
+        strategy: wrr
+    code-server:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.92:8443'
+        strategy: wrr
+    comet:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.97:2020'
+        strategy: wrr
+    crowdsec:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.104:8080'
+        strategy: wrr
+    deluge:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.97:8112'
+        strategy: wrr
+    dozzle:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.89:8080'
+        strategy: wrr
+    error-service:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.45:3000'
+        strategy: wrr
+    flaresolverr:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.93:8191'
+        strategy: wrr
+    headscale-server:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.0.106:8080'
+        strategy: wrr
+    headscale-ui:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.0.106:80'
+        strategy: wrr
+    homepage:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.88:3000'
+        strategy: wrr
+    homer:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.106:8080'
+        strategy: wrr
+    jackett:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.97:9117'
+        strategy: wrr
+    litellm:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.126.90:4000'
+        strategy: wrr
+    mcpo:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.127.3:8000'
+        strategy: wrr
+    mediaflow-proxy:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.97:8888'
+        strategy: wrr
+    mediafusion:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.97:8000'
+        strategy: wrr
+    mongodb:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.0.50:27017'
+        strategy: wrr
+    nginx-auth:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.94:80'
+        strategy: wrr
+    notifiarr:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.117:8080'
+        strategy: wrr
+    open-webui:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.118:8080'
+        strategy: wrr
+    overseerr:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.116:5055'
+        strategy: wrr
+    plex:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.95:32400'
+        strategy: wrr
+    prometheus:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.127.80:9090'
+        strategy: wrr
+    prowlarr:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.97:9696'
+        strategy: wrr
+    qbittorrent:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.119:8084'
+        strategy: wrr
+    rclone:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.111:5572'
+        strategy: wrr
+    redis:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.87:6379'
+        strategy: wrr
+    riven:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.101:8080'
+        strategy: wrr
+    riven-db:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.102:5432'
+        strategy: wrr
+    riven-frontend:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.100:3000'
+        strategy: wrr
+    searxng:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.90:8080'
+        strategy: wrr
+    speedtest:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.86:80'
+        strategy: wrr
+    stremio-api-http-server:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.97:11470'
+        strategy: wrr
+    stremio-api-https-server:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'https://10.76.128.97:12470'
+        strategy: wrr
+    stremio-web:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'https://10.76.128.97:8080'
+        strategy: wrr
+    stremthru:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.99:8080'
+        strategy: wrr
+    tautulli:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.103:8181'
+        strategy: wrr
+    tinyauth-my-media-stack:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.82:3000'
+        strategy: wrr
+    traefik:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.0.2.2:8080'
+        strategy: wrr
+    transmission:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.119:9091'
+        strategy: wrr
+    warp-proxy:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.97:3128'
+        strategy: wrr
+    whoami-my-media-stack:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.81:80'
+        strategy: wrr
+    wizarr:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.107:5690'
+        strategy: wrr
+    zurg:
+      loadBalancer:
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: 100ms
+        servers:
+          - url: 'http://10.76.128.97:9999'
+        strategy: wrr
+tcp: {}
+tls: {}
+udp: {}

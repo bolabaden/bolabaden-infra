@@ -1,0 +1,56 @@
+kind: Build
+apiVersion: garden.io/v2
+name: warp-router
+description: WARP router for NAT routing setup
+type: container
+
+spec:
+  dockerfile: |
+    FROM alpine:latest
+    RUN apk update && apk add \
+        bash bc docker-cli ipcalc iproute2 iptables jq util-linux && \
+        rm -rf /var/cache/apk/*
+
+---
+kind: Deploy
+apiVersion: garden.io/v2
+name: warp-router
+description: WARP router container for NAT setup
+type: container
+dependencies:
+  - build.warp-router
+  - deploy.warp-nat-gateway
+
+spec:
+  image: ${actions.build.warp-router.outputs.deploymentImageId}
+  privileged: true
+  networkMode: host
+  env:
+    DOCKER_NETWORK_NAME: ${var.DOCKER_NETWORK_NAME:-warp-nat-net}
+    WARP_CONTAINER_NAME: ${var.WARP_CONTAINER_NAME:-warp-nat-gateway}
+    HOST_VETH_IP: ${var.HOST_VETH_IP:-169.254.100.1}
+    CONT_VETH_IP: ${var.CONT_VETH_IP:-169.254.100.2}
+    ROUTING_TABLE: ${var.ROUTING_TABLE:-warp-nat-routing}
+    VETH_HOST: ${var.VETH_HOST:-veth-warp}
+    CONTAINER_NAME: warp_router
+  command:
+    - /bin/bash
+    - /usr/local/bin/warp-monitor.sh
+  volumes:
+    - name: docker-sock
+      containerPath: /var/run/docker.sock
+      sourcePath: ${var.docker-socket}
+    - name: rt-tables
+      containerPath: /etc/iproute2/rt_tables
+      hostPath: /etc/iproute2/rt_tables
+    - name: proc
+      containerPath: /proc
+      hostPath: /proc
+    - name: warp-nat-setup
+      containerPath: /usr/local/bin/warp-nat-setup.sh
+      sourcePath: ${var.config-path}/warp/scripts/warp-nat-setup.sh
+    - name: warp-monitor
+      containerPath: /usr/local/bin/warp-monitor.sh
+      sourcePath: ${var.config-path}/warp/scripts/warp-monitor.sh
+  restartPolicy: always
+

@@ -1,0 +1,23 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: dozzle
+description: Real-time Docker container logs viewer
+type: container
+
+spec:
+  image: docker.io/amir20/dozzle:latest
+  env:
+    TZ: ${var.tz}
+  ports:
+    - name: http
+      containerPort: 8080
+  volumes:
+    - name: docker-sock
+      containerPath: /var/run/docker.sock
+      sourcePath: ${var.docker-socket}
+      readOnly: true
+  ingresses:
+    - path: /
+      port: http
+      hostname: dozzle.${var.domain}
+  restartPolicy: always

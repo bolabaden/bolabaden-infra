@@ -1,0 +1,207 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-khoj-labels: &khoj-labels
+  traefik.enable: "true"
+  traefik.http.services.khoj.loadbalancer.server.port: 42110
+  homepage.group: AI Chatbots
+  homepage.name: Khoj
+  homepage.icon: khoj.png
+  homepage.href: https://khoj.$DOMAIN
+  homepage.description: Your AI second brain.
+
+services:
+  khoj-database:
+    image: ankane/pgvector
+    container_name: khoj-database
+    hostname: khoj-database
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - infranet
+    ports:
+      - ${KHOJ_POSTGRES_PORT:-5430}:5432
+    environment:
+      <<: *common-env
+      POSTGRES_USER: ${KHOJ_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${KHOJ_POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${KHOJ_POSTGRES_DB:-postgres}
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/khoj/db:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KHOJ_POSTGRES_USER:-postgres}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  khoj-sandbox:
+    image: ghcr.io/khoj-ai/terrarium
+    container_name: khoj-sandbox
+    hostname: khoj-sandbox
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - infranet
+    ports:
+      - ${TERRARIUM_PORT:-8076}:8080
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/khoj/terrarium:/root/.khoj/
+    environment:
+      <<: *common-env
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 2
+
+  khoj:
+    depends_on:
+      khoj-database:
+        condition: service_healthy
+    # Use the following line to use the latest version of khoj. Otherwise, it will build from source. Set this to ghcr.io/khoj-ai/khoj-cloud:latest if you want to use the prod image.
+    image: ghcr.io/khoj-ai/khoj
+    # Uncomment the following line to build from source. This will take a few minutes. Comment the next two lines out if you want to use the official image.
+    # build:
+    # context: .
+    # Comment out this line when you're using the official ghcr.io/khoj-ai/khoj-cloud:latest prod image.
+    command: --host="0.0.0.0" --port=42110 -vv --anonymous-mode --non-interactive
+    container_name: khoj
+    hostname: khoj
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - infranet
+      - traefik_public
+    ports:
+      # If changing the local port (left hand side), no other changes required.
+      # If changing the remote port (right hand side),
+      #   change the port in the args in the build section,
+      #   as well as the port in the command section to match
+      - ${KHOJ_PORT:-42110}:42110
+    working_dir: /app
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/khoj/config:/root/.khoj
+      - ${CONFIG_PATH:-./volumes}/khoj/models:/root/.cache/torch/sentence_transformers
+      - ${CONFIG_PATH:-./volumes}/khoj/models:/root/.cache/huggingface
+    # Use 0.0.0.0 to explicitly set the host ip for the service on the container. https://pythonspeed.com/articles/docker-connection-refused/
+    environment:
+      <<: *common-env
+      POSTGRES_DB: ${KHOJ_POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${KHOJ_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${KHOJ_POSTGRES_PASSWORD:-postgres}
+      POSTGRES_HOST: ${KHOJ_POSTGRES_HOST:-khoj-database}
+      POSTGRES_PORT: ${KHOJ_POSTGRES_PORT:-5432}
+      KHOJ_DJANGO_SECRET_KEY: /run/secrets/khoj_django_secret_key
+      KHOJ_DEBUG: ${KHOJ_DEBUG:-false}
+      KHOJ_ADMIN_EMAIL: $KHOJ_ADMIN_EMAIL
+      KHOJ_ADMIN_PASSWORD: $KHOJ_ADMIN_PASSWORD
+      # Default URL of Terrarium, the default Python sandbox used by Khoj to run code. Its container is specified above
+      KHOJ_TERRARIUM_URL: ${KHOJ_TERRARIUM_URL:-http://khoj-sandbox:${TERRARIUM_PORT:-8076}}
+      # Uncomment line below to have Khoj run code in remote E2B code sandbox instead of the self-hosted Terrarium sandbox above. Get your E2B API key from https://e2b.dev/.
+      #E2B_API_KEY: $E2B_API_KEY
+      # Default URL of SearxNG, the default web search engine used by Khoj. Its container is specified above
+      KHOJ_SEARXNG_URL: ${KHOJ_SEARXNG_URL:-http://searxng:${SEARXNG_PORT:-8077}}
+      # Uncomment line below to use with Ollama running on your local machine at localhost:11434.
+      # Change URL to use with other OpenAI API compatible providers like VLLM, LMStudio etc.
+      #OPENAI_BASE_URL: http://host.docker.internal:11434/v1/
+      #
+      # Uncomment appropriate lines below to use chat models by OpenAI, Anthropic, Google.
+      # Ensure you set your provider specific API keys.
+      # ---
+      # OPENAI_API_KEY: $OPENAI_API_KEY
+      # GEMINI_API_KEY: $GEMINI_API_KEY
+      # ANTHROPIC_API_KEY: $ANTHROPIC_API_KEY
+      #
+      # Uncomment appropriate lines below to enable web results with Khoj
+      # Ensure you set your provider specific API keys.
+      # ---
+      # Free, Slower API. Does both web search and webpage read. Get API key from https://jina.ai/
+      JINA_API_KEY: $JINA_API_KEY
+      # Paid, Fast API. Only does web search. Get API key from https://serper.dev/
+      #SERPER_DEV_API_KEY: $SERPER_DEV_API_KEY
+      # Paid, Fast, Open API. Only does webpage read. Get API key from https://firecrawl.dev/
+      #FIRECRAWL_API_KEY: $FIRECRAWL_API_KEY
+      # Paid, Fast, Higher Read Success API. Only does webpage read. Get API key from https://olostep.com/
+      #OLOSTEP_API_KEY: $OLOSTEP_API_KEY
+      #
+      # Uncomment the necessary lines below to make your instance publicly accessible.
+      # Proceed with caution, especially if you are using anonymous mode.
+      # ---
+      # KHOJ_NO_HTTPS: True
+      # Replace the KHOJ_DOMAIN with the server's externally accessible domain or I.P address from a remote machie (no http/https prefix).
+      # Ensure this is set correctly to avoid CSRF trusted origin or unset cookie issue when trying to access the admin panel.
+      # KHOJ_DOMAIN: 192.168.0.104
+      # KHOJ_DOMAIN: khoj.example.com
+      # Replace the KHOJ_ALLOWED_DOMAIN with the server's internally accessible domain or I.P address on the host machine (no http/https prefix).
+      # Only set if using a load balancer/reverse_proxy in front of your Khoj server. If unset, it defaults to KHOJ_DOMAIN.
+      # For example, if the load balancer service is added to the khoj docker network, set KHOJ_ALLOWED_DOMAIN to khoj's docker service name: `server'.
+      # KHOJ_ALLOWED_DOMAIN: server
+      # KHOJ_ALLOWED_DOMAIN: 127.0.0.1
+      # Uncomment the line below to disable telemetry.
+      # Telemetry helps us prioritize feature development and understand how people are using Khoj
+      # Read more at https://docs.khoj.dev/miscellaneous/telemetry
+      KHOJ_TELEMETRY_DISABLE: ${KHOJ_TELEMETRY_DISABLE:-false}
+    labels:
+      <<: *khoj-labels
+      homepage.group: AI Chatbots
+      homepage.name: Khoj
+      homepage.icon: khoj.png
+      homepage.href: https://khoj.$DOMAIN
+      homepage.description: Your AI second brain.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *khoj-labels
+    secrets:
+      - khoj_django_secret_key
+    restart: always
+
+secrets:
+  khoj_django_secret_key:
+    file: ${SECRETS_DIR:-./secrets}/khoj_django_secret_key
+
+# Generate a random secret key for the Khoj service
+# openssl rand -base64 8 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/khoj_django_secret_key
+
+# Build and start the Khoj service
+# docker compose -f docker-compose.khoj.yml up -d --build

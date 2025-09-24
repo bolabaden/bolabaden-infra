@@ -1,0 +1,1073 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+services:
+  gluetun-premiumize-at:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-at
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser  # user: ${OPENVPN_PROCESS_USER:-root}
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-at.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-au:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-au
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-au.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-be:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-be
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-be.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-ca:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-ca
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-ca.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-ch:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-ch
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-ch.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-cz:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-cz
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-cz.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-de:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-de
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-de.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-es:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-es
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-es.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-fi:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-fi
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-fi.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-fr:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-fr
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-fr.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-gb:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-gb
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-gb.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-gr:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-gr
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-gr.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-it:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-it
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-it.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-jp:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-jp
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-jp.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-nl:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-nl
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-nl.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-pl:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-pl
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-pl.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-sg:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-sg
+    networks:
+      - publicnet
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      FIREWALL_OUTBOUND_SUBNETS: ${PUBLICNET_SUBNET:-10.76.0.0/16},172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      VPN_TYPE: openvpn
+      OPENVPN_PROCESS_USER: nonrootuser
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-sg.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+
+  gluetun-premiumize-us:  # United States, P2P NOT ALLOWED.
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    image: ghcr.io/qdm12/gluetun
+    container_name: gluetun-premiumize-us
+    networks:
+      - publicnet
+    expose:
+      - 8001  # Gluetun WebUI
+      - 9999  # Gluetun Health Check
+    cap_add:
+      - NET_ADMIN
+    environment:
+      VPN_SERVICE_PROVIDER: "custom"
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_CIPHERS: AES-256-CBC
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      DNS_ADDRESS: "127.0.0.1"
+      DOT_IPV6: "off"
+      FIREWALL_OUTBOUND_SUBNETS: "${PUBLICNET_SUBNET:-10.76.0.0/16},172.17.0.0/16,100.72.149.123/32"
+      OPENVPN_IPV6: "off"
+      VERSION_INFORMATION: "on"
+      VPN_TYPE: "openvpn"
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: 0600
+      - source: premiumize-ca.pem
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: 0600
+      - source: vpn-us.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: 0600
+    restart: always
+  warp:
+    # 🔹🔹 Cloudflare WARP 🔹🔹
+    # Cloudflare WARP is a VPN service that allows you to bypass censorship and access the internet privately.
+    # Use this for all services that don't need listening ports exposed
+#    build:
+#      context: .
+#      dockerfile: Dockerfile.warp
+#      args:
+#        GOST_VERSION: 2.12.0
+#        TARGETPLATFORM: linux/arm64 # or linux/arm64, or leave out for automatic
+    image: caomingjun/warp:latest
+    container_name: warp
+    hostname: warp
+    networks:
+      - publicnet
+    # add removed rule back (https://github.com/opencontainers/runc/pull/3468)
+    device_cgroup_rules:
+      - 'c 10:200 rwm'
+    expose:
+      - 1080  # WARP SOCKS5 Proxy
+    ports:
+      - 1080:1080  # WARP SOCKS5 Proxy
+    environment:
+      - WARP_SLEEP=2
+      - WARP_LICENSE_KEY=$WARP_LICENSE_KEY
+      # - WARP_ENABLE_NAT=1 # enable nat
+      - TUNNEL_TOKEN=$TUNNEL_TOKEN
+    cap_add:
+      # Docker already have them, these are for podman users
+      - MKNOD
+      - AUDIT_WRITE
+      # additional required cap for warp, both for podman and docker
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+      - net.ipv4.conf.all.src_valid_mark=1
+      # uncomment for nat
+      # - net.ipv4.ip_forward=1
+      # - net.ipv6.conf.all.forwarding=1
+      # - net.ipv6.conf.all.accept_ra=2
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/warp/data:/var/lib/cloudflare-warp
+    restart: always
+
+  i2p:
+    # 🔹🔹 I2P 🔹🔹
+    # image: geti2p/i2p
+    # use this one with arm:
+    image: ghcr.io/purplei2p/i2pd
+    container_name: i2p
+    hostname: i2p
+    networks:
+      - publicnet
+    ports:
+      #      - ${I2P_HTTP_PROXY_PORT:-4444}:4444   # HTTP Proxy (optional)
+      #      - ${I2P_HTTPS_PROXY_PORT:-4445}:4445   # HTTPS Proxy (optional)
+      #      - ${I2P_IRC_PROXY_PORT:-6668}:6668   # IRC Proxy (optional)
+      #      - ${I2P_LAN_INTERFACE_TCP_PORT:-7652}:7652   # LAN interface TCP
+      #      - ${I2P_LAN_INTERFACE_UDP_PORT:-7653}:7653/udp   # LAN interface UDP
+      #      - ${I2P_I2CP_PROTOCOL_PORT:-7654}:7654   # I2CP Protocol
+      #      - ${I2P_SAM_BRIDGE_TCP_PORT:-7656}:7656   # I2P SAM Bridge TCP
+      #      - ${I2P_ROUTER_CONSOLE_PORT:-7657}:7657   # Router Console
+      - ${I2P_SITE_PORT:-7658}:7658 # I2P Site
+    #      - ${I2P_SMTP_PROXY_PORT:-7659}:7659   # SMTP Proxy
+    #      - ${I2P_POP3_PROXY_PORT:-7660}:7660   # POP3 Proxy
+    #      - ${I2P_EXT_PORT:-7661}:${I2P_EXT_PORT:-7661}   # I2P external port
+    #      - ${I2P_I2NP_PORT:-24531}:12345  # I2NP Protocol
+    #      - ${I2P_I2NP_PORT:-24531}:12345/udp  # I2NP Protocol UDP
+    volumes:
+      - ${ROOT_DIR:-.}/configs/i2p:/i2p/.i2p
+      - ${ROOT_DIR:-.}/downloads:/i2psnark
+    environment:
+      EXT_PORT: ${I2P_EXT_PORT:-7661}
+    restart: unless-stopped
+
+configs:
+  vpn-at.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_AT_VPN_HOSTNAME:-vpn-at.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_AT_IPV4_ADDRESS:-149.154.152.197} 1194
+      persist-tun
+      persist-key
+
+  vpn-au.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_AU_VPN_HOSTNAME:-vpn-au.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_AU_IPV4_ADDRESS:-149.28.167.147} 1194
+      persist-tun
+      persist-key
+
+  vpn-be.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_BE_VPN_HOSTNAME:-vpn-be.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_BE_IPV4_ADDRESS:-194.71.227.198} 1194
+      persist-tun
+      persist-key
+
+  vpn-ca.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_CA_VPN_HOSTNAME:-vpn-ca.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_CA_IPV4_ADDRESS:-192.71.227.91} 1194
+      persist-tun
+      persist-key
+
+  vpn-ch.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_CH_VPN_HOSTNAME:-vpn-ch.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_CH_IPV4_ADDRESS:-176.10.104.94} 1194
+      persist-tun
+      persist-key
+
+  vpn-cz.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_CZ_VPN_HOSTNAME:-vpn-cz.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_CZ_IPV4_ADDRESS:-193.235.207.84} 1194
+      persist-tun
+      persist-key
+
+  vpn-de.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_DE_VPN_HOSTNAME:-vpn-de.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_DE_IPV4_ADDRESS:-62.113.194.88} 1194
+      persist-tun
+      persist-key
+
+  vpn-es.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_ES_VPN_HOSTNAME:-vpn-es.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_ES_IPV4_ADDRESS:-37.235.53.176} 1194
+      persist-tun
+      persist-key
+
+  vpn-fi.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_FI_VPN_HOSTNAME:-vpn-fi.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_FI_IPV4_ADDRESS:-89.40.105.107} 1194
+      persist-tun
+      persist-key
+
+  vpn-fr.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_FR_VPN_HOSTNAME:-vpn-fr.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_FR_IPV4_ADDRESS:-158.255.215.67} 1194
+      persist-tun
+      persist-key
+
+  vpn-gb.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_GB_VPN_HOSTNAME:-vpn-gb.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_GB_IPV4_ADDRESS:-23.106.38.143} 1194
+      persist-tun
+      persist-key
+
+  vpn-gr.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_GR_VPN_HOSTNAME:-vpn-gr.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_GR_IPV4_ADDRESS:-192.71.166.71} 1194
+      persist-tun
+      persist-key
+
+  vpn-it.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_IT_VPN_HOSTNAME:-vpn-it.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_IT_IPV4_ADDRESS:-149.154.157.93} 1194
+      persist-tun
+      persist-key
+
+  vpn-jp.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_JP_VPN_HOSTNAME:-vpn-jp.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_JP_IPV4_ADDRESS:-45.77.132.110} 1194
+      persist-tun
+      persist-key
+
+  vpn-nl.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_NL_VPN_HOSTNAME:-vpn-nl.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_NL_IPV4_ADDRESS:-185.107.94.249} 1194
+      persist-tun
+      persist-key
+
+  vpn-pl.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_PL_VPN_HOSTNAME:-vpn-pl.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_PL_IPV4_ADDRESS:-37.235.48.197} 1194
+      persist-tun
+      persist-key
+
+  vpn-sg.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_SG_VPN_HOSTNAME:-vpn-sg.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_SG_IPV4_ADDRESS:-43.249.38.205} 1194
+      persist-tun
+      persist-key
+
+  vpn-us.premiumize.me:
+    content: |
+      verify-x509-name CN=${PREMIUMIZE_US_VPN_HOSTNAME:-vpn-us.premiumize.me}
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      remote ${PREMIUMIZE_US_IPV4_ADDRESS:-199.58.86.204} 1194
+      persist-tun
+      persist-key
+
+  # Premiumize authentication file (shared across all Premiumize VPN endpoints)
+  premiumize-auth:
+    content: |
+      ${PREMIUMIZE_CUSTOMER_ID:-117274388}
+      ${PREMIUMIZE_API_KEY:-6i6zgswm35baj3ur}
+
+  # Gluetun auth configuration
+  gluetun-auth-config:
+    content: |
+      [[roles]]
+      name = "public"
+      routes = [
+        "GET /v1/openvpn/status",
+        "PUT /v1/openvpn/status",
+        "GET /v1/openvpn/portforwarded",
+        "GET /v1/openvpn/settings",
+        "GET /v1/dns/status",
+        "PUT /v1/dns/status",
+        "GET /v1/updater/status",
+        "PUT /v1/updater/status",
+        "GET /v1/publicip/ip"
+      ]
+      auth = "none"
+
+  # Premiumize CA certificate (shared across all Premiumize VPN endpoints)
+  premiumize-ca.pem:
+    content: |
+      -----BEGIN CERTIFICATE-----
+      MIIFJTCCAw2gAwIBAgIRAPAmbQRNE+PBqvFyFG8GOSIwDQYJKoZIhvcNAQELBQAw
+      LDEYMBYGA1UECgwPU2VjdXJlIFNlcnZpY2VzMRAwDgYDVQQDDAdSb290IFgxMB4X
+      DTIxMDEwNDE1MjEwM1oXDTQwMTIzMDE1MjEwM1owLDEYMBYGA1UECgwPU2VjdXJl
+      IFNlcnZpY2VzMRAwDgYDVQQDDAdSb290IFgxMIICIjANBgkqhkiG9w0BAQEFAAOC
+      Ag8AMIICCgKCAgEAvuhFcbO0Y5SXBr+h/XU1sPXo/OSjN4W32jzVZ3jmkqA2nH5D
+      dI5XYHYB9JkW23K37zOlvOWj9J3HiV6WYk0uqQ3cpqDMnIpi1MJCtSRxiaD7LTNO
+      XrvLpsREq9Vf+lN+zxFxhINv3W4jUyfx5zIjPyjY+vFgH5G56b12EeLKFLYUWwgF
+      9vTicXJvlV1h+TJVF8wZ5DugrgNZhSZ6QZzda0Zdu1dCwZOafd1GGDWPubgZ8enF
+      b9gWPGZmS59ZvlLsLQmtLvCEegELzRR5G/OI1CIntcImcKO9ZDdWP+HmqJ4Ss7Ng
+      0g5xQVx9VgMxwpHw4h/tMV8q1vQQZJXJHdoDRQr5RzVnMjq90FFMd3nfX1B6cheH
+      cBq31J84ifxcO2vIz/eK/6zNyynuj2+99Yz7MsYI+sfGznngglpYo9u3xNkRfRPP
+      TA/tXAzrGRqlHmJmMStfutIfHxea4jJCGOeb5eUETQ1kXf5sMSdf0+Ya64h9Kcxw
+      afMzU8qUAMk4ei+jTEAuUQ25Jq0orFc5D2Pv7RbU9CCzIML2KqqWTThKSSVQbW0x
+      ufQDxcFZKSKL03484zVPBDMQ65enBUC+9Or9YKT0S0F1IdOX4EUGpqzQAocHFF3u
+      G1zYz5cjYq2xHRBZAYs6SQH6f16bPrk66uA2B/vZJm5L9Kzni5q46IGsCUsCAwEA
+      AaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYE
+      FETGtuYkU3IlxCvmtkAzpP5Xuf+DMA0GCSqGSIb3DQEBCwUAA4ICAQBdTlQtxa6a
+      PXaZpzsi5gLGrDUhnoTF5cVvt9vYa6c7IaAuYIUMGN1WiwHUL0g1udxi7iC3oBzM
+      Mc6shYMijEMG9SvC0RJOky1BCPbKdlsRDQbYLgjN5X1fEDDu1cR/vInt/K6vTcLf
+      1ud6VFgDv8uYG1X9GVs6foAqjYTLt1A99cwHtyCZRxrBLyjgE8S2U07FDpakqlMo
+      j4S1lgvw4EuEN54Yo55wLv9J0pZ1w9LEpZ4VdEVzLmwYMPG25Ow7HFZDK7j0TZkA
+      ByvxUvNGWDk5MS71BtWzhrmmPh9kN3HobkfOllqUsE03QaLggg+pe+OYNdIlCBRz
+      9QJeMtGP7afdBZ5UUL8df0fWL0adUzk1N/1kvAmbvccNu7tej/4LLVv9j1aQtI76
+      iEXh0WIWTAOz9IsQyP21PhxG01Y3ScIrbOsP+IX+RL/VK4yfTZ2jICj7js8vm6ut
+      qw3FPyZgeZuBe0gk0cF4vPuFacS23PkEFXbVnt4h40xKwR5ezGshS5I36nXowTdh
+      uJPLnZaLGjsiFpprztwwDZkDLu5uT6YhT/M6Kb0V3s3a2W1N90eNjo5WEe/poCgr
+      1+NVJNJQ71s3kodfghA/t1iivJEl58scVLxxJXyhCK+k5IPAB0syq2cR4AKnr/fe
+      9WFpWZc7lKeI4rwzGej+kMCQ6ujinVPyRA==
+      -----END CERTIFICATE-----
+
+networks:
+  publicnet:  # https://docs.docker.com/engine/network/drivers/bridge/#differences-between-user-defined-bridges-and-the-default-bridge
+    external: true  # docker network create --driver=bridge --attachable publicnet --subnet=${PUBLICNET_SUBNET:-10.76.0.0/16} --gateway=${PUBLICNET_GATEWAY:-10.76.0.1} --ip-range=${PUBLICNET_IP_RANGE:-10.76.0.0/16}
+    attachable: true
+    name: publicnet
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: "br_publicnet"
+    ipam:
+      config:
+        - subnet: ${PUBLICNET_SUBNET:-10.76.0.0/16}
+          gateway: ${PUBLICNET_GATEWAY:-10.76.0.1}
+          ip_range: ${PUBLICNET_IP_RANGE:-10.76.0.0/16}

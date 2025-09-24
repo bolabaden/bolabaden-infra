@@ -1,0 +1,87 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+services:
+  nfs-server:
+    image: erichough/nfs-server:latest # Use a pre-built NFS server image for simplicity and reliability.
+    container_name: nfs-server
+    hostname: nfs-server
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - infranet
+    privileged: true # Required for NFS server to manage exports.
+    environment:
+      <<: *common-env
+      # Define the NFS export.  /data is the mount point inside the container.
+      # '*' allows access from any client (within the Docker network).
+      # 'rw' allows read-write access.
+      # 'fsid=0' makes this the root export.
+      # 'async' improves performance but can risk data loss on server crash (suitable for media).
+      # 'no_subtree_check' improves reliability, slightly reduces security (good for single export).
+      # 'no_auth_nlm' disables NLM authentication (simplifies setup, use with trusted networks).
+      # 'insecure' allows clients to connect from unprivileged ports (above 1024).
+      # 'no_root_squash' allows root on the client to have root access to the NFS share (important for Docker).
+      NFS_EXPORT_0: "/data *(rw,fsid=0,async,no_subtree_check,no_auth_nlm,insecure,no_root_squash)"
+    volumes:
+      - ${ROOT_DIR:-.}:/data # note: this is not the same as the host's ${DATA_DIR:-./data}, it is the root of the NFS share. Common misconception.
+    labels:
+      autoheal: "true"
+      swarm.autoscaler: "true"
+      traefik.enable: "false"  # Disable Traefik routing for the NFS server (not a web service).
+    deploy:
+      <<: [ *swarm-constraints-manager-only ]   # Deploy only on manager nodes for high availability and central management.
+      mode: global  # Run one instance of the NFS server on *each* manager node.
+      labels:
+        autoheal: "true"
+        swarm.autoscaler: "true"
+        traefik.enable: "false"  # Disable Traefik routing for the NFS server (not a web service).
+      restart_policy:
+        condition: on-failure  # Restart only if the container exits due to an error.
+        delay: 10s             # Wait 10 seconds before restarting.
+        max_attempts: 3        # Try restarting a maximum of 3 times.
+        window: 120s           # Monitor for 120 seconds to determine if the restart was successful.
+    healthcheck:
+      # Check if the NFS server is running by querying RPC information.
+      test: ["CMD", "rpcinfo", "-p", "localhost"]
+      interval: 30s             # Check every 30 seconds.
+      timeout: 5s              # Timeout after 5 seconds.              # Retry the health check 3 times before considering it failed.
+      start_period: 10s         # Allow 10 seconds for the server to start before running health checks.
+
+
+volumes:
+  nfs-data: # This volume isn't directly used, but defined for consistency.  Could be used for NFS server state if needed.
+    driver: local  # Use the local driver (default).

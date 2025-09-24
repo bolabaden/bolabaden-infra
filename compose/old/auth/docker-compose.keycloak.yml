@@ -1,0 +1,127 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-authelia-labels: &authelia-labels
+  traefik.enable: "true"
+  traefik.http.middlewares.authelia.forwardauth.address: "http://authelia:${AUTHELIA_PORT:-9091}/api/authz/forward-auth"  # yamllint disable-line rule:line-length
+  traefik.http.middlewares.authelia.forwardauth.trustForwardHeader: "true"
+  traefik.http.middlewares.authelia.forwardauth.authResponseHeaders: "Remote-User,Remote-Groups,Remote-Name,Remote-Email"  # yamllint disable-line rule:line-length
+  traefik.http.services.authelia.loadbalancer.server.port: 9091
+
+services:
+  keycloak:
+    # 🔹🔹 Keycloak 🔹🔹
+    depends_on: 
+      keycloak_postgres:
+        condition: service_healthy
+      traefik:
+        condition: service_started
+    image: quay.io/keycloak/keycloak
+    container_name: keycloak
+    hostname: keycloak
+    <<: [*common-logging, *resource-limits]
+    command: start-dev
+    networks:
+      - auth-net
+      - traefik_public
+    ports:
+      - ${KEYCLOAK_PORT:-8075}:8080
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/keycloak/realm.json:/opt/keycloak/data/import/realm.json:ro
+    environment:
+      <<: *common-env
+      KC_DB_URL: "jdbc:postgresql://keycloak_postgres:${KEYCLOAK_POSTGRES_PORT:-5431}/${KEYCLOAK_POSTGRES_DB:-keycloak}"
+      KC_DB: ${KEYCLOAK_DB:-keycloak_postgres}
+      KC_HOSTNAME: "keycloak.$DOMAIN"
+      KC_LOG_LEVEL: ${KEYCLOAK_LOGLEVEL:-INFO}
+      KC_PROXY: ${KEYCLOAK_PROXY:-edge}
+      KEYCLOAK_ADMIN_PASSWORD: $KEYCLOAK_ADMIN_PASSWORD
+      KEYCLOAK_ADMIN: $KEYCLOAK_ADMIN
+      PROXY_ADDRESS_FORWARDING: ${KEYCLOAK_PROXY_ADDRESS_FORWARDING:-true}
+    labels:
+      <<: *keycloak-labels
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *keycloak-labels
+    restart: always
+
+  keycloak_postgres:
+    # 🔹🔹 Keycloak Database 🔹🔹
+    depends_on:
+      redis:
+        condition: service_healthy
+    image: postgres:17.4
+    container_name: keycloak_postgres
+    hostname: keycloak_postgres
+    <<: [*common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+      POSTGRES_DB: ${KEYCLOAK_POSTGRES_DB:-keycloak}
+      POSTGRES_USER: ${KEYCLOAK_POSTGRES_USER:-keycloak}
+      POSTGRES_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:?KEYCLOAK_POSTGRES_PASSWORD is required}
+      POSTGRES_ROOT_PASSWORD: ${KEYCLOAK_POSTGRES_ROOT_PASSWORD:?KEYCLOAK_POSTGRES_ROOT_PASSWORD is required}
+    networks:
+      - auth-net
+    ports:
+      - ${KEYCLOAK_POSTGRES_PORT:-5431}:5432
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/keycloak/db:/var/lib/postgresql/data
+    labels:
+      traefik.enable: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+secrets:
+  keycloak_admin_password:
+    file: ${SECRETS_DIR:-./secrets}/keycloak_admin_password
+
+# to build the secrets:
+# openssl rand -base64 32 > ${SECRETS_DIR:-./secrets}/keycloak_admin_password

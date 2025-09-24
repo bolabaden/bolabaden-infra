@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # Warp container - provides VPN connectivity
+  warp:
+    image: caomingjun/warp:latest
+    container_name: warp
+    networks:
+      - warp-bridge
+      - warp-network
+    device_cgroup_rules:
+      - 'c 10:200 rwm'
+    devices:
+      - /dev/net/tun
+    environment:
+      - WARP_SLEEP=2
+      - WARP_LICENSE_KEY=$WARP_LICENSE_KEY
+      - TUNNEL_TOKEN=$TUNNEL_TOKEN
+    cap_add:
+      - MKNOD
+      - AUDIT_WRITE
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv4.ip_forward=1
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/warp/data:/var/lib/cloudflare-warp
+    restart: always
+
+  # Example service using Solution 1: Shared network namespace
+  app-shared-namespace:
+    image: alpine
+    container_name: app-shared
+    network_mode: "container:warp"
+    depends_on:
+      - warp
+    command: sleep infinity
+
+  # Example service using Solution 2/3: Custom network
+  app-custom-network:
+    image: alpine
+    container_name: app-vpn
+    networks:
+      - warp-network
+    depends_on:
+      - warp
+    command: sleep infinity
+
+  # Example service NOT using VPN (on default bridge)
+  app-no-vpn:
+    image: alpine
+    container_name: app-direct
+    networks:
+      - default
+    command: sleep infinity
+
+networks:
+  # Network for Warp container
+  warp-bridge:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+
+  # Network for containers that should route through Warp
+  warp-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br_vpn
+    ipam:
+      config:
+        - subnet: 10.45.0.0/16
+          gateway: 10.45.0.1 

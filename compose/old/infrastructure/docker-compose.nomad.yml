@@ -1,0 +1,175 @@
+
+services:
+  consul:
+    # image: hashicorp/consul:1.19
+    image: hashicorp/consul:latest
+    container_name: consul
+    hostname: consul
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - "${CONSUL_HTTP_PORT:-8500}"          # HTTP API / UI
+      - "${CONSUL_DNS_PORT:-8600}/udp"       # DNS UDP
+      - "${CONSUL_DNS_PORT:-8600}"           # DNS TCP
+      - "${CONSUL_SERVER_PORT:-8300}"        # Server RPC
+      - "${CONSUL_SERF_LAN_PORT:-8301}"      # Serf LAN TCP
+      - "${CONSUL_SERF_LAN_PORT:-8301}/udp"  # Serf LAN UDP
+      - "${CONSUL_SERF_WAN_PORT:-8302}"      # Serf WAN TCP
+      - "${CONSUL_SERF_WAN_PORT:-8302}/udp"  # Serf WAN UDP
+    ports:
+      - "${CONSUL_HTTP_PORT:-8500}:8500"           # HTTP API / UI
+      - "${CONSUL_DNS_PORT:-8600}:8600/udp"        # DNS UDP
+      - "${CONSUL_DNS_PORT:-8600}:8600"            # DNS TCP
+      - "${CONSUL_SERVER_PORT:-8300}:8300"         # Server RPC
+      - "${CONSUL_SERF_LAN_PORT:-8301}:8301"       # Serf LAN TCP
+      - "${CONSUL_SERF_LAN_PORT:-8301}:8301/udp"   # Serf LAN UDP
+      - "${CONSUL_SERF_WAN_PORT:-8302}:8302"       # Serf WAN TCP
+      - "${CONSUL_SERF_WAN_PORT:-8302}:8302/udp"   # Serf WAN UDP
+    environment:
+      CONSUL_BIND_INTERFACE: eth0
+      CONSUL_LOCAL_CONFIG: |
+        {
+          "datacenter": "${DATACENTER:-us-central-1}",
+          "data_dir": "/consul/data",
+          "log_level": "DEBUG",
+          "ui": true,
+          "server": true,
+          "bootstrap_expect": 1,
+          "client_addr": "0.0.0.0",
+          "addresses": {
+            "http": "0.0.0.0",
+            "https": "0.0.0.0",
+            "dns": "0.0.0.0",
+            "grpc": "0.0.0.0"
+          },
+          "ports": {
+            "http": ${CONSUL_HTTP_PORT:-8500},
+            "https": ${CONSUL_HTTPS_PORT:-8501},
+            "dns": ${CONSUL_DNS_PORT:-8600},
+            "grpc": ${CONSUL_GRPC_PORT:-8502},
+            "serf_lan": ${CONSUL_SERF_LAN_PORT:-8301},
+            "serf_wan": ${CONSUL_SERF_WAN_PORT:-8302},
+            "server": ${CONSUL_SERVER_PORT:-8300}
+          },
+          "disable_update_check": false,
+          "disable_host_node_id": false,
+          "leave_on_terminate": true,
+          "rejoin_after_leave": true,
+          "enable_script_checks": true,
+          "enable_local_script_checks": true,
+          "enable_debug": true,
+          "performance": {
+            "raft_multiplier": 1
+          }
+        }
+    volumes:
+      - "${CONFIG_PATH:-./volumes}/consul/data:/consul/data"
+      - "${CONFIG_PATH:-./volumes}/consul/config:/consul/config:rw"
+      - "${CONFIG_PATH:-./volumes}/consul/scripts:/consul/scripts:ro"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.consul.middlewares: nginx-auth@file
+      traefik.http.routers.consul.rule: 'Host(`consul.$DOMAIN`) || Host(`consul.$TS_HOSTNAME.$DOMAIN`) || Host(`consul.$DUCKDNS_DOMAIN`) || Host(`consul.$TS_HOSTNAME.$DUCKDNS_DOMAIN`)'
+      traefik.http.services.consul.loadbalancer.server.port: "${CONSUL_HTTP_PORT:-8500}"
+      homepage.group: Infrastructure
+      homepage.name: Consul
+      homepage.icon: consul.png
+      homepage.href: https://consul.$DOMAIN/
+      homepage.description: >
+        Consul is a service mesh that provides a way to connect, secure, and configure services across any runtime platform and cloud.
+        This container exposes all Consul ports, enables the UI, DNS, gRPC, and supports script checks, ACLs, and more.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:${CONSUL_HTTP_PORT:-8500}/v1/status/leader > /dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    command: agent -client=0.0.0.0 -ui -bind=0.0.0.0 -data-dir=/consul/data -config-dir=/consul/config
+    restart: always
+
+  nomad:
+    # 🔹🔹 Nomad 🔹🔹
+    #image: docker.io/multani/nomad:latest
+    build: latest
+    image: docker.io/hashicorp/nomad:1.10.4
+    container_name: nomad
+    hostname: nomad
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - /tmp:/tmp
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    environment:
+      NOMAD_LOCAL_CONFIG: |
+        datacenter = "dc1"
+        data_dir = "/nomad/data/"
+        bind_addr = "0.0.0.0" 
+        log_level = "DEBUG"
+        log_json = true 
+        log_file = "/nomad/log/nomad.log"
+        log_rotate_bytes = 10485760
+        log_rotate_max_files = 5
+
+        server {
+          enabled = true  # Servers talk to each other and use a leader/follower load balancing method for HA. 
+          bootstrap_expect = 5  # Create a multi-server (HA) setup. Prepare, for example, three nodes... but for five nodes, set bootstrap_expect to 5 for quorum. Adapted from  for odd-number quorum to avoid SPOF.
+          server_join {
+            retry_join = [
+              "170.9.225.137:4647",
+              "149.130.219.117:4647",
+              "149.130.222.229:4647",
+              "150.136.84.225:4647",
+              "172.245.88.16:4647"
+            ]
+          }
+        }
+
+        client {
+          enabled = true  # A single client process can handle running many allocations on a single node.
+          node_class = "balanced"  # Custom class for load spreading; Nomad uses a bin packing algorithm, which means it tries to utilize all of a node's resources before placing tasks on a different node.
+        }
+
+        advertise {
+          http = "{{ GetPrivateIP }}:4646"
+          rpc  = "{{ GetPrivateIP }}:4647"
+          serf = "{{ GetPrivateIP }}:4648"
+        }
+
+        consul {
+          address = "consul:8500"  # Nomad integrates with Consul to provide service discovery and monitoring.
+          auto_advertise = true  # Nomad can register services with Consul. 
+          server_service_name = "nomad"  # Consul allows services to easily register themselves in a central catalog. 
+          client_service_name = "nomad-client"  # Nomad integrates with Consul to provide service discovery. 
+        }
+
+        telemetry {
+          collection_interval = "1s"  # For monitoring CPU/RAM balance; Optimize the raft_multiplier. 
+          publish_allocation_metrics = true  # Nomad does not seem to balance the allocations across the clients... but with telemetry, it can monitor usage. 
+        }
+      NOMAD_SKIP_DOCKER_IMAGE_WARN: 1
+    command: agent -dev -bind=0.0.0.0
+    labels:
+      traefik.enable: true
+      traefik.http.routers.nomad.middlewares: nginx-auth@file
+      traefik.http.routers.nomad.rule: 'Host(`nomad.$DOMAIN`) || Host(`nomad.$TS_HOSTNAME.$DOMAIN`) || Host(`nomad.$DUCKDNS_DOMAIN`) || Host(`nomad.$TS_HOSTNAME.$DUCKDNS_DOMAIN`)'
+      traefik.http.services.nomad.loadbalancer.server.port: ${NOMAD_HTTP_PORT:-4646}
+      homepage.group: Infrastructure
+      homepage.name: Nomad
+      homepage.icon: nomad.png
+      homepage.href: https://nomad.$DOMAIN/
+      homepage.description: Nomad is a Nomad agent that runs on a server node.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${NOMAD_HTTP_PORT:-4646}/v1/status/leader > /dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always

@@ -1,0 +1,36 @@
+
+
+
+networks:
+  consul-net:
+    attachable: true
+
+services:
+  consul:
+    image: docker.io/hashicorp/consul:latest
+    container_name: consul
+    hostname: consul
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - consul-net
+    expose:
+      - 8500  # Consul UI + API
+      - 8600  # Consul DNS
+    volumes:
+      - ./consul_data:/consul/data
+    environment:
+      - 'CONSUL_LOCAL_CONFIG={"skip_leave_on_interrupt": true}'
+    labels:
+      traefik.enable: true
+      traefik.http.routers.consul.service: consul@docker
+      traefik.http.routers.consul.rule: Host(`consul.$DOMAIN`) || Host(`consul.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.consul.loadbalancer.server.port: 8500
+    healthcheck:
+      test: ["CMD", "consul", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    command: agent -server -bootstrap -ui -client=0.0.0.0 -bind=0.0.0.0
+    restart: always

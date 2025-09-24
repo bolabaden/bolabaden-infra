@@ -1,0 +1,53 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: dockerproxy-rw
+description: Docker Socket Proxy with read/write access
+type: container
+
+spec:
+  image: lscr.io/linuxserver/socket-proxy:latest
+  privileged: true
+  env:
+    TZ: ${var.tz}
+    PUID: ${var.PUID:-1001}
+    PGID: ${var.PGID:-999}
+    UMASK: ${var.UMASK:-002}
+    ALLOW_START: 1
+    ALLOW_STOP: 1
+    ALLOW_RESTARTS: 1
+    AUTH: 1
+    BUILD: 1
+    COMMIT: 1
+    CONFIGS: 1
+    CONTAINERS: 1
+    DISABLE_IPV6: ${var.DISABLE_IPV6:-0}
+    DISTRIBUTION: 1
+    EVENTS: 1
+    EXEC: 1
+    IMAGES: 1
+    INFO: 1
+    LOG_LEVEL: info
+    NETWORKS: 1
+    NODES: 1
+    PING: 1
+    PLUGINS: 1
+    POST: 1
+    SECRETS: 1
+    SERVICES: 1
+    SESSION: 1
+    SWARM: 1
+    SYSTEM: 1
+    TASKS: 1
+    VERSION: 1
+    VOLUMES: 1
+  ports:
+    - name: api
+      containerPort: 2375
+      hostPort: 2375
+      hostIp: 127.0.0.1
+  volumes:
+    - name: docker-sock
+      containerPath: /var/run/docker.sock
+      sourcePath: ${var.docker-socket}
+  restartPolicy: always
+

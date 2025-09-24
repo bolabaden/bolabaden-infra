@@ -1,0 +1,30 @@
+kind: Build
+apiVersion: garden.io/v2
+name: playwright-service
+description: Playwright service for Firecrawl
+type: container
+source:
+  repository:
+    url: "git+https://github.com/firecrawl/firecrawl.git#main:/apps/playwright-service-ts"
+
+---
+kind: Deploy
+apiVersion: garden.io/v2
+name: playwright-service
+description: Playwright service container
+type: container
+dependencies:
+  - build.playwright-service
+
+spec:
+  image: ${actions.build.playwright-service.outputs.deploymentImageId}
+  env:
+    PORT: ${var.FIRECRAWL_PLAYWRIGHT_SERVICE_PORT:-3000}
+    PROXY_SERVER: ${var.FIRECRAWL_PROXY_SERVER:-}
+    PROXY_USERNAME: ${var.FIRECRAWL_PROXY_USERNAME:-}
+    PROXY_PASSWORD: ${var.FIRECRAWL_PROXY_PASSWORD:-}
+    BLOCK_MEDIA: ${var.FIRECRAWL_BLOCK_MEDIA:-false}
+  ports:
+    - name: http
+      containerPort: 3000
+  restartPolicy: always

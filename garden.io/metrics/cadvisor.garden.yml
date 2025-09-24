@@ -1,0 +1,51 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: cadvisor
+description: cAdvisor for container metrics
+type: container
+
+spec:
+  image: gcr.io/cadvisor/cadvisor:latest
+  privileged: true
+  ports:
+    - name: http
+      containerPort: 8080
+  volumes:
+    - name: rootfs
+      containerPath: /rootfs
+      hostPath: /
+      readOnly: true
+    - name: var-run
+      containerPath: /var/run
+      hostPath: /var/run
+      readOnly: true
+    - name: sys
+      containerPath: /sys
+      hostPath: /sys
+      readOnly: true
+    - name: docker
+      containerPath: /var/lib/docker
+      hostPath: /var/lib/docker
+      readOnly: true
+    - name: dev-disk
+      containerPath: /dev/disk
+      hostPath: /dev/disk
+      readOnly: true
+  devices:
+    - name: kmsg
+      hostPath: /dev/kmsg
+      containerPath: /dev/kmsg
+  command:
+    - '--housekeeping_interval=${var.CADVISOR_HOUSEKEEPING_INTERVAL:-30s}'
+    - '--docker_only=${var.CADVISOR_DOCKER_ONLY:-true}'
+    - '--disable_metrics=${var.CADVISOR_DISABLE_METRICS:-cpu_topology,disk,memory_numa,tcp,udp,percpu,sched,process,hugetlb,referenced_memory,resctrl,cpuset,advtcp}'
+    - '--store_container_labels=${var.CADVISOR_STORE_CONTAINER_LABELS:-false}'
+  labels:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "metrics"
+  ingresses:
+    - path: /
+      port: http
+      hostname: cadvisor.${var.domain}
+  restartPolicy: always

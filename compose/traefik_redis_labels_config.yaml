@@ -1,0 +1,33 @@
+labels:
+  redis:
+    url: ${REDIS_HOST:-redis://redis:6379}/0  # Redis URL
+  webhook:
+    url: ${TRAEFIK_REDIS_WEBHOOK_URL:-}  # Webhook URL
+  # optional
+  #  auth:
+  #    # Supports basic authentication
+  #    basic: labels:*****
+  nodes:
+  # Use FQDN and add the FQDN to your certificates SAN list (or IP)
+    - 192.168.18.12
+    - 10.14.120.1
+# Reload labels.nodes every {n} seconds (0 = disabled)
+  interval: 0
+  # timeout in seconds for the connection to a Docker node
+  timeout: 2.5
+  rfc2136:
+  # Only nsupdate on entries which are different (do not update same data)
+    verify: false
+  # Remove DNS entry if container is unreachable
+    remove: false
+  poll:
+  # Polling all containers on a node every {n} seconds
+    interval: 300
+  ping:
+  # Ping all nodes every {n} seconds to see if they are still online
+    interval: 10
+  tls:
+  # Path for TLS certificates
+    ca: /traefik/labels/ssl/ca.crt
+    crt: /traefik/labels/ssl/server.crt
+    key: /traefik/labels/ssl/server.key

@@ -1,0 +1,222 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+
+
+services:
+  duckdns:
+    # 🔹🔹 DuckDNS 🔹🔹
+    image: docker.io/linuxserver/duckdns
+    container_name: duckdns
+    hostname: duckdns
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    environment:
+      <<: *common-env
+      SUBDOMAINS: $SUBDOMAIN
+      TOKEN: $DUCKDNS_TOKEN
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      placement:
+        constraints: [ node.role == manager ]
+    restart: always
+  # Multiple DNS challenge provider are not supported with Traefik,
+  # but you can use CNAME to handle that. For example, if you have example.org (account foo) and
+  # example.com (account bar) you can create a CNAME on example.org called _acme-challenge.example.org
+  # pointing to challenge.example.com. This way, you can obtain certificates for example.org with the bar account.
+  traefik:
+    # 🔹🔹 Traefik 🔹🔹
+    image: docker.io/traefik
+    container_name: traefik
+    hostname: traefik
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    ports:
+      # Listen on port 80, default for HTTP, necessary to redirect to HTTPS
+      - ${TRAEFIK_WEB_PORT:-80}:${TRAEFIK_WEB_PORT:-80}
+      # Listen on port 443, default for HTTPS
+      - ${TRAEFIK_WEBSECURE_PORT:-443}:${TRAEFIK_WEBSECURE_PORT:-443}
+      # Listen on port 8099, default for the Traefik API and Dashboard
+      - ${TRAEFIK_DASHBOARD_PORT:-8099}:${TRAEFIK_DASHBOARD_PORT:-8099}
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: ${DISABLE_IPV6:-1}
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:z
+      - ${CONFIG_PATH:-./volumes}/traefik/config:/config
+      - ${CONFIG_PATH:-./volumes}/traefik/config:/etc/traefik
+      - ${CERTS_PATH:-./certs}:/certs
+    #      - /etc/localtime:/etc/localtime:ro
+    environment:
+      <<: *common-env
+      DUCKDNS_HTTP_TIMEOUT: ${DUCKDNS_HTTP_TIMEOUT:-30} # API request timeout in seconds (Default: 30)
+      DUCKDNS_POLLING_INTERVAL: ${DUCKDNS_POLLING_INTERVAL:-2} # Time between DNS propagation check in seconds (Default: 2)
+      DUCKDNS_PROPAGATION_TIMEOUT: ${DUCKDNS_PROPAGATION_TIMEOUT:-60} # Maximum waiting time for DNS propagation in seconds (Default: 60)
+      DUCKDNS_SEQUENCE_INTERVAL: ${DUCKDNS_SEQUENCE_INTERVAL:-60} # Time between sequential requests in seconds (Default: 60)
+      DUCKDNS_TOKEN: $DUCKDNS_TOKEN
+      DUCKDNS_TTL: ${DUCKDNS_TTL:-120} # TTL for DNS records in seconds (Default: 120)
+      LETS_ENCRYPT_EMAIL: $LETS_ENCRYPT_EMAIL # Email address used for Letsencrypt registration.
+      # CNAME are supported (and sometimes even encouraged), but there are a few cases where they can be problematic.
+      # If needed, CNAME support can be disabled with the following environment variable:
+      LEGO_DISABLE_CNAME_SUPPORT: ${LEGO_DISABLE_CNAME_SUPPORT:-false} # Disable CNAME support for DNS challenges. (Default: false)
+      ZEROSSL_API_KEY: ${ZEROSSL_API_KEY:-} # ZeroSSL API key.
+    command:
+      - --accesslog=true # Enable the access log, with HTTP requests
+      - --api # Enable api/dashboard. When set to true, its sub option api.dashboard is also set to true.
+      - --api.dashboard=true # Enable dashboard (default: false)
+      - --api.debug=true # Enable additional endpoints for debugging and profiling (default: false)
+      - --api.disabledashboardad=true # Disable the advertisement from the dashboard (default: false)
+      - --api.insecure=true # Enable the API and the dashboard on the entryPoint named traefik (default: false)
+      - --entryPoints.web.address=:80
+      - --entryPoints.web.asDefault=false # Adds this EntryPoint to the list of default EntryPoints to be used on routers that don't have any Entrypoint defined. (Default: false)
+      - --entryPoints.web.observability.accessLogs=true
+      - --entryPoints.web.observability.metrics=true
+      - --entryPoints.web.observability.tracing=true
+      - --entryPoints.websecure.address=:443
+      - --entryPoints.websecure.asDefault=true # Adds this EntryPoint to the list of default EntryPoints to be used on routers that don't have any Entrypoint defined. (Default: false)
+      - --entryPoints.websecure.http.tls.certResolver=myresolver
+      - --entryPoints.websecure.http.tls.domains[0].main=$DOMAIN
+      - --entryPoints.websecure.http.tls.domains[0].sans=*.$DOMAIN
+      - --entryPoints.websecure.http.tls=true
+      - --certificatesResolvers.myresolver.acme.certificatesDuration=2160 # The certificates' duration in hours, exclusively used to determine renewal dates. (Default: 2160)
+      - --certificatesResolvers.myresolver.acme.dnsChallenge.delayBeforeCheck=60 # The delay before checking for DNS propagation. (Default: 0)
+      - --certificatesResolvers.myresolver.acme.dnsChallenge.provider=duckdns
+      - --certificatesResolvers.myresolver.acme.dnsChallenge=true # Use the DNS challenges instead of HTTP/TLS challenges. (Default: false)
+      - --certificatesResolvers.myresolver.acme.caServer=https://acme.zerossl.com/v2/DV90 # Let's Encrypt has a limit: 5 certs generated a week. Use staging when breaking things (specifically https://acme-staging-v02.api.letsencrypt.org/directory). see https://doc.traefik.io/traefik/https/acme/#caserver
+      - --certificatesResolvers.myresolver.acme.eab.hmacencoded=$TRAEFIK_ACME_EAB_HMAC_ENCODED # Uncomment this line to use ZeroSSL (no rate limits) over Let's Encrypt.  # Base64 encoded HMAC key from External CA.
+      - --certificatesResolvers.myresolver.acme.eab.kid=$TRAEFIK_ACME_EAB_KID # Uncomment this line to use ZeroSSL (no rate limits) over Let's Encrypt.  # Key identifier from External CA.
+      - --certificatesResolvers.myresolver.acme.email=$LETS_ENCRYPT_EMAIL # Email address used for registration.
+      - --certificatesResolvers.myresolver.acme.httpChallenge.entryPoint=web
+      - --certificatesResolvers.myresolver.acme.httpChallenge=true # Activate HTTP-01 Challenge. (Default: false)
+      - --certificatesResolvers.myresolver.acme.storage=/certs/acme.json # Storage to use. (Default: acme.json)
+      - --certificatesResolvers.myresolver.acme.tlsChallenge=true # Use the TLS-ALPN-01 challenge to generate and renew ACME certificates by provisioning a TLS certificate.  As described on the Let's Encrypt community forum, when using the TLS-ALPN-01 challenge, Traefik must be reachable by Let's Encrypt through port 443.
+      - --global.checkNewVersion=true # Periodically check if a new version has been released. (Default: true)
+      - --global.sendAnonymousUsage=false # Periodically send anonymous usage statistics. If the option is not specified, it will be disabled by default. (Default: false)
+      - --log # Enable the Traefik log, for configurations and errors
+      - --log.level=INFO # Log level. (Default: INFO)
+      - --ping.terminatingStatusCode=503 # Terminating status code (Default: 503)
+      - --ping=true # Enable the ping endpoint. (Default: true)
+      - --providers.docker.defaultRule=Host(`{{ .ContainerName }}.$DOMAIN`) # Default rule. (Default: Host(`{{ normalize .Name }}`)
+      - --providers.docker.endpoint=unix:///var/run/docker.sock # Docker server endpoint. Can be a TCP or a Unix socket endpoint. (Default: unix:///var/run/docker.sock)
+      - --providers.docker.exposedByDefault=false  # Expose containers by default through Traefik. If set to false, containers that do not have a traefik.enable=true label are ignored from the resulting routing configuration.  https://doc.traefik.io/traefik/providers/overview/#restrict-the-scope-of-service-discovery
+      - --providers.docker=true # Enable Docker in Traefik, so that it reads labels from Docker services
+      - --providers.docker.network=traefik_public
+      - --providers.file.directory=/config
+      - --providers.file.watch=true
+    #  - --providers.swarm.defaultRule=Host(`{{ .ContainerName }}.$DOMAIN`) # Default rule. (Default: Host(`{{ normalize .Name }}`)
+    #  - --providers.swarm.endpoint=unix:///var/run/docker.sock
+    #  - --providers.swarm.exposedByDefault=false # Expose services by default through Traefik. If set to false, services that do not have a traefik.expose=true label are ignored from the resulting routing configuration.  https://doc.traefik.io/traefik/providers/overview/#restrict-the-scope-of-service-discovery
+    #  - --providers.swarm=true
+    #  - --providers.swarm.network=traefik_public
+      # Plugins
+      ##########################################
+      #      - --experimental.localplugins.<your-plugin-name>  # Local plugins configuration. (Default: false)
+      #      - --experimental.localplugins.<your-plugin-name>.modulename=${TRAEFIK_EXPERIMENTAL_LOCAL_PLUGINS_MODULE_NAME:-github.com/Miromani4/traefik-plugin-AdminAPI_WebUI}  # Plugin's module name.
+      #      - --experimental.localplugins.<your-plugin-name>.settings=${TRAEFIK_EXPERIMENTAL_LOCAL_PLUGINS_SETTINGS:-}  # Plugin's settings (works only for wasm plugins).
+      #      - --experimental.localplugins.<your-plugin-name>.settings.envs=${TRAEFIK_EXPERIMENTAL_LOCAL_PLUGINS_SETTINGS_ENVS:-}  # Environment variables to forward to the wasm guest.
+      #      - --experimental.localplugins.<your-plugin-name>.settings.mounts=${TRAEFIK_EXPERIMENTAL_LOCAL_PLUGINS_SETTINGS_MOUNTS:-}  # Directory to mount to the wasm guest.
+      # A plugin to block abusive clients based on IP address.
+      # - --experimental.plugins.fail2ban.modulename=github.com/tomMoulard/fail2ban
+      # - --experimental.plugins.fail2ban.version=v0.8.3
+      # A free and open-source software to start workloads on demand and stop them after a period of inactivity.
+      # Think of it a bit like a serverless platform, but for your own servers.
+      # - --experimental.plugins.sablier.modulename=github.com/sablierapp/sablier
+      # - --experimental.plugins.sablier.version=v1.8.4
+      # A plugin to cache responses from your services, written in Go.
+      # https://plugins.traefik.io/plugins/6294728cffc0cd18356a97c2/souin
+      #      - --experimental.plugins.souin.modulename=github.com/darkweak/souin
+      #      - --experimental.plugins.souin.version=v1.7.5
+      # This plugin aims to implement a Crowdsec Bouncer in a Traefik plugin.
+      # CrowdSec is an open-source and collaborative IPS (Intrusion Prevention System) and a security suite. We leverage local behavior analysis and crowd power to build the largest CTI network in the world.
+      # The purpose is to enable Traefik to authorize or block requests from IPs based on their reputation and behavior.
+      # https://plugins.traefik.io/plugins/6335346ca4caa9ddeffda116/crowdsec-bouncer-traefik-plugin
+      # - --experimental.plugins.crowdsec-bouncer-traefik-plugin.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+      # - --experimental.plugins.crowdsec-bouncer-traefik-plugin.version=v1.4.1
+      # If Traefik is behind a Cloudflare Proxy/Tunnel, it won't be able to get the real IP from the external client as well as other information.
+      # This plugin solves this issue by overwriting the X-Real-IP and X-Forwarded-For with an IP from the CF-Connecting-IP header.
+      # The real IP will be the Cf-Connecting-IP if request is come from cloudflare ( truest ip in configuration file).
+      # The plugin also writes the CF-Visitor scheme to the X-Forwarded-Proto. (This fixes an infinite redirect issue for wordpress when using CF[443]->PROXY/TUNNEL->Traefik[80]->WP[80])
+      # https://plugins.traefik.io/plugins/62e97498e2bf06d4675b9443/real-ip-from-cloudflare-proxy-tunnel
+      #      - --experimental.plugins.cloudflarewarp.modulename=github.com/BetterCorp/cloudflarewarp
+      #      - --experimental.plugins.cloudflarewarp.version=v1.3.3
+      # Simple cache plugin middleware caches responses on disk.
+      # https://plugins.traefik.io/plugins/62947353108ecc83915d778d/simple-cache
+      #      - --experimental.plugins.plugin-simplecache.modulename=github.com/traefik/plugin-simplecache
+      #      - --experimental.plugins.plugin-simplecache.version=v0.2.1
+      # A simple, cookie based Traefik middleware plugin for HTTP Basic or mTLS Single Sign-on
+      # https://plugins.traefik.io/plugins/64a53f2e498e334469bdbd28/trauth
+      #      - --experimental.plugins.trauth.modulename=github.com/leonjza/trauth
+      #      - --experimental.plugins.trauth.version=v1.6.7
+      # Allows users to authenticate using GitHub OAuth
+      # https://plugins.traefik.io/plugins/63d26b4f87b836b8c3b0cf01/traefik-git-hub-o-auth-plugin
+      #      - --experimental.plugins.traefik-github-oauth-plugin.modulename=github.com/MuXiu1997/traefik-github-oauth-plugin
+      #      - --experimental.plugins.traefik-github-oauth-plugin.version=v0.3.1
+      # Allows users to authenticate using Google OAuth
+      # https://plugins.traefik.io/plugins/65d5360746079255c9ffd1e2/google-oidc-auth
+      #      - --experimental.plugins.google-oidc-auth-middleware.modulename=github.com/andrewkroh/google-oidc-auth-middleware
+      #      - --experimental.plugins.google-oidc-auth-middleware.version=v0.1.0
+      # A middleware plugin for Traefik which blocks JNDI attacks based on HTTP header values.
+      # https://plugins.traefik.io/plugins/628c9ec2ffc0cd18356a97a2/log4-shell
+      # - --experimental.plugins.plugin-log4shell.modulename=github.com/traefik/plugin-log4shell
+      # - --experimental.plugins.plugin-log4shell.version=v0.1.2
+      # Apply themes from http://theme.park to supported applications.
+      # https://plugins.traefik.io/plugins/62947288ffc0cd18356a97c1/theme-park
+      # - --experimental.plugins.traefik-themepark.modulename=github.com/packruler/traefik-themepark
+      # - --experimental.plugins.traefik-themepark.version=v1.4.2
+      # Enables Traefik Reverse Proxy to feed Umami Analytics with tracking events.
+      # https://plugins.traefik.io/plugins/6710d226573cd7803d65cb15/traefik-umami-feeder
+      #      - --experimental.plugins.traefik-umami-feeder.modulename=github.com/astappiev/traefik-umami-feeder
+      #      - --experimental.plugins.traefik-umami-feeder.version=v1.2.0
+      # Add Admin API & Web UI for Traefik configured dynamic files!
+      # https://plugins.traefik.io/plugins/65cb8b05769af9e5f2251e07/admin-api-web-ui
+      # - --experimental.plugins.traefik-plugin-AdminAPI_WebUI.modulename=github.com/Miromani4/traefik-plugin-AdminAPI_WebUI
+      # - --experimental.plugins.traefik-plugin-AdminAPI_WebUI.version=v1.2.5
+      # Take control over the response code returned along with removing response headers and response body.
+      # https://plugins.traefik.io/plugins/628c9f20108ecc83915d7778/response-code-override
+      #      - --experimental.plugins.response-code-override.modulename=github.com/Lepkem/traefik-plugin-response-code-override
+      #      - --experimental.plugins.response-code-override.version=v0.0.3
+      # Handle/Whitelist traffic originating from Cloudflare. Rewrite requests X-Forwarded-For header with the user IP
+      # https://plugins.traefik.io/plugins/6330891aa4caa9ddeffda114/cloudflare
+      #      - --experimental.plugins.traefik-cloudflare-plugin.modulename=github.com/Desuuuu/traefik-cloudflare-plugin
+      #      - --experimental.plugins.traefik-cloudflare-plugin.version=v1.0.0
+      # Traefik Plugin based on the Apache Ultimate Bad Bot Blocker(https://raw.githubusercontent.com/mitchellkrogza/apache-ultimate-bad-bot-blocker/tree/master)
+      # https://plugins.traefik.io/plugins/66721f91b6203b47e20005b1/trafik-ultimate-bad-bot-blocker
+      # - --experimental.plugins.traefik-ultimate-bad-bot-blocker.modulename=github.com/discoverygarden/traefik-ultimate-bad-bot-blocker
+      # - --experimental.plugins.traefik-ultimate-bad-bot-blocker.version=v0.2.0
+      # Middleware plugin to redirect to another URL on specific HTTP statuses.
+      # https://plugins.traefik.io/plugins/65be38dc52addb37b8074614/redirect-errors
+      #      - --experimental.plugins.redirecterrors.modulename=github.com/indivisible/redirecterrors
+      #      - --experimental.plugins.redirecterrors.version=v0.1.0
+      # (UNFINISHED) Waiting room plugin for Traefik
+      # https://plugins.traefik.io/plugins/65dbb16446079255c9ffd1e8/waiting-room
+      # - --experimental.plugins.traefik-waiting-room.modulename=github.com/korteke/traefik-waiting-room
+      # - --experimental.plugins.traefik-waiting-room.version=v0.0.2
+    labels:
+      <<: *traefik-labels
+      homepage.group: Infrastructure
+      homepage.name: Traefik
+      homepage.icon: traefik
+      homepage.href: https://$DOMAIN/api/
+      homepage.description: Reverse proxy
+      homepage.widget.type: traefik
+      homepage.widget.url: https://$DOMAIN/dashboard/
+      homepage.widget.fields: '["routers", "services", "middleware"]'
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      # While in Swarm Mode, Traefik uses labels found on services, not on individual containers.
+      # Therefore, if you use a compose file with Swarm Mode, labels should be defined in the deploy part of your service
+      # as shown:
+      labels:
+        <<: *traefik-labels
+      placement:
+        constraints: [node.role == manager]
+    restart: always

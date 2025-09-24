@@ -1,0 +1,33 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: crowdsec
+description: CrowdSec security engine
+type: container
+
+spec:
+  image: docker.io/crowdsecurity/crowdsec:latest
+  env:
+    UID: ${var.PUID:-1001}
+    GID: ${var.PGID:-999}
+    COLLECTIONS: crowdsecurity/appsec-crs crowdsecurity/appsec-generic-rules crowdsecurity/appsec-virtual-patching crowdsecurity/whitelist-good-actors crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/linux crowdsecurity/sshd
+  ports:
+    - name: lapi
+      containerPort: 8080
+    - name: appsec
+      containerPort: 7422
+    - name: metrics
+      containerPort: 6060
+  volumes:
+    - name: data
+      containerPath: /var/lib/crowdsec/data
+      sourcePath: ${var.config-path}/traefik/crowdsec/data
+    - name: config
+      containerPath: /etc/crowdsec
+      sourcePath: ${var.config-path}/traefik/crowdsec/etc/crowdsec
+    - name: plugins
+      containerPath: /usr/local/lib/crowdsec/plugins
+      sourcePath: ${var.config-path}/traefik/crowdsec/plugins
+    - name: logs
+      containerPath: /var/log/traefik
+      sourcePath: ${var.config-path}/traefik/logs
+  restartPolicy: always

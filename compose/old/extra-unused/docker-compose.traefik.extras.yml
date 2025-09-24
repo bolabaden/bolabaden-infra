@@ -1,0 +1,154 @@
+
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024        # CPU share weight (relative, 2-262144). Higher = more CPU *if competing*.
+#  mem_limit: 512m        # Max RAM usage (e.g., 64m, 1g). Exceeding = container kill.
+#  mem_reservation: 325m  # Soft RAM limit (e.g., 32m, 512m).  Best effort, not guaranteed.
+#  mem_swappiness: 30      # Swap usage (0-100). 0 = off. Higher = more swap, may slow down container.
+  #memswap_limit: 1024m    # Max RAM + Swap.  Usually same as mem_limit.
+  labels:
+    autoheal: 'true'
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: '0.10'
+      memory: 1024M
+#    reservations:
+ #     cpus: '0.05'
+  #    memory:  256M
+
+x-google-forward-auth-labels: &google-forward-auth-labels
+  traefik.enable: "true"
+  traefik.http.services.google-forward-auth.loadbalancer.server.port: 4180
+
+x-google-forward-auth-env: &google-forward-auth-env
+  <<: *google-forward-auth-env
+  CLIENT_ID: "$PROVIDERS_GOOGLE_CLIENT_ID"
+  CLIENT_SECRET: "$PROVIDERS_GOOGLE_CLIENT_SECRET"
+  COOKIE_DOMAIN: "$DOMAIN"
+  COOKIE_SECRET: "$PROVIDERS_GOOGLE_COOKIE_SECRET"
+  EMAIL_DOMAINS: "*"
+  HTTP_ADDRESS: "0.0.0.0:${GOOGLE_OAUTH2_PORT:-4180}"
+  OIDC_ISSUER_URL: "${GOOGLE_OAUTH2_OIDC_ISSUER_URL:-https://accounts.google.com}"
+  PROVIDER: "google"
+  REDIRECT_URL: "https://oauth2-google.$DOMAIN/oauth2/callback"
+  # Mandatory option when using oauth2-proxy with traefik
+  REVERSE_PROXY: "${GOOGLE_OAUTH2_REVERSE_PROXY:-true}"
+  # The following option skip the page requesting the user
+  # to click on a button to be redirected to the identity provider
+  # It can be activated only when traefik is not configure with
+  # the error redirection middleware as this example.
+  SKIP_PROVIDER_BUTTON: "${GOOGLE_OAUTH2_SKIP_PROVIDER_BUTTON:-true}"
+  # Required for traefik with ForwardAuth and static upstream configuration
+  UPSTREAMS: "static://202"
+  WHITELIST_DOMAINS: "${GOOGLE_OAUTH2_WHITELIST_DOMAINS:-.oauth.localhost}" # Required to allow redirection back to original requested target.
+  AUTH_HOST: "oauth.$DOMAIN"
+  DEFAULT_ACTION: ${GOOGLE_OAUTH2_DEFAULT_ACTION:-auth}
+  DEFAULT_PROVIDER: ${GOOGLE_OAUTH2_DEFAULT_PROVIDER:-google}
+  INSECURE_COOKIE: ${GOOGLE_OAUTH2_INSECURE_COOKIE:-false}
+  LIFETIME: ${GOOGLE_OAUTH2_LIFETIME:-86400} # 1 day
+  LOG_FORMAT: ${GOOGLE_OAUTH2_LOG_FORMAT:-text}
+  LOG_LEVEL: ${GOOGLE_OAUTH2_LOG_LEVEL:-trace} # set to trace while testing bypass rules
+  SECRET: $GOOGLE_OAUTH2_SECRET
+  URL_PATH: ${GOOGLE_OAUTH2_URL_PATH:-/_oauth}
+
+services:
+  traefik-bouncer:
+    # 🔹🔹 Traefik Bouncer 🔹🔹
+    # A plugin to block abusive clients based on IP address.
+    image: fbonalair/traefik-crowdsec-bouncer
+    container_name: traefik-bouncer
+    hostname: traefik-bouncer
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      GIN_MODE: ${TRAEFIK_CROWDSEC_BOUNCER_GIN_MODE:-release}  # default is debug (more logs)
+      CROWDSEC_BOUNCER_API_KEY: $TRAEFIK_CROWDSEC_BOUNCER_API_KEY  # Required.
+      CROWDSEC_AGENT_HOST: $TRAEFIK_CROWDSEC_LAPI_HOST:$TRAEFIK_CROWDSEC_LAPI_PORT  # CrowdSec host and port
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  google-oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy
+    container_name: google-oauth2-proxy
+    hostname: google-oauth2-proxy
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - ${OAUTH2_PROXY_PORT:-4180}:4180/tcp
+    environment:
+      <<: *common-env
+      OAUTH2_PROXY_CLIENT_ID: "$PROVIDERS_GOOGLE_CLIENT_ID"
+      OAUTH2_PROXY_CLIENT_SECRET: "$PROVIDERS_GOOGLE_CLIENT_SECRET"
+      OAUTH2_PROXY_COOKIE_DOMAIN: "$DOMAIN"
+      OAUTH2_PROXY_COOKIE_SECRET: "$PROVIDERS_GOOGLE_COOKIE_SECRET"
+      OAUTH2_PROXY_COOKIE_SECURE: "${GOOGLE_OAUTH2_PROXY_COOKIE_SECURE:-false}"
+      OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+      OAUTH2_PROXY_HTTP_ADDRESS: "0.0.0.0:${GOOGLE_OAUTH2_PROXY_PORT:-4180}"
+      OAUTH2_PROXY_OIDC_ISSUER_URL: "${GOOGLE_OAUTH2_PROXY_OIDC_ISSUER_URL:-https://accounts.google.com}"
+      OAUTH2_PROXY_PROVIDER: "google"
+      OAUTH2_PROXY_REDIRECT_URL: "https://$DOMAIN/oauth2/callback"
+      # Mandatory option when using oauth2-proxy with traefik
+      OAUTH2_PROXY_REVERSE_PROXY: "${GOOGLE_OAUTH2_PROXY_REVERSE_PROXY:-true}"
+      # The following option skip the page requesting the user
+      # to click on a button to be redirected to the identity provider
+      # It can be activated only when traefik is not configure with
+      # the error redirection middleware as this example.
+      OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "${GOOGLE_OAUTH2_PROXY_SKIP_PROVIDER_BUTTON:-true}"
+      # Required for traefik with ForwardAuth and static upstream configuration 
+      OAUTH2_PROXY_UPSTREAMS: "static://202"
+      OAUTH2_PROXY_WHITELIST_DOMAINS: "${GOOGLE_OAUTH2_PROXY_WHITELIST_DOMAINS:-.oauth2-proxy.localhost}"  # Required to allow redirection back to original requested target.
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.google-oauth2-proxy.rule: "Host(`google-oauth2.$DOMAIN`)"
+      traefik.http.services.google-oauth2-proxy.loadbalancer.server.port: ${GOOGLE_OAUTH2_PROXY_PORT:-4180}
+    restart: always
+
+  google-forward-auth-arm:
+    image: thomseddon/traefik-forward-auth:2.2.0-arm
+    container_name: google-forward-auth
+    hostname: google-forward-auth
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    security_opt:
+      - no-new-privileges:true
+    profiles: [arm]
+    environment:
+      <<: *google-forward-auth-env
+    labels:
+      <<: *google-forward-auth-labels
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *google-forward-auth-labels
+    restart: always
+
+  google-forward-auth:
+    # 🔹🔹 Google Forward Auth 🔹🔹
+    image: thomseddon/traefik-forward-auth
+    container_name: google-forward-auth
+    hostname: google-forward-auth
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      <<: *google-forward-auth-env
+    labels:
+      <<: *google-forward-auth-labels
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *google-forward-auth-labels
+    restart: always
+
+secrets:
+  traefik_forward_auth:
+    file: ${SECRETS_DIR:-./secrets}/traefik_forward_auth

@@ -1,0 +1,25 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: logrotate-traefik
+description: Logrotate for Traefik logs with human-readable output
+type: container
+
+spec:
+  image: docker.io/alpine:latest
+  user: root:root
+  env:
+    TZ: ${var.tz}
+  ports: []
+  volumes:
+    - name: logs
+      containerPath: /var/log/traefik
+      sourcePath: ${var.config-path}/traefik/logs
+  command: ["/traefik_logrotate_tail.sh"]
+  resources:
+    limits:
+      cpu: 100m
+      memory: 64Mi
+    requests:
+      memory: 8Mi
+  restartPolicy: always
+

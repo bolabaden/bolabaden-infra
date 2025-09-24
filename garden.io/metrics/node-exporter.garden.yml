@@ -1,0 +1,56 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: node-exporter
+description: Node Exporter for system metrics
+type: container
+
+spec:
+  image: docker.io/prom/node-exporter:latest
+  env:
+    DBUS_SESSION_BUS_ADDRESS: unix:path=/var/run/dbus/system_bus_socket
+  ports:
+    - name: metrics
+      containerPort: 9100
+  volumes:
+    - name: proc
+      containerPath: /host/proc
+      hostPath: /proc
+      readOnly: true
+    - name: sys
+      containerPath: /host/sys
+      hostPath: /sys
+      readOnly: true
+    - name: rootfs
+      containerPath: /rootfs
+      hostPath: /
+      readOnly: true
+    - name: dbus
+      containerPath: /var/run/dbus/system_bus_socket
+      hostPath: /run/dbus/system_bus_socket
+      readOnly: true
+    - name: machine-id
+      containerPath: /etc/machine-id
+      hostPath: /etc/machine-id
+      readOnly: true
+    - name: udev-data
+      containerPath: /run/udev/data
+      hostPath: /run/udev/data
+      readOnly: true
+  command:
+    - '--path.procfs=/host/proc'
+    - '--path.rootfs=/rootfs'
+    - '--path.sysfs=/host/sys'
+    - '--collector.cpu.info'
+    - '--collector.diskstats.device-exclude=^(ram|loop|fd|(h|s|v)d[a-z]|nvme\d+n\d+p)\d+$'
+    - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)'
+    - '--collector.interrupts'
+    - '--collector.processes'
+    - '--collector.systemd'
+    - '--collector.systemd.unit-include=.*'
+    - '--collector.systemd.unit-exclude=.+\.(automount|device|mount|scope|slice)'
+    - '--collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$'
+  labels:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9100"
+    prometheus.io/path: "metrics"
+  restartPolicy: always

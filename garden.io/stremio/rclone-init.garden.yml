@@ -1,0 +1,27 @@
+kind: Run
+apiVersion: garden.io/v2
+name: rclone-init
+description: Initialize rclone mounts
+type: container
+dependencies:
+  - deploy.rclone
+
+spec:
+  image: ghcr.io/coanghel/rclone-docker-automount/rclone-init:latest
+  env:
+    RCLONE_USERNAME: ""
+    RCLONE_PASSWORD: ""
+    RCLONE_PORT: ${var.RCLONE_PORT:-5572}
+    RCLONE_CONFIG_PATH: /config/rclone/rclone.conf
+  volumes:
+    - name: remote-mounts
+      containerPath: /mnt/remote
+      hostPath: /mnt/remote
+    - name: mounts-config
+      containerPath: /app/mounts.json
+      sourcePath: ${var.config-path}/rclone/mounts.json
+  healthCheck:
+    exec:
+      command: [mountpoint, -q, /mnt/remote]
+  restartPolicy: always
+

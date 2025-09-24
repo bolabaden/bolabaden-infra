@@ -1,0 +1,25 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: mariadb
+description: MariaDB database for WordPress
+type: container
+
+spec:
+  image: docker.io/mariadb:11
+  env:
+    MYSQL_ROOT_PASSWORD: ${var.WORDPRESS_DB_ROOT_PASSWORD}
+    MYSQL_DATABASE: ${var.WORDPRESS_DB_NAME:-wordpress}
+    MYSQL_USER: ${var.WORDPRESS_DB_USER}
+    MYSQL_PASSWORD: ${var.WORDPRESS_DB_PASSWORD}
+  ports:
+    - name: db
+      containerPort: 3306
+  volumes:
+    - name: data
+      containerPath: /var/lib/mysql
+      sourcePath: ${var.config-path}/wordpress/mariadb-data
+  healthCheck:
+    exec:
+      command: [mysqladmin, ping, -h, 127.0.0.1, -u, root, -p${var.WORDPRESS_DB_ROOT_PASSWORD}]
+  restartPolicy: always
+

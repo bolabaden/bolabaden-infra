@@ -1,0 +1,31 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: searxng
+description: SearxNG privacy-focused metasearch engine
+type: container
+
+spec:
+  image: docker.io/searxng/searxng:latest
+  env:
+    TZ: ${var.tz}
+    SEARXNG_BASE_URL: http://searxng:${var.SEARXNG_PORT:-8080}
+    SEARXNG_SECRET: ${var.SEARXNG_SECRET}
+  ports:
+    - name: http
+      containerPort: 8080
+  volumes:
+    - name: config
+      containerPath: /etc/searxng
+      sourcePath: ${var.config-path}/searxng/config
+    - name: data
+      containerPath: /var/cache/searxng
+      sourcePath: ${var.config-path}/searxng/data
+  ingresses:
+    - path: /
+      port: http
+      hostname: searxng.${var.domain}
+  healthCheck:
+    httpGet:
+      path: /
+      port: http
+  restartPolicy: always

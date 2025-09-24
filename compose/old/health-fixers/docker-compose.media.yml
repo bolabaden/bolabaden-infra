@@ -1,0 +1,109 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-duplicati-labels: &duplicati-labels
+  traefik.enable: "true"
+  traefik.http.services.duplicati.loadbalancer.server.port: 8200
+
+services:
+  duplicati:
+    # 🔹🔹 Duplicati 🔹🔹  # https://github.com/linuxserver/docker-duplicati
+    # backup client that securely stores encrypted, incremental, compressed backups on local storage, cloud
+    # storage services and remote file servers. It works with standard protocols like FTP, SSH, WebDAV as well as
+    # popular services like Microsoft OneDrive, Amazon S3, Google Drive, box.com, Mega, B2, and many others.
+    image: ghcr.io/linuxserver/duplicati
+    container_name: duplicati
+    hostname: duplicati
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    ports:
+      - ${DUPLICATI_PORT:-8200}:8200
+    volumes:
+      - ${ROOT_DIR:-.}:/source # Path you'd like to backup.
+      - ${CONFIG_PATH:-./volumes}/duplicati:/config # Duplicati configs
+      - ${DATA_DIR:-./data}/cloud-storage/backups:/backups # Backups will be stored here.
+    environment:
+      <<: *common-env
+      SETTINGS_ENCRYPTION_KEY: ${DUPLICATI_SETTINGS_ENCRYPTION_KEY:-mdwiFQyvlDgV9cQC5995Jx4XM9sXiqST23ryNBjIKl4n4HxcgvnJU4fF55wrvNQ}
+      DUPLICATI__WEBSERVICE_PASSWORD: ${DUPLICATI__WEBSERVICE_PASSWORD:-password}
+    labels:
+      <<: *duplicati-labels
+      homepage.group: Backup
+      homepage.name: Duplicati
+      homepage.icon: duplicati.png
+      homepage.href: https://duplicati.$DOMAIN/
+      homepage.description: A simple, open-source backup tool that allows you to create backups of your data and restore them when needed.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *duplicati-labels
+    restart: always
+
+  managarr:
+    # 🔹🔹 Managarr v0.5.1 built from tarball 🔹🔹  https://github.com/Dark-Alex-17/managarr
+    # A TUI/CLI tool for managing sonarr/radarr/etc, built on startup by downloading and extracting the tarball.
+    image: fedora:rawhide
+    container_name: managarr
+    hostname: managarr
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - infranet
+      - traefik_public
+    stdin_open: true
+    tty: true
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/managarr/config.yml:/root/.config/managarr/config.yml:ro
+    environment:
+      <<: *common-env
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+    command: >
+      sh -c "dnf upgrade -y && dnf install -y curl tar && \
+            if [ ! -f /usr/local/bin/managarr ]; then \
+              curl -L https://github.com/Dark-Alex-17/managarr/releases/download/v0.5.1/managarr-linux.tar.gz -o /tmp/managarr.tar.gz && \
+              tar -xzf /tmp/managarr.tar.gz -C /usr/local/bin && \
+              chmod +x /usr/local/bin/managarr; \
+            fi && exec managarr"

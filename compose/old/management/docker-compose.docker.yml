@@ -1,0 +1,109 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-cadvisor-labels: &cadvisor-labels
+  traefik.enable: "true"
+  traefik.http.services.cadvisor.loadbalancer.server.port: 8080
+
+x-dozzle-labels: &dozzle-labels
+  traefik.enable: "true"
+  traefik.http.services.dozzle.loadbalancer.server.port: 8080
+
+services:
+  cadvisor:
+    # 🔹🔹 Cadvisor 🔹🔹  # https://github.com/google/cadvisor
+    depends_on:
+      - prometheus
+    image: gcr.io/cadvisor/cadvisor
+    container_name: cadvisor
+    hostname: cadvisor
+    networks:
+      - traefik_public
+    ports:
+      - ${CADVISOR_PORT:-8080}:8080
+    security_opt:
+      - no-new-privileges:true
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run:/var/run:ro
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    labels:
+      <<: *cadvisor-labels
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *cadvisor-labels
+    restart: always
+
+  dozzle:
+    # 🔹🔹 Dozzle 🔹🔹
+    image: amir20/dozzle
+    container_name: dozzle
+    hostname: dozzle
+    networks:
+      - traefik_public
+    ports:
+      - ${DOZZLE_PORT:-9998}:8080
+    volumes:
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:z
+    labels:
+      <<: *dozzle-labels
+      homepage.group: System Monitoring
+      homepage.name: Dozzle
+      homepage.icon: dozzle.png
+      homepage.href: https://dozzle.$DOMAIN/
+      homepage.description: Real-time log viewer for Docker containers, providing an easy way to monitor application logs and troubleshoot issues.
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *dozzle-labels
+    restart: always

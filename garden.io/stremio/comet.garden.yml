@@ -1,0 +1,93 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: comet
+description: Comet Stremio addon for torrent indexing
+type: container
+
+spec:
+  image: docker.io/g0ldyy/comet:latest
+  env:
+    TZ: ${var.tz}
+    UMASK: ${var.UMASK:-002}
+    
+    # Stremio Addon Configuration
+    ADDON_ID: stremio.comet.fast
+    ADDON_NAME: Comet
+    
+    # FastAPI Server Configuration
+    FASTAPI_HOST: 0.0.0.0
+    FASTAPI_PORT: ${var.COMET_PORT:-2020}
+    FASTAPI_WORKERS: -1
+    USE_GUNICORN: true
+    CORS_ALLOW_ORIGINS: "*"
+    CORS_ALLOW_CREDENTIALS: true
+    CORS_ALLOW_METHODS: GET,POST,PUT,DELETE,OPTIONS
+    CORS_ALLOW_HEADERS: "*"
+    
+    # Dashboard Settings
+    DASHBOARD_ADMIN_PASSWORD: ${var.sudo-password}
+    
+    # Database Configuration
+    DATABASE_TYPE: sqlite
+    DATABASE_PATH: data/comet.db
+    
+    # Cache Settings (Seconds)
+    METADATA_CACHE_TTL: 2592000
+    TORRENT_CACHE_TTL: 1296000
+    DEBRID_CACHE_TTL: 86400
+    SCRAPE_LOCK_TTL: 300
+    SCRAPE_WAIT_TIMEOUT: 30
+    
+    # Indexer Manager Settings
+    INDEXER_MANAGER_TYPE: prowlarr
+    INDEXER_MANAGER_URL: https://prowlarr.${var.domain}
+    INDEXER_MANAGER_API_KEY: ${var.PROWLARR_API_KEY}
+    INDEXER_MANAGER_TIMEOUT: 60
+    INDEXER_MANAGER_INDEXERS: ${var.COMET_INDEXERS:-["animetosho", "anirena", "bitsearch", "eztv", "nyaasi", "thepiratebay", "therarbg", "yts"]}
+    
+    # Torrent Settings
+    GET_TORRENT_TIMEOUT: 5
+    DOWNLOAD_TORRENT_FILES: true
+    
+    # Scraping Configuration
+    SCRAPE_COMET: true
+    COMET_URL: https://comet.elfhosted.com
+    SCRAPE_ZILEAN: true
+    ZILEAN_URL: https://zilean.elfhosted.com
+    SCRAPE_TORRENTIO: true
+    TORRENTIO_URL: https://torrentio.strem.fun
+    SCRAPE_MEDIAFUSION: true
+    MEDIAFUSION_URL: https://mediafusion.elfhosted.com
+    MEDIAFUSION_LIVE_SEARCH: true
+    
+    # Debrid Stream Proxy Settings
+    PROXY_DEBRID_STREAM: true
+    PROXY_DEBRID_STREAM_PASSWORD: ${var.STREMTHRU_PROXY_AUTH}
+    PROXY_DEBRID_STREAM_MAX_CONNECTIONS: -1
+    PROXY_DEBRID_STREAM_DEBRID_DEFAULT_SERVICE: realdebrid
+    PROXY_DEBRID_STREAM_DEBRID_DEFAULT_APIKEY: ${var.REALDEBRID_TOKEN}
+    
+    # Content Filtering
+    REMOVE_ADULT_CONTENT: false
+    
+    # StremThru Integration
+    STREMTHRU_URL: https://stremthru.${var.domain}
+  ports:
+    - name: http
+      containerPort: 2020
+      hostPort: 2020
+      hostIp: 127.0.0.1
+  volumes:
+    - name: data
+      containerPath: /data
+      sourcePath: ${var.config-path}/stremio/addons/comet/data
+  ingresses:
+    - path: /
+      port: http
+      hostname: comet.${var.domain}
+  healthCheck:
+    httpGet:
+      path: /health
+      port: http
+  restartPolicy: always
+

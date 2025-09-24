@@ -1,0 +1,97 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+services:
+  autoheal:
+    # 🔹🔹 Autoheal 🔹🔹
+    # Monitor and restart unhealthy docker containers. This functionality was proposed to be included with the
+    # addition of HEALTHCHECK, however didn't make the cut. This container is a stand-in till there is native
+    # support for `--exit-on-unhealthy`. https://github.com/docker/docker/pull/22719.
+    image: willfarrell/autoheal
+    container_name: autoheal
+    network_mode: host  # allows access to all networks (for curl usage)
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock
+    environment:
+      <<: *common-env
+      AUTOHEAL_CONTAINER_LABEL: ${AUTOHEAL_CONTAINER_LABEL:-all}
+      AUTOHEAL_DEFAULT_STOP_TIMEOUT: ${AUTOHEAL_DEFAULT_STOP_TIMEOUT:-10}   # Docker waits max 10 seconds (the Docker default) for a container to stop before killing during restarts (container overridable via label, see below)
+      AUTOHEAL_INTERVAL: ${AUTOHEAL_INTERVAL:-5}   # check every 5 seconds
+      AUTOHEAL_ONLY_MONITOR_RUNNING: ${AUTOHEAL_ONLY_MONITOR_RUNNING:-false}
+      AUTOHEAL_START_PERIOD: ${AUTOHEAL_START_PERIOD:-0}   # wait 0 seconds before first health check
+      CURL_TIMEOUT: ${CURL_TIMEOUT:-30}
+      DOCKER_SOCK: ${DOCKER_SOCK:-/var/run/docker.sock}
+      WEBHOOK_URL: ${AUTOHEAL_WEBHOOK_URL:-}
+    labels:
+      autoheal.stop.timeout: ${AUTOHEAL_STOP_TIMEOUT:-20} # Per containers override for stop timeout seconds during restart
+    restart: always
+
+  deunhealth:
+    # 🔹🔹 DeUnhealth 🔹🔹
+    # Restart unhealthy containers marked with `deunhealth.restart.on.unhealthy=true` label
+    # Receive Docker events as stream instead of polling periodically
+    # Doesn't need network for security purposes
+    # Compatible with amd64, 386, arm64, arm32v7, arm32v6, ppc64le, s390x and riscv64 CPU architectures
+    # Since Docker is written in Go, the program is also written in Go and uses the official Docker Go API⁠
+    # https://hub.docker.com/r/qmcgaw/deunhealth/tags
+    image: qmcgaw/deunhealth
+    container_name: deunhealth
+    network_mode: none
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:z
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env  # for TZ env var.
+      DOCKER_HOST: ${DOCKER_HOST:-unix:///var/run/docker.sock}  # Docker host value such as unix:///var/run/docker.sock or tcp://socket-proxy:2375 (default: unix:///var/run/docker.sock)
+      LOG_LEVEL: ${DEUNHEALTH_LOG_LEVEL:-debug}  # debug, info, warning, error
+      HEALTH_SERVER_ADDRESS: ${DEUNHEALTH_HEALTH_SERVER_ADDRESS:-127.0.0.1:9999}  # Internal health http server listening address. Nothing to do with restarting unhealthy containers.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always

@@ -1,0 +1,132 @@
+
+
+
+volumes:
+  authentik-db:
+    name: authentik-db
+
+
+configs: {  }
+
+
+secrets: {  }
+
+
+services:
+  authentik-server:
+    depends_on:
+      authentik-postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.6.4}
+    container_name: authentik-server
+    hostname: authentik-server
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: authentik
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-fd14e752f651b2a0b31daf49247766e9856aa93b57a479b3f6f12ae477d78b3d}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: true
+      AUTHENTIK_EMAIL__HOST: smtp.gmail.com
+      AUTHENTIK_EMAIL__PORT: 587
+      AUTHENTIK_EMAIL__USERNAME: boden.crouch@gmail.com
+      AUTHENTIK_EMAIL__PASSWORD: ${GMAIL_APP_PASSWORD:?}
+      AUTHENTIK_EMAIL__USE_TLS: true
+      AUTHENTIK_EMAIL__USE_SSL: false
+      AUTHENTIK_EMAIL__TIMEOUT: 10
+      AUTHENTIK_EMAIL__FROM: boden.crouch@gmail.com
+      AUTHENTIK_BOOTSTRAP__EMAIL: boden.crouch@gmail.com
+      AUTHENTIK_BOOTSTRAP__PASSWORD: ${SUDO_PASSWORD:?}
+      AUTHENTIK_BOOTSTRAP_EMAIL: boden.crouch@gmail.com
+      AUTHENTIK_BOOTSTRAP_PASSWORD: ${SUDO_PASSWORD:?}
+    volumes:
+      - '${CONFIG_PATH:-./volumes}/authentik/media:/media'
+      - '${CONFIG_PATH:-./volumes}/authentik/custom-templates:/templates'
+    labels:
+      traefik.enable: true
+      traefik.http.middlewares.gzip.compress: true
+      traefik.http.routers.authentik-server.middlewares: gzip
+      traefik.http.routers.authentik-server.service: authentik-server
+      traefik.http.routers.authentik-server.rule: Host(`authentikserver.$DOMAIN`) || Host(`authentikserver.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.authentik-server.loadbalancer.server.port: 9000
+      kuma.authentik-server.http.name: ${AUTHENTIK_FQDN:-authentikserver.$TS_HOSTNAME.$DOMAIN}
+      kuma.authentik-server.http.url: ${AUTHENTIK_URL:-https://authentikserver.$DOMAIN}
+      kuma.authentik-server.http.interval: 60
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import socket; s=socket.socket(); s.settimeout(5); s.connect((\"127.0.0.1\", 9000)); s.close()' || exit 1"]
+      interval: 30s
+      retries: 10
+      timeout: 10s
+    command: server
+    restart: always
+  authentik-worker:
+    depends_on:
+      authentik-postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.6.4}
+    container_name: authentik-worker
+    hostname: authentik-worker
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
+      - '${CONFIG_PATH:-./volumes}/authentik/media:/media'
+      - '${CONFIG_PATH:-./volumes}/authentik/certs:/certs'
+      - '${CONFIG_PATH:-./volumes}/authentik/custom-templates:/templates'
+    user: root
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: authentik
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-fd14e752f651b2a0b31daf49247766e9856aa93b57a479b3f6f12ae477d78b3d}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: true
+      AUTHENTIK_EMAIL__HOST: smtp.gmail.com
+      AUTHENTIK_EMAIL__PORT: 587
+      AUTHENTIK_EMAIL__USERNAME: boden.crouch@gmail.com
+      AUTHENTIK_EMAIL__PASSWORD: ${GMAIL_APP_PASSWORD:?}
+      AUTHENTIK_EMAIL__USE_TLS: true
+      AUTHENTIK_EMAIL__USE_SSL: false
+      AUTHENTIK_EMAIL__TIMEOUT: 10
+      AUTHENTIK_EMAIL__FROM: boden.crouch@gmail.com
+      AUTHENTIK_BOOTSTRAP__EMAIL: boden.crouch@gmail.com
+      AUTHENTIK_BOOTSTRAP__PASSWORD: ${SUDO_PASSWORD:?}
+      AUTHENTIK_BOOTSTRAP_EMAIL: boden.crouch@gmail.com
+      AUTHENTIK_BOOTSTRAP_PASSWORD: ${SUDO_PASSWORD:?}
+    command: worker
+    restart: always
+  authentik-postgresql:
+    image: docker.io/postgres:16.3-alpine
+    container_name: authentik-postgresql
+    hostname: authentik-postgresql
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    volumes:
+      - '${CONFIG_PATH:-./volumes}/authentik/postgresql:/var/lib/postgresql/data'
+    environment:
+      POSTGRES_PASSWORD: authentik
+      POSTGRES_USER: authentik
+      POSTGRES_DB: authentik
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"]
+      interval: 2s
+      timeout: 10s
+      retries: 15
+    restart: always

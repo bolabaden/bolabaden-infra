@@ -1,0 +1,28 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: blackbox-exporter
+description: Blackbox Exporter for endpoint monitoring
+type: container
+
+spec:
+  image: docker.io/prom/blackbox-exporter:latest
+  ports:
+    - name: http
+      containerPort: 9115
+  volumes:
+    - name: config
+      containerPath: ${var.BLACKBOX_INTERNAL_CONFIG_PATH:-/etc/blackbox_exporter/config.yml}
+      sourcePath: ${var.config-path}/blackbox-exporter/blackbox.yml
+  command:
+    - '--config.file=${var.BLACKBOX_INTERNAL_CONFIG_PATH:-/etc/blackbox_exporter/config.yml}'
+    - '--log.level=${var.BLACKBOX_LOG_LEVEL:-info}'
+    - '--log.format=${var.BLACKBOX_LOG_FORMAT:-logfmt}'
+  labels:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9115"
+    prometheus.io/path: "metrics"
+  ingresses:
+    - path: /
+      port: http
+      hostname: blackbox.${var.domain}
+  restartPolicy: always

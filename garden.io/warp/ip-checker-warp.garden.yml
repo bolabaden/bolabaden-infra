@@ -1,0 +1,21 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: ip-checker-warp
+description: IP checker service using WARP network
+type: container
+
+spec:
+  image: docker.io/alpine:latest
+  env:
+    TZ: ${var.tz}
+  command:
+    - /bin/sh
+    - -c
+    - |
+      apk add --no-cache curl ipcalc
+      while true; do echo "$(date): $(curl -s --max-time 4 ifconfig.me)"; sleep 5; done
+  healthCheck:
+    exec:
+      command: [sh, -c, "if curl -s --max-time 4 https://cloudflare.com/cdn-cgi/trace | grep -qE \"^warp=on|warp=plus$\"; then echo \"Cloudflare WARP is active.\" && exit 0; else echo \"Cloudflare WARP is not active.\" && exit 1; fi"]
+  restartPolicy: always
+

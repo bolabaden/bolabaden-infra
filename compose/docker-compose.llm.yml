@@ -1,0 +1,494 @@
+
+
+
+configs:
+  mcpo_config:
+    file: ${CONFIG_PATH:-./volumes}/mcpo/mcp_servers.json
+
+
+
+services:
+  open-webui:
+    # 🔹🔹 Open WebUI 🔹🔹
+    depends_on:
+      mcpo:
+        condition: service_healthy
+      litellm:
+        condition: service_healthy
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    hostname: open-webui
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - ${OPEN_WEBUI_PORT:-8080}
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/open-webui/uploads:/app/backend/data/uploads
+      - ${CONFIG_PATH:-./volumes}/open-webui/vector_db:/app/backend/data/vector_db:rw
+      - ${CONFIG_PATH:-./volumes}/open-webui/webui.db:/app/backend/data/webui.db:rw
+    environment:
+      # ===== GENERAL CONFIGURATION =====
+      # Controls whether admin users can export data
+      ENABLE_ADMIN_EXPORT: True
+
+      # Enables admin users to access all chats
+      ENABLE_ADMIN_CHAT_ACCESS: True
+
+      # Bypasses model access control. (default: False)
+      BYPASS_MODEL_ACCESS_CONTROL: True
+
+      # Environment setting (dev/prod) - Docker default is prod
+      ENV: prod
+
+      # If set to False, all PersistentConfig variables are treated as regular variables
+      ENABLE_PERSISTENT_CONFIG: True
+
+      # Sets the port to run Open WebUI from
+      PORT: ${OPEN_WEBUI_PORT:-8080}
+
+      # When enabled, saves each chunk of streamed chat data to database in real time
+      ENABLE_REALTIME_CHAT_SAVE: True
+
+      # Used for identifying the Git SHA of the build for releases
+      WEBUI_BUILD_HASH: dev-build
+
+      # ===== AIOHTTP CLIENT CONFIGURATION =====
+      # Specifies the timeout duration in seconds for the AIOHTTP client
+      AIOHTTP_CLIENT_TIMEOUT: 300
+
+      # Sets the timeout in seconds for fetching the model list
+      AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST: 10
+
+      # Sets the timeout in seconds for fetching the OpenAI model list
+      AIOHTTP_CLIENT_TIMEOUT_OPENAI_MODEL_LIST: 10
+
+      # ===== DIRECTORY CONFIGURATION =====
+      # Specifies the base directory for data storage
+      DATA_DIR: ./data
+
+      # Specifies the location of the built frontend files
+      FRONTEND_BUILD_DIR: ../build
+
+      # Specifies the directory for static files
+      STATIC_DIR: ./static
+
+      # ===== OLLAMA CONFIGURATION =====
+      # Configures the Ollama backend URL
+      OLLAMA_BASE_URL: /ollama
+
+      # Builds the Docker image with a bundled Ollama instance
+      USE_OLLAMA_DOCKER: false
+
+      # If set, assumes Helm chart deployment
+      K8S_FLAG: False
+
+      # ===== SECURITY CONFIGURATION =====
+      # Forwards user information as X-headers to OpenAI API and Ollama API
+      ENABLE_FORWARD_USER_INFO_HEADERS: False
+
+      # Sets the SameSite attribute for session cookies (lax/strict/none)
+      WEBUI_SESSION_COOKIE_SAME_SITE: lax
+
+      # Sets the Secure attribute for session cookies
+      WEBUI_SESSION_COOKIE_SECURE: False
+
+      # Sets the SameSite attribute for auth cookies
+      WEBUI_AUTH_COOKIE_SAME_SITE: lax
+
+      # Sets the Secure attribute for auth cookies
+      WEBUI_AUTH_COOKIE_SECURE: False
+
+      # Enables or disables authentication
+      WEBUI_AUTH: ${WEBUI_AUTH:-True}
+
+      # Overrides the randomly generated string used for JSON Web Token
+      WEBUI_SECRET_KEY: ${OPEN_WEBUI_SECRET_KEY:?}
+
+      # When enabled, makes automatic update checks and notifies about version updates
+      ENABLE_VERSION_UPDATE_CHECK: True
+
+      # Disables Open WebUI's network connections for update checks and automatic model downloads
+      OFFLINE_MODE: False
+
+      # Resets the config.json file on startup
+      RESET_CONFIG_ON_START: False
+
+      # Enables safe mode, which disables potentially unsafe features
+      SAFE_MODE: False
+
+      # Sets the allowed origins for Cross-Origin Resource Sharing (CORS)
+      CORS_ALLOW_ORIGIN: ${OPEN_WEBUI_CORS_ALLOWED_ORIGIN:-*}
+
+      # Determines whether to allow custom models defined on the Hub
+      RAG_EMBEDDING_MODEL_TRUST_REMOTE_CODE: True
+
+      # Determines whether to allow custom models for reranking
+      RAG_RERANKING_MODEL_TRUST_REMOTE_CODE: True
+
+      # Toggles automatic update of the Sentence-Transformer model
+      RAG_EMBEDDING_MODEL_AUTO_UPDATE: True
+
+      # Toggles automatic update of the reranking model
+      RAG_RERANKING_MODEL_AUTO_UPDATE: True
+
+      # ===== VECTOR DATABASE CONFIGURATION =====
+      # Specifies which vector database system to use
+      VECTOR_DB: chroma
+
+      # ===== RAG CONFIGURATION =====
+      # Sets the directory for TikToken cache
+      TIKTOKEN_CACHE_DIR: /app/backend/data/cache/tiktoken
+
+      # Sets the batch size for OpenAI embeddings
+      RAG_EMBEDDING_OPENAI_BATCH_SIZE: 1
+
+      # ===== DOCKER-SPECIFIC CONFIGURATION =====
+      # Indicates running in Docker environment
+      DOCKER: true
+
+      # Home directory for the container
+      HOME: /root
+
+      # Hugging Face home directory for embedding models
+      HF_HOME: /app/backend/data/cache/embedding/models
+
+      # Sentence Transformers home directory
+      SENTENCE_TRANSFORMERS_HOME: /app/backend/data/cache/embedding/models
+
+      # CUDA Docker version to use
+      USE_CUDA_DOCKER_VER: cu128
+
+      # Embedding model to use in Docker
+      USE_EMBEDDING_MODEL_DOCKER: sentence-transformers/all-MiniLM-L6-v2
+
+      # ===== TELEMETRY DISABLING =====
+      # Disables anonymized telemetry
+      ANONYMIZED_TELEMETRY: false
+
+      # Disables tracking
+      DO_NOT_TRACK: true
+
+      # Disables Scarf analytics
+      SCARF_NO_ANALYTICS: true
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.open-webui.rule: Host(`open-webui.$DOMAIN`) || Host(`open-webui.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.open-webui.loadbalancer.server.port: ${OPEN_WEBUI_PORT:-8080}
+      homepage.group: AI
+      homepage.name: Open WebUI
+      homepage.icon: open-webui.png
+      homepage.href: https://open-webui.$DOMAIN/
+      homepage.description: Web interface for chatting with local/remote LLMs, tools, and knowledge bases
+      kuma.open-webui.http.name: open-webui.$TS_HOSTNAME.$DOMAIN
+      kuma.open-webui.http.url: https://open-webui.$DOMAIN
+      kuma.open-webui.http.interval: 20
+    command: ["bash", "start.sh"]
+    working_dir: /app/backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8080"]
+      interval: 5s
+      timeout: 30s
+      retries: 10
+    restart: always
+  mcpo:
+    image: ghcr.io/open-webui/mcpo:main
+    container_name: mcpo
+    hostname: mcpo
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - 8000
+    configs:
+      - source: mcpo_config
+        target: /app/config/mcp_servers.json
+        mode: 0444
+#    volumes:
+#      - ${CONFIG_PATH:-./volumes}/mcp/mcpo/logs:/app/logs
+#      - ${CONFIG_PATH:-./volumes}/mcp/mcpo/data:/app/data
+    environment:
+      MCPO_API_KEY: $MCPO_API_KEY
+    labels:
+      traefik.enable: true
+      traefik.http.routers.mcpo.middlewares: nginx-auth@file
+      traefik.http.routers.mcpo.rule: Host(`mcpo.$DOMAIN`) || Host(`mcpo.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.mcpo.loadbalancer.server.port: 8000
+      homepage.group: MCPO
+      homepage.name: MCPO
+      homepage.icon: mcpo.png
+      homepage.href: https://mcpo.$DOMAIN/
+      homepage.description: MCP Orchestrator exposing model/context tools over the MCP protocol
+      kuma.mcpo.http.name: mcpo.$TS_HOSTNAME.$DOMAIN
+      kuma.mcpo.http.url: https://mcpo.$DOMAIN
+      kuma.mcpo.http.interval: "30"
+    command: --api-key "$MCPO_API_KEY" --host 0.0.0.0 --port 8000 --cors-allow-origins "*" --config /app/config/mcp_servers.json
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8000/openapi.json"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: always
+
+  # Model Updater Service - Runs on-demand to update free_chat_models.json
+  model-updater:
+    profiles:
+      - unfinished
+    build:
+      context: https://github.com/th3w1zard1/llm_fallbacks.git#main
+      dockerfile_inline: |
+        FROM python:3.13-slim
+        WORKDIR /app
+        RUN apt-get update && apt-get install -y \
+            curl \
+            && rm -rf /var/lib/apt/lists/*
+        COPY . .
+        RUN pip install --no-cache-dir -r requirements.txt
+        RUN mkdir -p /app/cache
+        ENV PYTHONPATH=/app
+        ENV PYTHONUNBUFFERED=1
+        RUN useradd --create-home --shell /bin/bash app && \
+            chown -R app:app /app
+        USER app
+        CMD ["python", "src/llm_fallbacks/generate_configs.py"]
+    container_name: model-updater
+    hostname: model-updater
+    networks:
+      - backend
+      - publicnet
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/litellm:/app/config:rw
+      - model-updater-cache:/app/cache
+    environment:
+      - OPENROUTER_API_KEY=$OPENROUTER_API_KEY
+      - POSTGRES_PASSWORD=${LITELLM_POSTGRES_PASSWORD:-postgres}
+      - TZ=${TZ:-UTC}
+    restart: no
+
+  litellm:
+    image: 'ghcr.io/berriai/litellm-database:main-stable'
+#    image: ghcr.io/berriai/litellm:main-stable
+    container_name: litellm
+    hostname: litellm
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - 4000
+    depends_on:
+      litellm-postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/litellm:/app/config:ro
+    #configs:
+    #  - source: litellm_config.yaml
+    #    target: /app/config/litellm_config.yaml
+    #    mode: 0440
+    environment:
+      - 'LITELLM_LOG=${LITELLM_LOG:-INFO}'
+      - 'LITELLM_MODE=${LITELLM_MODE:-PRODUCTION}'
+      - 'UI_USERNAME=${LITELLM_UI_USERNAME:-admin}'
+      - 'UI_PASSWORD=$LITELLM_MASTER_KEY'
+      - 'DATABASE_URL=postgresql://${LITELLM_POSTGRES_USER:-litellm}:${LITELLM_POSTGRES_PASSWORD:-litellm}@${LITELLM_POSTGRES_HOSTNAME:-litellm-postgres}:5432/${LITELLM_POSTGRES_DB:-litellm}'
+      - 'REDIS_HOST=${REDIS_HOSTNAME:-redis}'
+      - 'REDIS_PORT=${REDIS_PORT:-6379}'
+      - 'POSTGRES_USER=${LITELLM_POSTGRES_USER:-litellm}'
+      - 'POSTGRES_PASSWORD=${LITELLM_POSTGRES_PASSWORD:-litellm}'
+      - 'POSTGRES_DB=${LITELLM_POSTGRES_DB:-litellm}'
+      - 'VOYAGE_API_KEY=$VOYAGE_API_KEY'
+      - 'AI21_API_KEY=$AI21_API_KEY'
+      - 'ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY'
+      - 'APIFY_API_TOKEN=$APIFY_API_TOKEN'
+      - 'APIPIE_API_KEY=$APIPIE_API_KEY'
+      - 'ARLIAI_API_KEY=$ARLIAI_API_KEY'
+      - 'AWANLLM_API_KEY=$AWANLLM_API_KEY'
+      - 'BASETEN_API_KEY=$BASETEN_API_KEY'
+      - 'BITO_ACCESS_KEY=$BITO_ACCESS_KEY'
+      - 'BRAVE_API_KEY=$BRAVE_API_KEY'
+      - 'CEREBRIUMAI_API_KEY=$CEREBRIUMAI_API_KEY'
+      - 'DEEPINFRA_API_KEY=$DEEPINFRA_API_KEY'
+      - 'DEEPGRAM_API_KEY=$DEEPGRAM_API_KEY'
+      - 'DEEPSEEK_API_KEY=$DEEPSEEK_API_KEY'
+      - 'DOCKER_TOKEN=$DOCKER_TOKEN'
+      - 'DOCKERHUB_TOKEN=$DOCKERHUB_TOKEN'
+      - 'EVERART_API_KEY=$EVERART_API_KEY'
+      - 'EXA_API_KEY=$EXA_API_KEY'
+      - 'FOREFRONTAI_API_KEY=$FOREFRONTAI_API_KEY'
+      - 'GEMINI_API_KEY=$GEMINI_API_KEY'
+      - 'GLAMA_API_KEY=$GLAMA_API_KEY'
+      - 'GROK_API_KEY=$GROK_API_KEY'
+      - 'GROQ_API_KEY=$GROQ_API_KEY'
+      - 'HF_TOKEN=$HF_TOKEN'
+      - 'HUGGINGFACE_ACCESS_TOKEN=$HUGGINGFACE_ACCESS_TOKEN'
+      - 'HUGGINGFACE_API_TOKEN=$HUGGINGFACE_API_TOKEN'
+      - 'JINA_API_KEY=$JINA_API_KEY'
+      - 'KAGI_API_KEY=$KAGI_API_KEY'
+      - 'KLUSTER_API_KEY=$KLUSTER_API_KEY'
+      - 'LANGCHAIN_API_KEY=$LANGCHAIN_API_KEY'
+      - 'LANGSMITH_API_KEY=$LANGSMITH_API_KEY'
+      - 'LITELLM_MASTER_KEY=$LITELLM_MASTER_KEY'
+      - 'MISTRAL_API_KEY=$MISTRAL_API_KEY'
+      - 'MISTRALAI_API_KEY=$MISTRALAI_API_KEY'
+      - 'OPENAI_API_KEY=$OPENAI_API_KEY'
+      - 'OPENROUTER_API_KEY=$OPENROUTER_API_KEY'
+      - 'PERPLEXITY_API_KEY=$PERPLEXITY_API_KEY'
+      - 'PERPLEXITYAI_API_KEY=$PERPLEXITYAI_API_KEY'
+      - 'REPLICATE_API_KEY=$REPLICATE_API_KEY'
+      - 'SAMBANOVA_API_KEY=$SAMBANOVA_API_KEY'
+      - 'SEARCH1API_KEY=$SEARCH1API_KEY'
+      - 'SERPAPI_API_KEY=$SERPAPI_API_KEY'
+      - 'SMITHERY_API_KEY=$SMITHERY_API_KEY'
+      - 'TANDOOR_SECRET_KEY=$TANDOOR_SECRET_KEY'
+      - 'TODOIST_API_KEY=$TODOIST_API_KEY'
+      - 'TOGETHERAI_API_KEY=$TOGETHERAI_API_KEY'
+      - 'UNIFY_API_KEY=$UNIFY_API_KEY'
+      - 'UPSTAGE_API_KEY=$UPSTAGE_API_KEY'
+      - 'UPSTAGEAI_API_KEY=$UPSTAGEAI_API_KEY'
+      - 'VEYRAX_API_KEY=$VEYRAX_API_KEY'
+      - 'YANDEX_API_KEY=$YANDEX_API_KEY'
+      - 'YOU_API_KEY=$YOU_API_KEY'
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.litellm.rule: 'Host(`litellm.$DOMAIN`) || Host(`litellm.$TS_HOSTNAME.$DOMAIN`)'
+      traefik.http.services.litellm.loadbalancer.server.port: 4000
+      homepage.group: AI
+      homepage.name: Litellm
+      homepage.icon: litellm.png
+      homepage.href: https://litellm.$DOMAIN/
+      homepage.description: LLM gateway/router with provider failover, caching, rate limits, and analytics
+      kuma.litellm.http.name: "litellm.$TS_HOSTNAME.$DOMAIN"
+      kuma.litellm.http.url: "https://litellm.$DOMAIN"
+      kuma.litellm.http.interval: "60"
+    command: --config /app/config/litellm_config.yaml --port 4000 --host 0.0.0.0
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/health/liveliness"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 30s
+    restart: always
+
+  litellm-postgres:
+#    image: 'docker.io/postgres:16-alpine'
+    image: docker.io/postgres:16.3-alpine3.20
+    container_name: litellm-postgres
+    hostname: ${LITELLM_POSTGRES_HOSTNAME:-litellm-postgres}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    environment:
+      - 'POSTGRES_DB=${LITELLM_POSTGRES_DB:-litellm}'
+      - 'POSTGRES_PASSWORD=${LITELLM_POSTGRES_PASSWORD:-litellm}'
+      - 'POSTGRES_USER=${LITELLM_POSTGRES_USER:-litellm}'
+    volumes:
+      - '${CONFIG_PATH:-./volumes}/litellm/pgdata:/var/lib/postgresql/data'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    restart: always
+
+  gptr:
+  #  build:
+  #    context: https://github.com/bolabaden/ai-researchwizard.git#master  # :/frontend/nextjs
+  #    dockerfile: Dockerfile.fullstack
+    image: docker.io/bolabaden/ai-researchwizard-aio-fullstack:master
+    container_name: gptr
+    hostname: gptr
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - 3000  # Nginx-proxied access to GPTR.
+      - 3001  # Internal NextJS GPTR site
+      - 8000  # Static GPTR
+      - 8080  # MCP Server Port
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/gptr/logs:/usr/src/app/logs
+      - ${CONFIG_PATH:-./volumes}/gptr/outputs:/usr/src/app/outputs
+      - ${CONFIG_PATH:-./volumes}/gptr/reports:/usr/src/app/reports
+    stdin_open: true
+    environment:
+      ANTHROPIC_API_KEY: $ANTHROPIC_API_KEY
+      BRAVE_API_KEY: $BRAVE_API_KEY
+      DEEPSEEK_API_KEY: $DEEPSEEK_API_KEY
+      EXA_API_KEY: $EXA_API_KEY
+      FIRECRAWL_API_KEY: $FIRECRAWL_API_KEY
+      FIRE_CRAWL_API_KEY: $FIRE_CRAWL_API_KEY
+      GEMINI_API_KEY: $GEMINI_API_KEY
+      GLAMA_API_KEY: $GLAMA_API_KEY
+      GROQ_API_KEY: $GROQ_API_KEY
+      HF_TOKEN: $HF_TOKEN
+      HUGGINGFACE_ACCESS_TOKEN: $HUGGINGFACE_ACCESS_TOKEN
+      HUGGINGFACE_API_TOKEN: $HUGGINGFACE_API_TOKEN
+      LANGCHAIN_API_KEY: $LANGCHAIN_API_KEY
+      MISTRAL_API_KEY: $MISTRAL_API_KEY
+      MISTRALAI_API_KEY: $MISTRALAI_API_KEY
+      OPENAI_API_KEY: $OPENAI_API_KEY
+      OPENROUTER_API_KEY: $OPENROUTER_API_KEY
+      PERPLEXITY_API_KEY: $PERPLEXITY_API_KEY
+      PERPLEXITYAI_API_KEY: $PERPLEXITYAI_API_KEY
+      REPLICATE_API_KEY: $REPLICATE_API_KEY
+      REVID_API_KEY: $REVID_API_KEY
+      SAMBANOVA_API_KEY: $SAMBANOVA_API_KEY
+      SEARCH1API_KEY: $SEARCH1API_KEY
+      SERPAPI_API_KEY: $SERPAPI_API_KEY
+      TAVILY_API_KEY: $TAVILY_API_KEY
+      TOGETHERAI_API_KEY: $TOGETHERAI_API_KEY
+      UNIFY_API_KEY: $UNIFY_API_KEY
+      UPSTAGE_API_KEY: $UPSTAGE_API_KEY
+      UPSTAGEAI_API_KEY: $UPSTAGEAI_API_KEY
+      YOU_API_KEY: $YOU_API_KEY
+      CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING:-true}
+      LOGGING_LEVEL: ${GPTR_LOGGING_LEVEL:-DEBUG}
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: $NEXT_PUBLIC_GA_MEASUREMENT_ID
+      NEXT_PUBLIC_GPTR_API_URL: https://gptr.$DOMAIN
+      LANGSMITH_TRACING: ${LANGSMITH_TRACING:-true}
+      LANGSMITH_ENDPOINT: ${LANGSMITH_ENDPOINT:-https://api.smith.langchain.com}
+      LANGSMITH_API_KEY: $LANGSMITH_API_KEY
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.gptr-nextjs.service: gptr-nextjs@docker
+      traefik.http.routers.gptr-nextjs.rule: Host(`gptr-nextjs.$DOMAIN`) || Host(`gptr-nextjs.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.gptr-nextjs.loadbalancer.server.port: 3000
+      traefik.http.routers.gptr-legacy.service: gptr-legacy@docker
+      traefik.http.routers.gptr-legacy.rule: Host(`gptr.$DOMAIN`) || Host(`gptr.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.gptr-legacy.loadbalancer.server.port: 8000
+      traefik.http.routers.gptr-mcp.service: gptr-mcp@docker
+      traefik.http.routers.gptr-mcp.rule: Host(`gptr-mcp.$DOMAIN`) || Host(`gptr-mcp.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.gptr-mcp.loadbalancer.server.port: 8080
+      homepage.group: AI
+      homepage.name: AI Research Wizard
+      homepage.description: Full-stack AI research and scraping toolkit with Next.js UI is a web scraper and researcher that uses AI to help you find information quickly.
+      homepage.icon: gptr.png
+      homepage.href: https://gptr.$DOMAIN/
+      kuma.gptr.http.name: "gptr.$TS_HOSTNAME.$DOMAIN"
+      kuma.gptr.http.url: "https://gptr.$DOMAIN"
+      kuma.gptr.http.interval: "30"
+    healthcheck:  # docker exec gptr ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
+      test: ["CMD-SHELL", "(wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 && wget -qO- http://127.0.0.1:8000 > /dev/null 2>&1) || exit 1"]  # && (wget -qO- http://127.0.0.1:8080 > /dev/null 2>&1) || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 2m
+    restart: always
+
+volumes:
+  model-updater-cache:
+    driver: local
+  scheduler-logs:
+    driver: local

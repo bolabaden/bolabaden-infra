@@ -1,0 +1,180 @@
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-worker-priority: &swarm-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+services:
+  lidarr-exporter:
+    # 🔹🔹 Lidarr Exporter 🔹🔹  # https://github.com/onedr0p/exportarr
+    # Lidarr metrics for Prometheus
+    depends_on:
+      - prometheus
+      - lidarr
+    # image: ghcr.io/onedr0p/exportarr
+    # use this one with arm:
+    image: ghcr.io/onedr0p/exportarr:master@sha256:22bc953901430c69d4b489fe071b16c9eba9d80ed1963e1c5bf2d08e11b4e70a
+    container_name: lidarr-exporter
+    hostname: lidarr-exporter
+    networks:
+      - infranet
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${LIDARR_EXPORTER_PORT:-9709}:${LIDARR_EXPORTER_PORT:-9709}
+    environment:
+      APIKEY: $LIDARR_API_KEY
+      ENABLE_ADDITIONAL_METRICS: ${LIDARR_EXPORTER_ENABLE_ADDITIONAL_METRICS:-TRUE}
+      PORT: ${LIDARR_EXPORTER_PORT:-9709}
+      URL: ${LIDARR_EXPORTER_URL:-http://lidarr:${LIDARR_PORT:-8686}}
+    command: ["lidarr"]
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  radarr-exporter:
+    # 🔹🔹 Radarr Exporter 🔹🔹  # https://github.com/onedr0p/exportarr
+    # Radarr metrics for Prometheus
+    depends_on:
+      - prometheus
+      - radarr
+    # image: ghcr.io/onedr0p/exportarr
+    # use this one with arm:
+    image: ghcr.io/onedr0p/exportarr:master@sha256:22bc953901430c69d4b489fe071b16c9eba9d80ed1963e1c5bf2d08e11b4e70a
+    container_name: radarr-exporter
+    hostname: radarr-exporter
+    networks:
+      - infranet
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${RADARR_EXPORTER_PORT:-9707}:${RADARR_EXPORTER_PORT:-9707}
+    environment:
+      PORT: ${RADARR_EXPORTER_PORT:-9707}
+      URL: http://radarr:${RADARR_PORT:-7878}
+      APIKEY: $RADARR_API_KEY
+      ENABLE_ADDITIONAL_METRICS: ${RADARR_EXPORTER_ENABLE_ADDITIONAL_METRICS:-true}
+    command: ["radarr"]
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: "no"
+
+  readarr-exporter:
+    # 🔹🔹 Readarr Exporter 🔹🔹  # https://github.com/onedr0p/exportarr
+    # Readarr metrics for Prometheus
+    depends_on:
+      - prometheus
+      - readarr
+    # image: ghcr.io/onedr0p/exportarr
+    # use this one with arm:
+    image: ghcr.io/onedr0p/exportarr:master@sha256:22bc953901430c69d4b489fe071b16c9eba9d80ed1963e1c5bf2d08e11b4e70a
+    container_name: readarr-exporter
+    hostname: readarr-exporter
+    networks:
+      - infranet
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${READARR_EXPORTER_PORT:-9706}:${READARR_EXPORTER_PORT:-9706}
+    environment:
+      PORT: ${READARR_EXPORTER_PORT:-9706}
+      URL: https://readarr:${READARR_PORT:-8787}
+      APIKEY: $READARR_API_KEY
+      ENABLE_ADDITIONAL_METRICS: ${READARR_EXPORTER_ENABLE_ADDITIONAL_METRICS:-true}
+    command: ["readarr"]
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: "no"
+
+  sonarr-exporter:
+    # 🔹🔹 Sonarr Exporter 🔹🔹  # https://github.com/onedr0p/exportarr
+    # Sonarr metrics for Prometheus
+    depends_on:
+      - prometheus
+      - sonarr
+    # image: ghcr.io/onedr0p/exportarr
+    # use this one with arm:
+    image: ghcr.io/onedr0p/exportarr:master@sha256:22bc953901430c69d4b489fe071b16c9eba9d80ed1963e1c5bf2d08e11b4e70a
+    container_name: sonarr-exporter
+    hostname: sonarr-exporter
+    networks:
+      - infranet
+    ports:
+      - ${SONARR_EXPORTER_PORT:-9708}:${SONARR_EXPORTER_PORT:-9708}
+    security_opt:
+      - no-new-privileges:true
+    command: ["sonarr"]
+    environment:
+      PORT: ${SONARR_EXPORTER_PORT:-9708}
+      URL: http://${GLUETUN_IP:-172.19.4.1}:${SONARR_PORT:-8989}
+      APIKEY: $SONARR_API_KEY
+      ENABLE_ADDITIONAL_METRICS: ${SONARR_EXPORTER_ENABLE_ADDITIONAL_METRICS:-true}
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: "no"
+
+  whisparr-exporter:
+    # 🔹🔹 Whisparr Exporter 🔹🔹  # https://github.com/onedr0p/exportarr
+    # Whisparr metrics for Prometheus
+    depends_on:
+      - prometheus
+      - whisparr
+    # image: ghcr.io/onedr0p/exportarr
+    # use this one with arm:
+    image: ghcr.io/onedr0p/exportarr:master@sha256:22bc953901430c69d4b489fe071b16c9eba9d80ed1963e1c5bf2d08e11b4e70a
+    container_name: whisparr-exporter
+    hostname: whisparr-exporter
+    networks:
+      - infranet
+    ports:
+      - ${WHISPARR_EXPORTER_PORT:-9710}:${WHISPARR_EXPORTER_PORT:-9710}
+    security_opt:
+      - no-new-privileges:true
+    command: ["whisparr"]
+    environment:
+      PORT: ${WHISPARR_EXPORTER_PORT:-9710}
+      URL: http://whisparr:${WHISPARR_PORT:-6969}
+      APIKEY: $WHISPARR_API_KEY
+      ENABLE_ADDITIONAL_METRICS: ${WHISPARR_EXPORTER_ENABLE_ADDITIONAL_METRICS:-true}
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: "no"

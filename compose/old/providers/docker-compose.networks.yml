@@ -1,0 +1,394 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-gluetun-labels: &gluetun-labels
+  dockupdater.disable: "true"
+  # AIOStreams
+  traefik.http.routers.aiostreams.service: aiostreams
+  traefik.http.routers.aiostreams.rule: Host(`aiostreams.$DOMAIN`)
+  traefik.http.services.aiostreams.loadbalancer.server.port: 3000
+  # Autobrr
+  traefik.http.routers.autobrr.service: autobrr
+  traefik.http.routers.autobrr.rule: Host(`autobrr.$DOMAIN`)
+  traefik.http.services.autobrr.loadbalancer.server.port: ${AUTOBRR__PORT:-7474}
+  # Deluge
+  traefik.http.routers.deluge.service: deluge
+  traefik.http.routers.deluge.rule: Host(`deluge.$DOMAIN`)
+  traefik.http.services.deluge.loadbalancer.server.port: 8112
+  # Flaresolverr
+  traefik.http.routers.flaresolverr.service: flaresolverr
+  traefik.http.routers.flaresolverr.rule: Host(`flaresolverr.$DOMAIN`)
+  traefik.http.services.flaresolverr.loadbalancer.server.port: 8191
+  # Jackett
+  traefik.http.routers.jackett.service: jackett
+  traefik.http.routers.jackett.rule: Host(`jackett.$DOMAIN`)
+  traefik.http.services.jackett.loadbalancer.server.port: 9117
+  # Prowlarr
+  traefik.http.routers.prowlarr.service: prowlarr
+  traefik.http.routers.prowlarr.rule: Host(`prowlarr.$DOMAIN`)
+  traefik.http.services.prowlarr.loadbalancer.server.port: 9696
+  # SABnzbd
+  traefik.http.routers.sabnzbd.service: sabnzbd
+  traefik.http.routers.sabnzbd.rule: Host(`sabnzbd.$DOMAIN`)
+  traefik.http.services.sabnzbd.loadbalancer.server.port: 8080
+  # Stremio
+  traefik.http.routers.stremio.service: stremio
+  traefik.http.routers.stremio.rule: Host(`stremio.$DOMAIN`)
+  traefik.http.services.stremio.loadbalancer.server.port: 8080
+  # Transmission
+  traefik.http.routers.transmission.service: transmission
+  traefik.http.routers.transmission.rule: Host(`transmission.$DOMAIN`)
+  traefik.http.services.transmission.loadbalancer.server.port: 9091
+  # Gluetun
+#####  traefik.http.services.gluetun.loadbalancer.server.port: ${HTTP_CONTROL_SERVER_ADDRESS:-8009}
+
+x-tor-labels: &tor-labels
+  traefik.enable: true
+  traefik.http.services.tor-service.loadbalancer.server.port: ${TOR_PORT:-9050}
+
+services:
+  gluetun:
+    # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
+    # image: ghcr.io/qdm12/gluetun
+    # use this one with arm:
+    image: ghcr.io/qdm12/gluetun:latest@sha256:f035267182d3928d6d8351eb1b21f74dce0f97c1a521ffe4c18ce6376614806d
+    container_name: gluetun
+    hostname: gluetun
+    networks:
+      gluenet:
+        ipv4_address: ${GLUETUN_IP:-172.24.4.1}
+      infranet:
+      traefik_public:
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: ${DISABLE_IPV6:-1}
+    ports:
+      #      - ${GLUETUN_HTTP_CONTROL_SERVER_PORT:-8009}:${GLUETUN_HTTP_CONTROL_SERVER_PORT:-8009}
+      - ${GLUETUN_SHADOWSOCKS_LISTENING_PORT:-8388}:${GLUETUN_SHADOWSOCKS_LISTENING_PORT:-8388}/tcp
+      - ${GLUETUN_SHADOWSOCKS_LISTENING_PORT:-8388}:${GLUETUN_SHADOWSOCKS_LISTENING_PORT:-8388}/udp
+      - ${GLUETUN_HTTPPROXY_LISTENING_PORT:-8889}:${GLUETUN_HTTPPROXY_LISTENING_PORT:-8889}/tcp
+      - ${GLUETUN_HEALTH_SERVER_PORT:-9999}:${GLUETUN_HEALTH_SERVER_PORT:-9999}/tcp
+      - ${AUTOBRR__METRICS_PORT:-9092}:${AUTOBRR__METRICS_PORT:-9092}
+      - ${AUTOBRR__PORT:-7474}:${AUTOBRR__PORT:-7474}
+      - ${AUTOBRR__POSTGRES_PORT:-5432}:${AUTOBRR__POSTGRES_PORT:-5432}
+      - ${DELUGE_EXT_PORT:-58846}:58846
+      - ${DELUGE_PORT:-8112}:8112
+      - ${FLARESOLVERR_PORT:-8191}:8191
+      - ${JACKETT_PORT:-9117}:9117
+      - ${PROWLARR_PORT:-9696}:9696
+      - ${SABNZBD_PORT:-8085}:8080
+      - ${AIOSTREAMS_PORT:-3005}:3000
+      - ${STREMIO_PORT:-8086}:8080
+      - ${TRANSMISSION_EXT_PORT:-51413}:51413
+      - ${TRANSMISSION_EXT_PORT:-51413}:51413/udp
+      - ${TRANSMISSION_PORT:-9094}:9091
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/gluetun:/gluetun
+    entrypoint: [
+        "/bin/sh",
+        "-c", # remove servers.json, fixes crashloops as it'll be redownloaded on start
+        "rm -f /gluetun/servers.json && exec /gluetun-entrypoint",
+      ]
+    environment:
+      TZ: ${TZ:-America/Chicago}
+      BLOCK_ADS: ${GLUETUN_BLOCK_ADS:-"off"}
+      BLOCK_MALICIOUS: ${GLUETUN_BLOCK_MALICIOUS:-"on"}
+      BLOCK_SURVEILLANCE: ${GLUETUN_BLOCK_SURVEILLANCE:-"off"}
+      DNS_ADDRESS: ${GLUETUN_DNS_ADDRESS:-127.0.0.1}
+      DNS_KEEP_NAMESERVER: ${GLUETUN_DNS_KEEP_NAMESERVER:-"off"}
+      DNS_UPDATE_PERIOD: ${GLUETUN_DNS_UPDATE_PERIOD:-24h}
+      DOT_CACHING: ${GLUETUN_DOT_CACHING:-"on"}
+      DOT_IPV6: ${GLUETUN_DOT_IPV6:-"off"}
+      # DOT_PRIVATE_ADDRESS: ${DOT_PRIVATE_ADDRESS:-All private CIDRs ranges}  # Comma separated list of CIDRs or single IP addresses Unbound won't resolve to. Note that the default setting prevents DNS rebinding
+      DOT_PROVIDERS: ${GLUETUN_DOT_PROVIDERS:-cloudflare}
+      DOT: ${GLUETUN_DOT:-"on"}
+      FIREWALL_OUTBOUND_SUBNETS: ${GLUETUN_FIREWALL_OUTBOUND_SUBNETS:-172.24.0.0/24}
+      FIREWALL_VPN_INPUT_PORTS: ${GLUETUN_FIREWALL_VPN_INPUT_PORTS:-20027,23936,36175,42162,52065}
+      HEALTH_SERVER_ADDRESS: ${GLUETUN_HEALTH_SERVER_IP:-127.0.0.1}:${GLUETUN_HEALTH_SERVER_PORT:-9999}
+      HEALTH_SUCCESS_WAIT_DURATION: ${GLUETUN_HEALTH_SUCCESS_WAIT_DURATION:-5s}
+      HEALTH_TARGET_ADDRESS: ${GLUETUN_HEALTH_TARGET_ADDRESS:-cloudflare.com:443}
+      HEALTH_VPN_DURATION_ADDITION: ${GLUETUN_HEALTH_VPN_DURATION_ADDITION:-5s}
+      HEALTH_VPN_DURATION_INITIAL: ${GLUETUN_HEALTH_VPN_DURATION_INITIAL:-120s}
+      HTTP_CONTROL_SERVER_ADDRESS: ${GLUETUN_HTTP_CONTROL_SERVER_IP:-0.0.0.0}:${GLUETUN_HTTP_CONTROL_SERVER_PORT:-8009}
+      HTTP_CONTROL_SERVER_AUTH_CONFIG_FILEPATH: ${GLUETUN_HTTP_CONTROL_SERVER_AUTH_CONFIG_FILEPATH:-}
+      HTTP_CONTROL_SERVER_LOG: ${GLUETUN_HTTP_CONTROL_SERVER_LOG:-"on"}
+      HTTPPROXY_LISTENING_ADDRESS: ${GLUETUN_HTTPPROXY_LISTENING_IP:-0.0.0.0}:${GLUETUN_HTTPPROXY_LISTENING_PORT:-8889}
+      HTTPPROXY_LOG: ${GLUETUN_HTTPPROXY_LOG:-"on"}
+      HTTPPROXY_PASSWORD: ${GLUETUN_HTTPPROXY_PASSWORD:-proxypassword}
+      HTTPPROXY_STEALTH: ${GLUETUN_HTTPPROXY_STEALTH:-"on"}
+      HTTPPROXY_USER: ${GLUETUN_HTTPPROXY_USER:-proxyuser}
+      HTTPPROXY: ${GLUETUN_HTTPPROXY:-"on"}
+      OPENVPN_IPV6: ${GLUETUN_OPENVPN_IPV6:-"off"}
+      OPENVPN_PROTOCOL: ${GLUETUN_OPENVPN_PROTOCOL:-tcp}
+      SERVER_COUNTRIES: ${GLUETUN_SERVER_COUNTRIES:-Austria,Belgium,Brazil,Bulgaria,Canada,Czech Republic,Estonia,Germany,Ireland,Japan,Latvia,Netherlands,New Zealand,Norway,Romania,Serbia,Singapore,Spain,Sweden,Switzerland,United Kingdom,United States,China,Isle of Man}
+      SHADOWSOCKS_ADDRESS: ${GLUETUN_SHADOWSOCKS_IP:-0.0.0.0}:${GLUETUN_SHADOWSOCKS_PORT:-8388}
+      #      SHADOWSOCKS_CIPHER: ${GLUETUN_SHADOWSOCKS_CIPHER:-chacha20-ietf-poly1305}
+      SHADOWSOCKS_LISTENING_ADDRESS: ${GLUETUN_SHADOWSOCKS_LISTENING_IP:-0.0.0.0}:${GLUETUN_SHADOWSOCKS_LISTENING_PORT:-8388}
+      SHADOWSOCKS_PASSWORD: ${GLUETUN_SHADOWSOCKS_PASSWORD:-password}
+      SHADOWSOCKS: ${GLUETUN_SHADOWSOCKS:-"on"}
+      #      UPDATER_MIN_RATIO: ${UPDATER_MIN_RATIO:-0}  # Ratio of servers to be found for the update to succeed, compared to the servers already built in the program
+      UPDATER_PERIOD: ${GLUETUN_UPDATER_PERIOD:-24h}
+      UPDATER_VPN_SERVICE_PROVIDERS: ${GLUETUN_UPDATER_VPN_SERVICE_PROVIDERS:-airvpn}
+      VPN_SERVICE_PROVIDER: ${GLUETUN_VPN_SERVICE_PROVIDER:-airvpn}
+      VPN_TYPE: ${GLUETUN_VPN_TYPE:-openvpn}
+    labels:
+      <<: *gluetun-labels
+      homepage.group: Network
+      homepage.name: Gluetun
+      homepage.icon: gluetun.png
+      homepage.href: https://gluetun.$DOMAIN/
+      homepage.description: VPN client that supports various VPN protocols, providing secure and private internet access for your applications.
+    deploy:
+      labels:
+        <<: *gluetun-labels
+    restart: always
+
+  gluetun-socks5: 
+    # 🔹🔹 Socks5 🔹🔹
+    image: serjs/go-socks5-proxy
+    container_name: gluetun-socks5
+    network_mode: service:gluetun
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+      PROXY_USER: $SOCKS5_PROXY_USER
+      PROXY_PASS: $SOCKS5_PROXY_PASS
+      PROXY_PORT: ${SOCKS5_PROXY_PORT:-1050}
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  i2p:
+    # 🔹🔹 I2P 🔹🔹
+    # image: geti2p/i2p
+    # use this one with arm:
+    image: ghcr.io/purplei2p/i2pd
+    container_name: i2p
+    hostname: i2p
+    <<: *resource-limits
+    networks:
+      - auth-net
+    ports:
+      #      - ${I2P_HTTP_PROXY_PORT:-4444}:4444   # HTTP Proxy (optional)
+      #      - ${I2P_HTTPS_PROXY_PORT:-4445}:4445   # HTTPS Proxy (optional)
+      #      - ${I2P_IRC_PROXY_PORT:-6668}:6668   # IRC Proxy (optional)
+      #      - ${I2P_LAN_INTERFACE_TCP_PORT:-7652}:7652   # LAN interface TCP
+      #      - ${I2P_LAN_INTERFACE_UDP_PORT:-7653}:7653/udp   # LAN interface UDP
+      #      - ${I2P_I2CP_PROTOCOL_PORT:-7654}:7654   # I2CP Protocol
+      #      - ${I2P_SAM_BRIDGE_TCP_PORT:-7656}:7656   # I2P SAM Bridge TCP
+      #      - ${I2P_ROUTER_CONSOLE_PORT:-7657}:7657   # Router Console
+      - ${I2P_SITE_PORT:-7658}:7658 # I2P Site
+    #      - ${I2P_SMTP_PROXY_PORT:-7659}:7659   # SMTP Proxy
+    #      - ${I2P_POP3_PROXY_PORT:-7660}:7660   # POP3 Proxy
+    #      - ${I2P_EXT_PORT:-7661}:${I2P_EXT_PORT:-7661}   # I2P external port
+    #      - ${I2P_I2NP_PORT:-24531}:12345  # I2NP Protocol
+    #      - ${I2P_I2NP_PORT:-24531}:12345/udp  # I2NP Protocol UDP
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/i2p:/i2p/.i2p
+      - ${DATA_DIR:-./data}/downloads:/i2psnark
+    environment:
+      <<: *common-env
+      EXT_PORT: ${I2P_EXT_PORT:-7661}
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  openvpn:
+    profiles:
+      - alt
+    image: dperson/openvpn-client
+    container_name: openvpn
+    hostname: openvpn
+    networks:
+      - infranet
+    devices:
+      - /dev/net/tun
+    #open any ports for containers which will use this vpn network
+    ports:
+      - ${OPENVPN_PORT:-7881}:6881
+      - ${OPENVPN_PORT2:-9991}:8080
+    dns:
+      - ${OPENVPN_DNS:-1.1.1.1}
+    labels:
+      - autoheal=true
+    security_opt:
+      - label:disable
+    cap_add:
+      - NET_ADMIN
+    stdin_open: true
+    tty: true
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/openvpn:/vpn
+    command: -f "/vpn/config.ovpn"
+    environment:
+      <<: *common-env
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-constraints-worker-only]
+    restart: always
+
+  tailscale:
+    image: tailscale/tailscale
+    container_name: tailscale
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ${ROOT_DIR:-.}/tailscale/state:/var/lib/tailscale
+    environment:
+      <<: *common-env
+      #- TS_ACCEPT_DNS=${TS_ACCEPT_DNS:-false}  # Accept DNS configuration from the admin console. Not accepted by default.
+      #- TS_AUTH_ONCE=${TS_AUTH_ONCE:-false}  # Attempt to log in only if not already logged in. False by default, to forcibly log in every time the container starts.
+      TS_AUTHKEY: $TS_AUTHKEY  # An auth key used to authenticate the container. This is equivalent to what you'd pass to tailscale login --auth-key=.
+      #- TS_DEST_IP=${TS_DEST_IP:-}  # Proxy all incoming Tailscale traffic to the specified destination IP.
+      TS_ENABLE_HEALTH_CHECK: ${TS_ENABLE_HEALTH_CHECK:-true}  # Set to true to enable an unauthenticated /healthz endpoint at the address specified by TS_LOCAL_ADDR_PORT.
+      TS_ENABLE_METRICS: ${TS_ENABLE_METRICS:-true}  # Set to true to enable an unauthenticated /metrics endpoint at the address specified by TS_LOCAL_ADDR_PORT.
+      #- TS_EXTRA_ARGS=${TS_EXTRA_ARGS:-}  # Any other flags to pass in to the Tailscale CLI in a tailscale up command.
+      #- TS_HOSTNAME=${TS_HOSTNAME:-}  # Use the specified hostname for the node. This is equivalent to tailscale set --hostname=.
+      #- TS_KUBE_SECRET=${TS_KUBE_SECRET:-}  # If running in Kubernetes, the Kubernetes secret name where Tailscale state is stored. The default is tailscale.
+      #- TS_LOCAL_ADDR_PORT=${TS_LOCAL_ADDR_PORT:-}  # Specifies the [<addr>]:<port> on which to serve local metrics and health check HTTP endpoints if enabled through TS_ENABLE_METRICS or TS_ENABLE_HEALTH_CHECK.
+      #- TS_OUTBOUND_HTTP_PROXY_LISTEN=${TS_OUTBOUND_HTTP_PROXY_LISTEN:-}  # Set an address and port for the HTTP proxy. This will be passed to tailscaled --outbound-http-proxy-listen=.
+      #- TS_ROUTES=${TS_ROUTES:-}  # Advertise subnet routes. This is equivalent to tailscale set --advertise-routes=.
+      #- TS_SERVE_CONFIG=${TS_SERVE_CONFIG:-}  # Accepts a JSON file to programmatically configure Serve and Funnel functionality.
+      #- TS_SOCKET=${TS_SOCKET:-/tmp/tailscaled.sock}  # Unix socket path used by the Tailscale binary, where the tailscaled LocalAPI socket is created.
+      #- TS_SOCKS5_SERVER=${TS_SOCKS5_SERVER:-":1055"}  # Set an address and port for the SOCKS5 proxy. This will be passed to tailscaled --socks5-server=.
+      #- TS_STATE_DIR=${TS_STATE_DIR:-/var/lib/tailscale}  # Directory where the state of tailscaled is stored. This needs to persist across container restarts.
+      #- TS_TAILSCALED_EXTRA_ARGS=${TS_TAILSCALED_EXTRA_ARGS:-}  # Any other flags to pass in to tailscaled.
+      #- TS_USERSPACE=${TS_USERSPACE:-false}  # Enable userspace networking, instead of kernel networking. Enabled by default.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-constraints-manager-only]
+    restart: always
+
+  tor:
+    # 🔹🔹 Tor 🔹🔹
+    # Tor is a tool for anonymizing your internet connection.
+    image: dperson/torproxy
+    container_name: tor
+    hostname: tor
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    ports:
+      - ${TOR_PORT:-9050}:${TOR_PORT:-9050}
+      - ${TOR_CONTROL_PORT:-9051}:${TOR_CONTROL_PORT:-9051}
+    environment:
+      <<: *common-env
+      TOR_SocksPort: ${TOR_SocksPort:-127.0.0.1:${TOR_PORT:-9050}}
+      TOR_TransPort: ${TOR_TransPort:-127.0.0.1:${TOR_PORT:-9050}}
+      TOR_ControlPort: ${TOR_ControlPort:-127.0.0.1:${TOR_CONTROL_PORT:-9051}}
+      TOR_DnsPort: ${TOR_DnsPort:-127.0.0.1:${TOR_PORT:-9050}}
+    labels:
+      <<: *tor-labels
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-constraints-manager-only]
+      labels:
+        <<: *tor-labels
+    restart: always
+
+
+# Second network:
+networks:
+  ip_network2:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${IP_NETWORK2_SUBNET:-172.16.0.0/24}
+          ip_range: ${IP_NETWORK2_IP_RANGE:-172.16.8.0/24}
+          gateway: ${IP_NETWORK2_GATEWAY:-172.16.8.1}
+
+# Third network:
+  ip_network3:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${IP_NETWORK3_SUBNET:-192.168.0.0/24}
+          ip_range: ${IP_NETWORK3_IP_RANGE:-192.168.4.0/24}
+          gateway: ${IP_NETWORK3_GATEWAY:-192.168.4.1}
+
+# Fourth network:
+  ip_network4:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${IP_NETWORK4_SUBNET:-103.0.0.0/24}
+          ip_range: ${IP_NETWORK4_IP_RANGE:-103.8.0.0/24}
+          gateway: ${IP_NETWORK4_GATEWAY:-103.8.1.1}
+
+# Fifth network:
+  ip_network5:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${IP_NETWORK5_SUBNET:-172.30.0.0/24}
+          ip_range: ${IP_NETWORK5_IP_RANGE:-172.30.8.0/24}
+          gateway: ${IP_NETWORK5_GATEWAY:-172.30.8.1}
+
+# Sixth network:
+  ip_network6:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${IP_NETWORK6_SUBNET:-172.22.0.0/24}
+          ip_range: ${IP_NETWORK6_IP_RANGE:-172.22.8.0/24}
+          gateway: ${IP_NETWORK6_GATEWAY:-172.22.8.1}
+
+# Seventh network:
+  ip_network7:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${IP_NETWORK7_SUBNET:-192.50.0.0/24}
+          ip_range: ${IP_NETWORK7_IP_RANGE:-192.50.8.0/24}
+          gateway: ${IP_NETWORK7_GATEWAY:-192.50.8.1}
+
+# Eighth network:
+  ip_network8:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${IP_NETWORK8_SUBNET:-103.216.0.0/24}
+          ip_range: ${IP_NETWORK8_IP_RANGE:-103.216.8.0/24}
+          gateway: ${IP_NETWORK8_GATEWAY:-103.216.8.1}

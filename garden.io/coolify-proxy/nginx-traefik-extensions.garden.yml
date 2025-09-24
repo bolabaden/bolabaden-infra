@@ -1,0 +1,31 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: nginx-traefik-extensions
+description: Nginx Authentication Middleware for Traefik
+type: container
+
+spec:
+  image: docker.io/nginx:alpine
+  env:
+    TZ: ${var.tz}
+    NGINX_ACCESS_LOG: /dev/stdout
+    NGINX_ERROR_LOG: /dev/stderr
+    NGINX_LOG_LEVEL: debug
+  ports:
+    - name: http
+      containerPort: 80
+  volumes:
+    - name: auth-config
+      containerPath: /etc/nginx/auth
+      sourcePath: ${var.config-path}/traefik/nginx-middlewares/auth
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      memory: 6Mi
+  healthCheck:
+    httpGet:
+      path: /health
+      port: http
+  restartPolicy: always

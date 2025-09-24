@@ -1,0 +1,28 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: headscale-ui
+description: Headscale UI web interface
+type: container
+dependencies:
+  - deploy.headscale-server
+
+spec:
+  image: ghcr.io/gurucomputing/headscale-ui:latest
+  dns:
+    - 1.1.1.1
+    - 1.0.0.1
+    - 2606:4700:4700::1111
+    - 2606:4700:4700::1001
+    - 9.9.9.9
+    - 2620:fe::fe
+    - 8.8.8.8
+    - 2001:4860:4860::8888
+    - 2001:4860:4860::8844
+  ports:
+    - name: http
+      containerPort: 8080
+  ingresses:
+    - path: /web
+      port: http
+      hostname: headscale.${var.domain}
+  restartPolicy: always

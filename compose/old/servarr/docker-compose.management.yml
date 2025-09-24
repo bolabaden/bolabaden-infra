@@ -1,0 +1,165 @@
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-kometa-labels: &kometa-labels
+  traefik.enable: "true"
+  traefik.http.services.kometa.loadbalancer.server.port: 80
+
+x-komga-labels: &komga-labels
+  traefik.enable: "true"
+  traefik.http.services.komga.loadbalancer.server.port: 25600
+
+x-jellyseerr-labels: &jellyseerr-labels
+  traefik.enable: "true"
+  traefik.http.services.jellyseerr.loadbalancer.server.port: 5055
+
+services:
+  jellyseerr:
+    # 🔹🔹 Jellyseerr 🔹🔹
+    image: fallenbagel/jellyseerr
+    container_name: jellyseerr
+    hostname: jellyseerr
+    networks:
+      - traefik_public
+    ports:
+      - ${JELLYSEERR_PORT:-5055}:5055
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/jellyseerr/config:/app/config
+    environment:
+      <<: *common-env
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+    labels:
+      <<: *jellyseerr-labels
+      homepage.group: Media Requests
+      homepage.name: Jellyseerr Requests
+      homepage.icon: jellyseerr.png
+      homepage.href: https://jellyseerr.$DOMAIN/
+      homepage.description: Allows you and others to request new movies and TV shows to be added to your Jellyfin media server.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *jellyseerr-labels
+    restart: always
+
+  kometa: # http://localhost:5004 or https://kometa.bolabaden.org or https://bolabaden.org/kometa
+    # 🔹🔹 Kometa 🔹🔹
+    # Complete power and control over your media libraries
+    image: linuxserver/kometa
+    container_name: kometa
+    hostname: kometa
+    networks:
+      - traefik_public
+    ports:
+      - ${KOMETA_PORT:-5004}:80
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/kometa/config:${KOMETA_CONFIG:-/config}
+    environment:
+      <<: *common-env
+      KOMETA_COLLECTIONS_ONLY: ${KOMETA_COLLECTIONS_ONLY:-false} # Run only collection YAML files, skipping all other operations.
+      KOMETA_CONFIG: ${KOMETA_CONFIG:-/config}/config.yml # Specify the path to the configuration YAML file for Kometa.
+      KOMETA_DELETE_COLLECTIONS: ${KOMETA_DELETE_COLLECTIONS:-false} # Delete all collections in the library before running collections or operations.
+      KOMETA_DELETE_LABELS: ${KOMETA_DELETE_LABELS:-false} # Remove all labels from every item in the library before running collections or operations.
+      KOMETA_DIVIDER: ${KOMETA_DIVIDER:-"="} # Set the character used to divide output in the terminal.
+      KOMETA_IGNORE_GHOST: ${KOMETA_IGNORE_GHOST:-false} # Suppress ghost logging, which shows progress during execution.
+      KOMETA_IGNORE_SCHEDULES: ${KOMETA_IGNORE_SCHEDULES:-false} # Bypass all scheduled runs for this execution.
+      KOMETA_METADATA_ONLY: ${KOMETA_METADATA_ONLY:-false} # Execute only metadata files, skipping all other operations.
+      KOMETA_NO_COUNTDOWN: ${KOMETA_NO_COUNTDOWN:-false} # Disable the countdown display before the next scheduled run.
+      KOMETA_NO_MISSING: ${KOMETA_NO_MISSING:-false} # Do not utilize the functions that handle missing movies or shows.
+      KOMETA_NO_REPORT: ${KOMETA_NO_REPORT:-false} # Prevent saving a report after the run is completed.
+      KOMETA_NO_VERIFY_SSL: ${KOMETA_NO_VERIFY_SSL:-false} # Disable SSL verification for network requests.
+      KOMETA_OPERATIONS_ONLY: ${KOMETA_OPERATIONS_ONLY:-false} # Execute only library operations, skipping collections, metadata, playlists, and overlays.
+      KOMETA_OVERLAYS_ONLY: ${KOMETA_OVERLAYS_ONLY:-false} # Run only library overlay files, skipping all other operations.
+      KOMETA_PLAYLISTS_ONLY: ${KOMETA_PLAYLISTS_ONLY:-false} # Execute only playlist YAML files, skipping collections, overlays, and metadata.
+      KOMETA_READ_ONLY_CONFIG: ${KOMETA_READ_ONLY_CONFIG:-false} # Run without making any changes to the configuration file.
+      KOMETA_RESUME: ${KOMETA_RESUME:-""} # Resume execution from the specified collection, bypassing the scheduled time.
+      KOMETA_RUN_COLLECTIONS: ${KOMETA_RUN_COLLECTIONS:-""} # Immediately perform a run for the specified collections, bypassing the scheduled time.
+      KOMETA_RUN_FILES: ${KOMETA_RUN_FILES:-""} # Execute a run for the specified files, bypassing the scheduled time.
+      KOMETA_RUN_LIBRARIES: ${KOMETA_RUN_LIBRARIES:-""} # Process only the specified libraries during execution.
+      KOMETA_RUN: ${KOMETA_RUN:-true} # Trigger an immediate run of Kometa.
+      KOMETA_TIMEOUT: ${KOMETA_TIMEOUT:-180} # Set the timeout duration in seconds for all non-Plex services.
+      KOMETA_TIMES: ${KOMETA_TIMES:-"04:00"} # Define the time of day when Kometa should execute its tasks.
+      KOMETA_WIDTH: ${KOMETA_WIDTH:-100} # Adjust the width of the terminal output.
+    labels:
+      <<: *kometa-labels
+      homepage.group: Media Metadata
+      homepage.name: Kometa Metadata
+      homepage.icon: kometa.png
+      homepage.href: https://kometa.$DOMAIN/
+      homepage.description: Complete power and control over your media libraries.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *kometa-labels
+    restart: always
+
+  komga:
+    # 🔹🔹 Komga 🔹🔹
+    # Komga is a web application for managing your digital comic books.
+    image: gotson/komga
+    container_name: komga
+    hostname: komga
+    networks:
+      - traefik_public
+    ports:
+      - ${KOMGA_PORT:-25600}:25600
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/komga:/config
+      - ${DATA_DIR:-./data}/media/books:/media/books
+      - ${DATA_DIR:-./data}/media/comics:/media/comics
+      - ${DATA_DIR:-./data}/media/manga:/media/manga
+    environment:
+      <<: *common-env
+    labels:
+      <<: *komga-labels
+      homepage.group: E-books & Comics
+      homepage.name: Komga Library
+      homepage.icon: komga.png
+      homepage.href: https://komga.$DOMAIN/
+      homepage.description: Manages and streams your digital comics, manga, and books, providing a clean and organized reading experience.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *komga-labels
+    restart: always

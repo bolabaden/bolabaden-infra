@@ -1,0 +1,256 @@
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-gaps-labels: &gaps-labels
+  traefik.enable: "true"
+  traefik.http.services.gaps.loadbalancer.server.port: 8484
+
+x-janitorr-labels: &janitorr-labels
+  traefik.enable: "true"
+  traefik.http.services.janitorr.loadbalancer.server.port: ${JANITORR_PORT:-8978}
+
+services:
+  decluttarr:
+    # 🔹🔹 Decluttarr 🔹🔹  https://github.com/manimatter/decluttarr
+    # Watches radarr, sonarr, lidarr, readarr and whisparr download queues and removes downloads if they become stalled or no longer needed.
+    image: ghcr.io/manimatter/decluttarr
+    container_name: decluttarr
+    hostname: decluttarr
+    networks:
+      - infranet
+    <<: *common-uidgid
+    environment:
+      <<: *common-env
+      TEST_RUN: ${DECLUTTARR_TEST_RUN:-false}
+      SSL_VERIFICATION: ${DECLUTTARR_SSL_VERIFICATION:-false}
+      FAILED_IMPORT_MESSAGE_PATTERNS: '[ "Not a Custom Format upgrade for existing", "Not an upgrade for existing" ]' # TODO: add more patterns
+      IGNORED_DOWNLOAD_CLIENTS: '["emulerr"]'
+      LIDARR_KEY: $LIDARR_API_KEY
+      LIDARR_URL: http://lidarr:${LIDARR_PORT:-8686}
+      LOG_LEVEL: ${DECLUTTARR_LOG_LEVEL:-VERBOSE}
+      MIN_DOWNLOAD_SPEED: ${DECLUTTARR_MIN_DOWNLOAD_SPEED:-100} # 100 KB/s
+      NO_STALLED_REMOVAL_QBIT_TAG: ${DECLUTTARR_NO_STALLED_REMOVAL_QBIT_TAG:-Don't Kill}
+      PERMITTED_ATTEMPTS: ${DECLUTTARR_PERMITTED_ATTEMPTS:-3}
+      RADARR_KEY: $RADARR_API_KEY
+      RADARR_URL: http://radarr:${RADARR_PORT:-7878}
+      READARR_KEY: $READARR_API_KEY
+      READARR_URL: http://readarr:${READARR_PORT:-8787}
+      SONARR_KEY: $SONARR_API_KEY
+      SONARR_URL: http://sonarr:${SONARR_PORT:-8989}
+      WHISPARR_URL: http://whisparr:${WHISPARR_PORT:-6969}
+      WHISPARR_KEY: $WHISPARR_API_KEY
+      QBITTORRENT_URL: https://qbittorrent.$DOMAIN
+      QBITTORRENT_USERNAME: ${QBITTORRENT_USERNAME:-admin}
+      QBITTORRENT_PASSWORD: ${QBITTORRENT_PASSWORD:-adminadmin}
+      REMOVE_FAILED: ${DECLUTTARR_REMOVE_FAILED:-false}
+      REMOVE_FAILED_IMPORTS: ${DECLUTTARR_REMOVE_FAILED_IMPORTS:-true}
+      REMOVE_METADATA_MISSING: ${DECLUTTARR_REMOVE_METADATA_MISSING:-false}
+      REMOVE_MISSING_FILES: ${DECLUTTARR_REMOVE_MISSING_FILES:-false}
+      REMOVE_ORPHANS: ${DECLUTTARR_REMOVE_ORPHANS:-true}
+      REMOVE_SLOW: ${DECLUTTARR_REMOVE_SLOW:-true}
+      REMOVE_STALLED: ${DECLUTTARR_REMOVE_STALLED:-true}
+      REMOVE_TIMER: ${DECLUTTARR_REMOVE_TIMER:-10} # 10 seconds
+      REMOVE_UNMONITORED: ${DECLUTTARR_REMOVE_UNMONITORED:-false}
+      SONARR_KEY: $SONARR_API_KEY
+      SONARR_URL: http://sonarr:${SONARR_PORT:-8989}
+      SSL_VERIFICATION: ${DECLUTTARR_SSL_VERIFICATION:-false}
+      TEST_RUN: ${DECLUTTARR_TEST_RUN:-false}
+      WHISPARR_KEY: $WHISPARR_API_KEY
+      WHISPARR_URL: http://whisparr:${WHISPARR_PORT:-6969}
+      RUN_PERIODIC_RESCANS: '{
+        "RADARR": {"MISSING": true, "CUTOFF_UNMET": true, "MAX_CONCURRENT_SCANS": 3, "MIN_DAYS_BEFORE_RESCAN": 1},
+        "SONARR": {"MISSING": true, "CUTOFF_UNMET": true, "MAX_CONCURRENT_SCANS": 3, "MIN_DAYS_BEFORE_RESCAN": 1}
+        }'
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-preferences-worker-priority]
+    restart: always
+
+  janitorr:
+    # 🔹🔹 Janitorr 🔹🔹  # https://github.com/Schaka/janitorr
+    # Cleans your Radarr, Sonarr, Jellyseerr and Jellyfin before you run out of space
+    image: ghcr.io/schaka/janitorr
+    container_name: janitorr
+    hostname: janitorr
+    ports:
+      - ${JANITORR_THC_PORT:-8079}:${JANITORR_THC_PORT:-8079}
+      - ${JANITORR_PORT:-8978}:8978
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/janitorr/config/application.yml:/workspace/application.yml
+      - ${CONFIG_PATH:-./volumes}/janitorr/logs:/logs
+    <<: [*resource-limits, *common-uidgid]
+    environment:
+      <<: *common-env
+      DEBUG: ${JANITORR_DEBUG:-true}
+      EXCLUDE_RESOURCES: ${JANITORR_EXCLUDE_RESOURCES:-}
+      HOUR_OF_DAY_END: ${JANITORR_HOUR_OF_DAY_END:-23}
+      HOUR_OF_DAY_START: ${JANITORR_HOUR_OF_DAY_START:-20}
+      PRUNE_VOLUMES: ${JANITORR_PRUNE_VOLUMES:-true}
+      RUN_ON_STARTUP: ${JANITORR_RUN_ON_STARTUP:-true}
+      SKIP_RANDOM_BACKOFF: ${JANITORR_SKIP_RANDOM_BACKOFF:-true}
+      THC_PATH: /health
+      THC_PORT: ${JANITORR_THC_PORT:-8079}
+      TIME_BETWEEN_RUNS: ${JANITORR_TIME_BETWEEN_RUNS:-86400}
+      UNUSED_TIME: ${JANITORR_UNUSED_TIME:-24h}
+    labels:
+      <<: *janitorr-labels
+      homepage.group: Server Management
+      homepage.name: Janitorr Cleaner
+      homepage.icon: janitorr.png
+      homepage.href: https://janitorr.$DOMAIN/
+      homepage.description: Helps keep your server tidy by automatically removing old and unused Docker components, freeing up valuable storage space.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *janitorr-labels
+    restart: always
+
+  prefetcharr-jellyfin:
+    # 🔹🔹 Prefetcharr 🔹🔹  https://github.com/phueber/prefetcharr
+    # Let Sonarr fetch the next season of a show you are watching on Jellyfin.
+    depends_on:
+      jellyfin:
+        condition: service_started
+    image: phueber/prefetcharr
+    container_name: prefetcharr-jellyfin
+    hostname: prefetcharr-jellyfin
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/prefetcharr/jellyfin/log:${PREFETCHARR_JELLYFIN_INTERNAL_LOG_DIR:-/log}
+    <<: [*resource-limits, *common-uidgid]
+    environment:
+      <<: *common-env
+      MEDIA_SERVER_TYPE: jellyfin  # `jellyfin`, `emby` or `plex`
+      INTERVAL: ${PREFETCHARR_JELLYFIN_INTERVAL:-900}  # Polling interval in seconds
+      LOG_DIR: ${PREFETCHARR_JELLYFIN_INTERNAL_LOG_DIR:-/log}
+      MEDIA_SERVER_API_KEY: $JELLYFIN_API_KEY
+      MEDIA_SERVER_URL: http://host.docker.internal:${JELLYFIN_PORT:-8096}
+      REMAINING_EPISODES: ${PREFETCHARR_JELLYFIN_REMAINING_EPISODES:-3}  # The last <NUM> episodes trigger a search
+      RUST_LOG: ${PREFETCHARR_JELLYFIN_LOG_LEVEL:-debug}
+      SONARR_API_KEY: $SONARR_API_KEY
+      SONARR_URL: http://sonarr.$DOMAIN
+      # Optional: Only monitor sessions for specific user IDs or names
+      # - USERS=john,12345,alex
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-preferences-worker-priority]
+    restart: always
+
+  prefetcharr-plex:
+    # 🔹🔹 Prefetcharr 🔹🔹
+    # Let Sonarr fetch the next season of a show you are watching on Plex.
+    depends_on:
+      plex:
+        condition: service_healthy
+    image: phueber/prefetcharr
+    container_name: prefetcharr-plex
+    hostname: prefetcharr-plex
+    networks:
+      - infranet
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/prefetcharr/plex/log:${PREFETCHARR_PLEX_INTERNAL_LOG_DIR:-/log}
+    <<: [*resource-limits, *common-uidgid]
+    environment:
+      <<: *common-env
+      MEDIA_SERVER_TYPE: plex # `jellyfin`, `emby` or `plex`
+      INTERVAL: ${PREFETCHARR_PLEX_INTERVAL:-900} # 15 minutes
+      LOG_DIR: ${PREFETCHARR_PLEX_INTERNAL_LOG_DIR:-/log}
+      MEDIA_SERVER_API_KEY: $PLEX_TOKEN
+      MEDIA_SERVER_URL: http://plex:${PLEX_PORT:-32400}
+      REMAINING_EPISODES: ${PREFETCHARR_PLEX_REMAINING_EPISODES:-3} # The last <NUM> episodes trigger a search
+      RUST_LOG: ${PREFETCHARR_PLEX_LOG_LEVEL:-debug}
+      RADARR_API_KEY: $RADARR_API_KEY
+      RADARR_URL: http://radarr:${RADARR_PORT:-7878}
+      SONARR_API_KEY: $SONARR_API_KEY
+      SONARR_URL: http://sonarr:${SONARR_PORT:-8989}
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-preferences-worker-priority]
+    restart: always
+
+  recyclarr:
+    # 🔹🔹 Recyclarr 🔹🔹  # https://github.com/recyclarr/recyclarr
+    # command-line application that will automatically synchronize recommended settings from the TRaSH guides to your Sonarr/Radarr instances.
+    image: ghcr.io/recyclarr/recyclarr
+    container_name: recyclarr
+    hostname: recyclarr
+    networks:
+      - infranet
+    ports:
+      - ${RECYCLARR_PORT:-32888}:8989
+    init: true
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/recyclarr:/config
+    <<: [*resource-limits, *common-uidgid]
+    environment:
+      <<: *common-env
+      TINI_SUBREAPER: "false"
+      RADARR_API_KEY: $RADARR_API_KEY
+      RADARR_BASE_URL: http://radarr:${RADARR_PORT:-7878}
+      SONARR_API_KEY: $SONARR_API_KEY
+      SONARR_BASE_URL: http://sonarr:${SONARR_PORT:-8989}
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-preferences-worker-priority]
+    restart: always
+
+  suggestarr:
+    # 🔹🔹 Suggestarr 🔹🔹
+    # Suggestarr is a tool that helps you manage your media library by suggesting new content to add to it.
+    image: ciuse99/suggestarr
+    container_name: suggestarr
+    hostname: suggestarr
+    networks:
+      - traefik_public
+    ports:
+      - ${SUGGESTARR_PORT:-5003}:5000
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/suggestarr:/app/config/config_files
+    <<: [*resource-limits, *common-uidgid]
+    environment:
+      <<: *common-env
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-preferences-worker-priority]
+    healthcheck:
+      test: curl -fSs http://localhost:5000 > /dev/null || exit 1
+      start_period: 20s
+      timeout: 5s
+      interval: 5s
+    restart: always

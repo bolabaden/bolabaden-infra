@@ -1,0 +1,41 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: code-server
+description: VS Code server for browser-based development
+type: container
+
+spec:
+  image: lscr.io/linuxserver/code-server:latest
+  env:
+    TZ: ${var.tz}
+    PUID: ${var.PUID:-1001}
+    PGID: ${var.PGID:-121}
+    UMASK: ${var.UMASK:-002}
+    HASHED_PASSWORD: ${var.CODESERVER_HASHED_PASSWORD:-}
+    SUDO_PASSWORD_HASH: ${var.CODESERVER_SUDO_PASSWORD_HASH:-}
+    PWA_APPNAME: code-server.${var.ts-hostname}.${var.domain}
+    DEFAULT_WORKSPACE: ${var.CODESERVER_DEFAULT_WORKSPACE:-/workspace}
+  ports:
+    - name: http
+      containerPort: 8443
+  volumes:
+    - name: docker-sock
+      containerPath: /var/run/docker.sock
+      sourcePath: ${var.docker-socket}
+    - name: config
+      containerPath: /config
+      sourcePath: ${var.config-path}/code-server/dev/config
+    - name: workspace
+      containerPath: /workspace
+      sourcePath: ${var.root-path:-.}
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      memory: 200Mi
+  ingresses:
+    - path: /
+      port: http
+      hostname: code-server.${var.domain}
+  restartPolicy: always

@@ -1,0 +1,164 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: mediafusion
+description: MediaFusion Stremio/Kodi stream aggregator
+type: container
+dependencies:
+  - deploy.mongodb
+  - deploy.redis
+  - deploy.playwright-service
+
+spec:
+  image: docker.io/mhdzumair/mediafusion:latest
+  env:
+    TZ: ${var.tz}
+    PUID: ${var.PUID:-1001}
+    PGID: ${var.PGID:-988}
+    UMASK: ${var.UMASK:-002}
+    
+    # Core application settings
+    ADDON_NAME: MediaFusion | ${var.domain}
+    VERSION: 1.0.0
+    DESCRIPTION: "MediaFusion | ${var.domain}"
+    BRANDING_DESCRIPTION: "MediaFusion is a AIO media stream aggregator addon for Stremio/Kodi."
+    CONTACT_EMAIL: "webmaster@${var.domain}"
+    HOST_URL: "https://mediafusion.${var.domain}"
+    POSTER_HOST_URL: "https://mediafusion.${var.domain}"
+    SECRET_KEY: c75ac92df70c4383c8d1bb37f65454f9
+    API_PASSWORD: ${var.sudo-password}
+    LOGGING_LEVEL: DEBUG
+    LOGO_URL: "https://mediafusion.${var.domain}/static/logo.png"
+    IS_PUBLIC_INSTANCE: false
+    MIN_SCRAPING_VIDEO_SIZE: 26214400
+    METADATA_PRIMARY_SOURCE: tmdb
+    
+    # Database and cache settings
+    MONGO_URI: ${var.MONGO_URI:-mongodb://mongodb:27017/mediafusion}
+    DB_MAX_CONNECTIONS: 50
+    REDIS_URL: ${var.REDIS_INTERNAL_URL:-redis://redis:6379}
+    REDIS_MAX_CONNECTIONS: 100
+    
+    # External service settings
+    PLAYWRIGHT_CDP_URL: ${var.PLAYWRIGHT_CDP_URL:-ws://playwright-service:3000?blockAds=true&stealth=true}
+    FLARESOLVERR_URL: ${var.FLARESOLVERR_URL:-https://flaresolverr.${var.domain}/v1}
+    TMDB_API_KEY: ${var.TMDB_API_KEY:-}
+    
+    # Prowlarr settings
+    IS_SCRAP_FROM_PROWLARR: true
+    PROWLARR_API_KEY: ${var.PROWLARR_API_KEY}
+    PROWLARR_URL: https://prowlarr.${var.domain}
+    PROWLARR_LIVE_TITLE_SEARCH: false
+    PROWLARR_BACKGROUND_TITLE_SEARCH: true
+    PROWLARR_SEARCH_QUERY_TIMEOUT: 30
+    PROWLARR_IMMEDIATE_MAX_PROCESS: 10
+    PROWLARR_IMMEDIATE_MAX_PROCESS_TIME: 15
+    PROWLARR_SEARCH_INTERVAL_HOUR: 72
+    PROWLARR_FEED_SCRAPE_INTERVAL_HOUR: 3
+    
+    # Jackett settings
+    IS_SCRAP_FROM_JACKETT: true
+    JACKETT_URL: https://jackett.${var.domain}
+    JACKETT_API_KEY: ${var.JACKETT_API_KEY}
+    JACKETT_SEARCH_INTERVAL_HOUR: 72
+    JACKETT_SEARCH_QUERY_TIMEOUT: 30
+    JACKETT_IMMEDIATE_MAX_PROCESS: 10
+    JACKETT_IMMEDIATE_MAX_PROCESS_TIME: 15
+    JACKETT_LIVE_TITLE_SEARCH: false
+    JACKETT_BACKGROUND_TITLE_SEARCH: true
+    JACKETT_FEED_SCRAPE_INTERVAL_HOUR: "3"
+    
+    # Zilean settings
+    IS_SCRAP_FROM_ZILEAN: true
+    ZILEAN_SEARCH_INTERVAL_HOUR: 24
+    ZILEAN_URL: ${var.ZILEAN_URL:-https://zilean.elfhosted.com}
+    
+    # Torrentio settings
+    IS_SCRAP_FROM_TORRENTIO: true
+    TORRENTIO_SEARCH_INTERVAL_DAYS: 3
+    TORRENTIO_URL: ${var.TORRENTIO_URL:-https://torrentio.strem.fun}
+    
+    # MediaFusion settings
+    IS_SCRAP_FROM_MEDIAFUSION: true
+    MEDIAFUSION_SEARCH_INTERVAL_DAYS: 3
+    MEDIAFUSION_URL: https://mediafusion.elfhosted.com
+    MEDIAFUSION_LIVE_SEARCH: true
+    SYNC_DEBRID_CACHE_STREAMS: true
+    
+    # BT4G settings
+    IS_SCRAP_FROM_BT4G: true
+    BT4G_URL: https://bt4gprx.com
+    BT4G_SEARCH_INTERVAL_HOUR: 72
+    BT4G_SEARCH_TIMEOUT: 5
+    BT4G_IMMEDIATE_MAX_PROCESS: 15
+    BT4G_IMMEDIATE_MAX_PROCESS_TIME: 15
+    
+    # Premiumize settings
+    PREMIUMIZE_OAUTH_CLIENT_ID: ${var.PREMIUMIZE_OAUTH_CLIENT_ID}
+    PREMIUMIZE_OAUTH_CLIENT_SECRET: ${var.PREMIUMIZE_OAUTH_CLIENT_SECRET}
+    
+    # Telegram settings
+    TELEGRAM_BOT_TOKEN: ${var.TELEGRAM_BOT_TOKEN}
+    TELEGRAM_CHAT_ID: ${var.TELEGRAM_CHAT_ID}
+    
+    # Content filtering
+    ADULT_CONTENT_REGEX_KEYWORDS: "\\b(porn|xxx|sex|nude|naked|erotic|fetish|bdsm|milf|anal|oral|gangbang|threesome|masturbat|orgasm|cumshot|blowjob|handjob|footjob|creampie|facial|bukkake|hentai|yaoi|yuri|ecchi|doujin|camgirl|webcam|stripper|escort|prostitut|brothel|redlight|peepshow|voyeur|exhibitionist|swinger|orgy|hardcore|softcore|playboy|penthouse|hustler|brazzers|bangbros|realitykings|naughtyamerica|digitalplayground|wickedpictures|evilangel|kink|publicagent|fakehub|teamskeet|mofos|twistys|metart|sexart|x-art|joymii|nubiles|18eighteen|lolita|incest|taboo|kinky|slutty|horny|sexy|sensual|seductive|raw|perverted|depraved)\\b"
+    ADULT_CONTENT_FILTER_IN_TORRENT_TITLE: true
+    
+    # Feature toggles
+    VALIDATE_M3U8_URLS_LIVENESS: false
+    ENABLE_RATE_LIMIT: true
+    STORE_STREMTHRU_MAGNET_CACHE: true
+    IS_SCRAP_FROM_YTS: true
+    SCRAPE_WITH_AKA_TITLES: true
+    ENABLE_FETCHING_TORRENT_METADATA_FROM_P2P: false
+    
+    # Time-related settings
+    META_CACHE_TTL: 1800
+    WORKER_MAX_TASKS_PER_CHILD: 20
+    
+    # Scheduler settings
+    DISABLE_ALL_SCHEDULER: false
+    BACKGROUND_SEARCH_INTERVAL_HOURS: 72
+    BACKGROUND_SEARCH_CRONTAB: "*/5 * * * *"
+    TAMILMV_SCHEDULER_CRONTAB: "0 */3 * * *"
+    TAMIL_BLASTERS_SCHEDULER_CRONTAB: "0 */6 * * *"
+    FORMULA_TGX_SCHEDULER_CRONTAB: "*/30 * * * *"
+    NOWMETV_SCHEDULER_CRONTAB: "0 0 * * *"
+    NOWSPORTS_SCHEDULER_CRONTAB: "0 10 * * *"
+    TAMILULTRA_SCHEDULER_CRONTAB: "0 8 * * *"
+    VALIDATE_TV_STREAMS_IN_DB_CRONTAB: "0 */6 * * *"
+    SPORT_VIDEO_SCHEDULER_CRONTAB: "*/20 * * * *"
+    DLHD_SCHEDULER_CRONTAB: "25 * * * *"
+    MOTOGP_TGX_SCHEDULER_CRONTAB: "0 5 * * *"
+    UPDATE_SEEDERS_CRONTAB: "0 0 * * *"
+    ARAB_TORRENTS_SCHEDULER_CRONTAB: "0 0 * * *"
+    WWE_TGX_SCHEDULER_CRONTAB: "10 */3 * * *"
+    UFC_TGX_SCHEDULER_CRONTAB: "30 */3 * * *"
+    MOVIES_TV_TGX_SCHEDULER_CRONTAB: "0 * * * *"
+    PROWLARR_FEED_SCRAPER_CRONTAB: "0 */3 * * *"
+    JACKETT_FEED_SCRAPER_CRONTAB: "0 */3 * * *"
+    CLEANUP_EXPIRED_SCRAPER_TASK_CRONTAB: "0 * * * *"
+    CLEANUP_EXPIRED_CACHE_TASK_CRONTAB: "0 0 * * *"
+  ports:
+    - name: http
+      containerPort: 8000
+      hostPort: 8000
+      hostIp: 127.0.0.1
+    - name: flaresolverr
+      containerPort: 9191
+  resources:
+    limits:
+      cpu: 330m
+      memory: 1Gi
+    requests:
+      memory: 512Mi
+  ingresses:
+    - path: /
+      port: http
+      hostname: mediafusion.${var.domain}
+  healthCheck:
+    httpGet:
+      path: /health
+      port: http
+  restartPolicy: always
+

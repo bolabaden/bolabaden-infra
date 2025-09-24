@@ -1,0 +1,921 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago}
+  PUID: ${PUID:-1001}
+  PGID: ${PGID:-999}
+  UMASK: ${UMASK:-002}
+
+
+networks:  # https://docs.docker.com/engine/network/drivers/bridge/#differences-between-user-defined-bridges-and-the-default-bridge
+  warp-nat-net:
+    external: true  # docker network create --attachable -o com.docker.network.bridge.name=br_warp-nat-net -o com.docker.network.bridge.enable_ip_masquerade=false warp-nat-net --subnet=${WARP_NAT_NET_SUBNET:-10.0.2.0/24} --gateway=${WARP_NAT_NET_GATEWAY:-10.0.2.1}
+    attachable: true
+    driver_opts:
+      com.docker.network.bridge.name: br_warp-nat-net
+      com.docker.network.bridge.enable_ip_masquerade: "false"  # required for custom NAT control
+    ipam:
+      config:
+        - subnet: ${WARP_NAT_NET_SUBNET:-10.0.2.0/24}
+          gateway: ${WARP_NAT_NET_GATEWAY:-10.0.2.1}
+  publicnet:
+    #external: true  # docker network create --driver=bridge --attachable publicnet -o com.docker.network.bridge.name=br_publicnet --subnet=${PUBLICNET_SUBNET:-10.0.5.0/24} --gateway=${PUBLICNET_GATEWAY:-10.0.5.1}
+    attachable: true
+    driver_opts:
+      com.docker.network.bridge.name: br_publicnet
+    ipam:
+      config:
+        - subnet: ${PUBLICNET_SUBNET:-10.0.5.0/24}
+          gateway: ${PUBLICNET_GATEWAY:-10.0.5.1}
+  backend:
+    #external: true  # docker network create backend -o com.docker.network.bridge.name=br_backend --subnet=${BACKEND_SUBNET:-10.0.7.0/24} --gateway=${BACKEND_GATEWAY:-10.0.7.1}
+    attachable: true
+    driver_opts:
+      com.docker.network.bridge.name: br_backend
+    ipam:
+      config:
+        - subnet: ${BACKEND_SUBNET:-10.0.7.0/24}
+          gateway: ${BACKEND_GATEWAY:-10.0.7.1}
+
+
+volumes:
+  portainer_data:
+
+
+include:
+#  - compose/docker-compose.authentik.yml
+  - compose/docker-compose.coolify-proxy.yml
+  - compose/docker-compose.firecrawl.yml
+  - compose/docker-compose.headscale.yml
+  - compose/docker-compose.llm.yml
+  - compose/docker-compose.metrics.yml
+#  - compose/docker-compose.plex.yml
+#  - compose/docker-compose.unsend.yml
+  - compose/docker-compose.stremio-group.yml
+  - compose/docker-compose.warp-nat-routing.yml
+#  - compose/docker-compose.wordpress.yml
+#  - compose/docker-compose.vpn-docker.yml
+
+
+
+configs:
+  watchtower-config.json:
+    file: ~/.docker/config.json  # docker credentials acquired through `docker login` on host!
+  session_manager.py:
+    file: ${ROOT_PATH:-.}/projects/kotor/kotorscript-session-manager/session_manager.py
+  session_manager_index.html:
+    file: ${ROOT_PATH:-.}/projects/kotor/kotorscript-session-manager/index.html
+  session_manager_waiting.html:
+    file: ${ROOT_PATH:-.}/projects/kotor/kotorscript-session-manager/waiting.html
+  gethomepage-custom.css:
+    content: |
+      /* Custom CSS for $DOMAIN - $TS_HOSTNAME */
+  gethomepage-custom.js:
+    content: |
+      /* Custom JavaScript for Bolabaden */
+  gethomepage-docker.yaml:
+    content: |
+      ---
+      # For configuration options and examples, please see:
+      # https://gethomepage.dev/configs/docker/
+
+      my-docker:
+        socket: /var/run/docker.sock
+      #  host: dockerproxy
+      #  port: 2375
+  gethomepage-widgets.yaml:
+    content: |
+      ---
+      # For configuration options and examples, please see:
+      # https://gethomepage.dev/configs/info-widgets/
+
+      - resources:
+        cpu: true
+        memory: true
+        disk: /
+
+      - search:
+        provider: duckduckgo
+        target: _blank
+  gethomepage-settings.yaml:
+    content: |
+      ---
+      # For configuration options and examples, please see:
+      # https://gethomepage.dev/configs/settings/
+
+      providers:
+        openweathermap: $OPENWEATHERMAP_API_KEY
+        weatherapi: $WEATHERAPI_API_KEY
+  gethomepage-bookmarks.yaml:
+    content: |
+      ---
+      # For configuration options and examples, please see:
+      # https://gethomepage.dev/configs/bookmarks
+
+      - Developer:
+        - Github:
+          - abbr: GH
+            href: https://github.com/bolabaden-site
+
+      - Portfolio:
+        - $DOMAIN:
+          - abbr: BO
+            href: https://$DOMAIN/
+        - LinkedIn:
+          - abbr: LI
+            href: https://www.linkedin.com/in/boden-crouch-555897193/
+      
+      - AI/Research:
+        - ai-researchwizard:
+          - abbr: GP
+            href: https://gptr.$DOMAIN/
+        - searxng:
+          - abbr: SE
+            href: https://searxng.$DOMAIN/
+
+
+services:
+  mongodb:
+    # 🔹🔹 MongoDB 🔹🔹
+    image: docker.io/mongo:latest
+    container_name: mongodb
+    hostname: ${MONGODB_HOSTNAME:-mongodb}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - 27017
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/mongodb/data:/data/db
+    labels:
+      traefik.enable: true
+      traefik.tcp.routers.mongodb.rule: HostSNI(`mongodb.$DOMAIN`) || HostSNI(`mongodb.$TS_HOSTNAME.$DOMAIN`)
+      traefik.tcp.routers.mongodb.service: mongodb@docker
+      traefik.tcp.routers.mongodb.tls.domains[0].main: $DOMAIN
+      traefik.tcp.routers.mongodb.tls.domains[0].sans: "*.$DOMAIN,$TS_HOSTNAME.$DOMAIN"
+      traefik.tcp.routers.mongodb.tls.passthrough: true
+      traefik.tcp.services.mongodb.loadbalancer.server.port: 27017
+      traefik.tcp.services.mongodb.loadbalancer.server.tls: true
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand(\"ping\").ok' > /dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    restart: always
+
+  searxng:
+    # 🔹🔹 SearxNG 🔹🔹  # https://hub.docker.com/r/searxng/searxng
+    # SearxNG is a privacy-respecting, hackable, open-source metasearch engine.
+    image: docker.io/searxng/searxng:latest
+    container_name: searxng
+    hostname: searxng
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    volumes:
+      # touch ${CONFIG_PATH:-./volumes}/searxng/limiter.toml
+      - ${CONFIG_PATH:-./volumes}/searxng/config:/etc/searxng
+      - ${CONFIG_PATH:-./volumes}/searxng/data:/var/cache/searxng
+    environment:
+      SEARXNG_BASE_URL: ${SEARXNG_INTERNAL_URL:-http://searxng:${SEARXNG_PORT:-8080}}
+      SEARXNG_SECRET: ${SEARXNG_SECRET:?}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.searxng.rule: Host(`searxng.$DOMAIN`) || Host(`searxng.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.searxng.loadbalancer.server.port: ${SEARXNG_PORT:-8080}
+      homepage.group: Search
+      homepage.name: SearxNG
+      homepage.icon: searxng.png
+      homepage.href: https://searxng.$DOMAIN/
+      homepage.description: Privacy-focused metasearch that aggregates results from many sources without tracking
+      kuma.searxng.http.name: searxng.$TS_HOSTNAME.$DOMAIN
+      kuma.searxng.http.url: https://searxng.$DOMAIN
+      kuma.searxng.http.interval: 30
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${SEARXNG_PORT:-8080}/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: always
+
+  code-server:
+    # 🔹🔹 Code Server 🔹🔹
+    profiles:
+      - extras
+    image: lscr.io/linuxserver/code-server:latest
+    container_name: code-server
+    hostname: code-server
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - 8443
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
+      - ${CONFIG_PATH:-./volumes}/code-server/dev/config:/config  # Contains all relevant configuration files.
+      - ${ROOT_PATH:-.}:${CODESERVER_DEFAULT_WORKSPACE:-/workspace}
+    # You can set any environment variable from a file by using a special prepend FILE__.
+    # As an example:
+    # FILE__MYVAR="/run/secrets/mysecretvariable"
+    # Will set the environment variable `MYVAR` based on the contents of the `/run/secrets/mysecretvariable` file.
+    #user: ${PUID:-1001}:${PGID:-121}  # run as non-root (see docs: https://docs.linuxserver.io/misc/non-root/)
+    environment:
+      TZ: ${TZ:-America/Chicago}
+      PUID: ${PUID:-1001}
+      PGID: ${PGID:-121}
+      UMASK: ${UMASK:-002}
+      HASHED_PASSWORD: ${CODESERVER_HASHED_PASSWORD:-}                           # create with `echo -n "thisismypassword" | argon2 "$$(openssl rand -hex 4)" -e`
+      SUDO_PASSWORD_HASH: ${CODESERVER_SUDO_PASSWORD_HASH:-}                     # create with `openssl -6 "yourpasswordhere"`
+      PWA_APPNAME: ${CODESERVER_PWA_APPNAME:-code-server.$TS_HOSTNAME.$DOMAIN}   # If this optional variable is set, the PWA app will the specified name.
+      DEFAULT_WORKSPACE: ${CODESERVER_DEFAULT_WORKSPACE:-/workspace}             # If this optional variable is set, code-server will open this directory by default
+    labels:
+      traefik.enable: true
+      traefik.http.middlewares.codeserver-redirect.redirectRegex.regex: '^https?://codeserver\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
+      traefik.http.middlewares.codeserver-redirect.redirectRegex.replacement: 'https://code-server.$1$2'
+      traefik.http.middlewares.codeserver-redirect.redirectRegex.permanent: false
+      # Main router for code-server
+      traefik.http.routers.code-server.rule: Host(`code-server.$DOMAIN`) || Host(`code-server.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.code-server.middlewares: nginx-auth@file
+      traefik.http.services.code-server.loadbalancer.server.port: 8443
+      # Routers for redirects
+      traefik.http.routers.codeserver-redirect.rule: Host(`codeserver.$DOMAIN`) || Host(`codeserver.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.codeserver-redirect.middlewares: codeserver-redirect@docker
+      traefik.http.routers.codeserver-redirect.service: code-server@docker
+      # Homepage definitions for code-server
+      homepage.group: Infrastructure
+      homepage.name: Code Dev
+      homepage.icon: code-server.png
+      homepage.href: https://code-server.$DOMAIN/
+      homepage.description: In-browser VS Code environment for editing and managing code on this server
+      kuma.code-server.http.name: code-server.$TS_HOSTNAME.$DOMAIN
+      kuma.code-server.http.url: https://code-server.$DOMAIN
+      kuma.code-server.http.interval: 60
+    cpus: 2
+    mem_limit: 4G
+    mem_reservation: 200M
+    restart: always
+
+  session-manager:
+    image: alpine:latest
+    container_name: session-manager
+    hostname: session-manager
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    configs:
+      - source: session_manager_index.html
+        target: /tmp/templates/index.html
+      - source: session_manager_waiting.html
+        target: /tmp/templates/waiting.html
+      - source: session_manager.py
+        target: /session_manager.py
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
+      - ${CONFIG_PATH:-./volumes}/extensions:${CONFIG_PATH:-./volumes}/extensions
+    environment:
+      DOMAIN: $DOMAIN
+      SESSION_MANAGER_PORT: ${SESSION_MANAGER_PORT:-8080}
+      INACTIVITY_TIMEOUT: 3600
+      DEFAULT_WORKSPACE: /workspace
+      EXT_PATH: ${CONFIG_PATH:-./volumes}/extensions/holo-lsp-1.0.0.vsix
+    labels:
+      traefik.enable: true
+      # Redirects for legacy/alternate hostnames to holoscript
+      traefik.http.middlewares.holoscripter-redirect.redirectRegex.regex: '^https?://holoscripter\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
+      traefik.http.middlewares.holoscripter-redirect.redirectRegex.replacement: 'https://holoscript.$1$2'
+      traefik.http.middlewares.holoscripter-redirect.redirectRegex.permanent: false
+      traefik.http.middlewares.kotorscripter-redirect.redirectRegex.regex: '^https?://kotorscripter\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
+      traefik.http.middlewares.kotorscripter-redirect.redirectRegex.replacement: 'https://holoscript.$1$2'
+      traefik.http.middlewares.kotorscripter-redirect.redirectRegex.permanent: false
+      traefik.http.middlewares.kotorscript-redirect.redirectRegex.regex: '^https?://kotorscript\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
+      traefik.http.middlewares.kotorscript-redirect.redirectRegex.replacement: 'https://holoscript.$1$2'
+      traefik.http.middlewares.kotorscript-redirect.redirectRegex.permanent: false
+      traefik.http.middlewares.tslscript-redirect.redirectRegex.regex: '^https?://tslscript\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
+      traefik.http.middlewares.tslscript-redirect.redirectRegex.replacement: 'https://holoscript.$1$2'
+      traefik.http.middlewares.tslscript-redirect.redirectRegex.permanent: false
+      traefik.http.middlewares.kscript-redirect.redirectRegex.regex: '^https?://kscript\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
+      traefik.http.middlewares.kscript-redirect.redirectRegex.replacement: 'https://holoscript.$1$2'
+      traefik.http.middlewares.kscript-redirect.redirectRegex.permanent: false
+      traefik.http.middlewares.hololsp-redirect.redirectRegex.regex: '^https?://hololsp\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
+      traefik.http.middlewares.hololsp-redirect.redirectRegex.replacement: 'https://holoscript.$1$2'
+      traefik.http.middlewares.hololsp-redirect.redirectRegex.permanent: false
+      # Main router for holoscript
+      traefik.http.routers.holoscript.rule: Host(`holoscript.$DOMAIN`) || Host(`holoscript.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.holoscript.loadbalancer.server.port: ${KOTORSCRIPT_SESSION_MANAGER_PORT:-8080}
+      # Routers for redirects
+      traefik.http.routers.holoscripter-redirect.rule: Host(`holoscripter.$DOMAIN`) || Host(`holoscripter.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.holoscripter-redirect.middlewares: holoscripter-redirect@docker
+      traefik.http.routers.holoscripter-redirect.service: holoscript@docker
+      traefik.http.routers.kotorscripter-redirect.rule: Host(`kotorscripter.$DOMAIN`) || Host(`kotorscripter.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.kotorscripter-redirect.middlewares: kotorscripter-redirect@docker
+      traefik.http.routers.kotorscripter-redirect.service: holoscript@docker
+      traefik.http.routers.kotorscript-redirect.rule: Host(`kotorscript.$DOMAIN`) || Host(`kotorscript.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.kotorscript-redirect.middlewares: kotorscript-redirect@docker
+      traefik.http.routers.kotorscript-redirect.service: holoscript@docker
+      traefik.http.routers.tslscript-redirect.rule: Host(`tslscript.$DOMAIN`) || Host(`tslscript.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.tslscript-redirect.middlewares: tslscript-redirect@docker
+      traefik.http.routers.tslscript-redirect.service: holoscript@docker
+      traefik.http.routers.kscript-redirect.rule: Host(`kscript.$DOMAIN`) || Host(`kscript.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.kscript-redirect.middlewares: kscript-redirect@docker
+      traefik.http.routers.kscript-redirect.service: holoscript@docker
+      traefik.http.routers.hololsp-redirect.rule: Host(`hololsp.$DOMAIN`) || Host(`hololsp.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.hololsp-redirect.middlewares: hololsp-redirect@docker
+      traefik.http.routers.hololsp-redirect.service: holoscript@docker
+    command:
+      - sh
+      - -c
+      - |
+        apk add python3 py3-pip docker-cli zip unzip &&
+        pip install fastapi uvicorn httpx websockets docker jinja2 python-multipart --break-system-packages --root-user-action=ignore &&
+        mkdir -p /tmp/templates &&
+        python3 session_manager.py
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${KOTORSCRIPT_SESSION_MANAGER_PORT:-8080}/health > /dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: always
+
+  bolabaden-nextjs:
+    # 🔹🔹 bolabaden nextJS main website with integrated auth 🔹🔹
+    build:
+      context: ${SRC_PATH:-./src}/website/bolabaden-site
+      dockerfile: Dockerfile
+    image: docker.io/th3w1zard1/bolabaden-nextjs:latest
+    container_name: bolabaden-nextjs
+    hostname: bolabaden-nextjs
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - 3000
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      <<: *common-env
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      ALLOW_ORIGIN: "*"
+    labels:
+      traefik.enable: true
+      # Error pages
+      traefik.http.middlewares.bolabaden-error-pages.errors.status: 400-599
+      traefik.http.middlewares.bolabaden-error-pages.errors.service: bolabaden-nextjs@docker
+      traefik.http.middlewares.bolabaden-error-pages.errors.query: /api/error/{status}
+      # Router for bolabaden-nextjs
+      traefik.http.routers.bolabaden-nextjs.service: bolabaden-nextjs@docker
+      traefik.http.routers.bolabaden-nextjs.rule: Host(`$DOMAIN`) || Host(`$TS_HOSTNAME.$DOMAIN`)
+      # bolabaden-nextjs Service definition
+      traefik.http.services.bolabaden-nextjs.loadbalancer.server.port: 3000
+      kuma.bolabaden-nextjs.http.name: $TS_HOSTNAME.$DOMAIN
+      kuma.bolabaden-nextjs.http.url: https://$DOMAIN
+      kuma.bolabaden-nextjs.http.interval: 30
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:$${PORT:-3000} > /dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+    restart: always
+  dozzle:
+    # 🔹🔹 Dozzle 🔹🔹
+    image: docker.io/amir20/dozzle:latest
+    container_name: dozzle
+    hostname: dozzle
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - 8080
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    labels:
+      traefik.enable: true
+      traefik.http.routers.dozzle.rule: Host(`dozzle.$DOMAIN`) || Host(`dozzle.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.dozzle.middlewares: nginx-auth@file
+      traefik.http.services.dozzle.loadbalancer.server.port: 8080
+      homepage.group: System Monitoring
+      homepage.name: Dozzle
+      homepage.icon: dozzle.png
+      homepage.href: https://dozzle.$DOMAIN/
+      homepage.description: Real-time web UI for viewing Docker container logs across the host
+      kuma.dozzle.http.name: dozzle.$TS_HOSTNAME.$DOMAIN
+      kuma.dozzle.http.url: https://dozzle.$DOMAIN
+      kuma.dozzle.http.interval: 60
+    restart: always
+
+  homepage:
+    # 🔹🔹 Homepage 🔹🔹  # https://github.com/gethomepage/homepage
+    image: ghcr.io/gethomepage/homepage
+    container_name: homepage
+    hostname: homepage
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    configs:
+      - source: gethomepage-custom.css
+        target: /app/config/custom.css
+        mode: 0777
+      - source: gethomepage-custom.js
+        target: /app/config/custom.js
+        mode: 0777
+      - source: gethomepage-docker.yaml
+        target: /app/config/docker.yaml
+        mode: 0777
+      - source: gethomepage-widgets.yaml
+        target: /app/config/widgets.yaml
+        mode: 0777
+      - source: gethomepage-settings.yaml
+        target: /app/config/settings.yaml
+        mode: 0777
+      - source: gethomepage-bookmarks.yaml
+        target: /app/config/bookmarks.yaml
+        mode: 0777
+    volumes:
+      # DO NOT create a bind mount to the entire /app/public/ directory.
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+      - ${CONFIG_PATH:-./volumes}/homepage:/app/config
+    environment:
+      #DOCKER_HOST: tcp://dockerproxy-ro:2375  # Point to proxy instead of socket
+      HOMEPAGE_ALLOWED_HOSTS: "*"
+      HOMEPAGE_VAR_TITLE: Bolabaden
+      HOMEPAGE_VAR_SEARCH_PROVIDER: duckduckgo
+      HOMEPAGE_VAR_HEADER_STYLE: glass
+      HOMEPAGE_VAR_THEME: dark
+      HOMEPAGE_CUSTOM_CSS: /app/config/custom.css
+      HOMEPAGE_CUSTOM_JS: /app/config/custom.js
+      HOMEPAGE_VAR_WEATHER_CITY: Iowa City
+      HOMEPAGE_VAR_WEATHER_LAT: 41.661129
+      HOMEPAGE_VAR_WEATHER_LONG: -91.5302
+      #      HOMEPAGE_VAR_WEATHER_TIME: ""
+      HOMEPAGE_VAR_WEATHER_UNIT: fahrenheit
+    labels:
+      traefik.enable: true
+      traefik.http.routers.homepage.rule: Host(`homepage.$DOMAIN`) || Host(`homepage.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.homepage.loadbalancer.server.port: 3000
+      kuma.homepage.http.name: homepage.$TS_HOSTNAME.$DOMAIN
+      kuma.homepage.http.url: https://homepage.$DOMAIN
+      kuma.homepage.http.interval: 30
+    healthcheck:  # docker exec homepage ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+    cpus: 0.25
+    mem_reservation: 128M
+    mem_limit: 1G
+    restart: always
+
+  watchtower:
+    # 🔹🔹 Watchtower 🔹🔹
+    image: docker.io/containrrr/watchtower:latest
+    container_name: watchtower
+    hostname: watchtower
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+    configs:
+      - source: watchtower-config.json  
+        target: /config.json  # docker credentials acquired through `docker login` on host!
+        mode: 0444  # read-only
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
+    environment:
+      # --------------------------------------------------------------------------
+      # Docker Host Configuration
+      # --------------------------------------------------------------------------
+      # Docker daemon socket to connect to. Can be pointed at a remote Docker host
+      # by specifying a TCP endpoint as "tcp://hostname:port".
+      # Default: "unix:///var/run/docker.sock"
+      DOCKER_HOST: ${DOCKER_HOST:-unix:///var/run/docker.sock}
+
+      # Docker API version to use by the Docker client for connecting to the Docker daemon.
+      # Default: "1.24"
+      DOCKER_API_VERSION: ${DOCKER_API_VERSION:-1.24}
+
+      # Use TLS when connecting to the Docker socket and verify the server's certificate.
+      # Default: false
+      DOCKER_TLS_VERIFY: ${DOCKER_TLS_VERIFY:-false}
+
+      # --------------------------------------------------------------------------
+      # Timezone
+      # --------------------------------------------------------------------------
+      # Sets the time zone to be used by WatchTower's logs and scheduling.
+      # Default: "UTC"
+      TZ: ${TZ:-America/Chicago}
+
+      # --------------------------------------------------------------------------
+      # Registry Authentication (for private image pulls)
+      # --------------------------------------------------------------------------
+      # Docker registry username for private image pulls (if required).
+      # Default: "username"
+      REPO_USER: ${WATCHTOWER_REPO_USER:-bolabaden}
+
+      # Docker registry password for private image pulls (if required).
+      # Default: "password"
+      REPO_PASS: ${WATCHTOWER_REPO_PASS:-${SUDO_PASSWORD:?}}
+
+      # --------------------------------------------------------------------------
+      # Watchtower Container Filtering and Behavior
+      # --------------------------------------------------------------------------
+      # Will also include restarting containers.
+      # Default: false
+      WATCHTOWER_INCLUDE_RESTARTING: ${WATCHTOWER_INCLUDE_RESTARTING:-true}
+
+      # Will also include created and exited containers.
+      # Default: false
+      WATCHTOWER_INCLUDE_STOPPED: ${WATCHTOWER_INCLUDE_STOPPED:-true}
+
+      # Start any stopped containers that have had their image updated. Only usable with --include-stopped.
+      # Default: false
+      WATCHTOWER_REVIVE_STOPPED: ${WATCHTOWER_REVIVE_STOPPED:-false}
+
+      # Monitor and update containers that have a com.centurylinklabs.watchtower.enable label set to true.
+      # Default: false
+      WATCHTOWER_LABEL_ENABLE: ${WATCHTOWER_LABEL_ENABLE:-false}
+
+      # Monitor and update containers whose names are not in a given set of names (comma- or space-separated).
+      # Default: ""
+      WATCHTOWER_DISABLE_CONTAINERS: ${WATCHTOWER_DISABLE_CONTAINERS:-}
+
+      # By default, arguments will take precedence over labels. If set to true, labels take precedence.
+      # Default: false
+      WATCHTOWER_LABEL_TAKE_PRECEDENCE: ${WATCHTOWER_LABEL_TAKE_PRECEDENCE:-true}
+
+      # Update containers that have a com.centurylinklabs.watchtower.scope label set with the same value as the given argument.
+      # Default: unset
+      WATCHTOWER_SCOPE: ${WATCHTOWER_SCOPE:-}
+
+      # --------------------------------------------------------------------------
+      # Update and Polling Behavior
+      # --------------------------------------------------------------------------
+      # Poll interval (in seconds). Controls how frequently watchtower will poll for new images.
+      # Default: 86400 (24 hours)
+      WATCHTOWER_POLL_INTERVAL: ${WATCHTOWER_POLL_INTERVAL:-86400}
+
+      # Cron expression in 6 fields which defines when and how often to check for new images.
+      # Default: unset
+      WATCHTOWER_SCHEDULE: ${WATCHTOWER_SCHEDULE:-0 0 6 * * *}  # Run at 6am daily
+
+      # Will only monitor for new images, send notifications and invoke the pre-check/post-check hooks, but will not update the containers.
+      # Default: false
+      WATCHTOWER_MONITOR_ONLY: ${WATCHTOWER_MONITOR_ONLY:-false}
+
+      # Do not restart containers after updating.
+      # Default: false
+      WATCHTOWER_NO_RESTART: ${WATCHTOWER_NO_RESTART:-false}
+
+      # Do not pull new images. Only monitor the local image cache for changes.
+      # Default: false
+      WATCHTOWER_NO_PULL: ${WATCHTOWER_NO_PULL:-false}
+
+      # Removes old images after updating to prevent accumulation of orphaned images.
+      # Default: false
+      WATCHTOWER_CLEANUP: ${WATCHTOWER_CLEANUP:-true}
+
+      # Removes anonymous volumes after updating.
+      # Default: false
+      WATCHTOWER_REMOVE_VOLUMES: ${WATCHTOWER_REMOVE_VOLUMES:-false}
+
+      # Restart one image at time instead of stopping and starting all at once.
+      # Default: false
+      WATCHTOWER_ROLLING_RESTART: ${WATCHTOWER_ROLLING_RESTART:-false}
+
+      # Timeout before the container is forcefully stopped. Example: 30s
+      # Default: 10s
+      WATCHTOWER_TIMEOUT: ${WATCHTOWER_TIMEOUT:-10s}
+
+      # Run an update attempt against a container name list one time immediately and exit.
+      # Default: false
+      WATCHTOWER_RUN_ONCE: ${WATCHTOWER_RUN_ONCE:-false}
+
+      # Do not send a message after watchtower started.
+      # Default: false
+      WATCHTOWER_NO_STARTUP_MESSAGE: ${WATCHTOWER_NO_STARTUP_MESSAGE:-false}
+
+      # When to warn about HEAD pull requests failing. Possible values: always, auto, never
+      # Default: auto
+      WATCHTOWER_WARN_ON_HEAD_FAILURE: ${WATCHTOWER_WARN_ON_HEAD_FAILURE:-auto}
+
+      # --------------------------------------------------------------------------
+      # HTTP API Mode
+      # --------------------------------------------------------------------------
+      # Runs Watchtower in HTTP API mode, only allowing image updates to be triggered by an HTTP request.
+      # Default: false
+      WATCHTOWER_HTTP_API_UPDATE: ${WATCHTOWER_HTTP_API_UPDATE:-false}
+
+      # Sets an authentication token to HTTP API requests. Can also reference a file.
+      # Default: unset
+      WATCHTOWER_HTTP_API_TOKEN: ${WATCHTOWER_HTTP_API_TOKEN:-}
+
+      # Keep running periodic updates if the HTTP API mode is enabled.
+      # Default: false
+      WATCHTOWER_HTTP_API_PERIODIC_POLLS: ${WATCHTOWER_HTTP_API_PERIODIC_POLLS:-false}
+
+      # Enables a metrics endpoint, exposing prometheus metrics via HTTP.
+      # NOTE: Requires an API token to be set for WATCHTOWER_HTTP_API_TOKEN (above).
+      # Default: false
+      WATCHTOWER_HTTP_API_METRICS: ${WATCHTOWER_HTTP_API_METRICS:-false}
+
+      # --------------------------------------------------------------------------
+      # Logging and Output
+      # --------------------------------------------------------------------------
+      # Enable debug mode with verbose logging.
+      # Default: false
+      WATCHTOWER_DEBUG: ${WATCHTOWER_DEBUG:-true}
+
+      # Enable trace mode with very verbose logging. Caution: exposes credentials!
+      # Default: false
+      WATCHTOWER_TRACE: ${WATCHTOWER_TRACE:-false}
+
+      # The maximum log level that will be written to STDERR. Possible values: panic, fatal, error, warn, info, debug, trace.
+      # Default: info
+      WATCHTOWER_LOG_LEVEL: ${WATCHTOWER_LOG_LEVEL:-debug}
+
+      # Sets what logging format to use for console output. Possible values: Auto, LogFmt, Pretty, JSON.
+      # Default: Auto
+      WATCHTOWER_LOG_FORMAT: ${WATCHTOWER_LOG_FORMAT:-Auto}
+
+      # Disable ANSI color escape codes in log output.
+      # Default: false
+      NO_COLOR: ${NO_COLOR:-false}
+
+      # Enable programmatic output (porcelain). Possible values: v1
+      # Default: unset
+      WATCHTOWER_PORCELAIN: ${WATCHTOWER_PORCELAIN:-}
+
+      # --------------------------------------------------------------------------
+      # Notification and Reporting
+      # --------------------------------------------------------------------------
+      # Notification URL(s) for sending update reports (e.g. shoutrrr URLs, email, Slack, etc).
+      # Default: unset
+      WATCHTOWER_NOTIFICATION_URL: ${WATCHTOWER_NOTIFICATION_URL:-}
+
+      # Send a notification report after each update cycle.
+      # Default: false
+      WATCHTOWER_NOTIFICATION_REPORT: ${WATCHTOWER_NOTIFICATION_REPORT:-true}
+
+      # Template for notification messages. See Watchtower docs for template variables.
+      # Default: unset
+      WATCHTOWER_NOTIFICATION_TEMPLATE: |
+        {{- if .Report -}}
+          {{- with .Report -}}
+            {{- if ( or .Updated .Failed ) -}}
+        {{len .Scanned}} Scanned, {{len .Updated}} Updated, {{len .Failed}} Failed
+              {{- range .Updated}}
+        - {{.Name}} ({{.ImageName}}): {{.CurrentImageID.ShortID}} updated to {{.LatestImageID.ShortID}}
+              {{- end -}}
+              {{- range .Skipped}}
+        - {{.Name}} ({{.ImageName}}): {{.State}}: {{.Error}}
+              {{- end -}}
+              {{- range .Failed}}
+        - {{.Name}} ({{.ImageName}}): {{.State}}: {{.Error}}
+              {{- end -}}
+            {{- end -}}
+          {{- end -}}
+        {{- else -}}
+          {{range .Entries -}}{{.Message}}{{"\n"}}{{- end -}}
+        {{- end -}}
+      restart: always
+    # --- dockerproxy-rw: Full Read/Write Access ---
+  dockerproxy-rw:
+    # 🔹🔹 Docker Socket Proxy 🔹🔹
+    image: lscr.io/linuxserver/socket-proxy:latest
+    container_name: dockerproxy-rw
+    hostname: dockerproxy-rw
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+    privileged: true
+    ports:
+      - 127.0.0.1:2375:2375
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
+    environment:
+      <<: *common-env
+
+      # Controls /containers/{id}/start (POST).
+      # Set 1 to allow starting containers even if POST=0.
+      # Useful for selective starts in read-only mode.
+      ALLOW_START: 1
+
+      # Controls /containers/{id}/stop (POST).
+      # Set 1 to allow stopping containers even if POST=0. Enables remote shutdown without broad write access.
+      ALLOW_STOP: 1
+
+      # Enables /containers/{id}/stop, /restart, /kill (POST).
+      # Set 1 to allow restarts/kills even if POST=0. Useful for health checks and auto-scaling.
+      ALLOW_RESTARTS: 1
+
+      # Controls /auth (POST) for registry authentication.
+      # Set 1 to allow credential handling for private image pulls.
+      AUTH: 1
+
+      # Controls /build (POST) for building images.
+      # Set 1 to allow image builds, e.g. for CI tools.
+      BUILD: 1
+
+      # Controls /commit (POST) to save container changes as new image.
+      # Set 1 to allow ad-hoc image creation.
+      COMMIT: 1
+
+      # Controls /configs endpoints (Swarm).
+      # Set 1 to allow config management (create/list/delete).
+      CONFIGS: 1
+
+      # Controls /containers endpoints.
+      # Set 1 to allow list, inspect, create, and manage containers.
+      CONTAINERS: 1
+
+      # Set 1 to prevent proxy from binding to IPv6 interfaces. Useful for legacy systems.
+      DISABLE_IPV6: ${DISABLE_IPV6:-0}
+
+      # Controls /distribution endpoints for image metadata.
+      # Set 1 to allow inspection of image distribution info.
+      DISTRIBUTION: 1
+
+      # Enables /events (GET) for real-time Docker event streaming.
+      # Set 1 to allow monitoring.
+      EVENTS: 1
+
+      # Controls /exec and /containers/{id}/exec.
+      # Set 1 to allow running commands in containers (shell access).
+      EXEC: 1
+
+      # Controls /images endpoints.
+      # Set 1 to allow image list, pull, remove, etc.
+      IMAGES: 1
+
+      # Enables /info (GET) for daemon diagnostics.
+      # Set 1 to allow health/status queries.
+      INFO: 1
+
+      # Sets NGINX error_log level (debug, info, warning, etc). Affects proxy logging verbosity.
+      LOG_LEVEL: info
+
+      # Controls /networks endpoints.
+      # Set 1 to allow network management (create/list/delete).
+      NETWORKS: 1
+
+      # Controls /nodes endpoints (Swarm).
+      # Set 1 to allow node management.
+      NODES: 1
+
+      # Enables /_ping (GET) for daemon health checks.
+      # Set 1 to allow.
+      PING: 1
+
+      # Controls /plugins endpoints.
+      # Set 1 to allow plugin management (enable/disable/list).
+      PLUGINS: 1
+
+      # Toggles all write methods (POST/PUT/DELETE) globally.
+      # Set 0 for read-only except for specific overrides.
+      POST: 1
+
+      # Controls /secrets endpoints (Swarm).
+      # Set 1 to allow secret management.
+      SECRETS: 1
+
+      # Controls /services endpoints (Swarm).
+      # Set 1 to allow service management.
+      SERVICES: 1
+
+      # Enables /session for interactive protocols (attach/exec).
+      # Set 1 to allow.
+      SESSION: 1
+
+      # Controls /swarm endpoints.
+      # Set 1 to allow Swarm cluster management.
+      SWARM: 1
+
+      # Controls /system subpaths (info, version, df).
+      # Set 1 to allow system queries.
+      SYSTEM: 1
+
+      # Controls /tasks endpoints (Swarm).
+      # Set 1 to allow task inspection.
+      TASKS: 1
+
+      # Enables /version (GET) for daemon/client version info.
+      # Set 1 to allow.
+      VERSION: 1
+
+      # Controls /volumes endpoints.
+      # Set 1 to allow volume management (create/list/delete).
+      VOLUMES: 1
+
+    restart: always
+
+  redis:
+    # 🔹🔹 Redis 🔹🔹
+    # NOTE: If you want to use Valkey (open source) instead of Redis (source available),
+    # uncomment the Valkey statement and comment out the Redis statement.
+    # Using Valkey with Firecrawl is untested and not guaranteed to work. Use with caution.
+    image: docker.io/redis:alpine
+    # image: valkey/valkey:alpine
+    container_name: redis
+    hostname: redis
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - ${REDIS_PORT:-6379}
+    ports:
+      - 127.0.0.1:${REDIS_PORT:-6379}:${REDIS_PORT:-6379}
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/redis:/data
+    privileged: true  # for `sysctl vm.overcommit_memory=1` to work
+    environment:
+      REDIS_HOST: ${REDIS_HOSTNAME:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_DATABASE: ${REDIS_DATABASE:-0}
+      REDIS_USERNAME: ${REDIS_USERNAME:-default}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis}
+    #  REDIS_TLS_CERT_FILE: ${REDIS_TLS_CERT_FILE:-/data/redis.crt}
+    #  REDIS_TLS_KEY_FILE: ${REDIS_TLS_KEY_FILE:-/data/redis.key}
+    command:
+      - sh
+      - -c
+      - |
+        sysctl vm.overcommit_memory=1 &> /dev/null &&
+        redis-server
+        --appendonly yes
+        --save 60 1
+        --bind 0.0.0.0
+        --port ${REDIS_PORT:-6379}
+        --requirepass ${REDIS_PASSWORD:?}
+    labels:
+      traefik.enable: true
+      traefik.tcp.routers.redis.rule: HostSNI(`redis.$DOMAIN`) || HostSNI(`redis.$TS_HOSTNAME.$DOMAIN`)
+      traefik.tcp.routers.redis.service: redis@docker
+      traefik.tcp.routers.redis.tls.domains[0].main: $DOMAIN
+      traefik.tcp.routers.redis.tls.domains[0].sans: "*.$DOMAIN,$TS_HOSTNAME.$DOMAIN"
+      traefik.tcp.routers.redis.tls.passthrough: true
+      traefik.tcp.services.redis.loadbalancer.server.port: ${REDIS_PORT:-6379}
+      traefik.tcp.services.redis.loadbalancer.server.tls: true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping > /dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+    cpus: 0.5
+    mem_reservation: 200M
+    mem_limit: 4G
+    restart: always
+  portainer:
+    image: docker.io/portainer/portainer-ce:latest
+    container_name: portainer
+    hostname: portainer
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - 8000
+      - 9000
+      - 9443
+    ports:
+      - 127.0.0.1:9443:9443
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
+      - ${CONFIG_PATH:-./volumes}/portainer/data:/data
+    labels:
+      traefik.enable: true
+      traefik.http.routers.portainer.middlewares: nginx-auth@file
+      traefik.http.routers.portainer.service: portainer@docker
+      traefik.http.routers.portainer.rule: Host(`portainer.$DOMAIN`) || Host(`portainer.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.portainer.loadbalancer.server.port: 9000
+      kuma.portainer.http.name: portainer.$TS_HOSTNAME.$DOMAIN
+      kuma.portainer.http.url: https://portainer.$DOMAIN
+      kuma.portainer.http.interval: 60
+    restart: always

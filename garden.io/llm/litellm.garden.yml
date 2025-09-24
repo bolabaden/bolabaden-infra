@@ -1,0 +1,91 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: litellm
+description: LiteLLM gateway for multiple LLM providers
+type: container
+dependencies:
+  - deploy.litellm-postgres
+  - deploy.redis
+
+spec:
+  image: ghcr.io/berriai/litellm-database:main-stable
+  env:
+    LITELLM_LOG: ${var.LITELLM_LOG:-INFO}
+    LITELLM_MODE: ${var.LITELLM_MODE:-PRODUCTION}
+    UI_USERNAME: ${var.LITELLM_UI_USERNAME:-admin}
+    UI_PASSWORD: ${var.LITELLM_MASTER_KEY}
+    DATABASE_URL: postgresql://${var.LITELLM_POSTGRES_USER:-litellm}:${var.LITELLM_POSTGRES_PASSWORD:-litellm}@${var.LITELLM_POSTGRES_HOSTNAME:-litellm-postgres}:5432/${var.LITELLM_POSTGRES_DB:-litellm}
+    REDIS_HOST: ${var.REDIS_HOSTNAME:-redis}
+    REDIS_PORT: ${var.REDIS_PORT:-6379}
+    POSTGRES_USER: ${var.LITELLM_POSTGRES_USER:-litellm}
+    POSTGRES_PASSWORD: ${var.LITELLM_POSTGRES_PASSWORD:-litellm}
+    POSTGRES_DB: ${var.LITELLM_POSTGRES_DB:-litellm}
+    VOYAGE_API_KEY: ${var.VOYAGE_API_KEY}
+    AI21_API_KEY: ${var.AI21_API_KEY}
+    ANTHROPIC_API_KEY: ${var.ANTHROPIC_API_KEY}
+    APIFY_API_TOKEN: ${var.APIFY_API_TOKEN}
+    APIPIE_API_KEY: ${var.APIPIE_API_KEY}
+    ARLIAI_API_KEY: ${var.ARLIAI_API_KEY}
+    AWANLLM_API_KEY: ${var.AWANLLM_API_KEY}
+    BASETEN_API_KEY: ${var.BASETEN_API_KEY}
+    BITO_ACCESS_KEY: ${var.BITO_ACCESS_KEY}
+    BRAVE_API_KEY: ${var.BRAVE_API_KEY}
+    CEREBRIUMAI_API_KEY: ${var.CEREBRIUMAI_API_KEY}
+    DEEPINFRA_API_KEY: ${var.DEEPINFRA_API_KEY}
+    DEEPGRAM_API_KEY: ${var.DEEPGRAM_API_KEY}
+    DEEPSEEK_API_KEY: ${var.DEEPSEEK_API_KEY}
+    DOCKER_TOKEN: ${var.DOCKER_TOKEN}
+    DOCKERHUB_TOKEN: ${var.DOCKERHUB_TOKEN}
+    EVERART_API_KEY: ${var.EVERART_API_KEY}
+    EXA_API_KEY: ${var.EXA_API_KEY}
+    FOREFRONTAI_API_KEY: ${var.FOREFRONTAI_API_KEY}
+    GEMINI_API_KEY: ${var.GEMINI_API_KEY}
+    GLAMA_API_KEY: ${var.GLAMA_API_KEY}
+    GROK_API_KEY: ${var.GROK_API_KEY}
+    GROQ_API_KEY: ${var.GROQ_API_KEY}
+    HF_TOKEN: ${var.HF_TOKEN}
+    HUGGINGFACE_ACCESS_TOKEN: ${var.HUGGINGFACE_ACCESS_TOKEN}
+    HUGGINGFACE_API_TOKEN: ${var.HUGGINGFACE_API_TOKEN}
+    JINA_API_KEY: ${var.JINA_API_KEY}
+    KAGI_API_KEY: ${var.KAGI_API_KEY}
+    KLUSTER_API_KEY: ${var.KLUSTER_API_KEY}
+    LANGCHAIN_API_KEY: ${var.LANGCHAIN_API_KEY}
+    LANGSMITH_API_KEY: ${var.LANGSMITH_API_KEY}
+    LITELLM_MASTER_KEY: ${var.LITELLM_MASTER_KEY}
+    MISTRAL_API_KEY: ${var.MISTRAL_API_KEY}
+    MISTRALAI_API_KEY: ${var.MISTRALAI_API_KEY}
+    OPENAI_API_KEY: ${var.OPENAI_API_KEY}
+    OPENROUTER_API_KEY: ${var.OPENROUTER_API_KEY}
+    PERPLEXITY_API_KEY: ${var.PERPLEXITY_API_KEY}
+    PERPLEXITYAI_API_KEY: ${var.PERPLEXITYAI_API_KEY}
+    REPLICATE_API_KEY: ${var.REPLICATE_API_KEY}
+    SAMBANOVA_API_KEY: ${var.SAMBANOVA_API_KEY}
+    SEARCH1API_KEY: ${var.SEARCH1API_KEY}
+    SERPAPI_API_KEY: ${var.SERPAPI_API_KEY}
+    SMITHERY_API_KEY: ${var.SMITHERY_API_KEY}
+    TANDOOR_SECRET_KEY: ${var.TANDOOR_SECRET_KEY}
+    TODOIST_API_KEY: ${var.TODOIST_API_KEY}
+    TOGETHERAI_API_KEY: ${var.TOGETHERAI_API_KEY}
+    UNIFY_API_KEY: ${var.UNIFY_API_KEY}
+    UPSTAGE_API_KEY: ${var.UPSTAGE_API_KEY}
+    UPSTAGEAI_API_KEY: ${var.UPSTAGEAI_API_KEY}
+    VEYRAX_API_KEY: ${var.VEYRAX_API_KEY}
+    YANDEX_API_KEY: ${var.YANDEX_API_KEY}
+    YOU_API_KEY: ${var.YOU_API_KEY}
+  ports:
+    - name: http
+      containerPort: 4000
+  volumes:
+    - name: config
+      containerPath: /app/config
+      sourcePath: ${var.config-path}/litellm
+  command: [--config, /app/config/litellm_config.yaml, --port, 4000, --host, 0.0.0.0]
+  ingresses:
+    - path: /
+      port: http
+      hostname: litellm.${var.domain}
+  healthCheck:
+    httpGet:
+      path: /health/liveliness
+      port: http
+  restartPolicy: always

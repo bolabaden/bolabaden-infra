@@ -1,0 +1,222 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-autoindex-labels: &autoindex-labels
+  traefik.enable: "true"
+  traefik.http.services.autoindex.loadbalancer.server.port: 80
+
+x-code-server-labels: &code-server-labels
+  traefik.enable: "true"
+  traefik.http.services.code-server.loadbalancer.server.port: 8443
+
+x-fileflows-labels: &fileflows-labels
+  traefik.enable: "true"
+  traefik.http.services.fileflows.loadbalancer.server.port: 5000
+
+x-qdirstat-labels: &qdirstat-labels
+  traefik.enable: "true"
+  traefik.http.services.qdirstat.loadbalancer.server.port: 5800
+
+services:
+  autoindex:
+    # 🔹🔹 Autoindex 🔹🔹
+    # Simple Directory Index
+    image: dceoy/nginx-autoindex
+    container_name: autoindex
+    hostname: autoindex
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${AUTOINDEX_PORT:-8089}:80
+    volumes:
+      - ${DATA_DIR:-./data}/media:/var/lib/nginx/html:ro # Location you want to index
+    environment:
+      <<: *common-env
+    labels:
+      <<: *autoindex-labels
+      homepage.group: File Management
+      homepage.name: AutoIndex
+      homepage.icon: autoindex.png
+      homepage.href: https://autoindex.$DOMAIN/
+      homepage.description: A self-hosted file indexer and search engine, providing a simple way to browse and search your files.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *autoindex-labels
+    restart: always
+
+  code-server:
+    # 🔹🔹 Code Server 🔹🔹
+    profiles:
+      - ivaros
+    image: linuxserver/code-server:latest
+    container_name: code-server
+    hostname: code-server
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    ports:
+      - ${CODE_SERVER_PORT:-8443}:8443
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/code-server:/code
+      - ${CONFIG_PATH:-./volumes}/code-server/.vscode:/config
+    environment:
+      <<: *common-env
+      PASSWORD: ${CODESERVER_PASSWORD:-}
+      CODE_SERVER_HASHED_PASSWORD: /run/secrets/code-server-password
+      SUDO_PASSWORD: /run/secrets/code-server-sudo-password
+      CODE_SERVER_SUDO_HASHED_PASSWORD: /run/secrets/code-server-sudo-password-hash
+      PROXY_DOMAIN: ${CODE_SERVER_PROXY_DOMAIN:-}
+      DEFAULT_WORKSPACE: /config/workspace
+    secrets:
+      - code-server-password
+      - code-server-sudo-password
+    labels:
+      <<: *code-server-labels
+      homepage.group: Development
+      homepage.name: Code Server
+      homepage.icon: code-server.png
+      homepage.href: https://code-server.$DOMAIN/
+      homepage.description: A web-based IDE for coding, editing, and debugging code, with support for multiple languages and frameworks.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *code-server-labels
+    restart: always
+
+  fileflows:
+    # 🔹🔹 FileFlows 🔹🔹
+    image: revenz/fileflows
+    container_name: fileflows
+    hostname: fileflows
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    ports:
+      - ${FILEFLOWS_PORT:-19200}:5000
+    volumes:
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
+      - ${CONFIG_PATH:-./volumes}/fileflows/temp:/temp
+      - ${CONFIG_PATH:-./volumes}/fileflows/data:/Data
+      - ${CONFIG_PATH:-./volumes}/fileflows/logs:/Logs
+    environment:
+      <<: *common-env
+      TempPathHost: ${TempPathHost:-${CONFIG_PATH:-./volumes}/fileflows/temp}
+    labels:
+      <<: *fileflows-labels
+      homepage.group: File Management
+      homepage.name: FileFlows
+      homepage.icon: fileflows.png
+      homepage.href: https://fileflows.$DOMAIN/
+      homepage.description: A web-based file manager and viewer, with support for multiple file types and formats.
+      homepage.widget.type: fileflows
+      homepage.widget.url: http://fileflows.$DOMAIN
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *fileflows-labels
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    restart: always
+
+  qdirstat:
+    # 🔹🔹 qDirStat 🔹🔹
+    # Directory Statistics
+    image: jlesage/qdirstat
+    container_name: qdirstat
+    hostname: qdirstat
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${QDIRSTAT_PORT:-5800}:5800
+    volumes:
+      - /volume1:/storage:ro
+      - ${CONFIG_PATH:-./volumes}/qdirstat/config:/config:rw
+      - ${CONFIG_PATH:-./volumes}/qdirstat/logs:/config/log
+    environment:
+      <<: *common-env
+      CLEAN_TMP_DIR: ${QDIRSTAT_CLEAN_TMP_DIR:-1}
+      DISPLAY_HEIGHT: ${QDIRSTAT_DISPLAY_HEIGHT:-960}
+      DISPLAY_WIDTH: ${QDIRSTAT_DISPLAY_WIDTH:-1600}
+      KEEP_APP_RUNNING: ${QDIRSTAT_KEEP_APP_RUNNING:-1}
+      UMASK: ${UMASK_SET:-002}
+      VNC_PASSWORD: $QDIRSTAT_VNC_PASSWORD
+    labels:
+      <<: *qdirstat-labels
+      homepage.group: File Management
+      homepage.name: QDirStat
+      homepage.icon: qdirstat.png
+      homepage.href: https://qdirstat.$DOMAIN
+      homepage.description: A tool for visualizing and analyzing directory structures, helping you manage your files more efficiently.
+      homepage.weight: 4
+      homepage.widget.type: qdirstat
+      homepage.widget.url: https://qdirstat.$DOMAIN
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *qdirstat-labels
+    restart: always
+
+secrets:
+  code-server-password:
+    file: ${SECRETS_DIR:-./secrets}/code-server-password
+  code-server-sudo-password:
+    file: ${SECRETS_DIR:-./secrets}/code-server-sudo-password
+  qdirstat-vnc-password:
+    file: ${SECRETS_DIR:-./secrets}/qdirstat-vnc-password
+
+# generate secrets
+# openssl rand -base64 8 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/code-server/password
+# openssl rand -base64 8 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/code-server/sudo-password
+# openssl rand -base64 8 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/qdirstat/vnc-password

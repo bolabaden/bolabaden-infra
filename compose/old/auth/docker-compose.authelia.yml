@@ -1,0 +1,134 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-authelia-labels: &authelia-labels
+  traefik.enable: "true"
+  traefik.http.middlewares.authelia.forwardauth.address: "http://authelia:${AUTHELIA_PORT:-9091}/api/authz/forward-auth" # yamllint disable-line rule:line-length
+  traefik.http.middlewares.authelia.forwardauth.trustForwardHeader: "true"
+  traefik.http.middlewares.authelia.forwardauth.authResponseHeaders: "Remote-User,Remote-Groups,Remote-Name,Remote-Email" # yamllint disable-line rule:line-length
+  traefik.http.services.authelia.loadbalancer.server.port: 9091
+
+x-keycloak-labels: &keycloak-labels
+  traefik.enable: "true"
+  traefik.http.services.keycloak.loadbalancer.server.port: 8080
+
+services:
+  # Authelia (Lite) - Self-Hosted Single Sign-On and Two-Factor Authentication
+  authelia:
+    # 🔹🔹 Authelia 🔹🔹
+    depends_on:
+      redis:
+        condition: service_healthy
+    image: authelia/authelia
+    container_name: authelia
+    hostname: authelia
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - auth-net
+      - traefik_public
+    ports:
+      - ${AUTHELIA_PORT:-9091}:9091
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/authelia:/config
+    environment:
+      <<: *common-env
+      AUTHELIA_DUO_API_SECRET_KEY_FILE: /run/secrets/authelia_duo_api_secret_key
+      AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE: /run/secrets/authelia_jwt_secret
+      AUTHELIA_SESSION_SECRET_FILE: /run/secrets/authelia_session_secret
+      AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /run/secrets/authelia_storage_encryption_key
+      AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE: /run/secrets/authelia_notifier_smtp_password
+      AUTHELIA_SESSION_REDIS_PASSWORD_FILE: /run/secrets/authelia_session_redis_password
+      AUTHELIA_STORAGE_MYSQL_PASSWORD_FILE: /run/secrets/authelia_storage_mysql_password
+    secrets:
+      - authelia_duo_api_secret_key
+      - authelia_jwt_secret
+      - authelia_session_secret
+      - authelia_storage_encryption_key
+      - authelia_notifier_smtp_password
+      - authelia_session_redis_password
+      - authelia_storage_mysql_password
+    labels:
+      <<: *authelia-labels
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *authelia-labels
+    restart: always
+
+secrets:
+  authelia_jwt_secret:
+    file: ${SECRETS_DIR:-./secrets}/authelia_jwt_secret
+  authelia_session_secret:
+    file: ${SECRETS_DIR:-./secrets}/authelia_session_secret
+  authelia_storage_encryption_key:
+    file: ${SECRETS_DIR:-./secrets}/authelia_storage_encryption_key
+  authelia_storage_mysql_password:
+    file: ${SECRETS_DIR:-./secrets}/authelia_storage_mysql_password
+  authelia_notifier_smtp_password:
+    file: ${SECRETS_DIR:-./secrets}/authelia_notifier_smtp_password
+  authelia_duo_api_secret_key:
+    file: ${SECRETS_DIR:-./secrets}/authelia_duo_api_secret_key
+  authelia_session_redis_password:
+    file: ${SECRETS_DIR:-./secrets}/authelia_session_redis_password
+
+networks:
+  auth-net:
+    external: "true"
+
+# Generate secrets.
+# mkdir -p ${SECRETS_DIR:-./secrets}
+# openssl rand -base64 12 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/authelia_notifier_smtp_password
+# openssl rand -base64 12 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/authelia_storage_mysql_password
+# openssl rand -base64 12 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/authelia_storage_redis_password
+# or to obfuscate your passwords:
+# htpasswd -B -C 10 -c ${SECRETS_DIR:-./secrets}/authelia_notifier_smtp_password your_notifier_smtp_password | sed -e s/\\$/\\$\\$/g > ${SECRETS_DIR:-./secrets}/authelia_notifier_smtp_password
+# htpasswd -B -C 10 -c ${SECRETS_DIR:-./secrets}/authelia_storage_mysql_password your_storage_mysql_password | sed -e s/\\$/\\$\\$/g > ${SECRETS_DIR:-./secrets}/authelia_storage_mysql_password
+# htpasswd -B -C 10 -c ${SECRETS_DIR:-./secrets}/authelia_storage_redis_password your_storage_redis_password | sed -e s/\\$/\\$\\$/g > ${SECRETS_DIR:-./secrets}/authelia_storage_redis_password
+# other secrets i cbf explaining:
+# openssl rand -base64 32 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/authelia_duo_api_secret_key
+# openssl rand -base64 32 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/authelia_jwt_secret
+# openssl rand -base64 32 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/authelia_session_secret
+# openssl rand -base64 32 | tr -d '/+=' | cut -c1-64 > ${SECRETS_DIR:-./secrets}/authelia_storage_encryption_key

@@ -1,0 +1,167 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-worker-priority: &swarm-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-dashy-labels: &dashy-labels
+  traefik.enable: "true"
+  traefik.http.services.dashy.loadbalancer.server.port: 8080
+
+x-grafana-labels: &grafana-labels
+  traefik.enable: "true"
+  traefik.http.routers.grafana.middlewares: oauth-auth-redirect@file
+  traefik.http.services.grafana.loadbalancer.server.port: 3000
+
+x-homepage-labels: &homepage-labels
+  traefik.enable: "true"
+  traefik.http.services.homepage.loadbalancer.server.port: 3000
+
+services:
+  dashy:
+    # 🔹🔹 Dashy 🔹🔹  https://github.com/lissy93/dashy
+    # A homepage for your end users
+    image: lissy93/dashy
+    container_name: dashy
+    hostname: dashy
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/dashy:/app/user-data
+    ports:
+      - ${DASHY_PORT:-4000}:8080
+    environment:
+      <<: *common-env
+      NODE_ENV: ${DASHY_NODE_ENV:-production}
+    labels:
+      <<: *dashy-labels
+      homepage.group: Dashboards
+      homepage.name: Dashy
+      homepage.icon: dashy.png
+      homepage.href: https://dashy.$DOMAIN/
+      homepage.description: A self-hosted start page for your server, providing easy access to all your services and applications.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *dashy-labels
+    restart: always
+    healthcheck:
+      test: ["CMD", "node", "/app/services/healthcheck"]
+      interval: 1m30s
+      timeout: 10s
+      start_period: 40s
+
+  grafana:
+    # 🔹🔹 Grafana 🔹🔹
+    depends_on:
+      - prometheus
+    image: grafana/grafana
+    container_name: grafana
+    hostname: grafana
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    ports:
+      - ${GRAFANA_PORT:-3030}:3000
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/grafana/data:/var/lib/grafana
+      - ${CONFIG_PATH:-./volumes}/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+    environment:
+      <<: *common-env
+    restart: always
+    labels:
+      <<: *grafana-labels
+      homepage.group: Infrastructure
+      homepage.name: Grafana
+      homepage.icon: grafana
+      homepage.href: https://grafana.$DOMAIN
+      homepage.description: Monitoring dashboard
+      homepage.widget.type: grafana
+      homepage.widget.url: ${GRAFANA_URL_SCHEME:-http}://grafana.$DOMAIN
+      homepage.widget.username: $GRAFANA_USERNAME?!not set
+      homepage.widget.password: $GRAFANA_PASSWORD?!not set
+      homepage.widget.fields: '["dashboards", "datasources", "totalalerts", "alertstriggered"]'
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *grafana-labels
+
+  homepage:
+    # 🔹🔹 Homepage 🔹🔹  # https://github.com/gethomepage/homepage
+    image: ghcr.io/gethomepage/homepage
+    container_name: homepage
+    hostname: homepage
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - traefik_public
+    ports:
+      - ${HOMEPAGE_PORT:-3000}:3000
+    environment:
+      <<: *common-env
+      HOMEPAGE_VAR_TITLE: ${HOMEPAGE_VAR_TITLE:-Homepage}
+      HOMEPAGE_VAR_SEARCH_PROVIDER: ${HOMEPAGE_VAR_SEARCH_PROVIDER:-google}
+      HOMEPAGE_VAR_HEADER_STYLE: ${HOMEPAGE_VAR_HEADER_STYLE:-default}
+      HOMEPAGE_VAR_WEATHER_CITY: ${HOMEPAGE_VAR_WEATHER_CITY:-Chicago}
+      HOMEPAGE_VAR_WEATHER_LAT: ${HOMEPAGE_VAR_WEATHER_LAT:-41.8781}
+      HOMEPAGE_VAR_WEATHER_LONG: ${HOMEPAGE_VAR_WEATHER_LONG:--87.6298}
+      HOMEPAGE_VAR_WEATHER_TIME: ${HOMEPAGE_VAR_WEATHER_TIME:-}
+      HOMEPAGE_VAR_WEATHER_UNIT: ${HOMEPAGE_VAR_WEATHER_UNIT:-fahrenheit}
+    volumes:
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:z
+      - ${CONFIG_PATH:-./volumes}/homepage:/app/config
+      - ${DATA_DIR:-./data}:/data
+    labels:
+      <<: *homepage-labels
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *homepage-labels
+    restart: always
+
+networks:
+  traefik_public:
+    external: true
+
+
+# touch configs/grafana/datasource.yaml

@@ -1,0 +1,88 @@
+
+
+x-authentik-proxy-labels: &authentik-proxy-labels
+  traefik.enable: "true"
+  traefik.http.routers.authentik.rule: Host(`authentik-proxy.$DOMAIN`) && PathPrefix(`/outpost.goauthentik.io/`)
+  traefik.http.middlewares.authentik.forwardauth.address: http://authentik-proxy:${AUTHENTIK_PORT:-9000}/outpost.goauthentik.io/auth/traefik
+  traefik.http.middlewares.authentik.forwardauth.trustForwardHeader: "true"
+  traefik.http.middlewares.authentik.forwardauth.authResponseHeaders: X-authentik-username,X-authentik-groups,X-authentik-entitlements,X-authentik-email,X-authentik-name,X-authentik-uid,X-authentik-jwt,X-authentik-meta-jwks,X-authentik-meta-outpost,X-authentik-meta-provider,X-authentik-meta-app,X-authentik-meta-version
+  traefik.http.services.authentik.loadbalancer.server.port: 9000
+
+services:
+  authentik-proxy:
+    image: ghcr.io/goauthentik/proxy
+    container_name: authentik-proxy
+    hostname: authentik-proxy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - ${AUTHENTIK_PORT:-9000}:9000
+      - 9443:9443
+    environment:
+      AUTHENTIK_HOST: https://authentik-proxy.$DOMAIN
+      AUTHENTIK_INSECURE: "false"
+      AUTHENTIK_TOKEN: F+ktDrPjfLTB68A3zgSs7xmrW7vy0tQDdwVE20Y5A052Sxi+bFPVtAm+89Yy8o8k2mGAlQuu7EsLniBR
+      AUTHENTIK_SECRET_KEY: F+ktDrPjfLTB68A3zgSs7xmrW7vy0tQDdwVE20Y5A052Sxi+bFPVtAm+89Yy8o8k2mGAlQuu7EsLniBR
+      # Starting with 2021.9, you can optionally set this too
+      # when authentik_host for internal communication doesn't match the public URL
+      # AUTHENTIK_HOST_BROWSER: https://external-domain.tld
+    labels:
+      <<: *authentik-proxy-labels
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *authentik-proxy-labels
+    restart: always
+
+  authentik-worker:
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.2.1}
+    container_name: authentik-worker
+    hostname: authentik-worker
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - traefik_public
+#      - socket_proxy
+    security_opt:
+      - no-new-privileges:true
+    command: worker
+    secrets:
+      - authentik_postgresql_user
+      - authentik_postgresql_password
+      - authentik_secret_key
+    environment:
+      <<: *common-env
+      DOCKER_HOST: ${DOCKER_HOST:-unix:///var/run/docker.sock}
+      AUTHENTIK_DISABLE_STARTUP_ANALYTICS: "true"
+      AUTHENTIK_DISABLE_UPDATE_CHECK: "false"
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+      AUTHENTIK_LOG_LEVEL: ${AUTHENTIK_LOG_LEVEL:-info} # debug, info, warning, error, trace
+      AUTHENTIK_POSTGRESQL__HOST: ${AUTHENTIK_POSTGRES__HOST:-postgresql}
+      AUTHENTIK_POSTGRESQL__NAME: /run/secrets/authentik_postgresql_user
+      AUTHENTIK_POSTGRESQL__PASSWORD: /run/secrets/authentik_postgresql_password
+      AUTHENTIK_POSTGRESQL__USER: /run/secrets/authentik_postgresql_db
+      AUTHENTIK_REDIS__HOST: ${AUTHENTIK_REDIS__HOST:-redis}
+      AUTHENTIK_SECRET_KEY: /run/secrets/authentik_secret_key
+    # `user: root` and the docker socket volume are optional.
+    # See more for the docker socket integration here:
+    # https://goauthentik.io/docs/outposts/integrations/docker
+    # Removing `user: root` also prevents the worker from fixing the permissions
+    # on the mounted folders, so when removing this make sure the folders have the correct UID/GID
+    # (1000:1000 by default)
+    user: root
+    volumes:
+      - ${ROOT_DIR:-.}/configs/authentik/certs:/certs
+      - ${ROOT_DIR:-.}/configs/authentik/custom-templates:/templates
+      # - $DOCKERDIR/appdata/authentik/geoip/data:/geoip # requires geoipupdate
+      - /var/run/docker.sock:/var/run/docker.sock:z # Uncomment if NOT using socket-proxy
+      # - $DOCKERDIR/appdata/traefik3/cert_export:/certs:ro # If NOT using reverse proxy, manually map in certificates
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always

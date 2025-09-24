@@ -1,0 +1,30 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: litellm-postgres
+description: PostgreSQL database for LiteLLM
+type: container
+
+spec:
+  image: docker.io/postgres:16.3-alpine3.20
+  env:
+    POSTGRES_DB: ${var.LITELLM_POSTGRES_DB:-litellm}
+    POSTGRES_PASSWORD: ${var.LITELLM_POSTGRES_PASSWORD:-litellm}
+    POSTGRES_USER: ${var.LITELLM_POSTGRES_USER:-litellm}
+  ports:
+    - name: db
+      containerPort: 5432
+  volumes:
+    - name: data
+      containerPath: /var/lib/postgresql/data
+      sourcePath: ${var.config-path}/litellm/pgdata
+  healthCheck:
+    exec:
+      command:
+        - pg_isready
+        - -h
+        - localhost
+        - -U
+        - "${var.LITELLM_POSTGRES_USER:-litellm}"
+        - -d
+        - "${var.LITELLM_POSTGRES_DB:-litellm}"
+  restartPolicy: always

@@ -1,0 +1,353 @@
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-maintainerr-labels: &maintainerr-labels
+  traefik.enable: "true"
+  traefik.http.services.maintainerr.loadbalancer.server.port: ${MAINTAINERR_PORT:-6246}
+
+x-moviematch-labels: &moviematch-labels
+  traefik.enable: "true"
+  traefik.http.services.moviematch.loadbalancer.server.port: 8000
+
+x-overseerr-labels: &overseerr-labels
+  traefik.enable: "true"
+  traefik.http.services.overseerr.loadbalancer.server.port: 5055
+
+x-plex-labels: &plex-labels
+  traefik.enable: "true"
+  traefik.http.services.plex.loadbalancer.server.port: 32400
+
+x-tautulli-labels: &tautulli-labels
+  traefik.enable: "true"
+  traefik.http.services.tautulli.loadbalancer.server.port: 8181
+
+x-wizarr-labels: &wizarr-labels
+  traefik.enable: "true"
+  traefik.http.services.wizarr.loadbalancer.server.port: 5690
+
+services:
+  maintainerr:
+    # 🔹🔹 Maintainerr 🔹🔹  https://docs.maintainerr.info/latest/Works/
+    # Looks and smells like Overseerr, does the opposite. Maintenance tool for the Plex ecosystem
+    depends_on:
+      plex:
+        condition: service_healthy
+    image: ghcr.io/jorenn92/maintainerr
+    container_name: maintainerr
+    hostname: maintainerr
+    networks:
+      - traefik_public
+    ports:
+      - ${MAINTAINERR_API_PORT:-3002}:${MAINTAINERR_API_PORT:-3002}
+      - ${MAINTAINERR_UI_PORT:-6246}:${MAINTAINERR_UI_PORT:-6246}
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/maintainerr/data:/opt/data
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+      API_PORT: ${MAINTAINERR_API_PORT:-3002}
+      DEBUG: ${MAINTAINERR_DEBUG:-true}
+      NODE_ENV: ${NODE_ENV:-production}
+      UI_HOSTNAME: ${MAINTAINERR_UI_HOSTNAME:-"0.0.0.0"} # "0.0.0.0" for IPv4, "::" for IPv6
+      UI_PORT: ${MAINTAINERR_UI_PORT:-6246} # Default 6246.
+      VERSION_TAG: ${MAINTAINERR_VERSION_TAG:-develop}
+      UV_USE_IO_URING: 0 # Temporary workaround for https://github.com/libuv/libuv/pull/4141
+    labels:
+      <<: *maintainerr-labels
+      homepage.group: Media Server Management
+      homepage.name: Maintainerr
+      homepage.icon: maintainerr.png
+      homepage.href: https://maintainerr.$DOMAIN
+      homepage.description: A comprehensive tool for monitoring and managing your server, providing insights and tools to keep everything running smoothly.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *maintainerr-labels
+    restart: always
+
+  moviematch: # http://localhost:2001 or https://bolabaden.org:2001 or https://moviematch.bolabaden.org or https://bolabaden.org/moviematch
+    # 🔹🔹 Moviematch 🔹🔹
+    # Allows two or more people to select movies to watch on Plex.
+    depends_on:
+      plex:
+        condition: service_healthy
+    image: lukechannings/moviematch
+    container_name: moviematch
+    hostname: moviematch
+    networks:
+      - traefik_public
+    ports:
+      - ${MOVIEMATCH_PORT:-2001}:8000
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+      #      LIBRARY_FILTER: $MOVIEMATCH_LIBRARY_FILTER
+      PLEX_TOKEN: $PLEX_TOKEN
+      PLEX_URL: http://plex:${PLEX_PORT:-32400}
+    labels:
+      <<: *moviematch-labels
+      homepage.group: Media Streaming
+      homepage.name: Moviematch
+      homepage.icon: moviematch.png
+      homepage.href: https://moviematch.$DOMAIN
+      homepage.description: Allows two or more people to select movies to watch on Plex.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *moviematch-labels
+    restart: always
+
+  overseerr:
+    # 🔹🔹 Overseerr 🔹🔹
+    depends_on:
+      plex:
+        condition: service_healthy
+    image: linuxserver/overseerr
+    container_name: overseerr
+    hostname: overseerr
+    networks:
+      - traefik_public
+    ports:
+      - ${OVERSEERR_PORT:-5050}:5055
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/overseerr/config:/config
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+    labels:
+      <<: *overseerr-labels
+      homepage.group: Media Requests
+      homepage.name: Overseerr Requests
+      homepage.icon: overseerr.png
+      homepage.href: https://overseerr.$DOMAIN
+      homepage.description: Allows users to request movies and TV shows, integrating with your media server for easy content management.
+      homepage.weight: 3
+      homepage.widget.type: overseerr
+      homepage.widget.url: https://overseerr.$DOMAIN
+      homepage.widget.key: $OVERSEERR_API_KEY
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *overseerr-labels
+    restart: always
+
+  plex:
+    # 🔹🔹 Plex Media Server 🔹🔹
+    image: plexinc/pms-docker
+    container_name: plex
+    hostname: plex
+    networks:
+      - infranet
+      - traefik_public
+    ports:
+      - ${PLEX_PORT:-32400}:32400/tcp
+      - ${PLEX_DLNA_PORT:-1900}:1900/udp
+      - 8324:8324/tcp
+      - 32410:32410/udp
+      - 32412:32412/udp
+      - 32413:32413/udp
+      - 32414:32414/udp
+      - 32469:32469/tcp
+    # Uncomment below line if you have an embedded intel GPU
+    #devices:
+    #  - /dev/dri:/dev/dri
+    volumes:
+      - ${DATA_DIR:-./data}/media/anime:/media/anime
+      - ${DATA_DIR:-./data}/media/movies:/media/movies
+      - ${DATA_DIR:-./data}/media/music:/media/music
+      - ${DATA_DIR:-./data}/media/music/videos:/media/music/videos
+      - ${DATA_DIR:-./data}/media/tv:/media/tv
+      - ${CONFIG_PATH:-./volumes}/plex:/config
+      - "${CONFIG_PATH:-./volumes}/plex/config/osx-config:/config/Library/Application Support/Plex Media Server"
+    <<: *resource-limits
+    environment:
+      <<: *common-env
+      PLEX_CLAIM: $PLEX_CLAIM
+    labels:
+      <<: *plex-labels
+      homepage.group: Media Streaming
+      homepage.name: Plex Media Server
+      homepage.icon: plex.png
+      homepage.href: https://plex.$DOMAIN
+      homepage.description: Stream your movies, TV shows, music, and photos to any device, providing a centralized media hub for all your content.
+      homepage.weight: 4
+      homepage.widget.type: plex
+      homepage.widget.url: https://plex.$DOMAIN
+      homepage.widget.key: $PLEX_TOKEN
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *plex-labels
+    restart: always
+
+  plexist:
+    # 🔹🔹 Plexist 🔹🔹
+    # Sync your Plex library to Spotify, Deezer, and more.
+    image: gyarbij/plexist
+    container_name: plexist
+    hostname: plexist
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+      PLEX_URL: $PLEX_URL  # URL for the Plex server
+      PLEX_TOKEN: $PLEX_TOKEN  # see instructions here: https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/
+      WRITE_MISSING_AS_CSV: ${PLEXIST_WRITE_MISSING_AS_CSV:-0}  # <1 or 0>, Default 0, 1 = writes missing tracks to a csv
+      ADD_PLAYLIST_POSTER: ${PLEXIST_ADD_PLAYLIST_POSTER:-1}  # <1 or 0>, Default 1, 1 = add poster for each playlist
+      ADD_PLAYLIST_DESCRIPTION: ${PLEXIST_ADD_PLAYLIST_DESCRIPTION:-1}  # <1 or 0>, Default 1, 1 = add description for each playlist
+      APPEND_INSTEAD_OF_SYNC: ${PLEXIST_APPEND_INSTEAD_OF_SYNC:-0}  # <0 or 1>, Default 0, 1 = Sync tracks, 0 = Append only
+      SECONDS_TO_WAIT: ${PLEXIST_SECONDS_TO_WAIT:-84000}  # Seconds to wait between syncs
+      SPOTIFY_CLIENT_ID: $PLEXIST_SPOTIFY_CLIENT_ID
+      SPOTIFY_CLIENT_SECRET: $PLEXIST_SPOTIFY_CLIENT_SECRET
+      SPOTIFY_USER_ID: $PLEXIST_SPOTIFY_USER_ID
+      DEEZER_USER_ID: $PLEXIST_DEEZER_USER_ID
+      DEEZER_PLAYLIST_ID: $PLEXIST_DEEZER_PLAYLIST_ID  # Deezer playlist IDs space separated
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *swarm-preferences-worker-priority]
+    restart: always
+
+  tautulli:
+    # 🔹🔹 Tautulli 🔹🔹
+    # Monitor your Plex Media Server
+    depends_on:
+      plex:
+        condition: service_healthy
+    image: tautulli/tautulli
+    container_name: tautulli
+    hostname: tautulli
+    networks:
+      - traefik_public
+    ports:
+      - ${TAUTULLI_PORT:-8181}:8181
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/tautulli:/config:rw
+      - ${CONFIG_PATH:-./volumes}/plex/config/osx-config/Logs:/logs:ro
+    environment:
+      <<: *common-env
+    labels:
+      <<: *tautulli-labels
+      homepage.group: Media Monitoring
+      homepage.name: Tautulli
+      homepage.icon: tautulli.png
+      homepage.href: https://tautulli.$DOMAIN
+      homepage.description: Monitor your Plex Media Server
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *tautulli-labels
+    restart: always
+
+  watchlistarr:
+    # 🔹🔹 Watchlistarr 🔹🔹
+    # Sync's Plex watchlists with Sonarr and Radarr
+    depends_on:
+      plex:
+        condition: service_healthy
+    image: nylonee/watchlistarr
+    container_name: watchlistarr
+    hostname: watchlistarr
+    networks:
+      - infranet
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/watchlistarr/config:/app/config
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+      ALLOW_CONTINUING_SHOW_DELETING: ${ALLOW_CONTINUING_SHOW_DELETING:-false}
+      ALLOW_ENDED_SHOW_DELETING: ${ALLOW_ENDED_SHOW_DELETING:-false}
+      ALLOW_MOVIE_DELETING: ${ALLOW_MOVIE_DELETING:-false}
+      DELETE_DAYS: ${WATCHLISTARR_DELETE_DAYS:-7}
+      DELETE_FILES: ${WATCHLISTARR_DELETE_FILES:-true}
+      DELETE_INTERVAL_DAYS: ${DELETE_INTERVAL_DAYS:-7}
+      LOG_LEVEL: ${WATCHLISTARR_LOG_LEVEL:-DEBUG}
+      PLEX_TOKEN: $PLEX_TOKEN
+      PLEX_WATCHLIST_URL_1: ${PLEX_WATCHLIST_URL_1:-}
+      PLEX_WATCHLIST_URL_2: ${PLEX_WATCHLIST_URL_2:-}
+      RADARR_API_KEY: $RADARR_API_KEY
+      RADARR_BASE_URL: http://radarr:${RADARR_PORT:-7878}
+      RADARR_BYPASS_IGNORED: ${RADARR_BYPASS_IGNORED:-false}
+      RADARR_QUALITY_PROFILE: ${RADARR_QUALITY_PROFILE:-}
+      RADARR_ROOT_FOLDER: ${RADARR_ROOT_FOLDER:-}
+      RADARR_TAGS: ${RADARR_TAGS:-}
+      REFRESH_INTERVAL_SECONDS: ${REFRESH_INTERVAL_SECONDS:-10}
+      SKIP_FRIEND_SYNC: ${WATCHLISTARR_SKIP_FRIEND_SYNC:-false}
+      SONARR_API_KEY: $SONARR_API_KEY
+      SONARR_BASE_URL: http://sonarr:${SONARR_PORT:-8989}
+      SONARR_BYPASS_IGNORED: ${SONARR_BYPASS_IGNORED:-false}
+      SONARR_QUALITY_PROFILE: ${SONARR_QUALITY_PROFILE:-}
+      SONARR_ROOT_FOLDER: ${SONARR_ROOT_FOLDER:-}
+      SONARR_SEASON_MONITORING: ${SONARR_SEASON_MONITORING:-}
+      SONARR_TAGS: ${SONARR_TAGS:-}
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  wizarr:
+    # 🔹🔹 Wizarr 🔹🔹  # https://github.com/wizarrrr/wizarr
+    # Advanced user invitation and management system for Jellyfin and Plex.
+    image: ghcr.io/wizarrrr/wizarr
+    container_name: wizarr
+    hostname: wizarr
+    networks:
+      - traefik_public
+    ports:
+      - ${WIZARR_PORT:-5690}:5690
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/wizarr/:/data/database
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+    labels:
+      <<: *wizarr-labels
+      homepage.group: User Management
+      homepage.name: Wizarr
+      homepage.icon: wizarr.png
+      homepage.href: https://wizarr.$DOMAIN
+      homepage.description: Advanced user invitation and management system for Jellyfin and Plex.
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *wizarr-labels
+    restart: always
+
+secrets:
+  plex_claim:
+    file: ${ROOT_DIR:-.}/secrets/plex_claim

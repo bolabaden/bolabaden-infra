@@ -1,0 +1,66 @@
+
+services:
+  ttrss:
+    # 🔹🔹 Tiny Tiny RSS 🔹🔹
+    image: wangqiru/ttrss:latest
+    container_name: ttrss
+    hostname: ttrss
+    ports:
+      - 181:80
+    environment:
+      <<: *common-env
+      SELF_URL_PATH: https://ttrss.${DOMAIN:-bolabaden.org}
+      DB_PASS: ${TINYRSS_POSTGRES_PASSWORD:-tinyrss}
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/tinyrss/cache:/var/www/cache/
+    networks:
+      - infranet
+    stdin_open: true
+    tty: true
+    depends_on:
+      - tinyrss_postgres
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fSs http://localhost:80 || exit 1"]
+      start_period: 30s
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+
+  tinyrss_mercury: # set Mercury Parser API endpoint to `service.mercury:3000` on TTRSS plugin setting page
+    image: wangqiru/mercury-parser-api:latest
+    container_name: tinyrss_mercury
+    hostname: tinyrss_mercury
+    networks:
+      - infranet
+      - traefik_public
+    restart: always
+
+  tinyrss_opencc: # set OpenCC API endpoint to `service.opencc:3000` on TTRSS plugin setting page
+    image: wangqiru/opencc-api-server:latest
+    container_name: tinyrss_opencc
+    hostname: tinyrss_opencc
+    networks:
+      - infranet
+    environment:
+      - NODE_ENV=production
+    restart: always
+
+  tinyrss_postgres:
+    image: postgres:17.4
+    container_name: tinyrss_postgres
+    hostname: tinyrss_postgres
+    networks:
+      - infranet
+    environment:
+      - POSTGRES_USER=${TINYRSS_POSTGRES_USER:-tinyrss}
+      - POSTGRES_PASSWORD=${TINYRSS_POSTGRES_PASSWORD:-tinyrss}
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/tinyrss/db:/var/lib/postgresql/data # persist postgres data to ~/postgres/data/ on the host
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-tinyrss}"]
+      start_period: 30s
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always

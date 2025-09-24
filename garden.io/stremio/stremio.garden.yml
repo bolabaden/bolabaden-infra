@@ -1,0 +1,55 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: stremio
+description: Stremio streaming server
+type: container
+
+spec:
+  image: ghcr.io/tsaridas/stremio-docker:main
+  env:
+    IPADDRESS: 127.0.0.1
+    AUTO_SERVER_URL: 1
+    SERVER_URL: https://stremio.${var.domain}/
+    WEBUI_LOCATION: https://stremio.${var.domain}/shell/
+    NO_CORS: 0
+    CASTING_DISABLED: 1
+  ports:
+    - name: http
+      containerPort: 8080
+    - name: streaming-http
+      containerPort: 11470
+    - name: streaming-https
+      containerPort: 12470
+  volumes:
+    - name: config
+      containerPath: /root/.stremio-server
+      sourcePath: ${var.config-path}/stremio/root/.stremio-server
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      memory: 256Mi
+  ingresses:
+    - path: /
+      port: http
+      hostname: stremio.${var.domain}
+    - path: /hlsv2
+      port: streaming-http
+      hostname: stremio.${var.domain}
+    - path: /casting
+      port: streaming-http
+      hostname: stremio.${var.domain}
+    - path: /local-addon
+      port: streaming-http
+      hostname: stremio.${var.domain}
+    - path: /proxy
+      port: streaming-http
+      hostname: stremio.${var.domain}
+    - path: /stream
+      port: streaming-http
+      hostname: stremio.${var.domain}
+  healthCheck:
+    exec:
+      command: [sh, -c, "(curl -fs http://127.0.0.1:11470 > /dev/null 2>&1 || curl -fs https://127.0.0.1:12470 > /dev/null 2>&1) || exit 1"]
+  restartPolicy: always

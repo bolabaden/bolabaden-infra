@@ -1,0 +1,16 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: whoami
+description: Whoami test service
+type: container
+
+spec:
+  image: docker.io/traefik/whoami:latest
+  ports:
+    - name: http
+      containerPort: 80
+  ingresses:
+    - path: /
+      port: http
+      hostname: whoami.${var.domain}
+  restartPolicy: always

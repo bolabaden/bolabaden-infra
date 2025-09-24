@@ -1,0 +1,113 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-stateless-service: &stateless-service
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-stateful-service: &stateful-service
+  placement:
+    constraints:
+      - node.role == manager
+
+x-glauthui-labels: &glauthui-labels
+  traefik.enable: "true"
+  traefik.http.services.glauthui.loadbalancer.server.port: 5000
+
+services:
+  glauthui:
+    depends_on:
+      mariadb:
+        condition: service_started
+    build:
+      context: ${ROOT_DIR:-.}/src/glauth-ui
+      dockerfile: Dockerfile
+    image: glauthui:latest
+    container_name: glauthui
+    hostname: glauthui
+    networks:
+      - infrastructure_network
+    ports:
+      - ${GLAUTHUI_PORT:-8201}:5000
+    volumes:
+      # Mount Folder that contains DB and config file outside the container
+      - "${ROOT_DIR:-.}/configs/glauth/db:${GLAUTHUI_CFG_PATH:-/config/glauth/ldap/db}"
+    secrets:
+      - glauthui_mail_passcode
+      - glauthui_secret_key
+    <<: [*common-uidgid, *resource-limits]
+    environment:
+      <<: *common-env
+      SECRET_KEY: /run/secrets/glauthui_secret_key
+      # DATABASE CONFIG
+      DATABASE_URL: mysql+pymysql://${GLAUTHUI_DB_USER:-glauthui}:$GLAUTHUI_DB_PASSWORD@glauthui-mariadb:${GLAUTHUI_DB_PORT:-3306}/${GLAUTHUI_DB_NAME:-glauthui}
+      # MAIL CONFIG
+      MAIL_SERVER: ${GLAUTHUI_MAIL_SERVER:-smtp.gmail.com}
+      MAIL_PORT: ${GLAUTHUI_MAIL_PORT:-587}
+      MAIL_USE_TLS: ${GLAUTHUI_MAIL_USE_TLS:-1}
+      MAIL_USERNAME: ${GLAUTHUI_MAIL_USERNAME:-"bolabaden@$DOMAIN"}
+      MAIL_PASSWORD: /run/secrets/glauthui_mail_passcode
+      MAIL_ADMIN: ${GLAUTHUI_MAIL_ADMIN:-"admin@$DOMAIN"}
+      ORGANISATION: ${GLAUTHUI_ORGANISATION:-Authelia}
+      ADMIN_GROUP: ${GLAUTHUI_ADMIN_GROUP:-glauth_admin}
+      FLASK_DEBUG: ${GLAUTHUI_FLASK_DEBUG:-"false"}
+      GLAUTH_CFG_PATH: ${GLAUTHUI_CFG_PATH:-/config/glauth/ldap/db}
+    labels:
+      <<: *glauthui-labels
+      homepage.group: Infrastructure
+      homepage.name: GlauthUI
+      homepage.icon: glauthui
+      homepage.href: https://$DOMAIN/glauthui/
+      homepage.description: LDAP UI
+      homepage.widget.type: glauthui
+      homepage.widget.url: https://$DOMAIN/glauthui/
+      homepage.widget.fields: '["users", "groups", "policies"]'
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits, *stateful-service]
+      labels:
+        <<: *glauthui-labels
+    restart: always
+
+secrets:
+  glauthui_mail_passcode:
+    file: ${SECRETS_DIR:-../../secrets}/glauthui_mail_passcode
+  glauthui_secret_key:
+    file: ${SECRETS_DIR:-../../secrets}/glauthui_secret_key
+
+
+networks:
+  auth-net:
+    external: "true"
+
+# To build the secrets:
+# mkdir -p ${SECRETS_DIR:-../../secrets}
+# echo "your_mail_password" > ${SECRETS_DIR:-../../secrets}/glauthui_mail_passcode
+# echo "your_secret_key" > ${SECRETS_DIR:-../../secrets}/glauthui_secret_key
+# docker secret create glauthui_mail_passcode ${SECRETS_DIR:-../../secrets}/glauthui_mail_passcode
+# docker secret create glauthui_secret_key ${SECRETS_DIR:-../../secrets}/glauthui_secret_key

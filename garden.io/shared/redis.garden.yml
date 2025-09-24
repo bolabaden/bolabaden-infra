@@ -1,0 +1,19 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: redis
+description: Redis cache and message broker
+type: container
+
+spec:
+  image: docker.io/redis:alpine
+  ports:
+    - name: redis
+      containerPort: 6379
+  volumes:
+    - name: data
+      containerPath: /data
+      sourcePath: ${var.config-path}/redis/data
+  healthCheck:
+    exec:
+      command: [redis-cli, ping]
+  restartPolicy: always

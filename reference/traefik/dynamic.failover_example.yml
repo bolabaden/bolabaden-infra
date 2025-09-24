@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://www.schemastore.org/traefik-v3-file-provider.json
+http:
+  routers:
+    catchall:
+      service: noop@internal
+      rule: Host(`bolabaden.org`) || Host(`beatapostapita.bolabaden.org`) || HostRegexp(`^(.+)$`)  # Note: leave the bolabaden.org || beatapostapita.bolabaden.org here! otherwise traefik spams an annoying warning. Doesn't affect functionality though.
+      priority: 0
+      middlewares:
+        - strip-www@file
+        - http-to-https-redirect-simple@file
+    whoami-with-failover:
+      service: whoami-with-failover@file
+      rule: Host(`whoami.bolabaden.org`)
+    whoami-direct:
+      service: whoami-direct@file
+      rule: Host(`whoami.beatapostapita.bolabaden.org`)
+  services:
+    whoami-with-failover:
+      failover:
+        service: whoami-direct@file
+        fallback: whoami-servers@file
+    whoami-direct:
+      loadBalancer:
+        servers:
+          - url: http://whoami:80
+        healthCheck:
+          path: "/"
+          interval: "15s"
+          timeout: "5s"
+    whoami-servers:
+      loadBalancer:
+        servers:
+          - url: http://whoami:80
+          - url: https://whoami.beatapostapita.bolabaden.org
+          - url: https://whoami.beatapostapita.bolabaden.org
+          - url: https://whoami.vractormania.bolabaden.org
+          - url: https://whoami.arnialtrashlid.bolabaden.org
+          - url: https://whoami.cloudserver1.bolabaden.org
+          - url: https://whoami.cloudserver2.bolabaden.org
+          - url: https://whoami.cloudserver3.bolabaden.org
+        healthCheck:
+          path: "/"
+          interval: "15s"
+          timeout: "5s"
+  middlewares:
+    strip-www:
+      redirectRegex:
+        regex: '^(http|https)?://www\.(.+)$'
+        replacement: '$1://$2'
+        permanent: false
+    http-to-https-redirect-simple:
+      redirectScheme:
+        scheme: https
+        permanent: false

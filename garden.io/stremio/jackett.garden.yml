@@ -1,0 +1,43 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: jackett
+description: Jackett torrent indexer aggregator
+type: container
+dependencies:
+  - deploy.flaresolverr
+
+spec:
+  image: lscr.io/linuxserver/jackett
+  env:
+    TZ: ${var.tz}
+    PUID: ${var.PUID:-1001}
+    PGID: ${var.PGID:-988}
+    UMASK: ${var.UMASK:-002}
+    AUTO_UPDATE: ${var.JACKETT_AUTO_UPDATE:-true}
+    RUN_OPTS: ${var.JACKETT_RUN_OPTS:-}
+    JACKETT_API_KEY: ${var.JACKETT_API_KEY}
+  ports:
+    - name: http
+      containerPort: 9117
+  volumes:
+    - name: config
+      containerPath: /config
+      sourcePath: ${var.config-path}/jackett/config
+    - name: blackhole
+      containerPath: /blackhole
+      hostPath: /mnt/remote/blackhole
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      memory: 128Mi
+  ingresses:
+    - path: /
+      port: http
+      hostname: jackett.${var.domain}
+  healthCheck:
+    httpGet:
+      path: /api/v2.0/indexers/all/results/torznab?t=indexers
+      port: http
+  restartPolicy: always

@@ -1,0 +1,22 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: autokuma
+description: AutoKuma for automatic Uptime Kuma monitor creation
+type: container
+
+spec:
+  image: ghcr.io/bigboot/autokuma:latest
+  env:
+    TZ: ${var.tz}
+    AUTOKUMA__KUMA__URL: https://uptimekuma.${var.domain}
+    AUTOKUMA__KUMA__USERNAME: ${var.AUTOKUMA__KUMA__USERNAME:-admin}
+    AUTOKUMA__KUMA__PASSWORD: ${var.AUTOKUMA__KUMA__PASSWORD:-password}
+    AUTOKUMA__KUMA__CALL_TIMEOUT: ${var.AUTOKUMA__KUMA__CALL_TIMEOUT:-5}
+    AUTOKUMA__KUMA__CONNECT_TIMEOUT: ${var.AUTOKUMA__KUMA__CONNECT_TIMEOUT:-5}
+  volumes:
+    - name: docker-sock
+      containerPath: /var/run/docker.sock
+      sourcePath: ${var.docker-socket}
+      readOnly: true
+  restartPolicy: always
+

@@ -1,0 +1,22 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: mongodb
+description: MongoDB database
+type: container
+
+spec:
+  image: docker.io/mongo:latest
+  env:
+    TZ: ${var.tz}
+  ports:
+    - name: db
+      containerPort: 27017
+  volumes:
+    - name: data
+      containerPath: /data/db
+      sourcePath: ${var.config-path}/mongodb/data
+  healthCheck:
+    exec:
+      command: [mongosh, "127.0.0.1:27017/test", "--quiet", "--eval", "db.runCommand(\"ping\").ok"]
+  restartPolicy: always
+

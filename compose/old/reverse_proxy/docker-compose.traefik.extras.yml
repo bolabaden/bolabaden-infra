@@ -1,0 +1,93 @@
+
+# 🔹🔹 Traefik Extras 🔹🔹
+# Traefik Extras are a collection of plugins and tools that can be used to enhance the functionality of Traefik
+# and the reverse proxy as a whole.
+
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+services:
+  crowdsec:
+    # 🔹🔹 CrowdSec 🔹🔹
+    # Open-source & collaborative security IPS
+    image: docker.io/crowdsecurity/crowdsec
+    container_name: crowdsec
+    hostname: crowdsec
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${CROWDSEC_PORT:-8080}:8080
+      - ${ZEROTIER_IP_CLOUDSERVER:-6060}:6060
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+      COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/whitelist-good-actors crowdsecurity/iptables crowdsecurity/linux fulljackz/proxmox"
+      CUSTOM_HOSTNAME: ${CUSTOM_HOSTNAME:-home-server}
+      DISABLE_LOCAL_API: "true" # Only after successfully registering and validating remote agent below.
+      # For the following, check local_api_credentials.yaml after cscli lapi register (secondary machine) and cscli machine validate (on primary machine)
+      AGENT_USERNAME: ${CROWDSEC_AGENT_USERNAME:-}
+      AGENT_PASSWORD: ${CROWDSEC_AGENT_PASSWORD:-}
+      LOCAL_API_URL: ${CROWDSEC_LOCAL_API_URL:-}
+    volumes:
+      - /var/log:/var/log:ro
+      - ${CONFIG_PATH:-./volumes}/crowdsec/config:/etc/crowdsec
+      - ${CONFIG_PATH:-./volumes}/crowdsec/data:/var/lib/crowdsec/data
+      - ${ROOT_DIR:-.}/logs/cloudserver:/logs/cloudserver:ro
+      - ${ROOT_DIR:-.}/logs/zbox:/logs/zbox:ro
+    restart: always
+
+  traefik-bouncer:
+    # 🔹🔹 Traefik Bouncer 🔹🔹
+    # A plugin to block abusive clients based on IP address.
+    image: docker.io/dfbonalair/traefik-crowdsec-bouncer
+    container_name: traefik-bouncer
+    hostname: traefik-bouncer
+    security_opt:
+      - no-new-privileges:true
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+      CROWDSEC_AGENT_HOST: $TRAEFIK_CROWDSEC_LAPI_HOST:$TRAEFIK_CROWDSEC_LAPI_PORT  # CrowdSec host and port
+      CROWDSEC_BOUNCER_API_KEY: $TRAEFIK_CROWDSEC_BOUNCER_API_KEY  # Required.
+      GIN_MODE: ${TRAEFIK_CROWDSEC_BOUNCER_GIN_MODE:-release}  # default is debug (more logs)
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always

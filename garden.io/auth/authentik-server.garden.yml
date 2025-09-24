@@ -1,0 +1,51 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: authentik-server
+description: Authentik server for identity and access management
+type: container
+dependencies:
+  - deploy.authentik-postgresql
+  - deploy.redis
+
+spec:
+  image: ghcr.io/goauthentik/server:${var.AUTHENTIK_TAG:-2025.6.4}
+  env:
+    AUTHENTIK_REDIS__HOST: redis
+    AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
+    AUTHENTIK_POSTGRESQL__USER: authentik
+    AUTHENTIK_POSTGRESQL__NAME: authentik
+    AUTHENTIK_POSTGRESQL__PASSWORD: authentik
+    AUTHENTIK_SECRET_KEY: ${var.AUTHENTIK_SECRET_KEY:-fd14e752f651b2a0b31daf49247766e9856aa93b57a479b3f6f12ae477d78b3d}
+    AUTHENTIK_ERROR_REPORTING__ENABLED: true
+    AUTHENTIK_EMAIL__HOST: smtp.gmail.com
+    AUTHENTIK_EMAIL__PORT: 587
+    AUTHENTIK_EMAIL__USERNAME: boden.crouch@gmail.com
+    AUTHENTIK_EMAIL__PASSWORD: ${var.GMAIL_APP_PASSWORD}
+    AUTHENTIK_EMAIL__USE_TLS: true
+    AUTHENTIK_EMAIL__USE_SSL: false
+    AUTHENTIK_EMAIL__TIMEOUT: 10
+    AUTHENTIK_EMAIL__FROM: boden.crouch@gmail.com
+    AUTHENTIK_BOOTSTRAP__EMAIL: boden.crouch@gmail.com
+    AUTHENTIK_BOOTSTRAP__PASSWORD: ${var.sudo-password}
+    AUTHENTIK_BOOTSTRAP_EMAIL: boden.crouch@gmail.com
+    AUTHENTIK_BOOTSTRAP_PASSWORD: ${var.sudo-password}
+  ports:
+    - name: http
+      containerPort: 9000
+  volumes:
+    - name: media
+      containerPath: /media
+      sourcePath: ${var.config-path}/authentik/media
+    - name: custom-templates
+      containerPath: /templates
+      sourcePath: ${var.config-path}/authentik/custom-templates
+  command: [server]
+  ingresses:
+    - path: /
+      port: http
+      hostname: authentikserver.${var.domain}
+  healthCheck:
+    exec:
+      command: [python3, -c, "import socket; s=socket.socket(); s.settimeout(5); s.connect((\"127.0.0.1\", 9000)); s.close()"]
+  restartPolicy: always
+

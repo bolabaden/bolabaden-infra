@@ -1,0 +1,1578 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024        # CPU share weight (relative, 2-262144). Higher = more CPU *if competing*.
+#  mem_limit: 512m        # Max RAM usage (e.g., 64m, 1g). Exceeding = container kill.
+#  mem_reservation: 325m  # Soft RAM limit (e.g., 32m, 512m).  Best effort, not guaranteed.
+#  mem_swappiness: 30      # Swap usage (0-100). 0 = off. Higher = more swap, may slow down container.
+  #memswap_limit: 1024m    # Max RAM + Swap.  Usually same as mem_limit.
+  labels:
+    autoheal: 'true'
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: '0.10'
+      memory: 1024M
+#    reservations:
+ #     cpus: '0.05'
+  #    memory:  256M
+
+x-autoindex-labels: &autoindex-labels
+  traefik.enable: "true"
+  traefik.http.services.autoindex.loadbalancer.server.port: ${AUTOINDEX_PORT:-80}
+
+x-bobarr-labels: &bobarr-labels
+  traefik.enable: "true"
+  traefik.http.services.bobarr.loadbalancer.server.port: 3000
+
+x-browserless-labels: &browserless-labels
+  traefik.enable: "true"
+  traefik.http.services.browserless.loadbalancer.server.port: 3000
+
+x-calibre-labels: &calibre-labels
+  traefik.enable: "true"
+  traefik.http.services.calibre.loadbalancer.server.port: 8080
+
+x-code-server-labels: &code-server-labels
+  traefik.enable: "true"
+  traefik.http.services.code-server.loadbalancer.server.port: 8443
+
+x-duplicati-labels: &duplicati-labels
+  traefik.enable: "true"
+  traefik.http.services.duplicati.loadbalancer.server.port: 8200
+
+x-fileflows-labels: &fileflows-labels
+  traefik.enable: "true"
+  traefik.http.services.fileflows.loadbalancer.server.port: ${FILEFLOWS_PORT:-19200}
+
+x-glances-labels: &glances-labels
+  traefik.enable: "true"
+  traefik.http.services.glances.loadbalancer.server.port: ${GLANCES_PORT:-61208}
+  homepage.group: System Monitoring
+  homepage.name: Glances
+  homepage.icon: glances.png
+  homepage.href: http://glances.$DOMAIN
+  homepage.description: A cross-platform monitoring tool that provides a detailed overview of your system's performance and resources.
+
+x-grafana-labels: &grafana-labels
+  traefik.enable: "true"
+  traefik.http.routers.grafana.middlewares: oauth-auth-redirect@file
+  traefik.http.services.grafana.loadbalancer.server.port: 3000
+
+x-janitorr-labels: &janitorr-labels
+  traefik.enable: "true"
+  traefik.http.services.janitorr.loadbalancer.server.port: 8978
+
+x-mylar3-labels: &mylar3-labels
+  traefik.enable: "true"
+  traefik.http.services.mylar3.loadbalancer.server.port: 8090
+  homepage.group: E-books & Comics
+  homepage.name: Mylar3
+  homepage.icon: mylar3.png
+  homepage.href: https://mylar3.$DOMAIN
+  homepage.description: Manages and streams your digital comics, manga, and books, providing a clean and organized reading experience.
+
+x-sickgear-labels: &sickgear-labels
+  traefik.enable: "true"
+  traefik.http.services.sickgear.loadbalancer.server.port: 8081
+
+x-whiteboardonline-labels: &whiteboardonline-labels
+  traefik.enable: "true"
+  traefik.http.services.whiteboardonline.loadbalancer.server.port: 80
+
+services:
+  autoindex:
+    # 🔹🔹 Autoindex 🔹🔹
+    # Simple Directory Index
+    image: dceoy/nginx-autoindex
+    container_name: autoindex
+    hostname: autoindex
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${AUTOINDEX_PORT:-8089}:80
+    volumes:
+      - ${ROOT_DIR:-.}/data/media:/var/lib/nginx/html:ro # Location you want to index
+    environment:
+      <<: *common-env
+    labels:
+      <<: *autoindex-labels
+      homepage.group: File Management
+      homepage.name: AutoIndex
+      homepage.icon: autoindex.png
+      homepage.href: https://autoindex.$DOMAIN/
+      homepage.description: A self-hosted file indexer and search engine, providing a simple way to browse and search your files.
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *autoindex-labels
+    restart: always
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    hostname: alertmanager
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${ROOT_DIR:-.}/configs/alertmanager/data:/data
+      - ${ROOT_DIR:-.}/configs/alertmanager/config:/config
+    environment:
+      <<: *common-env
+    command: '--config.file=/config/alertmanager.yml'
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - prometheus
+    restart: always
+
+  autoscaler:
+    # 🔹🔹 Autoscaler 🔹🔹
+    image: jcwimer/docker-swarm-autoscaler
+    container_name: autoscaler
+    hostname: autoscaler
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    environment:
+      <<: *common-env
+      PROMETHEUS_URL: ${PROMETHEUS_URL:-http}://prometheus:${PROMETHEUS_PORT:-9090}
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+    restart: always
+
+  bobarr-api:
+    # 🔹🔹 Bobarr API 🔹🔹
+    image: iam4x/bobarr-api
+    container_name: bobarr-api
+    hostname: bobarr-api
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - ${BOBARR_PORT:-4000}:4000
+    volumes:
+      - ${ROOT_DIR:-.}/library:/usr/library
+    command: yarn start:prod
+    environment:
+      <<: *common-env
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  bobarr-postgres:
+    image: postgres:12-alpine
+    container_name: bobarr-postgresql
+    hostname: bobarr-postgresql
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file: .env
+    environment:
+      <<: *common-env
+    volumes:
+      - ${ROOT_DIR:-.}/configs/bobarr/postgres:/var/lib/postgresql/data
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  bobarr-redis:
+    image: bitnami/redis:5.0.6
+    container_name: bobarr-redis
+    hostname: bobarr-redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${ROOT_DIR:-.}/configs/bobarr/redis:/bitnami/redis/data
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  bobarr-web:
+    image: iam4x/bobarr-web
+    container_name: bobarr-web
+    hostname: bobarr-web
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - ${BOBARR_PORT:-3004}:3000
+    command: yarn start
+    environment:
+      <<: *common-env
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *bobarr-labels
+    restart: always
+  browserless:
+    image: browserless/chrome
+    container_name: browserless
+    hostname: browserless
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    ports:
+      - ${BROWSERLESS_PORT:-2998}:3000
+    ulimits:
+      core:
+        hard: 0
+        soft: 0
+    labels:
+      <<: *browserless-labels
+      homepage.group: Utilities
+      homepage.name: Browserless
+      homepage.icon: browserless.png
+      homepage.href: https://browserless.$DOMAIN
+      homepage.description: Browserless is a tool that allows you to run a headless browser in a container.
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *browserless-labels
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/pressure"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: always
+
+  caddy:
+    image: lucaslorentz/caddy-docker-proxy:ci-alpine
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      <<: *common-env
+      CADDY_INGRESS_NETWORKS: ${CADDY_INGRESS_NETWORKS:-caddy}
+    networks:
+      - ${CADDY_INGRESS_NETWORKS:-caddy}
+    volumes:
+      - ${SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock
+      - ${ROOT_DIR:-.}/configs/caddy/data:/data
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  calibre:
+    # 🔹🔹 Calibre 🔹🔹
+    image: linuxserver/calibre
+    container_name: calibre
+    hostname: calibre
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    volumes:
+      - ${ROOT_DIR:-.}/configs/calibre/config:/config
+      - ${ROOT_DIR:-.}/data/media/books:/books:rw
+      - ${ROOT_DIR:-.}/downloads/books:/downloads:rw
+    ports:
+      - ${CALIBRE_PORT:-7080}:8080
+      - ${CALIBRE_PORT2:-7081}:8081
+    environment:
+      <<: *common-env
+      CALIBRE_USE_DARK_PALETTE: ${CALIBRE_USE_DARK_PALETTE:-1}
+      DISABLE_AUTH: ${CALIBRE_DISABLE_AUTH:-true}
+      KEEP_APP_RUNNING: ${CALIBRE_KEEP_APP_RUNNING:-1}
+    labels:
+      <<: *calibre-labels
+      homepage.group: E-books
+      homepage.name: Calibre
+      homepage.icon: calibre.png
+      homepage.href: https://calibre.$DOMAIN/
+      homepage.description: Comprehensive e-book management tool that allows you to organize, read, and convert e-books in various formats.
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *calibre-labels
+    healthcheck:
+      test: curl -fSs http://localhost:8080 || exit 1
+      start_period: 360s
+      timeout: 10s
+      interval: 15s
+      retries: 3
+    restart: always
+
+  cloudflare:
+    image: oznu/cloudflare-ddns
+    container_name: cloudflare
+    environment:
+      <<: *common-env
+      API_KEY: $CF_TOKEN
+      ZONE: $CF_ZONE_ID
+      SUBDOMAIN: $SUBDOMAIN
+      DNS_SERVER: ${CLOUDFLARE_DNS_SERVER:-1.1.1.1}
+    dns: ${CLOUDFLARE_DNS_SERVER:-1.1.1.1}
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  code-server:
+    image: linuxserver/code-server
+    container_name: code-server
+    hostname: code-server
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    ports:
+      - ${CODE_SERVER_PORT:-8443}:8443
+    volumes:
+      - ${ROOT_DIR:-.}/configs/code-server:/code
+      - ${ROOT_DIR:-.}/configs/code-server/.vscode:/config
+    environment:
+      <<: *common-env
+      PASSWORD: ${CODESERVER_PASSWORD:-}
+      # Optional settings
+      #HASHED_PASSWORD: ${CODESERVER_HASHED_PASSWORD:-}
+      #SUDO_PASSWORD: ${CODESERVER_SUDO_PASSWORD:-}
+      #SUDO_PASSWORD_HASH: ${CODESERVER_SUDO_PASSWORD_HASH:-}
+      #PROXY_DOMAIN: ${CODESERVER_PROXY_DOMAIN:-code-server.$DOMAIN}
+    labels:
+      <<: *code-server-labels
+      homepage.group: Development
+      homepage.name: Code Server
+      homepage.icon: code-server.png
+      homepage.href: https://code-server.$DOMAIN/
+      homepage.description: A web-based IDE for coding, editing, and debugging code, with support for multiple languages and frameworks.
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *code-server-labels
+    restart: always
+
+  crowdsec:
+    # 🔹🔹 CrowdSec 🔹🔹
+    # Open-source & collaborative security IPS
+    image: crowdsecurity/crowdsec
+    container_name: crowdsec
+    hostname: crowdsec
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${CROWDSEC_PORT:-8080}:8080
+      - ${ZEROTIER_IP_CLOUDSERVER:-6060}:6060
+    environment:
+      <<: *common-env
+      COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/whitelist-good-actors crowdsecurity/iptables crowdsecurity/linux fulljackz/proxmox"
+      CUSTOM_HOSTNAME: ${CUSTOM_HOSTNAME:-home-server}
+      DISABLE_LOCAL_API: "true" # Only after successfully registering and validating remote agent below.
+      # For the following, check local_api_credentials.yaml after cscli lapi register (secondary machine) and cscli machine validate (on primary machine)
+      AGENT_USERNAME: ${CROWDSEC_AGENT_USERNAME:-}
+      AGENT_PASSWORD: ${CROWDSEC_AGENT_PASSWORD:-}
+      LOCAL_API_URL: ${CROWDSEC_LOCAL_API_URL:-}
+    volumes:
+      - /var/log:/var/log:ro
+      - ${ROOT_DIR:-.}/configs/crowdsec/config:/etc/crowdsec
+      - ${ROOT_DIR:-.}/configs/crowdsec/data:/var/lib/crowdsec/data
+      - ${ROOT_DIR:-.}/logs/cloudserver:/logs/cloudserver:ro
+      - ${ROOT_DIR:-.}/logs/zbox:/logs/zbox:ro
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  docker-cleanup:
+    # 🔹🔹 Docker Cleanup 🔹🔹
+    # WARNING: This script will remove all exited containers, data-only containers
+    # and unused images unless you carefully exclude them. Take care if
+    # you mount /var/lib/docker into the container since that will clean up all
+    # unused data volumes. If it's not compatible with your system or Docker version
+    # it may delete all your volumes, even from under running containers!
+    image: meltwater/docker-cleanup
+    volumes:
+      - ${SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock
+      - /var/lib/docker:/var/lib/docker
+    networks:
+      - internal
+    environment:
+      <<: *common-env
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    env_file: /var/data/config/docker-cleanup/docker-cleanup.env
+
+  dockge: 
+    #  🔹🔹 Dockge 🔹🔹
+    # Docker Compose Manager
+    image: louislam/dockge
+    container_name: dockge
+    hostname: dockge
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${DOCKGE_PORT:-5001}:5001
+    volumes:
+      - ${SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock:z
+      - ${ROOT_DIR:-.}/configs/dockge:/app/data
+      - ${ROOT_DIR:-.}/configs/dockge/stacks:${ROOT_DIR:-.}/compose
+    environment:
+      <<: *common-env
+      DOCKGE_STACKS_DIR: ${ROOT_DIR:-.}/compose
+    labels:
+      <<: *dockge-labels
+      homepage.group: Dashboards
+      homepage.name: Dockge
+      homepage.icon: dockge.png
+      homepage.href: https://$DOMAIN/dockge/
+      homepage.description: A fancy, easy-to-use and reactive self-hosted docker compose.yaml stack-oriented manager.
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *dockge-labels
+    restart: always
+
+  drone:
+    image: drone/drone:1
+    container_name: drone
+    user: ${PUID:-1002}
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=drone-net
+      - traefik.http.services.drone-svc.loadbalancer.server.port=80
+      - traefik.http.routers.drone-rtr.rule=Host(`drone.$DNS_DOMAIN`)
+      - traefik.http.routers.drone-rtr.entrypoints=websecure
+      - traefik.http.routers.drone-rtr.tls=true
+    environment:
+      <<: *common-env
+      DRONE_GITHUB_CLIENT_ID: $DRONE_GITHUB_CLIENT_ID
+      DRONE_GITHUB_CLIENT_SECRET: $DRONE_GITHUB_CLIENT_SECRET
+      DRONE_RPC_SECRET: $DRONE_RPC_SECRET
+      DRONE_SERVER_HOST: drone.$DNS_DOMAIN
+      DRONE_SERVER_PROTO: https
+      DRONE_USER_CREATE: $DRONE_USER_CREATE
+      DRONE_USER_FILTER: $DRONE_USER_FILTER
+    volumes:
+      - ${ROOT_DIR:-.}/configs/drone/server/data:/data
+    networks:
+      - drone-net
+      - drone-private-net
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  drone-runner:
+    image: drone/drone-runner-docker:1
+    container_name: drone_runner_1
+    environment:
+      <<: *common-env
+      DRONE_RPC_PROTO: ${DRONE_RPC_PROTO:-http}
+      DRONE_RPC_HOST: ${DRONE_RPC_HOST:-drone}
+      DRONE_RPC_SECRET: $DRONE_RPC_SECRET
+      DRONE_RUNNER_CAPACITY: ${DRONE_RUNNER_CAPACITY:-2}
+      DRONE_RUNNER_NAME: ${DRONE_RUNNER_NAME:-drone-runner-1}
+    labels: 
+      - traefik.enable=false
+    volumes:
+      - ${SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock
+    networks:
+      - drone-private-net
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  duplicati:
+    # 🔹🔹 Duplicati 🔹🔹  # https://github.com/linuxserver/docker-duplicati
+    # backup client that securely stores encrypted, incremental, compressed backups on local storage, cloud
+    # storage services and remote file servers. It works with standard protocols like FTP, SSH, WebDAV as well as
+    # popular services like Microsoft OneDrive, Amazon S3, Google Drive, box.com, Mega, B2, and many others.
+    image: ghcr.io/linuxserver/duplicati
+    container_name: duplicati
+    hostname: duplicati
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    ports:
+      - ${DUPLICATI_PORT:-8200}:8200
+    volumes:
+      - ${ROOT_DIR:-.}:/source # Path you'd like to backup.
+      - ${ROOT_DIR:-.}/configs/duplicati:/config # Duplicati configs
+      - ${ROOT_DIR:-.}/data/cloud-storage/backups:/backups # Backups will be stored here.
+    environment:
+      <<: *common-env
+      SETTINGS_ENCRYPTION_KEY: ${DUPLICATI_SETTINGS_ENCRYPTION_KEY:-mdwiFQyvlDgV9cQC5995Jx4XM9sXiqST23ryNBjIKl4n4HxcgvnJU4fF55wrvNQ}
+      DUPLICATI__WEBSERVICE_PASSWORD: ${DUPLICATI__WEBSERVICE_PASSWORD:-password}
+    labels:
+      <<: *duplicati-labels
+      homepage.group: Backup
+      homepage.name: Duplicati
+      homepage.icon: duplicati.png
+      homepage.href: https://duplicati.$DOMAIN/
+      homepage.description: A simple, open-source backup tool that allows you to create backups of your data and restore them when needed.
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *duplicati-labels
+    restart: always
+
+  excludarr:
+    # 🔹🔹 Excludarr 🔹🔹  https://github.com/haijeploeg/excludarr
+    # CLI that interacts with Radarr and Sonarr instances. It completely manages
+    # your library in Sonarr and Radarr to only consist out of movies and series that are
+    # not present on any of the configured streaming providers.
+    image: haijeploeg/excludarr
+    container_name: excludarr
+    hostname: excludarr
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${ROOT_DIR:-.}/configs/excludarr/crontab:/etc/excludarr/crontab
+    environment:
+      <<: *common-env
+      GENERAL_FAST_SEARCH: ${GENERAL_FAST_SEARCH:-true}
+      GENERAL_LOCALE: ${GENERAL_LOCALE:-en_US}  # The locale to use, can also be a two letter country code.
+      GENERAL_PROVIDERS: ${GENERAL_PROVIDERS:-netflix, amazon prime video}  # Comma seperated list of providers. e.g. `GENERAL_PROVIDERS=netflix, amazon prime video`.
+      TMDB_API_KEY: $TMDB_API_KEY  # Your TMDB API key. This setting is optional and only used in fallback scenario's.
+      RADARR_URL: http://host.docker.internal:${RADARR_PORT:-7878}
+      RADARR_API_KEY: $RADARR_API_KEY
+      RADARR_VERIFY_SSL: ${RADARR_VERIFY_SSL:-false}
+      RADARR_EXCLUDE: $RADARR_EXCLUDE  # Comma seperated list of movies to exclude in the process of Excludarr, e.g. RADARR_EXCLUDE=The Matrix, F9.
+      SONARR_URL: http://host.docker.internal:${SONARR_PORT:-8989}
+      SONARR_API_KEY: $SONARR_API_KEY
+      SONARR_VERIFY_SSL: ${SONARR_VERIFY_SSL:-false}
+      SONARR_EXCLUDE: ${SONARR_EXCLUDE:-Queen of the South, Breaking Bad}
+      CRON_MODE: ${CRON_MODE:-true}
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  firecrawl: 
+    # 🔹🔹 Firecrawl 🔹🔹  # https://github.com/mendableai/firecrawl
+    image: ghcr.io/mendableai/firecrawl
+    container_name: firecrawl
+    hostname: firecrawl
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    ports:
+      - "${FIRECRAWL_PORT:-3002}:${FIRECRAWL_PORT:-3002}"
+    environment:
+      <<: *common-env
+      HOST: ${FIRECRAWL_HOST:-0.0.0.0}
+      PORT: ${FIRECRAWL_PORT:-3002}
+      FLY_PROCESS_GROUP: ${FLY_PROCESS_GROUP:-app}
+      FIRECRAWL_API_KEY: $FIRE_CRAWL_API_KEY
+      FIRECRAWL_CREDIT_ERROR_THRESHOLD: ${FIRECRAWL_CREDIT_ERROR_THRESHOLD:-100}
+      FIRECRAWL_CREDIT_WARNING_THRESHOLD: ${FIRECRAWL_CREDIT_WARNING_THRESHOLD:-1002}
+    labels:
+      homepage.group: File Management
+      homepage.name: FileFlows
+      homepage.icon: fileflows.png
+      homepage.href: https://$DOMAIN/fileflows/
+      homepage.description: Automate file processing and organization with custom workflows, streamlining your file management tasks efficiently.
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    depends_on:
+      - playwright-service
+      - redis
+    command: [ "pnpm", "run", "start:production" ]
+
+  playwright-worker:
+    # 🔹🔹 Playwright Worker 🔹🔹  # https://github.com/mendableai/firecrawl
+    image: ghcr.io/mendableai/firecrawl
+    container_name: playwright-worker
+    hostname: playwright-worker
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    command: [ "pnpm", "run", "workers" ]
+    environment:
+      <<: *common-env
+      FLY_PROCESS_GROUP: ${FLY_PROCESS_GROUP:-worker}
+    <<: *resource-limits
+    deploy:
+      <<: *common-deploy
+      replicas: 1  # Set the number of replicas for the service
+      restart_policy:
+        condition: on-failure  # Restart service on failure
+      resources:
+        limits:
+          cpus: '0.5'  # Set the CPU limit for the service
+          memory: 512M  # Set the memory limit for the service
+    depends_on:
+      - redis
+      - playwright-service
+      - firecrawl
+    restart: always
+
+  fileflows:
+    # 🔹🔹 FileFlows 🔹🔹
+    image: revenz/fileflows
+    container_name: fileflows
+    hostname: fileflows
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    ports:
+      - ${FILEFLOWS_PORT:-19200}:5000
+    volumes:
+      - ${SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock:ro
+      - ${ROOT_DIR:-.}/configs/fileflows/temp:/temp
+      - ${ROOT_DIR:-.}/configs/fileflows/data:/Data
+      - ${ROOT_DIR:-.}/configs/fileflows/logs:/Logs
+    environment:
+      <<: *common-env
+      TempPathHost: ${TempPathHost:-${ROOT_DIR:-.}/configs/fileflows/temp}
+    labels:
+      <<: *fileflows-labels
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *fileflows-labels
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    restart: always
+
+  flemmarr:
+    # 🔹🔹 Flemmarr 🔹🔹  https://github.com/pierremesure/flemmarr
+    # Easy automatic configurations for your -arr apps
+    image: pierremesure/flemmarr
+    container_name: flemmarr
+    hostname: flemmarr
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${ROOT_DIR:-.}/flemmarr/config:/config
+    environment:
+      <<: *common-env
+    labels:
+      <<: *flemmarr-labels
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  glances:
+    # 🔹🔹 Glances 🔹🔹
+    image: nicolargo/glances:ubuntu-4.3.0.8
+    container_name: glances
+    hostname: glances
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - ${GLANCES_PORT:-61208}:61208
+      - ${GLANCES_PORT2:-61209}:61209
+    pid: host
+    volumes:
+      - ${SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock
+    environment:
+      <<: *common-env
+    #      GLANCES_OPT: ${GLANCES_OPT:-"-w"}
+    labels:
+      <<: *glances-labels
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *glances-labels
+    restart: always
+
+  gluetun-socks5: 
+    # 🔹🔹 Socks5 🔹🔹
+    image: serjs/go-socks5-proxy
+    container_name: gluetun-socks5
+    network_mode: service:gluetun
+    environment:
+      <<: *common-env
+      PROXY_USER: $SOCKS5_PROXY_USER
+      PROXY_PASS: $SOCKS5_PROXY_PASS
+      PROXY_PORT: ${SOCKS5_PROXY_PORT:-1050}
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  grafana:
+    # 🔹🔹 Grafana 🔹🔹
+    image: grafana/grafana
+    container_name: grafana
+    hostname: grafana
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    ports:
+      - ${GRAFANA_PORT:-3030}:3000
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ${ROOT_DIR:-.}/configs/grafana/data:/var/lib/grafana
+      - ${ROOT_DIR:-.}/configs/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+    environment:
+      <<: *common-env
+    restart: always
+    labels:
+      <<: *grafana-labels
+      homepage.group: Infrastructure
+      homepage.name: Grafana
+      homepage.icon: grafana
+      homepage.href: https://grafana.$DOMAIN
+      homepage.description: Monitoring dashboard
+      homepage.widget.type: grafana
+      homepage.widget.url: ${URL_SCHEME:-http}://grafana.$DOMAIN
+      homepage.widget.username: $GRAFANA_USERNAME
+      homepage.widget.password: $GRAFANA_PASSWORD
+      homepage.widget.fields: '["dashboards", "datasources", "totalalerts", "alertstriggered"]'
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *grafana-labels
+    depends_on:
+      - prometheus
+
+  janitorr:
+    # 🔹🔹 Janitorr 🔹🔹  # https://github.com/Schaka/janitorr
+    # Cleans your Radarr, Sonarr, Jellyseerr and Jellyfin before you run out of space
+    image: ghcr.io/schaka/janitorr
+    container_name: janitorr
+    hostname: janitorr
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - ${JANITORR_THC_PORT:-8079}:${JANITORR_THC_PORT:-8079}
+      - ${JANITORR_PORT:-8978}:8978
+    volumes:
+      - ${ROOT_DIR:-.}/configs/janitorr/config/application.yml:/workspace/application.yml
+      - ${ROOT_DIR:-.}/configs/janitorr/logs:/logs
+    environment:
+      <<: *common-env
+      EXCLUDE_RESOURCES: ${JANITORR_EXCLUDE_RESOURCES:-}
+      HOUR_OF_DAY_END: ${JANITORR_HOUR_OF_DAY_END:-23}
+      HOUR_OF_DAY_START: ${JANITORR_HOUR_OF_DAY_START:-20}
+      PRUNE_VOLUMES: ${JANITORR_PRUNE_VOLUMES:-true}
+      RUN_ON_STARTUP: ${JANITORR_RUN_ON_STARTUP:-true}
+      SKIP_RANDOM_BACKOFF: ${JANITORR_SKIP_RANDOM_BACKOFF:-true}
+      THC_PATH: /health
+      THC_PORT: ${JANITORR_THC_PORT:-8079}
+      TIME_BETWEEN_RUNS: ${JANITORR_TIME_BETWEEN_RUNS:-86400}
+      UNUSED_TIME: ${JANITORR_UNUSED_TIME:-24h}
+      DEBUG: ${JANITORR_DEBUG:-true}
+    labels:
+      <<: *janitorr-labels
+      homepage.group: Server Management
+      homepage.name: Janitorr Cleaner
+      homepage.icon: janitorr.png
+      homepage.href: https://janitorr.$DOMAIN/
+      homepage.description: Helps keep your server tidy by automatically removing old and unused Docker components, freeing up valuable storage space.
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *janitorr-labels
+    restart: always
+
+  miniflux_postgres:
+    image: postgres:15-alpine
+    container_name: miniflux_postgres
+    hostname: miniflux_postgres
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - $PRIMARY_MOUNT/miniflux_postgres_15:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: miniflux
+      POSTGRES_USER: miniflux
+      POSTGRES_PASSWORD: miniflux
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:?POSTGRES_USER required} -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  miniflux:
+    image: ghcr.io/miniflux/miniflux
+    container_name: miniflux
+    hostname: miniflux
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${ROOT_DIR:-.}/configs/miniflux/config:/config
+    environment:
+      BASE_URL: ${MINIFLUX_BASE_URL:-https://miniflux.$DNS_DOMAIN}
+      DATABASE_URL: ${MINIFLUX_DATABASE_URL:-postgres://miniflux:miniflux@miniflux_postgres/miniflux?sslmode=disable}
+      RUN_MIGRATIONS: ${MINIFLUX_RUN_MIGRATIONS:-1}
+      CREATE_ADMIN: ${MINIFLUX_CREATE_ADMIN:-1}
+      ADMIN_USERNAME: ${MINIFLUX_ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${MINIFLUX_ADMIN_PASSWORD:-miniflux}
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.miniflux.loadbalancer.server.port: ${MINIFLUX_PORT:-8080}
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *miniflux-labels
+    depends_on:
+      miniflux_postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/usr/bin/miniflux", "-healthcheck", "auto"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  mosquitto: 
+    # 🔹🔹 Mosquitto 🔹🔹
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    hostname: mosquitto
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      <<: *common-env
+    volumes:
+      - ${ROOT_DIR:-.}/configs/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ${ROOT_DIR:-.}/configs/mosquitto/data:/mosquitto/data
+      - ${ROOT_DIR:-.}/configs/mosquitto/log:/mosquitto/log
+    ports:
+      - ${MOSQUITTO_PORT:-1883}:1883
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  mylar3:
+    image: lscr.io/linuxserver/mylar3
+    container_name: mylar3
+    hostname: mylar3
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      <<: *common-env
+    volumes:
+      - ${ROOT_DIR:-.}/configs/mylar3/config:/config
+      - ${ROOT_DIR:-.}/data/media/comics:/comics
+      - ${ROOT_DIR:-.}/data/media/downloads:/downloads
+    ports:
+      - ${MYLAR3_PORT:-8090}:8090
+    labels:
+      <<: *mylar3-labels
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *mylar3-labels
+    restart: always
+
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager'
+    container_name: nginx-proxy-manager
+    hostname: nginx-proxy-manager
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+    ports:
+      - 80:80
+      - 81:81
+      - 443:443
+    volumes:
+      - ${BASE_PATH:-.}/npm_data:/data
+      - ${BASE_PATH:-.}/npm_ssl:/etc/nginx/certs
+      - ${BASE_PATH:-.}/letsencrypt:/etc/letsencrypt
+      - ${BASE_PATH:-.}/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    environment:
+      <<: *common-env
+      DUCKDNS_SUBDOMAIN: ${DUCKDNS_SUBDOMAIN:-yourmediaserver}
+      DB_MYSQL_HOST: ${DB_MYSQL_HOST:-npm-db}
+      DB_MYSQL_PORT: ${DB_MYSQL_PORT:-3306}
+      DB_MYSQL_USER: ${DB_MYSQL_USER:-npm}
+      DB_MYSQL_PASSWORD: ${DB_MYSQL_PASSWORD:-npm}
+      DB_MYSQL_NAME: ${DB_MYSQL_NAME:-npm}
+
+  npm-db:
+    image: 'jc21/mariadb-aria'
+    container_name: npm-db
+    hostname: npm-db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${BASE_PATH:-.}/npm_data:/var/lib/mysql
+    environment:
+      <<: *common-env
+      MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+      MYSQL_DATABASE: $MYSQL_DATABASE
+      MYSQL_USER: $MYSQL_USER
+      MYSQL_PASSWORD: $MYSQL_PASSWORD
+    restart: always
+
+  plexist:
+    container_name: plexist
+    image: gyarbij/plexist
+    environment:
+      - PLEX_URL=$PLEX_URL  # URL for the Plex server
+      - PLEX_TOKEN=$PLEX_TOKEN  # see instructions here: https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/
+      - WRITE_MISSING_AS_CSV=${WRITE_MISSING_AS_CSV:-0}  # <1 or 0>, Default 0, 1 = writes missing tracks to a csv
+      - ADD_PLAYLIST_POSTER=${ADD_PLAYLIST_POSTER:-1}  # <1 or 0>, Default 1, 1 = add poster for each playlist
+      - ADD_PLAYLIST_DESCRIPTION=${ADD_PLAYLIST_DESCRIPTION:-1}  # <1 or 0>, Default 1, 1 = add description for each playlist
+      - APPEND_INSTEAD_OF_SYNC=${APPEND_INSTEAD_OF_SYNC:-0}  # <0 or 1>, Default 0, 1 = Sync tracks, 0 = Append only
+      - SECONDS_TO_WAIT=${SECONDS_TO_WAIT:-84000}  # Seconds to wait between syncs
+      - SPOTIFY_CLIENT_ID=$SPOTIFY_CLIENT_ID
+      - SPOTIFY_CLIENT_SECRET=$SPOTIFY_CLIENT_SECRET
+      - SPOTIFY_USER_ID=$SPOTIFY_USER_ID
+      - DEEZER_USER_ID=$DEEZER_USER_ID
+      - DEEZER_PLAYLIST_ID=$DEEZER_PLAYLIST_ID  # Deezer playlist IDs space separated
+    restart: always
+
+  prefetcharr-jellyfin:
+    # 🔹🔹 Prefetcharr 🔹🔹  https://github.com/phueber/prefetcharr
+    # Let Sonarr fetch the next season of a show you are watching on Jellyfin.
+    image: phueber/prefetcharr
+    container_name: prefetcharr-jellyfin
+    hostname: prefetcharr-jellyfin
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${ROOT_DIR:-.}/configs/prefetcharr/jellyfin/log:${PREFETCHARR_JELLYFIN_INTERNAL_LOG_DIR:-/log}
+    environment:
+      <<: *common-env
+      MEDIA_SERVER_TYPE: jellyfin  # `jellyfin`, `emby` or `plex`
+      INTERVAL: ${PREFETCHARR_JELLYFIN_INTERVAL:-900}  # Polling interval in seconds
+      LOG_DIR: ${PREFETCHARR_JELLYFIN_INTERNAL_LOG_DIR:-/log}
+      MEDIA_SERVER_API_KEY: $JELLYFIN_API_KEY
+      MEDIA_SERVER_URL: http://host.docker.internal:${JELLYFIN_PORT:-8096}
+      REMAINING_EPISODES: ${PREFETCHARR_JELLYFIN_REMAINING_EPISODES:-3}  # The last <NUM> episodes trigger a search
+      RUST_LOG: ${PREFETCHARR_JELLYFIN_LOG_LEVEL:-debug}
+      SONARR_API_KEY: $SONARR_API_KEY
+      SONARR_URL: http://sonarr.$DOMAIN
+      # Optional: Only monitor sessions for specific user IDs or names
+      # - USERS=john,12345,alex
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  qdirstat:
+    # 🔹🔹 qDirStat 🔹🔹
+    # Directory Statistics
+    image: jlesage/qdirstat
+    container_name: qdirstat
+    hostname: qdirstat
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${QDIRSTAT_PORT:-5800}:5800
+    volumes:
+      - /volume1:/storage:ro
+      - ${ROOT_DIR:-.}/configs/qdirstat/config:/config:rw
+      - ${ROOT_DIR:-.}/configs/qdirstat/logs:/config/log
+    environment:
+      <<: *common-env
+      CLEAN_TMP_DIR: ${QDIRSTAT_CLEAN_TMP_DIR:-1}
+      DISPLAY_HEIGHT: ${QDIRSTAT_DISPLAY_HEIGHT:-960}
+      DISPLAY_WIDTH: ${QDIRSTAT_DISPLAY_WIDTH:-1600}
+      KEEP_APP_RUNNING: ${QDIRSTAT_KEEP_APP_RUNNING:-1}
+      UMASK: ${UMASK_SET:-002}
+      VNC_PASSWORD: $QDIRSTAT_VNC_PASSWORD
+    labels:
+      <<: *qdirstat-labels
+      homepage.group: File Management
+      homepage.name: QDirStat
+      homepage.icon: qdirstat.png
+      homepage.href: https://qdirstat.$DOMAIN
+      homepage.description: A tool for visualizing and analyzing directory structures, helping you manage your files more efficiently.
+      homepage.weight: 4
+      homepage.widget.type: qdirstat
+      homepage.widget.url: https://qdirstat.$DOMAIN
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *qdirstat-labels
+    restart: always
+
+  sickgear: 
+    # 🔹🔹 Sickgear 🔹🔹
+    # Automates TV management
+    image: sickgear/sickgear
+    container_name: sickgear
+    hostname: sickgear
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    ports:
+      - ${SICKGEAR_PORT:-8081}:8081/tcp
+    volumes:
+      - ${ROOT_DIR:-.}/data/media/movies:/movies
+      - ${ROOT_DIR:-.}/data/media/tv:/tv
+      - ${ROOT_DIR:-.}/downloads/tv:/incoming
+      - ${ROOT_DIR:-.}/configs/sickgear/config:/data
+    environment:
+      <<: *common-env
+      APP_GID: ${PGID:-988}
+      APP_UID: ${PUID:-1002}
+    labels:
+      <<: *sickgear-labels
+      homepage.group: TV Management
+      homepage.name: SickGear TV
+      homepage.icon: sickgear.png
+      homepage.href: https://sickgear.$DOMAIN
+      homepage.description: Automates TV show downloads, finding new episodes and adding them to your collection, ensuring you never miss a show.
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *sickgear-labels
+    restart: always
+
+  rclone-backup:
+    # 🔹🔹 Rclone Backup 🔹🔹
+    # Backups the data directory to a cloud storage provider.
+    image: olivierdalang/rclone-cron
+    environment:
+      - CRON_SCHEDULE=${RCLONE_BACKUP_CRON_SCHEDULE:-0 */3 * * *}  # Every 3 hours
+      - COMMAND=${RCLONE_BACKUP_COMMAND:-rclone sync -v /data MYDROPBOX:my-media-stack}
+      - RCLONE_CONFIG_MYDROPBOX_TYPE=${RCLONE_BACKUP_TYPE:-dropbox}
+      - RCLONE_CONFIG_MYDROPBOX_CLIENT_ID=$DROPBOX_CLIENT_ID?DROPBOX_CLIENT_ID not set
+      - RCLONE_CONFIG_MYDROPBOX_CLIENT_SECRET=$DROPBOX_CLIENT_SECRET?DROPBOX_CLIENT_SECRET not set
+      - RCLONE_CONFIG_MYDROPBOX_TOKEN={"access_token":$DROPBOX_ACCESS_TOKEN?DROPBOX_ACCESS_TOKEN not set,"token_type":"bearer","expiry":"0001-01-01T00:00:00Z"}
+    volumes:
+      - ${ROOT_DIR:-.}/data:/data
+    restart: always
+
+  rsshub:
+    # 🔹🔹 RSSHub 🔹🔹
+    # World's largest RSS network, consisting of over 5,000 global instances.
+    # Delivers millions of contents aggregated from all kinds of sources
+    depends_on:
+      redis:
+        condition: service_healthy
+    image: diygod/rsshub:chromium-bundled
+    container_name: rsshub
+    hostname: rsshub
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    environment:
+      <<: *common-env
+      CACHE_TYPE: ${RSSHUB_CACHE_TYPE:-redis}
+      NODE_ENV: ${RSSHUB_NODE_ENV:-production}
+      REDIS_URL: ${RSSHUB_REDIS_URL:-redis://redis:${RSSHUB_REDIS_PORT:-6379}}
+    labels:
+      <<: *rsshub-labels
+      homepage.group: RSS Feeds
+      homepage.name: RSSHub
+      homepage.icon: rsshub.png
+      homepage.href: https://rsshub.$DOMAIN
+      homepage.description: World's largest RSS network, consisting of over 5,000 global instances.  Delivers millions of contents aggregated from all kinds of sources
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *rsshub-labels
+    restart: always
+
+  tailscale:
+    image: tailscale/tailscale@sha256:27b6a3dc30d89e94113b0d481dae05f08934cf80bdce860041727a2a60959921
+    container_name: tailscale
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ${ROOT_DIR:-.}/tailscale/state:/var/lib/tailscale
+    environment:
+      #- TS_ACCEPT_DNS=${TS_ACCEPT_DNS:-false}  # Accept DNS configuration from the admin console. Not accepted by default.
+      #- TS_AUTH_ONCE=${TS_AUTH_ONCE:-false}  # Attempt to log in only if not already logged in. False by default, to forcibly log in every time the container starts.
+      - TS_AUTHKEY=$TS_AUTHKEY  # An auth key used to authenticate the container. This is equivalent to what you'd pass to tailscale login --auth-key=.
+      #- TS_DEST_IP=${TS_DEST_IP:-}  # Proxy all incoming Tailscale traffic to the specified destination IP.
+      - TS_ENABLE_HEALTH_CHECK=${TS_ENABLE_HEALTH_CHECK:-true}  # Set to true to enable an unauthenticated /healthz endpoint at the address specified by TS_LOCAL_ADDR_PORT.
+      - TS_ENABLE_METRICS=${TS_ENABLE_METRICS:-true}  # Set to true to enable an unauthenticated /metrics endpoint at the address specified by TS_LOCAL_ADDR_PORT.
+      #- TS_EXTRA_ARGS=${TS_EXTRA_ARGS:-}  # Any other flags to pass in to the Tailscale CLI in a tailscale up command.
+      #- TS_HOSTNAME=${TS_HOSTNAME:-}  # Use the specified hostname for the node. This is equivalent to tailscale set --hostname=.
+      #- TS_KUBE_SECRET=${TS_KUBE_SECRET:-}  # If running in Kubernetes, the Kubernetes secret name where Tailscale state is stored. The default is tailscale.
+      #- TS_LOCAL_ADDR_PORT=${TS_LOCAL_ADDR_PORT:-}  # Specifies the [<addr>]:<port> on which to serve local metrics and health check HTTP endpoints if enabled through TS_ENABLE_METRICS or TS_ENABLE_HEALTH_CHECK.
+      #- TS_OUTBOUND_HTTP_PROXY_LISTEN=${TS_OUTBOUND_HTTP_PROXY_LISTEN:-}  # Set an address and port for the HTTP proxy. This will be passed to tailscaled --outbound-http-proxy-listen=.
+      #- TS_ROUTES=${TS_ROUTES:-}  # Advertise subnet routes. This is equivalent to tailscale set --advertise-routes=.
+      #- TS_SERVE_CONFIG=${TS_SERVE_CONFIG:-}  # Accepts a JSON file to programmatically configure Serve and Funnel functionality.
+      #- TS_SOCKET=${TS_SOCKET:-/tmp/tailscaled.sock}  # Unix socket path used by the Tailscale binary, where the tailscaled LocalAPI socket is created.
+      #- TS_SOCKS5_SERVER=${TS_SOCKS5_SERVER:-":1055"}  # Set an address and port for the SOCKS5 proxy. This will be passed to tailscaled --socks5-server=.
+      #- TS_STATE_DIR=${TS_STATE_DIR:-/var/lib/tailscale}  # Directory where the state of tailscaled is stored. This needs to persist across container restarts.
+      #- TS_TAILSCALED_EXTRA_ARGS=${TS_TAILSCALED_EXTRA_ARGS:-}  # Any other flags to pass in to tailscaled.
+      #- TS_USERSPACE=${TS_USERSPACE:-false}  # Enable userspace networking, instead of kernel networking. Enabled by default.
+    restart: always
+
+  tor:
+    # 🔹🔹 Tor 🔹🔹
+    # Tor is a tool for anonymizing your internet connection.
+    image: dperson/torproxy
+    container_name: tor
+    hostname: tor
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - ${TOR_PORT:-9050}:${TOR_PORT:-9050}
+      - ${TOR_CONTROL_PORT:-9051}:${TOR_CONTROL_PORT:-9051}
+    environment:
+      <<: *common-env
+      TOR_SocksPort: ${TOR_SocksPort:-127.0.0.1:${TOR_PORT:-9050}}
+      TOR_TransPort: ${TOR_TransPort:-127.0.0.1:${TOR_PORT:-9050}}
+      TOR_ControlPort: ${TOR_ControlPort:-127.0.0.1:${TOR_CONTROL_PORT:-9051}}
+      TOR_DnsPort: ${TOR_DnsPort:-127.0.0.1:${TOR_PORT:-9050}}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.tor-router.rule=Host(`tor.$DUCKDNS_SUBDOMAIN.duckdns.org`) || (Host(`$DUCKDNS_SUBDOMAIN.duckdns.org`) && PathPrefix(`/tor`)
+      - traefik.http.routers.tor-router.entrypoints=web,websecure
+      - traefik.http.routers.tor-router.tls.certresolver=myresolver
+      - traefik.http.services.tor-service.loadbalancer.server.port=${TOR_PORT:-9050}
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        traefik.enable: "true"
+        traefik.http.routers.tor-router.rule: Host(`tor.$DUCKDNS_SUBDOMAIN.duckdns.org`) || (Host(`$DUCKDNS_SUBDOMAIN.duckdns.org`) && PathPrefix(`/tor`))
+        traefik.http.routers.tor-router.entrypoints: web,websecure
+        traefik.http.routers.tor-router.tls.certresolver: myresolver
+        traefik.http.services.tor-service.loadbalancer.server.port: ${TOR_PORT:-9050}
+    restart: always
+
+  umami_postgres:
+    image: postgres:15-alpine
+    restart: always
+    container_name: umami_postgres
+    volumes:
+      - $PRIMARY_MOUNT/postgres_15:/var/lib/postgresql/data
+    environment:
+      <<: *common-env
+      POSTGRES_DB: umami
+      POSTGRES_USER: umami
+      POSTGRES_PASSWORD: umami
+    networks:
+      - umami-private-net
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: umami
+    user: ${PUID:-1002}
+    depends_on:
+      umami_postgres:
+        condition: service_healthy
+    environment:
+      <<: *common-env
+      DATABASE_URL: postgresql://umami:umami@umami_postgres:5432/umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: $DNS_DOMAIN_ZONE_ID
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: umami-net
+      traefik.http.services.umami-svc.loadbalancer.server.port: 3000
+      traefik.http.routers.umami-rtr.rule: Host(`umami.$DNS_DOMAIN`)
+      traefik.http.routers.umami-rtr.entrypoints: websecure
+      traefik.http.routers.umami-rtr.tls: "true"
+    networks:
+      - umami-net
+      - umami-private-net
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://localhost:3000/api/heartbeat"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  unifi_controller:
+    image: ghcr.io/linuxserver/unifi-controller
+    container_name: unifi_controller
+    environment:
+      - PUID=${PUID:-1002}
+      - PGID=${PUID:-1002}
+      - MEM_LIMIT=1024
+    ports:
+      - "3478:3478/udp" # STUN
+      - "10001:10001/udp" # Discovery
+      - "8080:8080" # Device comms
+      - "6789:6789" # Mobile speedtest
+    labels:
+      raefik.enable: "true"
+      traefik.docker.network: unifi-net
+      traefik.http.routers.ubiq-rtr.rule: Host(`unifi.$DNS_DOMAIN`)
+      traefik.http.routers.ubiq-rtr.entrypoints: websecure
+      traefik.http.routers.ubiq-rtr.tls: true
+      traefik.http.routers.ubiq-rtr.middlewares: ipwhitelist-mddl@docker
+      traefik.http.services.ubiq-svc.loadbalancer.server.scheme: https
+      traefik.http.services.ubiq-svc.loadbalancer.server.port: 8443
+    volumes:
+      - "$PRIMARY_MOUNT/unifi/config/:/config"
+    networks:
+      - unifi-net
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  vaultwarden:
+    image: vaultwarden/server
+    container_name: vaultwarden
+    user: ${PUID:-1002}
+    volumes:
+      - "$PRIMARY_MOUNT/vaultwarden/data/:/data"
+    environment:
+      - WEBSOCKET_ENABLED=true
+    networks:
+      - vaultwarden-net
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: vaultwarden-net
+      # Entry Point for https
+      traefik.http.routers.vaultwarden-rtr.entrypoints: websecure
+      traefik.http.routers.vaultwarden-rtr.rule: Host(`vaultwarden.$DNS_DOMAIN`)
+      traefik.http.routers.vaultwarden-rtr.service: vaultwarden-svc
+      traefik.http.services.vaultwarden-svc.loadbalancer.server.port: 80
+      # websocket
+      traefik.http.routers.vaultwarden-ws-rtr.entrypoints: websecure
+      traefik.http.routers.vaultwarden-ws-rtr.rule: Host(`vaultwarden.$DNS_DOMAIN`) && Path(`/notifications/hub`)
+      traefik.http.middlewares.vaultwarden-ws-rtr: bw-stripPrefix@file
+      traefik.http.routers.vaultwarden-ws-rtr.service: vaultwarden-ws-svc
+      traefik.http.services.vaultwarden-ws-svc.loadbalancer.server.port: 3012
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  vpn:
+    devices:
+      - /dev/net/tun
+    container_name: vpn
+    #open any ports for containers which will use this vpn network
+    ports:
+      - 7881:6881
+      - 9991:8080
+    dns:
+      - 1.1.1.1
+    image: dperson/openvpn-client
+    labels:
+      - autoheal=true
+    security_opt:
+      - label:disable
+    cap_add:
+      - NET_ADMIN
+    stdin_open: true
+    tty: true
+    volumes:
+      - $DOCKER_PATH/openvpn:/vpn
+    command: -f ""
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  watchtower:
+    # 🔹🔹 Watchtower 🔹🔹  https://github.com/containrrr/watchtower
+    # Watchtower is a small container utility to simplify or automate updating.
+    image: containrrr/watchtower
+    container_name: watchtower
+    hostname: watchtower
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - ${WATCHTOWER_PORT:-8078}:8080
+    volumes:
+      - ${SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock
+    environment:
+      <<: *common-env
+      WATCHTOWER_CLEANUP: ${WATCHTOWER_CLEANUP:-true}
+      WATCHTOWER_LABEL_ENABLE: ${WATCHTOWER_LABEL_ENABLE:-true}
+      WATCHTOWER_MONITOR_ONLY: ${WATCHTOWER_MONITOR_ONLY:-false}
+      WATCHTOWER_NOTIFICATION_GOTIFY_TOKEN: ${WATCHTOWER_GOTIFY_TOKEN:-xxxxxxxxxxxxxxxxxx}
+      WATCHTOWER_NOTIFICATION_GOTIFY_URL: ${WATCHTOWER_GOTIFY_URL:-http}://gotify.$DOMAIN
+      WATCHTOWER_NOTIFICATIONS: ${WATCHTOWER_NOTIFICATIONS:-gotify}
+      # uncomment one, not both.
+      WATCHTOWER_POLL_INTERVAL: ${WATCHTOWER_POLL_INTERVAL:-30}
+      #- WATCHTOWER_SCHEDULE=${WATCHTOWER_SCHEDULE:-0 0 4 * * MON}
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      mode: global
+    restart: always
+
+  webdav:
+    image: bytemark/webdav
+    container_name: webdav
+    restart: always
+    environment:
+      <<: *common-env
+      AUTH_TYPE: Digest
+      USERNAME: admin
+      PASSWORD: password
+    volumes:
+      - "$PRIMARY_MOUNT/webdav:/var/lib/dav"
+    networks:
+      - webdav-net
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=webdav-net
+      - traefik.http.routers.webdav-rtr.entrypoints=websecure
+      - traefik.http.routers.webdav-rtr.rule=Host(`webdav.$DNS_DOMAIN`)
+      - traefik.http.routers.webdav-rtr.service=webdav-svc
+      - traefik.http.services.webdav-svc.loadbalancer.server.port=80
+      - traefik.http.routers.webdav-rtr.middlewares=ipwhitelist-mddl@docker
+
+  zerotier:
+    # 🔹🔹 ZeroTier-One 🔹🔹
+    # Private Network over Internet
+    image: zerotier/zerotier-synology
+    container_name: zerotier
+    security_opt:
+      - no-new-privileges:true
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    devices:
+      - /dev/net/tun
+    volumes:
+      - ${ROOT_DIR:-.}/configs/zerotier:/var/lib/zerotier-one
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  zigbee2mqtt:
+    container_name: zigbee2mqtt
+    image: koenkk/zigbee2mqtt
+    volumes:
+      - $PRIMARY_MOUNT/zigbee2mqtt/zigbee2mqtt-data:/app/data
+      - /run/udev:/run/udev:ro
+    ports:
+      - ${ZIGBEE2MQTT_PORT:-6080}:8080
+    environment:
+      <<: *common-env
+    # devices:
+    #   - /dev/ttyUSB0:/dev/ttyUSB0
+    depends_on:
+      - mqtt
+    labels: 
+      autoheal: "true"
+    healthcheck:
+      test: curl -fSs http://127.0.0.1:${ZIGBEE2MQTT_PORT:-6080} || exit 1
+      start_period: 90s
+      timeout: 10s
+      interval: 5s
+      retries: 3
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  managarr:
+    # 🔹🔹 Managarr v0.5.1 built from tarball 🔹🔹  https://github.com/Dark-Alex-17/managarr
+    # A TUI/CLI tool for managing sonarr/radarr/etc, built on startup by downloading and extracting the tarball.
+    image: fedora:rawhide
+    container_name: managarr
+    hostname: managarr
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - infrastructure_network
+      - traefik_public
+    stdin_open: true
+    tty: true
+    volumes:
+      - ${ROOT_DIR:-.}/configs/managarr/config.yml:/root/.config/managarr/config.yml:ro
+    environment:
+      <<: *common-env
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+    command: >
+      sh -c "dnf upgrade -y && dnf install -y curl tar && \
+            if [ ! -f /usr/local/bin/managarr ]; then \
+              curl -L https://github.com/Dark-Alex-17/managarr/releases/download/v0.5.1/managarr-linux.tar.gz -o /tmp/managarr.tar.gz && \
+              tar -xzf /tmp/managarr.tar.gz -C /usr/local/bin && \
+              chmod +x /usr/local/bin/managarr; \
+            fi && exec managarr"
+
+  playwright-service:
+    # 🔹🔹 Playwright 🔹🔹
+    image: mcr.microsoft.com/playwright:v1.50.0-noble
+    container_name: playwright-service
+    hostname: playwright-service
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    environment:
+      <<: *common-env
+      BLOCK_MEDIA: $PLAYWRIGHT_BLOCK_MEDIA
+      DEBUG: ${PLAYWRIGHT_DEBUG:-false}
+      LOG_LEVEL: ${PLAYWRIGHT_LOG_LEVEL:-info}
+      PORT: ${PLAYWRIGHT_PORT:-2999}
+      PROXY_PASSWORD: $PLAYWRIGHT_PROXY_PASSWORD
+      PROXY_SERVER: $PLAYWRIGHT_PROXY_SERVER
+      PROXY_USERNAME: $PLAYWRIGHT_PROXY_USERNAME
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+    restart: always
+
+  plex-sync:
+    # 🔹🔹 Plex-Sync 🔹🔹
+    # For Syncing watched status between plex servers
+    depends_on:
+      plex:
+        condition: service_healthy
+    image: patsissons/plex-sync:develop  # x64/x86 only.
+    container_name: plex-sync
+    hostname: plex-sync
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    security_opt:
+      - no-new-privileges:true
+    restart: always
+    environment:
+      INITIAL_RUN: ${PLEX_SYNC_INITIAL_RUN:-"true"}
+      #DRY_RUN: ${PLEX_SYNC_DRY_RUN:-0}
+      CRON_SCHEDULE: ${PLEX_SYNC_CRON_SCHEDULE:-"*/30 * * * *"}
+      SECTION_MAPS: >
+        ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_MOVDOC:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_MOVDOC:-} | 
+        ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_MOVFOR:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_MOVFOR:-} | 
+        ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_MOVHOL:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_MOVHOL:-} | 
+        ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_MOVIND:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_MOVIND:-} | 
+        ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_MOVKID:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_MOVKID:-} | 
+        ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_MOVKOL:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_MOVKOL:-} | 
+        ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_SHODOC:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_SHODOC:-} | 
+        ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_SHOFOR:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_SHOFOR:-} | 
+        ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_SHOIND:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_SHOIND:-} |
+        ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_SHOKID:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_SHOKID:-} |
+        ${HOME_SERVER_PLEX:-}/${HOME_SERVER_PLEX_SHOTV:-}${SYNOLOGY_PLEX:-}/${SYNOLOGY_PLEX_SHOTV:-}
+
+  whiteboardonline: 
+    # 🔹🔹 WhiteboardOnline 🔹🔹
+    image: lovasoa/wbo
+    container_name: whiteboardonline
+    hostname: whiteboardonline
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_public
+    ports:
+      - ${WHITEBOARDONLINE_PORT:-5005}:80
+    volumes:
+      - ${ROOT_DIR:-.}/configs/whiteboardonline:/opt/app/server-data
+    environment:
+      <<: *common-env
+    labels:
+      <<: *whiteboardonline-labels
+      homepage.group: Whiteboard
+      homepage.name: Whiteboard Online
+      homepage.icon: whiteboardonline.png
+      homepage.href: https://whiteboard.$DOMAIN
+      homepage.description: A whiteboard online tool for creating and sharing whiteboards with others.
+    <<: *resource-limits
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *whiteboardonline-labels
+    restart: always
+
+networks:
+  adguard-net:
+    name: adguard-net
+  arr-net:
+    name: arr-net
+  auth-net:
+    name: auth-net
+  calibre-net:
+    name: calibre-net
+  changedetection-net:
+    name: changedetection-net
+  drone-net:
+    name: drone-net
+  drone-private-net:
+    name: drone-private-net
+  duplicati-net:
+    name: duplicati-net
+  miniflux-net:
+    name: miniflux-net
+  kobodl-net:
+    name: kobodl-net
+  plex-net:
+    name: plex-net
+  portainer-net:
+    name: portainer-net
+  rsshub-net:
+    name: rsshub-net
+  rsshub-private-net:
+    name: rsshub-private-net
+  transmission-net:
+    name: transmission-net
+  traefik-net:
+    name: traefik-net
+  umami-net:
+    name: umami-net
+  umami-private-net:
+    name: umami-private-net
+  unifi-net:
+    name: unifi-net
+  vaultwarden-net:
+    name: vaultwarden-net
+  webdav-net:
+    name: webdav-net
+
+volumes:
+  swarm-certs:
+    driver: local
+  redis-data:

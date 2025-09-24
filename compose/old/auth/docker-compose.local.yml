@@ -1,0 +1,102 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-glauthui-labels: &glauthui-labels
+  traefik.enable: "true"
+  traefik.http.services.glauthui.loadbalancer.server.port: 5000
+
+services:
+  glauthui:
+    depends_on:
+      mariadb:
+        condition: service_started
+    build:
+      context: ${SRC_DIR:-./src}/glauth-ui
+      dockerfile: Dockerfile
+    image: glauthui:latest
+    container_name: glauthui
+    hostname: glauthui
+    networks:
+      - auth-net
+    ports:
+      - ${GLAUTHUI_PORT:-8201}:5000
+    volumes:
+      # Mount Folder that contains DB and config file outside the container
+      - "${CONFIG_PATH:-./volumes}/glauth/db:/home/ldap/db"
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    environment:
+      <<: *common-env
+      SECRET_KEY: $GLAUTHUI_SECRET_KEY
+      # DATABASE CONFIG
+      DATABASE_URL: mysql+pymysql://${GLAUTHUI_DB_USER:-glauthui}:$GLAUTHUI_DB_PASSWORD@glauthui-mariadb:${GLAUTHUI_DB_PORT:-3306}/${GLAUTHUI_DB_NAME:-glauthui}
+      # MAIL CONFIG
+      MAIL_SERVER: ${GLAUTHUI_MAIL_SERVER:-smtp.gmail.com}
+      MAIL_PORT: ${GLAUTHUI_MAIL_PORT:-587}
+      MAIL_USE_TLS: ${GLAUTHUI_MAIL_USE_TLS:-1}
+      MAIL_USERNAME: ${GLAUTHUI_MAIL_USERNAME:-boden.crouch@gmail.com}
+      MAIL_PASSWORD: ${GLAUTHUI_MAIL_PASSWORD:-emvg zxoa wgzt jsfl}
+      MAIL_ADMIN: ${GLAUTHUI_MAIL_ADMIN:-boden.crouch@gmail.com}
+      ORGANISATION: ${GLAUTHUI_ORGANISATION:-Authelia}
+      ADMIN_GROUP: ${GLAUTHUI_ADMIN_GROUP:-glauth_admin}
+      FLASK_DEBUG: ${GLAUTHUI_FLASK_DEBUG:-false}
+    #      - GLAUTH_CFG_PATH=${GLAUTHUI_CFG_PATH:-/home/ldap/db}
+    labels:
+      <<: *glauthui-labels
+      homepage.group: Infrastructure
+      homepage.name: GlauthUI
+      homepage.icon: glauthui
+      homepage.href: https://$DOMAIN/glauthui/
+      homepage.description: LDAP UI
+      homepage.widget.type: glauthui
+      homepage.widget.url: https://$DOMAIN/glauthui/
+      homepage.widget.fields: '["users", "groups", "policies"]'
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        <<: *glauthui-labels
+    restart: always
+
+networks:
+  auth-net:
+    external: "true"

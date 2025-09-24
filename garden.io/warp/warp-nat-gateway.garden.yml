@@ -1,0 +1,36 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: warp-nat-gateway
+description: WARP in Docker with NAT routing
+type: container
+
+spec:
+  image: docker.io/caomingjun/warp:latest
+  privileged: true
+  capAdd:
+    - MKNOD
+    - AUDIT_WRITE
+    - NET_ADMIN
+  sysctls:
+    net.ipv6.conf.all.disable_ipv6: "0"
+    net.ipv4.conf.all.src_valid_mark: "1"
+    net.ipv4.ip_forward: "1"
+    net.ipv6.conf.all.forwarding: "1"
+    net.ipv6.conf.all.accept_ra: "2"
+  env:
+    BETA_FIX_HOST_CONNECTIVITY: false
+    GOST_ARGS: ${var.GOST_ARGS:--L :${var.GOST_SOCKS5_PORT:-1080}}
+    WARP_ENABLE_NAT: false
+    WARP_LICENSE_KEY: ${var.WARP_LICENSE_KEY}
+    WARP_SLEEP: 2
+  ports:
+    - name: socks5
+      containerPort: 1080
+  volumes:
+    - name: warp-config
+      containerPath: /var/lib/cloudflare-warp
+      sourcePath: ${var.config-path}/warp/config
+  healthCheck:
+    exec:
+      command: [sh, -c, "if curl -s https://cloudflare.com/cdn-cgi/trace | grep -qE '^warp=on|warp=plus$'; then echo \"Cloudflare WARP is active.\" && exit 0; else echo \"Cloudflare WARP is not active.\" && exit 1; fi"]
+  restartPolicy: always
