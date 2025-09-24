@@ -48,3 +48,6 @@ yarn-error.log*
 certs/
 opt/
 projects/
+kube.yaml
+kubernetes.yaml
+arbitrary-scripts/various_pvt_logins.sh
