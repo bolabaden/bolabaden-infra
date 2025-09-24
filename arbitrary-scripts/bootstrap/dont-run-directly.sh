@@ -2,6 +2,11 @@
 set -euo pipefail
 #set -x
 
+# SECURITY NOTE: This script requires the USER_PASSWORD_HASH environment variable
+# to be set with a properly hashed password. Generate one using:
+# python3 -c "import crypt; print(crypt.crypt('yourpassword', crypt.mksalt(crypt.METHOD_SHA512)))"
+# Then export USER_PASSWORD_HASH="$6$salt$hashedpassword" before running this script
+
 # Set hostname and FQDN
 hostnamectl set-hostname "$1"
 DOMAIN="bolabaden.org"
@@ -91,8 +96,12 @@ for USER in root ubuntu; do
     chmod 600 "$HOME_DIR/.ssh/authorized_keys" 2>/dev/null || true
     chown "$USER":"$USER" "$HOME_DIR/.ssh/authorized_keys" 2>/dev/null || true
 
-    # Set password for the user (same hash from your Ansible config)
-    echo "$USER:\$6\$pWurw/L0tau67C7g\$kiM8cWIAg97/je2BQLKAm/FRuTz1Xu.g0UC59HuqK0d2jkLqw1FcDcB8YH.Iv0PEh3DhyMPosfmEWCi/AnmrX." | chpasswd -e
+    # Set password for the user - password hash should be provided via environment variable
+    if [ -n "$USER_PASSWORD_HASH" ]; then
+        echo "$USER:$USER_PASSWORD_HASH" | chpasswd -e
+    else
+        echo "Warning: USER_PASSWORD_HASH not set, skipping password setup for $USER"
+    fi
 
     # Run pipx ensurepath and try to enable pipx argcomplete for each user
     sudo -u "$USER" -H bash -c '

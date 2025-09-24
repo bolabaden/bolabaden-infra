@@ -1,3 +1,5 @@
+# SECURITY NOTE: This configuration requires environment variables to be set
+# Export CROWDSEC_LAPI_KEY with your actual CrowdSec LAPI key before using this configuration
 http:
   middlewares:
     crowdsec:
@@ -5,7 +7,7 @@ http:
         crowdsec-bouncer-traefik-plugin:
           crowdsecAppsecEnabled: 'true'
           crowdsecAppsecHost: 'crowdsec:7422'
-          crowdsecLapiKey: usvi2urbIG5obProVWwcf2ImTrtB93x668jWDvrH
+          crowdsecLapiKey: ${CROWDSEC_LAPI_KEY}
           enabled: 'true'
     error-mw:
       errors:
