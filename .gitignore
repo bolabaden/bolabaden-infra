@@ -24,7 +24,6 @@
 /compose/docker-compose.coolify-proxy_env.yml
 /compose/docker-compose.coolify-proxy-env.yml
 /compose/docker-compose.coolify-proxy.micklethefickle.yml
-/compose/docker-compose.coolify-proxy.yml
 /compose/docker-compose.coolify.yml
 /compose/docker-compose.networks-inline.yml
 /compose/docker-compose.networks.yml

@@ -1,134 +1,5 @@
 name: firecrawl
 
-x-common-service: &common-service
-  # NOTE: If you don't want to build the service locally,
-  # uncomment the build: statement and comment out the image: statement
-  image: ghcr.io/firecrawl/firecrawl
-  build:
-    context: https://github.com/firecrawl/firecrawl.git#main:/apps/api
-    #dockerfile: Dockerfile
-    # workaround for arm64 problem
-    dockerfile_inline: |
-      # syntax=docker/dockerfile:1
-      FROM node:22-slim AS base
-
-      ENV PNPM_HOME="/pnpm"
-      ENV PATH="$PNPM_HOME:$PATH"
-      ENV CI=true
-
-      RUN corepack enable
-
-      # Build Go shared library
-      FROM golang:1.24 AS go-build
-      WORKDIR /app
-      COPY sharedLibs/go-html-to-md ./sharedLibs/go-html-to-md
-
-      RUN cd sharedLibs/go-html-to-md && \
-          go mod download && \
-          go build -o libhtml-to-markdown.so -buildmode=c-shared html-to-markdown.go
-
-      FROM base AS build
-      WORKDIR /app
-
-      # Install system dependencies
-      RUN apt-get update && apt-get install -y \
-          curl \
-          build-essential \
-          pkg-config \
-          python3 \
-          && rm -rf /var/lib/apt/lists/*
-
-      # Install Rust
-      ENV RUSTUP_HOME=/usr/local/rustup \
-          CARGO_HOME=/usr/local/cargo \
-          PATH=/usr/local/cargo/bin:$PATH
-
-      RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path \
-          && chmod -R a+w /usr/local/rustup /usr/local/cargo \
-          && . "/usr/local/cargo/env"
-
-      # Copy source files
-      COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-      COPY . .
-
-      # Install dependencies
-      RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-          --mount=type=cache,target=/usr/local/cargo/registry \
-          --mount=type=cache,target=/app/native/target \
-          pnpm install --frozen-lockfile
-
-      # Build the application
-      RUN pnpm run build
-
-      # Remove dev dependencies
-      RUN pnpm prune --prod --ignore-scripts
-
-      # Runtime stage
-      FROM base AS runtime
-
-      # Install runtime dependencies
-      RUN apt-get update && apt-get install -y \
-          git \
-          procps \
-          && rm -rf /var/lib/apt/lists/*
-
-      EXPOSE 8080
-      WORKDIR /app
-
-      # Copy built application
-      COPY --from=build /app/node_modules ./node_modules
-      COPY --from=build /app/dist ./dist
-      COPY --from=build /app/native ./native
-
-      # Copy Go shared library
-      COPY --from=go-build /app/sharedLibs/go-html-to-md/libhtml-to-markdown.so ./sharedLibs/go-html-to-md/
-
-      CMD ["node", "dist/src/harness.js", "--start-docker"]
-
-  ulimits:
-    nofile:
-      soft: 65535
-      hard: 65535
-  networks:
-    - backend
-    - publicnet
-  extra_hosts:
-    - "host.docker.internal:host-gateway"
-
-x-common-env: &common-env
-  REDIS_URL: ${REDIS_HOST:-redis://redis:6379}
-  REDIS_RATE_LIMIT_URL: ${REDIS_HOST:-redis://redis:6379}
-  PLAYWRIGHT_MICROSERVICE_URL: ${PLAYWRIGHT_HOST:-http://playwright-service:${FIRECRAWL_PLAYWRIGHT_SERVICE_PORT:-3000}/scrape}
-  NUQ_DATABASE_URL: ${FIRECRAWL_NUQ_DATABASE_URL:-postgres://postgres:postgres@nuq-postgres:5432/postgres}
-  # To turn on DB authentication, you need to set up Supabase.
-  USE_DB_AUTHENTICATION: ${FIRECRAWL_USE_DB_AUTHENTICATION:-false}  # supabase is required
-  # Provide your OpenAI API key here to enable AI features
-  #OPENAI_API_KEY: ${LITELLM_MASTER_KEY:-${OPENAI_API_KEY:?}}
-  #OPENAI_BASE_URL: ${LITELLM_HOST:-http://localhost:11434/api}  # e.g. http://localhost:11434/api
-  #MODEL_NAME: ${FIRECRAWL_MODEL_NAME:-}  # e.g. deepseek-r1:7b
-  #MODEL_EMBEDDING_NAME: ${FIRECRAWL_MODEL_EMBEDDING_NAME:-}  # e.g. nomic-embed-text
-  # Experimental: Use Ollama
-  OLLAMA_BASE_URL: ${FIRECRAWL_OLLAMA_BASE_URL:-}  # e.g. https://example.com/v1
-  SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
-  # This key lets you access the queue admin panel. Change this if your deployment is publicly accessible.
-  BULL_AUTH_KEY: ${FIRECRAWL_BULL_AUTH_KEY:?}
-  # Use if you've set up authentication and want to test with a real API key
-  TEST_API_KEY: ${FIRECRAWL_TEST_API_KEY:?}
-  POSTHOG_API_KEY: ${POSTHOG_API_KEY:-}
-  POSTHOG_HOST: ${POSTHOG_HOST:-}
-  # Supabase Setup (used to support DB authentication, advanced logging, etc.)
-  SUPABASE_ANON_TOKEN: ${FIRECRAWL_SUPABASE_ANON_TOKEN:-}
-  SUPABASE_URL: ${FIRECRAWL_SUPABASE_URL:-}
-  SUPABASE_SERVICE_TOKEN: ${FIRECRAWL_SUPABASE_SERVICE_TOKEN:-}
-  SELF_HOSTED_WEBHOOK_URL: ${FIRECRAWL_SELF_HOSTED_WEBHOOK_URL:-}
-  SERPER_API_KEY: ${FIRECRAWL_SERPER_API_KEY:-}
-  SEARCHAPI_API_KEY: ${FIRECRAWL_SEARCHAPI_API_KEY:-}
-  # You can specify a SearXNG server with the JSON format enabled, if you'd like to use that instead of direct Google.
-  # You can also customize the engines and categories parameters, but the defaults should also work just fine.
-  # SEARXNG_ENDPOINT: http://your.searxng.server
-  SEARXNG_ENDPOINT: ${FIRECRAWL_SEARXNG_ENDPOINT:-https://searxng.bolabaden.org}
-  #SEARXNG_ENGINES: ${FIRECRAWL_SEARXNG_ENGINES:-}
-  #SEARXNG_CATEGORIES: ${FIRECRAWL_SEARXNG_CATEGORIES:-}
 
 
 services:
@@ -139,6 +10,7 @@ services:
     build:
       context: https://github.com/firecrawl/firecrawl.git#main:/apps/playwright-service-ts
       dockerfile: Dockerfile
+    image: docker.io/th3w1zard1/playwright-service:latest
     container_name: playwright-service
     hostname: playwright-service
     extra_hosts:
@@ -153,11 +25,137 @@ services:
       - backend
     restart: always
   firecrawl-api:
-    <<: *common-service
+    build:
+      context: https://github.com/firecrawl/firecrawl.git#main:/apps/api
+      #dockerfile: Dockerfile
+      # workaround for arm64 problem
+      dockerfile_inline: |
+        # syntax=docker/dockerfile:1
+        FROM node:22-slim AS base
+
+        ENV PNPM_HOME="/pnpm"
+        ENV PATH="$PNPM_HOME:$PATH"
+        ENV CI=true
+
+        RUN corepack enable
+
+        # Build Go shared library
+        FROM golang:1.24 AS go-build
+        WORKDIR /app
+        COPY sharedLibs/go-html-to-md ./sharedLibs/go-html-to-md
+
+        RUN cd sharedLibs/go-html-to-md && \
+            go mod download && \
+            go build -o libhtml-to-markdown.so -buildmode=c-shared html-to-markdown.go
+
+        FROM base AS build
+        WORKDIR /app
+
+        # Install system dependencies
+        RUN apt-get update && apt-get install -y \
+            curl \
+            build-essential \
+            pkg-config \
+            python3 \
+            && rm -rf /var/lib/apt/lists/*
+
+        # Install Rust
+        ENV RUSTUP_HOME=/usr/local/rustup \
+            CARGO_HOME=/usr/local/cargo \
+            PATH=/usr/local/cargo/bin:$PATH
+
+        RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path \
+            && chmod -R a+w /usr/local/rustup /usr/local/cargo \
+            && . "/usr/local/cargo/env"
+
+        # Copy source files
+        COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+        COPY . .
+
+        # Install dependencies
+        RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+            --mount=type=cache,target=/usr/local/cargo/registry \
+            --mount=type=cache,target=/app/native/target \
+            pnpm install --frozen-lockfile
+
+        # Build the application
+        RUN pnpm run build
+
+        # Remove dev dependencies
+        RUN pnpm prune --prod --ignore-scripts
+
+        # Runtime stage
+        FROM base AS runtime
+
+        # Install runtime dependencies
+        RUN apt-get update && apt-get install -y \
+            git \
+            procps \
+            && rm -rf /var/lib/apt/lists/*
+
+        EXPOSE 8080
+        WORKDIR /app
+
+        # Copy built application
+        COPY --from=build /app/node_modules ./node_modules
+        COPY --from=build /app/dist ./dist
+        COPY --from=build /app/native ./native
+
+        # Copy Go shared library
+        COPY --from=go-build /app/sharedLibs/go-html-to-md/libhtml-to-markdown.so ./sharedLibs/go-html-to-md/
+
+        CMD ["node", "dist/src/harness.js", "--start-docker"]
+    image: ghcr.io/firecrawl/firecrawl
     container_name: firecrawl-api
     hostname: api
+    networks:
+      - backend
+      - publicnet
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    expose:
+      - ${FIRECRAWL_INTERNAL_PORT:-3002}
+      - ${FIRECRAWL_WORKER_PORT:-3005}
+    ports:
+      - 127.0.0.1:${FIRECRAWL_PORT:-${FIRECRAWL_INTERNAL_PORT:-3002}}:${FIRECRAWL_INTERNAL_PORT:-3002}
     environment:
-      <<: *common-env
+      REDIS_URL: ${REDIS_HOST:-redis://redis:6379}
+      REDIS_RATE_LIMIT_URL: ${REDIS_HOST:-redis://redis:6379}
+      PLAYWRIGHT_MICROSERVICE_URL: ${PLAYWRIGHT_HOST:-http://playwright-service:${FIRECRAWL_PLAYWRIGHT_SERVICE_PORT:-3000}/scrape}
+      NUQ_DATABASE_URL: ${FIRECRAWL_NUQ_DATABASE_URL:-postgres://postgres:postgres@${NUQ_POSTGRES_HOSTNAME:-nuq-postgres}:5432/postgres}
+      # To turn on DB authentication, you need to set up Supabase.
+      USE_DB_AUTHENTICATION: ${FIRECRAWL_USE_DB_AUTHENTICATION:-false}  # supabase is required
+      # Provide your OpenAI API key here to enable AI features
+      #OPENAI_API_KEY: ${LITELLM_MASTER_KEY:-${OPENAI_API_KEY:?}}
+      #OPENAI_BASE_URL: ${LITELLM_HOST:-http://localhost:11434/api}  # e.g. http://localhost:11434/api
+      #MODEL_NAME: ${FIRECRAWL_MODEL_NAME:-}  # e.g. deepseek-r1:7b
+      #MODEL_EMBEDDING_NAME: ${FIRECRAWL_MODEL_EMBEDDING_NAME:-}  # e.g. nomic-embed-text
+      # Experimental: Use Ollama
+      OLLAMA_BASE_URL: ${FIRECRAWL_OLLAMA_BASE_URL:-}  # e.g. https://example.com/v1
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+      # This key lets you access the queue admin panel. Change this if your deployment is publicly accessible.
+      BULL_AUTH_KEY: ${FIRECRAWL_BULL_AUTH_KEY:?}
+      # Use if you've set up authentication and want to test with a real API key
+      TEST_API_KEY: ${FIRECRAWL_TEST_API_KEY:?}
+      POSTHOG_API_KEY: ${POSTHOG_API_KEY:-}
+      POSTHOG_HOST: ${POSTHOG_HOST:-}
+      # Supabase Setup (used to support DB authentication, advanced logging, etc.)
+      SUPABASE_ANON_TOKEN: ${FIRECRAWL_SUPABASE_ANON_TOKEN:-}
+      SUPABASE_URL: ${FIRECRAWL_SUPABASE_URL:-}
+      SUPABASE_SERVICE_TOKEN: ${FIRECRAWL_SUPABASE_SERVICE_TOKEN:-}
+      SELF_HOSTED_WEBHOOK_URL: ${FIRECRAWL_SELF_HOSTED_WEBHOOK_URL:-}
+      SERPER_API_KEY: ${FIRECRAWL_SERPER_API_KEY:-}
+      SEARCHAPI_API_KEY: ${FIRECRAWL_SEARCHAPI_API_KEY:-}
+      # You can specify a SearXNG server with the JSON format enabled, if you'd like to use that instead of direct Google.
+      # You can also customize the engines and categories parameters, but the defaults should also work just fine.
+      # SEARXNG_ENDPOINT: http://your.searxng.server
+      SEARXNG_ENDPOINT: ${FIRECRAWL_SEARXNG_ENDPOINT:-https://searxng.$DOMAIN}
+      #SEARXNG_ENGINES: ${FIRECRAWL_SEARXNG_ENGINES:-}
+      #SEARXNG_CATEGORIES: ${FIRECRAWL_SEARXNG_CATEGORIES:-}
       HOST: 0.0.0.0
       PORT: ${FIRECRAWL_INTERNAL_PORT:-3002}
       WORKER_PORT: ${FIRECRAWL_WORKER_PORT:-3005}
@@ -174,8 +172,6 @@ services:
         condition: service_started
       nuq-postgres:
         condition: service_healthy
-    ports:
-      - ${FIRECRAWL_PORT:-3002}:${FIRECRAWL_INTERNAL_PORT:-3002}
     command: node dist/src/harness.js --start-docker
     mem_reservation: 4G
     cpus: 4.0
@@ -185,14 +181,15 @@ services:
     build:
       context: https://github.com/firecrawl/firecrawl.git#main:/apps/nuq-postgres
       dockerfile: Dockerfile
+    image: docker.io/th3w1zard1/nuq-postgres:latest
     container_name: nuq-postgres
-    hostname: nuq-postgres
+    hostname: ${NUQ_POSTGRES_HOSTNAME:-nuq-postgres}
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
       - backend
     ports:
-      - 5432:5432
+      - 127.0.0.1:5432:5432
     environment:
       POSTGRES_USER: ${FIRECRAWL_POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${FIRECRAWL_POSTGRES_PASSWORD:-postgres}
