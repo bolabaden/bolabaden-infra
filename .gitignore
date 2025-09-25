@@ -52,3 +52,26 @@ kube.yaml
 kubernetes.yaml
 arbitrary-scripts/various_pvt_logins.sh
 arbitrary-scripts/bootstrap/dont-run-directly.sh
+
+# Additional security-sensitive patterns
+secrets/
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+*.htpasswd
+acme.json
+.htpasswd
+*_key
+*_secret
+*_token
+*_password
+*.env.local
+*.env.production
+*.env.staging
+client.key
+client.crt
+private.key
+server.key
+auth.conf
