@@ -51,3 +51,4 @@ projects/
 kube.yaml
 kubernetes.yaml
 arbitrary-scripts/various_pvt_logins.sh
+arbitrary-scripts/bootstrap/dont-run-directly.sh
