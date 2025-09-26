@@ -1,11 +1,9 @@
 
 .config/
-.cursor
 .cursor/
 .DS_Store
 .env
 .gitattributes
-.history
 .history/
 .idea
 .venv
