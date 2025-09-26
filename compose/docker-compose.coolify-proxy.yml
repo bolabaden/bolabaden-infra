@@ -384,15 +384,15 @@ configs:
       # yaml-language-server: $$schema=https://www.schemastore.org/traefik-v3-file-provider.json
       http:
         routers:
-        #  catchall:
-        #    entryPoints:
-        #      - web
-        #      - websecure
-        #    service: noop@internal
-        #    rule: Host(`$DOMAIN`) || Host(`$TS_HOSTNAME.$DOMAIN`) || HostRegexp(`^(.+)$$`)
-        #    priority: 1
-        #    middlewares:
-        #      - bolabaden-error-pages@file
+          catchall:
+            entryPoints:
+              - web
+              - websecure
+            service: noop@internal
+            rule: Host(`$DOMAIN`) || Host(`$TS_HOSTNAME.$DOMAIN`) || HostRegexp(`^(.+)$$`)
+            priority: 1
+            middlewares:
+              - traefikerrorreplace@file
         services:
           nginx-traefik-extensions:
             loadBalancer:
@@ -403,6 +403,12 @@ configs:
               servers:
                 - url: http://bolabaden-nextjs:3000
         middlewares:
+          traefikerrorreplace:
+            plugin:
+              traefikerrorreplace:
+                matchStatus:
+                  - 418
+                replaceStatus: 404
           bolabaden-error-pages:
             errors:
               status:
@@ -1143,7 +1149,7 @@ services:
       - '--entryPoints.websecure.http3'
       - '--global.checkNewVersion=true'
       - '--global.sendAnonymousUsage=false'
-      - '--log.level=DEBUG'
+      - '--log.level=INFO'
       - '--ping=true'
       - '--providers.docker=true'
       - '--providers.docker.endpoint=tcp://dockerproxy-ro:2375'
@@ -1154,6 +1160,8 @@ services:
       - '--providers.file.watch=true'
       - '--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin'
       - '--experimental.plugins.bouncer.version=v1.4.5'
+      - '--experimental.plugins.traefikerrorreplace.modulename=github.com/PseudoResonance/traefikerrorreplace'
+      - '--experimental.plugins.traefikerrorreplace.version=v1.0.1'
       # TLS-specific option within the ServersTransport configuration.
       # When set to true, it disables the verification of the backend server's TLS certificate chain and hostname.
       # By default, this option is false, meaning Traefik would validate the certificate to ensure it is issued by a trusted certificate authority (CA), has not expired, and matches the expected hostname.
