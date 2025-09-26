@@ -3498,7 +3498,7 @@ services:
     depends_on:
       - tinyauth
     build:
-      context: ${SRC_PATH:-./src}/bolabaden-site
+      context: ${SRC_PATH:-./projects}/bolabaden-site
       dockerfile: Dockerfile
     image: th3w1zard1/bolabaden-nextjs:latest
     container_name: bolabaden-nextjs
@@ -3959,7 +3959,7 @@ services:
     # 🔹🔹 Stremio 🔹🔹
     # Stream Movies/TV over debrid instantly.
 #    build:
-#      context: ${SRC_PATH:-./src}/stremio/stremio-docker
+#      context: ${SRC_PATH:-./projects}/stremio/stremio-docker
 #      context: https://github.com/tsaridas/stremio-docker.git#main
 #      dockerfile: Dockerfile
 #    image: tsaridas/stremio-docker:latest

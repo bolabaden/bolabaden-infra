@@ -6058,7 +6058,7 @@ services:
   bolabaden-nextjs:
     # 🔹🔹 bolabaden nextJS main website with integrated auth 🔹🔹
     build:
-      context: ${SRC_PATH:-./src}/bolabaden-site
+      context: ${SRC_PATH:-./projects}/bolabaden-site
       dockerfile: Dockerfile
     image: th3w1zard1/bolabaden-nextjs:latest
     container_name: bolabaden-nextjs
@@ -7217,7 +7217,7 @@ services:
   gptr:
     build:
       #context: https://github.com/th3w1zard1/gpt-researcher.git#master  # :/frontend/nextjs
-      context: ${SRC_PATH:-./src}/gpt-researcher
+      context: ${SRC_PATH:-./projects}/gpt-researcher
       dockerfile: Dockerfile.fullstack
     image: th3w1zard1/ai-researchwizard:latest
     container_name: gptr

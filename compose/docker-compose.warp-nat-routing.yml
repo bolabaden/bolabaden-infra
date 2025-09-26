@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
-
+# TODO: com.docker.network.bridge.inhibit_ipv4=true
 
 
 volumes:
@@ -87,7 +87,9 @@ configs:
           # Get original gw_priority for each container
           for container in $$CONTAINERS_USING_WARP_NETWORK; do
               # Get the container's network info as JSON
+              set +x
               container_json="$$($$DOCKER inspect "$$container" 2>/dev/null)"
+              set -x
               # Extract the gw_priority for this network
               gw_priority=$$(echo "$$container_json" | jq -r --arg net "$$DOCKER_NETWORK_NAME" '.[0].NetworkSettings.Networks[$$net].GwPriority // empty')
               ORIGINAL_GW_PRIORITY["$$container"]="$$gw_priority"

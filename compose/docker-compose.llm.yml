@@ -3,8 +3,44 @@
 
 
 configs:
-  mcpo_config:
-    file: ${CONFIG_PATH:-./volumes}/mcpo/mcp_servers.json
+  mcp_servers.json:
+    content: |
+      {
+        "mcpServers": {
+          "curl": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@mcp-get-community/server-curl"
+            ]
+          },
+          "firecrawl": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "firecrawl-mcp@latest"
+            ],
+            "env": {
+              "FIRECRAWL_API_KEY": "$FIRECRAWL_API_KEY",
+              "FIRE_CRAWL_API_KEY": "$FIRECRAWL_API_KEY",
+              "FIRECRAWL_API_URL": "https://firecrawl-api.$DOMAIN",
+              "FIRE_CRAWL_API_URL": "https://firecrawl-api.$DOMAIN"
+            }
+          },
+          "tavily": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "tavily-mcp@latest"
+            ],
+            "env": {
+              "TAVILY_API_KEY": "$TAVILY_API_KEY"
+            }
+          }
+        }
+      }
+  litellm_config.yaml:
+    file: ${CONFIG_PATH:-./volumes}/litellm/litellm_config.yaml
 
 
 
@@ -175,7 +211,7 @@ services:
       # Disables Scarf analytics
       SCARF_NO_ANALYTICS: true
     labels:
-      traefik.enable: "true"
+      traefik.enable: true
       traefik.http.routers.open-webui.rule: Host(`open-webui.$DOMAIN`) || Host(`open-webui.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.services.open-webui.loadbalancer.server.port: ${OPEN_WEBUI_PORT:-8080}
       homepage.group: AI
@@ -204,21 +240,21 @@ services:
       - backend
       - publicnet
     expose:
-      - 8000
+      - ${MCPO_PORT:-8000}
     configs:
-      - source: mcpo_config
+      - source: mcp_servers.json
         target: /app/config/mcp_servers.json
         mode: 0444
 #    volumes:
 #      - ${CONFIG_PATH:-./volumes}/mcp/mcpo/logs:/app/logs
 #      - ${CONFIG_PATH:-./volumes}/mcp/mcpo/data:/app/data
     environment:
-      MCPO_API_KEY: $MCPO_API_KEY
+      MCPO_API_KEY: ${MCPO_API_KEY:?}
     labels:
       traefik.enable: true
       traefik.http.routers.mcpo.middlewares: nginx-auth@file
       traefik.http.routers.mcpo.rule: Host(`mcpo.$DOMAIN`) || Host(`mcpo.$TS_HOSTNAME.$DOMAIN`)
-      traefik.http.services.mcpo.loadbalancer.server.port: 8000
+      traefik.http.services.mcpo.loadbalancer.server.port: ${MCPO_PORT:-8000}
       homepage.group: MCPO
       homepage.name: MCPO
       homepage.icon: mcpo.png
@@ -226,13 +262,12 @@ services:
       homepage.description: MCP Orchestrator exposing model/context tools over the MCP protocol
       kuma.mcpo.http.name: mcpo.$TS_HOSTNAME.$DOMAIN
       kuma.mcpo.http.url: https://mcpo.$DOMAIN
-      kuma.mcpo.http.interval: "30"
-    command: --api-key "$MCPO_API_KEY" --host 0.0.0.0 --port 8000 --cors-allow-origins "*" --config /app/config/mcp_servers.json
+      kuma.mcpo.http.interval: 30
+    command: --api-key "${MCPO_API_KEY:?}" --host 0.0.0.0 --port ${MCPO_PORT:-8000} --cors-allow-origins "*" --config /app/config/mcp_servers.json
+    working_dir: /app
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8000/openapi.json"]
-      interval: 30s
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:${MCPO_PORT:-8000}/openapi.json"]
       timeout: 10s
-      retries: 3
       start_period: 40s
     restart: always
 
@@ -266,13 +301,13 @@ services:
       - ${CONFIG_PATH:-./volumes}/litellm:/app/config:rw
       - model-updater-cache:/app/cache
     environment:
-      - OPENROUTER_API_KEY=$OPENROUTER_API_KEY
-      - POSTGRES_PASSWORD=${LITELLM_POSTGRES_PASSWORD:-postgres}
-      - TZ=${TZ:-UTC}
+      OPENROUTER_API_KEY: $OPENROUTER_API_KEY
+      POSTGRES_PASSWORD: ${LITELLM_POSTGRES_PASSWORD:-postgres}
+      TZ: ${TZ:-America/Chicago}
     restart: no
 
   litellm:
-    image: 'ghcr.io/berriai/litellm-database:main-stable'
+    image: ghcr.io/berriai/litellm-database:main-stable
 #    image: ghcr.io/berriai/litellm:main-stable
     container_name: litellm
     hostname: litellm
@@ -290,96 +325,81 @@ services:
         condition: service_healthy
     volumes:
       - ${CONFIG_PATH:-./volumes}/litellm:/app/config:ro
-    #configs:
-    #  - source: litellm_config.yaml
-    #    target: /app/config/litellm_config.yaml
-    #    mode: 0440
+    configs:
+      - source: litellm_config.yaml
+        target: /app/config/litellm_config.yaml
+        mode: 0440
     environment:
-      - 'LITELLM_LOG=${LITELLM_LOG:-INFO}'
-      - 'LITELLM_MODE=${LITELLM_MODE:-PRODUCTION}'
-      - 'UI_USERNAME=${LITELLM_UI_USERNAME:-admin}'
-      - 'UI_PASSWORD=$LITELLM_MASTER_KEY'
-      - 'DATABASE_URL=postgresql://${LITELLM_POSTGRES_USER:-litellm}:${LITELLM_POSTGRES_PASSWORD:-litellm}@${LITELLM_POSTGRES_HOSTNAME:-litellm-postgres}:5432/${LITELLM_POSTGRES_DB:-litellm}'
-      - 'REDIS_HOST=${REDIS_HOSTNAME:-redis}'
-      - 'REDIS_PORT=${REDIS_PORT:-6379}'
-      - 'POSTGRES_USER=${LITELLM_POSTGRES_USER:-litellm}'
-      - 'POSTGRES_PASSWORD=${LITELLM_POSTGRES_PASSWORD:-litellm}'
-      - 'POSTGRES_DB=${LITELLM_POSTGRES_DB:-litellm}'
-      - 'VOYAGE_API_KEY=$VOYAGE_API_KEY'
-      - 'AI21_API_KEY=$AI21_API_KEY'
-      - 'ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY'
-      - 'APIFY_API_TOKEN=$APIFY_API_TOKEN'
-      - 'APIPIE_API_KEY=$APIPIE_API_KEY'
-      - 'ARLIAI_API_KEY=$ARLIAI_API_KEY'
-      - 'AWANLLM_API_KEY=$AWANLLM_API_KEY'
-      - 'BASETEN_API_KEY=$BASETEN_API_KEY'
-      - 'BITO_ACCESS_KEY=$BITO_ACCESS_KEY'
-      - 'BRAVE_API_KEY=$BRAVE_API_KEY'
-      - 'CEREBRIUMAI_API_KEY=$CEREBRIUMAI_API_KEY'
-      - 'DEEPINFRA_API_KEY=$DEEPINFRA_API_KEY'
-      - 'DEEPGRAM_API_KEY=$DEEPGRAM_API_KEY'
-      - 'DEEPSEEK_API_KEY=$DEEPSEEK_API_KEY'
-      - 'DOCKER_TOKEN=$DOCKER_TOKEN'
-      - 'DOCKERHUB_TOKEN=$DOCKERHUB_TOKEN'
-      - 'EVERART_API_KEY=$EVERART_API_KEY'
-      - 'EXA_API_KEY=$EXA_API_KEY'
-      - 'FOREFRONTAI_API_KEY=$FOREFRONTAI_API_KEY'
-      - 'GEMINI_API_KEY=$GEMINI_API_KEY'
-      - 'GLAMA_API_KEY=$GLAMA_API_KEY'
-      - 'GROK_API_KEY=$GROK_API_KEY'
-      - 'GROQ_API_KEY=$GROQ_API_KEY'
-      - 'HF_TOKEN=$HF_TOKEN'
-      - 'HUGGINGFACE_ACCESS_TOKEN=$HUGGINGFACE_ACCESS_TOKEN'
-      - 'HUGGINGFACE_API_TOKEN=$HUGGINGFACE_API_TOKEN'
-      - 'JINA_API_KEY=$JINA_API_KEY'
-      - 'KAGI_API_KEY=$KAGI_API_KEY'
-      - 'KLUSTER_API_KEY=$KLUSTER_API_KEY'
-      - 'LANGCHAIN_API_KEY=$LANGCHAIN_API_KEY'
-      - 'LANGSMITH_API_KEY=$LANGSMITH_API_KEY'
-      - 'LITELLM_MASTER_KEY=$LITELLM_MASTER_KEY'
-      - 'MISTRAL_API_KEY=$MISTRAL_API_KEY'
-      - 'MISTRALAI_API_KEY=$MISTRALAI_API_KEY'
-      - 'OPENAI_API_KEY=$OPENAI_API_KEY'
-      - 'OPENROUTER_API_KEY=$OPENROUTER_API_KEY'
-      - 'PERPLEXITY_API_KEY=$PERPLEXITY_API_KEY'
-      - 'PERPLEXITYAI_API_KEY=$PERPLEXITYAI_API_KEY'
-      - 'REPLICATE_API_KEY=$REPLICATE_API_KEY'
-      - 'SAMBANOVA_API_KEY=$SAMBANOVA_API_KEY'
-      - 'SEARCH1API_KEY=$SEARCH1API_KEY'
-      - 'SERPAPI_API_KEY=$SERPAPI_API_KEY'
-      - 'SMITHERY_API_KEY=$SMITHERY_API_KEY'
-      - 'TANDOOR_SECRET_KEY=$TANDOOR_SECRET_KEY'
-      - 'TODOIST_API_KEY=$TODOIST_API_KEY'
-      - 'TOGETHERAI_API_KEY=$TOGETHERAI_API_KEY'
-      - 'UNIFY_API_KEY=$UNIFY_API_KEY'
-      - 'UPSTAGE_API_KEY=$UPSTAGE_API_KEY'
-      - 'UPSTAGEAI_API_KEY=$UPSTAGEAI_API_KEY'
-      - 'VEYRAX_API_KEY=$VEYRAX_API_KEY'
-      - 'YANDEX_API_KEY=$YANDEX_API_KEY'
-      - 'YOU_API_KEY=$YOU_API_KEY'
+      LITELLM_LOG: ${LITELLM_LOG:-INFO}
+      LITELLM_MASTER_KEY: $LITELLM_MASTER_KEY
+      LITELLM_MODE: ${LITELLM_MODE:-PRODUCTION}
+      UI_USERNAME: ${LITELLM_UI_USERNAME:-admin}
+      UI_PASSWORD: $LITELLM_MASTER_KEY
+      DATABASE_URL: postgresql://${LITELLM_POSTGRES_USER:-litellm}:${LITELLM_POSTGRES_PASSWORD:-litellm}@${LITELLM_POSTGRES_HOSTNAME:-litellm-postgres}:5432/${LITELLM_POSTGRES_DB:-litellm}
+      REDIS_HOST: ${REDIS_HOSTNAME:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      POSTGRES_USER: ${LITELLM_POSTGRES_USER:-litellm}
+      POSTGRES_PASSWORD: ${LITELLM_POSTGRES_PASSWORD:-litellm}
+      POSTGRES_DB: ${LITELLM_POSTGRES_DB:-litellm}
+      AI21_API_KEY: $AI21_API_KEY
+      ANTHROPIC_API_KEY: $ANTHROPIC_API_KEY
+      APIFY_API_TOKEN: $APIFY_API_TOKEN
+      APIPIE_API_KEY: $APIPIE_API_KEY
+      ARLIAI_API_KEY: $ARLIAI_API_KEY
+      AWANLLM_API_KEY: $AWANLLM_API_KEY
+      BASETEN_API_KEY: $BASETEN_API_KEY
+      BITO_ACCESS_KEY: $BITO_ACCESS_KEY
+      CEREBRIUMAI_API_KEY: $CEREBRIUMAI_API_KEY
+      DEEPINFRA_API_KEY: $DEEPINFRA_API_KEY
+      DEEPGRAM_API_KEY: $DEEPGRAM_API_KEY
+      DEEPSEEK_API_KEY: $DEEPSEEK_API_KEY
+      FOREFRONTAI_API_KEY: $FOREFRONTAI_API_KEY
+      GEMINI_API_KEY: $GEMINI_API_KEY
+      GLAMA_API_KEY: $GLAMA_API_KEY
+      GROK_API_KEY: $GROK_API_KEY
+      GROQ_API_KEY: $GROQ_API_KEY
+      HF_TOKEN: $HF_TOKEN
+      HUGGINGFACE_ACCESS_TOKEN: $HUGGINGFACE_ACCESS_TOKEN
+      HUGGINGFACE_API_TOKEN: $HUGGINGFACE_API_TOKEN
+      JINA_API_KEY: $JINA_API_KEY
+      KAGI_API_KEY: $KAGI_API_KEY
+      KLUSTER_API_KEY: $KLUSTER_API_KEY
+      LANGCHAIN_API_KEY: $LANGCHAIN_API_KEY
+      LANGSMITH_API_KEY: $LANGSMITH_API_KEY
+      MISTRAL_API_KEY: $MISTRAL_API_KEY
+      OPENAI_API_KEY: $OPENAI_API_KEY
+      OPENROUTER_API_KEY: $OPENROUTER_API_KEY
+      PERPLEXITY_API_KEY: $PERPLEXITY_API_KEY
+      REPLICATE_API_KEY: $REPLICATE_API_KEY
+      SAMBANOVA_API_KEY: $SAMBANOVA_API_KEY
+      SEARCH1API_KEY: $SEARCH1API_KEY
+      SERPAPI_API_KEY: $SERPAPI_API_KEY
+      TANDOOR_SECRET_KEY: $TANDOOR_SECRET_KEY
+      TOGETHERAI_API_KEY: $TOGETHERAI_API_KEY
+      UNIFY_API_KEY: $UNIFY_API_KEY
+      UPSTAGE_API_KEY: $UPSTAGE_API_KEY
+      VOYAGE_API_KEY: $VOYAGE_API_KEY
+      YANDEX_API_KEY: $YANDEX_API_KEY
+      YOU_API_KEY: $YOU_API_KEY
     labels:
-      traefik.enable: "true"
-      traefik.http.routers.litellm.rule: 'Host(`litellm.$DOMAIN`) || Host(`litellm.$TS_HOSTNAME.$DOMAIN`)'
-      traefik.http.services.litellm.loadbalancer.server.port: 4000
+      traefik.enable: true
       homepage.group: AI
       homepage.name: Litellm
       homepage.icon: litellm.png
       homepage.href: https://litellm.$DOMAIN/
       homepage.description: LLM gateway/router with provider failover, caching, rate limits, and analytics
-      kuma.litellm.http.name: "litellm.$TS_HOSTNAME.$DOMAIN"
-      kuma.litellm.http.url: "https://litellm.$DOMAIN"
-      kuma.litellm.http.interval: "60"
+      kuma.litellm.http.name: litellm.$TS_HOSTNAME.$DOMAIN
+      kuma.litellm.http.url: https://litellm.$DOMAIN
+      kuma.litellm.http.interval: 60
     command: --config /app/config/litellm_config.yaml --port 4000 --host 0.0.0.0
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/health/liveliness"]
-      interval: 30s
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/health/liveliness"]
       timeout: 15s
       retries: 5
       start_period: 30s
     restart: always
 
   litellm-postgres:
-#    image: 'docker.io/postgres:16-alpine'
     image: docker.io/postgres:16.3-alpine3.20
     container_name: litellm-postgres
     hostname: ${LITELLM_POSTGRES_HOSTNAME:-litellm-postgres}
@@ -389,11 +409,11 @@ services:
       - backend
       - publicnet
     environment:
-      - 'POSTGRES_DB=${LITELLM_POSTGRES_DB:-litellm}'
-      - 'POSTGRES_PASSWORD=${LITELLM_POSTGRES_PASSWORD:-litellm}'
-      - 'POSTGRES_USER=${LITELLM_POSTGRES_USER:-litellm}'
+      POSTGRES_DB: ${LITELLM_POSTGRES_DB:-litellm}
+      POSTGRES_PASSWORD: ${LITELLM_POSTGRES_PASSWORD:-litellm}
+      POSTGRES_USER: ${LITELLM_POSTGRES_USER:-litellm}
     volumes:
-      - '${CONFIG_PATH:-./volumes}/litellm/pgdata:/var/lib/postgresql/data'
+      - ${CONFIG_PATH:-./volumes}/litellm/pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h localhost -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
@@ -462,7 +482,7 @@ services:
       LANGSMITH_ENDPOINT: ${LANGSMITH_ENDPOINT:-https://api.smith.langchain.com}
       LANGSMITH_API_KEY: $LANGSMITH_API_KEY
     labels:
-      traefik.enable: "true"
+      traefik.enable: true
       traefik.http.routers.gptr-nextjs.service: gptr-nextjs@docker
       traefik.http.routers.gptr-nextjs.rule: Host(`gptr-nextjs.$DOMAIN`) || Host(`gptr-nextjs.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.services.gptr-nextjs.loadbalancer.server.port: 3000
@@ -477,15 +497,44 @@ services:
       homepage.description: Full-stack AI research and scraping toolkit with Next.js UI is a web scraper and researcher that uses AI to help you find information quickly.
       homepage.icon: gptr.png
       homepage.href: https://gptr.$DOMAIN/
-      kuma.gptr.http.name: "gptr.$TS_HOSTNAME.$DOMAIN"
-      kuma.gptr.http.url: "https://gptr.$DOMAIN"
-      kuma.gptr.http.interval: "30"
+      kuma.gptr.http.name: gptr.$TS_HOSTNAME.$DOMAIN
+      kuma.gptr.http.url: https://gptr.$DOMAIN
+      kuma.gptr.http.interval: 30
     healthcheck:  # docker exec gptr ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
       test: ["CMD-SHELL", "(wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 && wget -qO- http://127.0.0.1:8000 > /dev/null 2>&1) || exit 1"]  # && (wget -qO- http://127.0.0.1:8080 > /dev/null 2>&1) || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 2m
+    restart: always
+
+
+  qdrant:
+    # 🔹🔹 Qdrant 🔹🔹
+    profiles:
+      - extras
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    hostname: qdrant
+    networks:
+      - publicnet
+    expose:
+      - 6333
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/qdrant/storage:/qdrant/storage
+    environment:
+      QDRANT_STORAGE_PATH: /qdrant/storage
+      QDRANT_STORAGE_TYPE: disk
+      QDRANT_STORAGE_DISK_PATH: /qdrant/storage
+      QDRANT_STORAGE_DISK_TYPE: disk
+    labels:
+      traefik.enable: true
+      traefik.http.services.qdrant.loadbalancer.server.port: 6333
+      homepage.group: AI
+      homepage.name: Qdrant
+      homepage.icon: qdrant.png
+      homepage.href: https://qdrant.$DOMAIN
+      homepage.description: Qdrant is a vector database for storing and querying vectors.
     restart: always
 
 volumes:

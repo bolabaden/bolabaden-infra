@@ -43,7 +43,7 @@ networks:  # https://docs.docker.com/engine/network/drivers/bridge/#differences-
 
 
 include:
-#  - compose/docker-compose.authentik.yml
+  - compose/docker-compose.authentik.yml
   - compose/docker-compose.coolify-proxy.yml
   - compose/docker-compose.firecrawl.yml
   - compose/docker-compose.headscale.yml
@@ -53,7 +53,6 @@ include:
 #  - compose/docker-compose.unsend.yml
   - compose/docker-compose.stremio-group.yml
   - compose/docker-compose.warp-nat-routing.yml
-  - compose/docker-compose.wordpress.yml
 #  - compose/docker-compose.vpn-docker.yml
 
 
@@ -350,11 +349,11 @@ services:
     restart: always
 
   bolabaden-nextjs:
-    # 🔹🔹 bolabaden nextJS main website with integrated auth 🔹🔹
+    # 🔹🔹 bolabaden.org nextJS main website 🔹🔹
     build:
-      context: ${SRC_PATH:-./src}/website/bolabaden-site
+      context: ${SRC_PATH:-./projects}/website/bolabaden-site
       dockerfile: Dockerfile
-    image: docker.io/th3w1zard1/bolabaden-nextjs:latest
+    image: docker.io/bolabaden/bolabaden-nextjs:latest
     container_name: bolabaden-nextjs
     hostname: bolabaden-nextjs
     networks:
@@ -392,7 +391,7 @@ services:
   # This will be used to filter ONLY get requests to the Docker Engine API.
   # It stops stuff like https://blog.quarkslab.com/why-is-exposing-the-docker-socket-a-really-bad-idea.html
   dockerproxy-ro:
-    image: tecnativa/docker-socket-proxy
+    image: docker.io/tecnativa/docker-socket-proxy:latest
     container_name: dockerproxy-ro
     hostname: dockerproxy-ro
     networks:
@@ -726,7 +725,6 @@ services:
           {{range .Entries -}}{{.Message}}{{"\n"}}{{- end -}}
         {{- end -}}
       restart: always
-    # --- dockerproxy-rw: Full Read/Write Access ---
   dockerproxy-rw:
     # 🔹🔹 Docker Socket Proxy 🔹🔹
     image: lscr.io/linuxserver/socket-proxy:latest
@@ -860,10 +858,10 @@ services:
 
   redis:
     # 🔹🔹 Redis 🔹🔹
+    image: docker.io/redis:alpine
     # NOTE: If you want to use Valkey (open source) instead of Redis (source available),
     # uncomment the Valkey statement and comment out the Redis statement.
     # Using Valkey with Firecrawl is untested and not guaranteed to work. Use with caution.
-    image: docker.io/redis:alpine
     # image: valkey/valkey:alpine
     container_name: redis
     hostname: redis
@@ -948,31 +946,39 @@ services:
       kuma.portainer.http.interval: 60
     restart: always
 
-  qdrant:
-    # 🔹🔹 Qdrant 🔹🔹
+  dns-server:
     profiles:
-      - extras
-    image: qdrant/qdrant:latest
-    container_name: qdrant
-    hostname: qdrant
+      - experimental
+    image: docker.io/technitium/dns-server:latest
+    container_name: dns-server
+    hostname: dns-server.$DOMAIN
+    extra_hosts:
+      - host.docker.internal:host-gateway
     networks:
       - publicnet
     expose:
-      - 6333
+      - 53/udp       #DNS service
+      - 80/tcp       #DNS-over-HTTP
+      - 443/tcp      #DNS-over-HTTPS
+      - 538/tcp      #DNS-over-TCP-PROXY
+      - 853/tcp      #DNS-over-TLS
+      - 853/udp      #DNS-over-QUIC
+      - 8053/tcp     #DNS-over-HTTPS
+      - 5380/tcp     #DNS web console (HTTP)
+      - 53443/tcp    #DNS web console (HTTPS)
+    ports:
+      - 53:53/udp       #DNS service
     volumes:
-      - ${CONFIG_PATH:-./volumes}/qdrant/storage:/qdrant/storage
-    environment:
-      <<: *common-env
-      QDRANT_STORAGE_PATH: /qdrant/storage
-      QDRANT_STORAGE_TYPE: disk
-      QDRANT_STORAGE_DISK_PATH: /qdrant/storage
-      QDRANT_STORAGE_DISK_TYPE: disk
+      - ${CONFIG_PATH:-./volumes}/dns-server/config:/etc/dns
     labels:
       traefik.enable: true
-      traefik.http.services.qdrant.loadbalancer.server.port: 6333
-      homepage.group: AI
-      homepage.name: Qdrant
-      homepage.icon: qdrant.png
-      homepage.href: https://qdrant.$DOMAIN
-      homepage.description: Qdrant is a vector database for storing and querying vectors.
+      traefik.http.services.dns-server.loadbalancer.server.port: 5380
+      homepage.group: Infrastructure
+      homepage.name: Technitium DNS Server
+      homepage.icon: dns-server.png
+      homepage.href: https://dns-server.$DOMAIN
+      homepage.description: DNS server used to resolve DNS queries
+      kuma.dns-server.http.name: dns-server.$TS_HOSTNAME.$DOMAIN
+      kuma.dns-server.http.url: https://dns-server.$DOMAIN/
+      kuma.dns-server.http.interval: 60
     restart: always
