@@ -72,6 +72,4 @@ client.crt
 private.key
 server.key
 auth.conf
-reference/coolify/coolify-examples
-vendor/mcp/repos
-vendor/mcp/repos
+.garden
