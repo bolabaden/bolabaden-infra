@@ -19,9 +19,9 @@ dependencies:
 spec:
   image: ${actions.build.nuq-postgres.outputs.deploymentImageId}
   env:
-    POSTGRES_USER: ${var.FIRECRAWL_POSTGRES_USER:-postgres}
-    POSTGRES_PASSWORD: ${var.FIRECRAWL_POSTGRES_PASSWORD:-postgres}
-    POSTGRES_DB: ${var.FIRECRAWL_POSTGRES_DB:-postgres}
+    POSTGRES_USER: ${var.FIRECRAWL_POSTGRES_USER || "postgres"}
+    POSTGRES_PASSWORD: ${var.FIRECRAWL_POSTGRES_PASSWORD || "postgres"}
+    POSTGRES_DB: ${var.FIRECRAWL_POSTGRES_DB || "postgres"}
   ports:
     - name: db
       containerPort: 5432
@@ -30,7 +30,7 @@ spec:
       command:
         - pg_isready
         - -U
-        - ${var.FIRECRAWL_POSTGRES_USER:-postgres}
+        - ${var.FIRECRAWL_POSTGRES_USER || "postgres"}
         - -d
-        - ${var.FIRECRAWL_POSTGRES_DB:-postgres}
+        - ${var.FIRECRAWL_POSTGRES_DB || "postgres"}
   restartPolicy: Always

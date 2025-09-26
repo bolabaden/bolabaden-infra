@@ -26,12 +26,12 @@ spec:
   privileged: true
   networkMode: host
   env:
-    DOCKER_NETWORK_NAME: ${var.DOCKER_NETWORK_NAME:-warp-nat-net}
-    WARP_CONTAINER_NAME: ${var.WARP_CONTAINER_NAME:-warp-nat-gateway}
-    HOST_VETH_IP: ${var.HOST_VETH_IP:-169.254.100.1}
-    CONT_VETH_IP: ${var.CONT_VETH_IP:-169.254.100.2}
-    ROUTING_TABLE: ${var.ROUTING_TABLE:-warp-nat-routing}
-    VETH_HOST: ${var.VETH_HOST:-veth-warp}
+    DOCKER_NETWORK_NAME: ${var.DOCKER_NETWORK_NAME || "warp-nat-net"}
+    WARP_CONTAINER_NAME: ${var.WARP_CONTAINER_NAME || "warp-nat-gateway"}
+    HOST_VETH_IP: ${var.HOST_VETH_IP || "169.254.100.1"}
+    CONT_VETH_IP: ${var.CONT_VETH_IP || "169.254.100.2"}
+    ROUTING_TABLE: ${var.ROUTING_TABLE || "warp-nat-routing"}
+    VETH_HOST: ${var.VETH_HOST || "veth-warp"}
     CONTAINER_NAME: warp_router
   command:
     - /bin/bash

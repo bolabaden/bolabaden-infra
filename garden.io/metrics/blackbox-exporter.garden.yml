@@ -11,12 +11,12 @@ spec:
       containerPort: 9115
   volumes:
     - name: config
-      containerPath: ${var.BLACKBOX_INTERNAL_CONFIG_PATH:-/etc/blackbox_exporter/config.yml}
+      containerPath: ${var.BLACKBOX_INTERNAL_CONFIG_PATH || "/etc/blackbox_exporter/config.yml"}
       sourcePath: ${var.config-path}/blackbox-exporter/blackbox.yml
   command:
-    - '--config.file=${var.BLACKBOX_INTERNAL_CONFIG_PATH:-/etc/blackbox_exporter/config.yml}'
-    - '--log.level=${var.BLACKBOX_LOG_LEVEL:-info}'
-    - '--log.format=${var.BLACKBOX_LOG_FORMAT:-logfmt}'
+    - '--config.file=${var.BLACKBOX_INTERNAL_CONFIG_PATH || "/etc/blackbox_exporter/config.yml"}'
+    - '--log.level=${var.BLACKBOX_LOG_LEVEL || "info"}'
+    - '--log.format=${var.BLACKBOX_LOG_FORMAT || "logfmt"}'
   labels:
     prometheus.io/scrape: "true"
     prometheus.io/port: "9115"

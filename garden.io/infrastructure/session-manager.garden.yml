@@ -9,7 +9,7 @@ spec:
   env:
     TZ: ${var.tz}
     DOMAIN: ${var.domain}
-    SESSION_MANAGER_PORT: ${var.SESSION_MANAGER_PORT:-8080}
+    SESSION_MANAGER_PORT: ${var.SESSION_MANAGER_PORT || "8080"}
     INACTIVITY_TIMEOUT: 3600
     DEFAULT_WORKSPACE: /workspace
     EXT_PATH: ${var.config-path}/extensions/holo-lsp-1.0.0.vsix

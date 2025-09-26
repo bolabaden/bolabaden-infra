@@ -54,7 +54,7 @@ spec:
     - rcd
     - --rc-web-gui
     - --rc-web-gui-no-open-browser
-    - --rc-addr=:${var.RCLONE_PORT:-5572}
+    - --rc-addr=:${var.RCLONE_PORT || "5572"}
     - --log-level=INFO
     - --rc-no-auth
     - --config=/config/rclone/rclone.conf

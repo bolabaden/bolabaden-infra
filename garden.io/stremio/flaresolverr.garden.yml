@@ -8,19 +8,19 @@ spec:
   image: ghcr.io/flaresolverr/flaresolverr:latest
   env:
     TZ: ${var.tz}
-    PUID: ${var.PUID:-1001}
-    PGID: ${var.PGID:-988}
-    UMASK: ${var.UMASK:-002}
+    PUID: ${var.PUID || "1001"}
+    PGID: ${var.PGID || "988"}
+    UMASK: ${var.UMASK || "002"}
     LOG_LEVEL: debug
     LOG_HTML: false
     CAPTCHA_SOLVER: none
-    PORT: ${var.FLARESOLVERR_PORT:-8191}
+    PORT: ${var.FLARESOLVERR_PORT || "8191"}
     HOST: 0.0.0.0
-    HEADLESS: ${var.FLARESOLVERR_HEADLESS:-true}
-    BROWSER_TIMEOUT: ${var.FLARESOLVERR_BROWSER_TIMEOUT:-120000}
-    TEST_URL: ${var.FLARESOLVERR_TEST_URL:-https://www.google.com}
-    PROMETHEUS_ENABLED: ${var.FLARESOLVERR_PROMETHEUS_ENABLED:-true}
-    PROMETHEUS_PORT: ${var.PROMETHEUS_PORT:-9090}
+    HEADLESS: ${var.FLARESOLVERR_HEADLESS || "true"}
+    BROWSER_TIMEOUT: ${var.FLARESOLVERR_BROWSER_TIMEOUT || "120000"}
+    TEST_URL: ${var.FLARESOLVERR_TEST_URL || "https://www.google.com"}
+    PROMETHEUS_ENABLED: ${var.FLARESOLVERR_PROMETHEUS_ENABLED || "true"}
+    PROMETHEUS_PORT: ${var.PROMETHEUS_PORT || "9090"}
   ports:
     - name: http
       containerPort: 8191

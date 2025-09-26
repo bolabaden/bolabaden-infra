@@ -8,14 +8,14 @@ spec:
   image: ghcr.io/viren070/aiostreams:latest
   env:
     TZ: ${var.tz}
-    PUID: ${var.PUID:-1001}
-    PGID: ${var.PGID:-988}
-    UMASK: ${var.UMASK:-002}
+    PUID: ${var.PUID || "1001"}
+    PGID: ${var.PGID || "988"}
+    UMASK: ${var.UMASK || "002"}
     
     # Essential addon setup
-    ADDON_NAME: ${var.AIOSTREAMS_ADDON_NAME:-BadenAIO}
+    ADDON_NAME: ${var.AIOSTREAMS_ADDON_NAME || "BadenAIO"}
     ADDON_ID: aiostreams.${var.domain}
-    PORT: ${var.AIOSTREAMS_PORT:-3000}
+    PORT: ${var.AIOSTREAMS_PORT || "3000"}
     BASE_URL: https://aiostreams.${var.domain}
     SECRET_KEY: ${var.AIOSTREAMS_SECRET_KEY}
     ADDON_PASSWORD: ${var.AIOSTREAMS_ADDON_PASSWORD}
@@ -47,22 +47,22 @@ spec:
     DEFAULT_OFFCLOUD_PASSWORD: ${var.OFFCLOUD_PASSWORD}
     DEFAULT_PUTIO_CLIENT_ID: ${var.PUTIO_CLIENT_ID}
     DEFAULT_PUTIO_CLIENT_SECRET: ${var.PUTIO_CLIENT_SECRET}
-    DEFAULT_EASYNEWS_USERNAME: ${var.EASYNEWS_USERNAME:-}
-    DEFAULT_EASYNEWS_PASSWORD: ${var.EASYNEWS_PASSWORD:-}
+    DEFAULT_EASYNEWS_USERNAME: ${var.EASYNEWS_USERNAME || ""}
+    DEFAULT_EASYNEWS_PASSWORD: ${var.EASYNEWS_PASSWORD || ""}
     DEFAULT_EASYDEBRID_API_KEY: ${var.EASYDEBRID_API_KEY}
     DEFAULT_PIKPAK_EMAIL: ${var.PIKPAK_EMAIL}
     DEFAULT_PIKPAK_PASSWORD: ${var.PIKPAK_PASSWORD}
     DEFAULT_SEEDR_ENCODED_TOKEN: ${var.SEEDR_ENCODED_TOKEN}
     
     # Customization & Access Control
-    CUSTOM_HTML: ${var.AIOSTREAMS_CUSTOM_HTML:-}
-    TRUSTED_UUIDS: ${var.AIOSTREAMS_TRUSTED_UUIDS:-}
+    CUSTOM_HTML: ${var.AIOSTREAMS_CUSTOM_HTML || ""}
+    TRUSTED_UUIDS: ${var.AIOSTREAMS_TRUSTED_UUIDS || ""}
     REGEX_FILTER_ACCESS: trusted
     
     # Stream proxy configuration
     FORCE_PROXY_ENABLED: true
     DEFAULT_PROXY_ID: stremthru
-    DEFAULT_PROXY_CREDENTIALS: ${var.STREMTHRU_CREDENTIALS:-bolabaden:duckdns}
+    DEFAULT_PROXY_CREDENTIALS: ${var.STREMTHRU_CREDENTIALS || "bolabaden:duckdns"}
     FORCE_PROXY_DISABLE_PROXIED_ADDONS: false
     ENCRYPT_MEDIAFLOW_URLS: true
     ENCRYPT_STREMTHRU_URLS: true
@@ -107,8 +107,8 @@ spec:
     PRUNE_MAX_DAYS: -1
     
     # External addon URLs
-    STREMTHRU_STORE_URL: ${var.STREMTHRU_STORE_HOST:-https://stremthru.${var.domain}/stremio/store/}
-    STREMTHRU_TORZ_URL: ${var.STREMTHRU_TORZ_HOST:-https://stremthru.${var.domain}/stremio/torz/}
+    STREMTHRU_STORE_URL: ${var.STREMTHRU_STORE_HOST || "https://stremthru.${var.domain}/stremio/store/"}
+    STREMTHRU_TORZ_URL: ${var.STREMTHRU_TORZ_HOST || "https://stremthru.${var.domain}/stremio/torz/"}
     DEFAULT_JACKETTIO_INDEXERS: '["animetosho", "anirena", "bitsearch", "eztv", "nyaasi", "thepiratebay", "therarbg", "yts"]'
     
     # Anime database

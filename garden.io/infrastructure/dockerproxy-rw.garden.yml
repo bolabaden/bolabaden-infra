@@ -9,9 +9,9 @@ spec:
   privileged: true
   env:
     TZ: ${var.tz}
-    PUID: ${var.PUID:-1001}
-    PGID: ${var.PGID:-999}
-    UMASK: ${var.UMASK:-002}
+    PUID: ${var.PUID || "1001"}
+    PGID: ${var.PGID || "999"}
+    UMASK: ${var.UMASK || "002"}
     ALLOW_START: 1
     ALLOW_STOP: 1
     ALLOW_RESTARTS: 1
@@ -20,7 +20,7 @@ spec:
     COMMIT: 1
     CONFIGS: 1
     CONTAINERS: 1
-    DISABLE_IPV6: ${var.DISABLE_IPV6:-0}
+    DISABLE_IPV6: ${var.DISABLE_IPV6 || "0"}
     DISTRIBUTION: 1
     EVENTS: 1
     EXEC: 1

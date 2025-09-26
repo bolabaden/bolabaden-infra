@@ -9,10 +9,10 @@ dependencies:
 spec:
   image: docker.io/victoriametrics/victoria-metrics:v1.119.0
   env:
-    VM_RETENTION_PERIOD: ${var.VICTORIAMETRICS_RETENTION_PERIOD:-1y}
-    VM_MEMORY_ALLOWED_PERCENT: ${var.VICTORIAMETRICS_MEMORY_ALLOWED_PERCENT:-60}
-    VM_SEARCH_MAX_CONCURRENT_REQUESTS: ${var.VICTORIAMETRICS_SEARCH_MAX_CONCURRENT_REQUESTS:-8}
-    VM_INSERT_MAX_CONCURRENT_REQUESTS: ${var.VICTORIAMETRICS_INSERT_MAX_CONCURRENT_REQUESTS:-32}
+    VM_RETENTION_PERIOD: ${var.VICTORIAMETRICS_RETENTION_PERIOD || "1y"}
+    VM_MEMORY_ALLOWED_PERCENT: ${var.VICTORIAMETRICS_MEMORY_ALLOWED_PERCENT || "60"}
+    VM_SEARCH_MAX_CONCURRENT_REQUESTS: ${var.VICTORIAMETRICS_SEARCH_MAX_CONCURRENT_REQUESTS || "8"}
+    VM_INSERT_MAX_CONCURRENT_REQUESTS: ${var.VICTORIAMETRICS_INSERT_MAX_CONCURRENT_REQUESTS || "32"}
   ports:
     - name: http
       containerPort: 8428
@@ -21,25 +21,25 @@ spec:
       containerPath: /storage
       sourcePath: ${var.config-path}/victoriametrics
   command:
-    - "--bigMergeConcurrency=${var.VICTORIAMETRICS_BIG_MERGE_CONCURRENCY:-0}"
-    - "--dedup.minScrapeInterval=${var.VICTORIAMETRICS_DEDUP_MIN_SCRAPE_INTERVAL:-0s}"
-    - "--enableTCP6=${var.VICTORIAMETRICS_ENABLE_TCP6:-false}"
-    - "--finalMergeDelay=${var.VICTORIAMETRICS_FINAL_MERGE_DELAY:-0s}"
-    - "--http.maxGracefulShutdownDuration=${var.VICTORIAMETRICS_MAX_GRACEFUL_SHUTDOWN_DURATION:-7s}"
-    - "--http.shutdownDelay=${var.VICTORIAMETRICS_SHUTDOWN_DELAY:-0s}"
-    - "--httpListenAddr=:${var.VICTORIAMETRICS_PORT:-8428}"
-    - "--influx.maxLineSize=${var.VICTORIAMETRICS_INFLUX_MAX_LINE_SIZE:-262144}"
-    - "--loggerFormat=${var.VICTORIAMETRICS_LOG_FORMAT:-default}"
-    - "--loggerLevel=${var.VICTORIAMETRICS_LOG_LEVEL:-INFO}"
-    - "--memory.allowedPercent=${var.VICTORIAMETRICS_MEMORY_ALLOWED_PERCENT:-60}"
-    - "--promscrape.maxScrapeSize=${var.VICTORIAMETRICS_PROMSCRAPE_MAX_SCRAPE_SIZE:-16777216}"
-    - "--retentionPeriod=${var.VICTORIAMETRICS_RETENTION_PERIOD:-1y}"
-    - "--search.maxConcurrentRequests=${var.VICTORIAMETRICS_SEARCH_MAX_CONCURRENT_REQUESTS:-8}"
-    - "--smallMergeConcurrency=${var.VICTORIAMETRICS_SMALL_MERGE_CONCURRENCY:-0}"
+    - "--bigMergeConcurrency=${var.VICTORIAMETRICS_BIG_MERGE_CONCURRENCY || \"0\"}"
+    - "--dedup.minScrapeInterval=${var.VICTORIAMETRICS_DEDUP_MIN_SCRAPE_INTERVAL || \"0s\"}"
+    - "--enableTCP6=${var.VICTORIAMETRICS_ENABLE_TCP6 || \"false\"}"
+    - "--finalMergeDelay=${var.VICTORIAMETRICS_FINAL_MERGE_DELAY || \"0s\"}"
+    - "--http.maxGracefulShutdownDuration=${var.VICTORIAMETRICS_MAX_GRACEFUL_SHUTDOWN_DURATION || \"7s\"}"
+    - "--http.shutdownDelay=${var.VICTORIAMETRICS_SHUTDOWN_DELAY || \"0s\"}"
+    - "--httpListenAddr=:${var.VICTORIAMETRICS_PORT || \"8428\"}"
+    - "--influx.maxLineSize=${var.VICTORIAMETRICS_INFLUX_MAX_LINE_SIZE || \"262144\"}"
+    - "--loggerFormat=${var.VICTORIAMETRICS_LOG_FORMAT || \"default\"}"
+    - "--loggerLevel=${var.VICTORIAMETRICS_LOG_LEVEL || \"INFO\"}"
+    - "--memory.allowedPercent=${var.VICTORIAMETRICS_MEMORY_ALLOWED_PERCENT || \"60\"}"
+    - "--promscrape.maxScrapeSize=${var.VICTORIAMETRICS_PROMSCRAPE_MAX_SCRAPE_SIZE || \"16777216\"}"
+    - "--retentionPeriod=${var.VICTORIAMETRICS_RETENTION_PERIOD || \"1y\"}"
+    - "--search.maxConcurrentRequests=${var.VICTORIAMETRICS_SEARCH_MAX_CONCURRENT_REQUESTS || \"8\"}"
+    - "--smallMergeConcurrency=${var.VICTORIAMETRICS_SMALL_MERGE_CONCURRENCY || \"0\"}"
     - "--storageDataPath=/storage"
-    - "--vmalert.proxyURL=${var.VICTORIAMETRICS_VMALERT_PROXY_URL:-}"
-    - "--vmauth.userConfigReloadInterval=${var.VICTORIAMETRICS_VMAUTH_USER_CONFIG_RELOAD_INTERVAL:-0s}"
-    - "--vmui.customDashboardsPath=${var.VICTORIAMETRICS_VMUI_CUSTOM_DASHBOARDS_PATH:-}"
+    - "--vmalert.proxyURL=${var.VICTORIAMETRICS_VMALERT_PROXY_URL || \"\"}"
+    - "--vmauth.userConfigReloadInterval=${var.VICTORIAMETRICS_VMAUTH_USER_CONFIG_RELOAD_INTERVAL || \"0s\"}"
+    - "--vmui.customDashboardsPath=${var.VICTORIAMETRICS_VMUI_CUSTOM_DASHBOARDS_PATH || \"\"}"
   ingresses:
     - path: /
       port: http

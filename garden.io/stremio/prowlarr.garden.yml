@@ -8,8 +8,8 @@ spec:
   image: lscr.io/linuxserver/prowlarr
   env:
     TZ: ${var.tz}
-    PUID: ${var.PUID:-1001}
-    PGID: ${var.PGID:-988}
+    PUID: ${var.PUID || "1001"}
+    PGID: ${var.PGID || "988"}
   ports:
     - name: http
       containerPort: 9696

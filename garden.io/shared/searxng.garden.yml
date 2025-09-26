@@ -8,7 +8,7 @@ spec:
   image: docker.io/searxng/searxng:latest
   env:
     TZ: ${var.tz}
-    SEARXNG_BASE_URL: http://searxng:${var.SEARXNG_PORT:-8080}
+    SEARXNG_BASE_URL: http://searxng:${var.SEARXNG_PORT || "8080"}
     SEARXNG_SECRET: ${var.SEARXNG_SECRET}
   ports:
     - name: http

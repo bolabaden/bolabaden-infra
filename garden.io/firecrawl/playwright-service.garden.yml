@@ -19,11 +19,11 @@ dependencies:
 spec:
   image: ${actions.build.playwright-service.outputs.deploymentImageId}
   env:
-    PORT: ${var.FIRECRAWL_PLAYWRIGHT_SERVICE_PORT:-3000}
-    PROXY_SERVER: ${var.FIRECRAWL_PROXY_SERVER:-}
-    PROXY_USERNAME: ${var.FIRECRAWL_PROXY_USERNAME:-}
-    PROXY_PASSWORD: ${var.FIRECRAWL_PROXY_PASSWORD:-}
-    BLOCK_MEDIA: ${var.FIRECRAWL_BLOCK_MEDIA:-false}
+    PORT: ${var.FIRECRAWL_PLAYWRIGHT_SERVICE_PORT || "3000"}
+    PROXY_SERVER: ${var.FIRECRAWL_PROXY_SERVER || ""}
+    PROXY_USERNAME: ${var.FIRECRAWL_PROXY_USERNAME || ""}
+    PROXY_PASSWORD: ${var.FIRECRAWL_PROXY_PASSWORD || ""}
+    BLOCK_MEDIA: ${var.FIRECRAWL_BLOCK_MEDIA || "false"}
   ports:
     - name: http
       containerPort: 3000

@@ -4,7 +4,7 @@ name: bolabaden-nextjs
 description: Bolabaden NextJS main website build
 type: container
 source:
-  path: ${var.src-path:-./src}/website/bolabaden-site
+  path: ${var.src-path || "./src"}/website/bolabaden-site
 
 ---
 kind: Deploy
@@ -19,9 +19,9 @@ spec:
   image: ${actions.build.bolabaden-nextjs.outputs.deploymentImageId}
   env:
     TZ: ${var.tz}
-    PUID: ${var.PUID:-1001}
-    PGID: ${var.PGID:-999}
-    UMASK: ${var.UMASK:-002}
+    PUID: ${var.PUID || "1001"}
+    PGID: ${var.PGID || "999"}
+    UMASK: ${var.UMASK || "002"}
     NODE_ENV: production
     PORT: 3000
     HOSTNAME: 0.0.0.0

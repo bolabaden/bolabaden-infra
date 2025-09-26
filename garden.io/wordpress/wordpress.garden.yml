@@ -12,7 +12,7 @@ spec:
     WORDPRESS_DB_HOST: mariadb
     WORDPRESS_DB_USER: ${var.WORDPRESS_DB_USER}
     WORDPRESS_DB_PASSWORD: ${var.WORDPRESS_DB_PASSWORD}
-    WORDPRESS_DB_NAME: ${var.WORDPRESS_DB_NAME:-wordpress}
+    WORDPRESS_DB_NAME: ${var.WORDPRESS_DB_NAME || "wordpress"}
   ports:
     - name: http
       containerPort: 80

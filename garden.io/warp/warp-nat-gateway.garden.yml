@@ -19,7 +19,7 @@ spec:
     net.ipv6.conf.all.accept_ra: "2"
   env:
     BETA_FIX_HOST_CONNECTIVITY: false
-    GOST_ARGS: ${var.GOST_ARGS:--L :${var.GOST_SOCKS5_PORT:-1080}}
+    GOST_ARGS: ${var.GOST_ARGS || "-L :${var.GOST_SOCKS5_PORT || \"1080\"}"}
     WARP_ENABLE_NAT: false
     WARP_LICENSE_KEY: ${var.WARP_LICENSE_KEY}
     WARP_SLEEP: 2

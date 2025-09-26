@@ -8,7 +8,7 @@ spec:
   image: docker.io/mariadb:11
   env:
     MYSQL_ROOT_PASSWORD: ${var.WORDPRESS_DB_ROOT_PASSWORD}
-    MYSQL_DATABASE: ${var.WORDPRESS_DB_NAME:-wordpress}
+    MYSQL_DATABASE: ${var.WORDPRESS_DB_NAME || "wordpress"}
     MYSQL_USER: ${var.WORDPRESS_DB_USER}
     MYSQL_PASSWORD: ${var.WORDPRESS_DB_PASSWORD}
   ports:
@@ -20,6 +20,6 @@ spec:
       sourcePath: ${var.config-path}/wordpress/mariadb-data
   healthCheck:
     exec:
-      command: [mysqladmin, ping, -h, 127.0.0.1, -u, root, -p${var.WORDPRESS_DB_ROOT_PASSWORD}]
+      command: [mysqladmin, ping, -h, 127.0.0.1, -u, root, -p, "${var.WORDPRESS_DB_ROOT_PASSWORD}"]
   restartPolicy: always
 

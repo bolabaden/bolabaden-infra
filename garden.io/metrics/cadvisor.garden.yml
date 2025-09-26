@@ -36,10 +36,10 @@ spec:
       hostPath: /dev/kmsg
       containerPath: /dev/kmsg
   command:
-    - '--housekeeping_interval=${var.CADVISOR_HOUSEKEEPING_INTERVAL:-30s}'
-    - '--docker_only=${var.CADVISOR_DOCKER_ONLY:-true}'
-    - '--disable_metrics=${var.CADVISOR_DISABLE_METRICS:-cpu_topology,disk,memory_numa,tcp,udp,percpu,sched,process,hugetlb,referenced_memory,resctrl,cpuset,advtcp}'
-    - '--store_container_labels=${var.CADVISOR_STORE_CONTAINER_LABELS:-false}'
+    - '--housekeeping_interval=${var.CADVISOR_HOUSEKEEPING_INTERVAL || "30s"}'
+    - '--docker_only=${var.CADVISOR_DOCKER_ONLY || "true"}'
+    - '--disable_metrics=${var.CADVISOR_DISABLE_METRICS || "cpu_topology,disk,memory_numa,tcp,udp,percpu,sched,process,hugetlb,referenced_memory,resctrl,cpuset,advtcp"}'
+    - '--store_container_labels=${var.CADVISOR_STORE_CONTAINER_LABELS || "false"}'
   labels:
     prometheus.io/scrape: "true"
     prometheus.io/port: "8080"

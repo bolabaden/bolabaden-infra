@@ -7,8 +7,8 @@ type: container
 spec:
   image: docker.io/crowdsecurity/crowdsec:latest
   env:
-    UID: ${var.PUID:-1001}
-    GID: ${var.PGID:-999}
+    UID: ${var.PUID || "1001"}
+    GID: ${var.PGID || "999"}
     COLLECTIONS: crowdsecurity/appsec-crs crowdsecurity/appsec-generic-rules crowdsecurity/appsec-virtual-patching crowdsecurity/whitelist-good-actors crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/linux crowdsecurity/sshd
   ports:
     - name: lapi

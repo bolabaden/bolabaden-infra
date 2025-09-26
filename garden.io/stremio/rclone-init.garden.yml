@@ -11,7 +11,7 @@ spec:
   env:
     RCLONE_USERNAME: ""
     RCLONE_PASSWORD: ""
-    RCLONE_PORT: ${var.RCLONE_PORT:-5572}
+    RCLONE_PORT: ${var.RCLONE_PORT || "5572"}
     RCLONE_CONFIG_PATH: /config/rclone/rclone.conf
   volumes:
     - name: remote-mounts

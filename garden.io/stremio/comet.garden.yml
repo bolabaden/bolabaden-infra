@@ -8,7 +8,7 @@ spec:
   image: docker.io/g0ldyy/comet:latest
   env:
     TZ: ${var.tz}
-    UMASK: ${var.UMASK:-002}
+    UMASK: ${var.UMASK || "002"}
     
     # Stremio Addon Configuration
     ADDON_ID: stremio.comet.fast
@@ -16,7 +16,7 @@ spec:
     
     # FastAPI Server Configuration
     FASTAPI_HOST: 0.0.0.0
-    FASTAPI_PORT: ${var.COMET_PORT:-2020}
+    FASTAPI_PORT: ${var.COMET_PORT || "2020"}
     FASTAPI_WORKERS: -1
     USE_GUNICORN: true
     CORS_ALLOW_ORIGINS: "*"
@@ -43,7 +43,7 @@ spec:
     INDEXER_MANAGER_URL: https://prowlarr.${var.domain}
     INDEXER_MANAGER_API_KEY: ${var.PROWLARR_API_KEY}
     INDEXER_MANAGER_TIMEOUT: 60
-    INDEXER_MANAGER_INDEXERS: ${var.COMET_INDEXERS:-["animetosho", "anirena", "bitsearch", "eztv", "nyaasi", "thepiratebay", "therarbg", "yts"]}
+    INDEXER_MANAGER_INDEXERS: ${var.COMET_INDEXERS || "[\"animetosho\", \"anirena\", \"bitsearch\", \"eztv\", \"nyaasi\", \"thepiratebay\", \"therarbg\", \"yts\"]"}
     
     # Torrent Settings
     GET_TORRENT_TIMEOUT: 5

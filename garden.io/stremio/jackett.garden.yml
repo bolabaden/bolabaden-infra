@@ -10,11 +10,11 @@ spec:
   image: lscr.io/linuxserver/jackett
   env:
     TZ: ${var.tz}
-    PUID: ${var.PUID:-1001}
-    PGID: ${var.PGID:-988}
-    UMASK: ${var.UMASK:-002}
-    AUTO_UPDATE: ${var.JACKETT_AUTO_UPDATE:-true}
-    RUN_OPTS: ${var.JACKETT_RUN_OPTS:-}
+    PUID: ${var.PUID || "1001"}
+    PGID: ${var.PGID || "988"}
+    UMASK: ${var.UMASK || "002"}
+    AUTO_UPDATE: ${var.JACKETT_AUTO_UPDATE || "true"}
+    RUN_OPTS: ${var.JACKETT_RUN_OPTS || ""}
     JACKETT_API_KEY: ${var.JACKETT_API_KEY}
   ports:
     - name: http

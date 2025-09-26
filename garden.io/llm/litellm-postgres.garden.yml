@@ -7,9 +7,9 @@ type: container
 spec:
   image: docker.io/postgres:16.3-alpine3.20
   env:
-    POSTGRES_DB: ${var.LITELLM_POSTGRES_DB:-litellm}
-    POSTGRES_PASSWORD: ${var.LITELLM_POSTGRES_PASSWORD:-litellm}
-    POSTGRES_USER: ${var.LITELLM_POSTGRES_USER:-litellm}
+    POSTGRES_DB: ${var.LITELLM_POSTGRES_DB || "litellm"}
+    POSTGRES_PASSWORD: ${var.LITELLM_POSTGRES_PASSWORD || "litellm"}
+    POSTGRES_USER: ${var.LITELLM_POSTGRES_USER || "litellm"}
   ports:
     - name: db
       containerPort: 5432
@@ -24,7 +24,7 @@ spec:
         - -h
         - localhost
         - -U
-        - "${var.LITELLM_POSTGRES_USER:-litellm}"
+        - "${var.LITELLM_POSTGRES_USER || \"litellm\"}"
         - -d
-        - "${var.LITELLM_POSTGRES_DB:-litellm}"
+        - "${var.LITELLM_POSTGRES_DB || \"litellm\"}"
   restartPolicy: always

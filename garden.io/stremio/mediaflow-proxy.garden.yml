@@ -8,12 +8,12 @@ spec:
   image: docker.io/mhdzumair/mediaflow-proxy
   env:
     TZ: ${var.tz}
-    PUID: ${var.PUID:-1001}
-    PGID: ${var.PGID:-988}
-    UMASK: ${var.UMASK:-002}
-    PORT: ${var.MEDIAFLOW_PROXY_PORT:-8888}
+    PUID: ${var.PUID || "1001"}
+    PGID: ${var.PGID || "988"}
+    UMASK: ${var.UMASK || "002"}
+    PORT: ${var.MEDIAFLOW_PROXY_PORT || "8888"}
     API_PASSWORD: ${var.MEDIAFLOW_PROXY_API_PASSWORD}
-    ENABLE_STREAMING_PROGRESS: ${var.MEDIAFLOW_PROXY_ENABLE_STREAMING_PROGRESS:-true}
+    ENABLE_STREAMING_PROGRESS: ${var.MEDIAFLOW_PROXY_ENABLE_STREAMING_PROGRESS || "true"}
   ports:
     - name: http
       containerPort: 8888
@@ -25,6 +25,6 @@ spec:
       hostname: mediaflow-proxy.${var.domain}
   healthCheck:
     exec:
-      command: [python3, -c, "import socket; s=socket.socket(); s.connect(('127.0.0.1', ${var.MEDIAFLOW_PROXY_PORT:-8888})); print('Healthcheck passed')"]
+      command: [python3, -c, "import socket; s=socket.socket(); s.connect(('127.0.0.1', \"${var.MEDIAFLOW_PROXY_PORT || 8888}\")); print('Healthcheck passed')"]
   restartPolicy: always
 

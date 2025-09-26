@@ -12,9 +12,9 @@ spec:
   image: docker.io/mhdzumair/mediafusion:latest
   env:
     TZ: ${var.tz}
-    PUID: ${var.PUID:-1001}
-    PGID: ${var.PGID:-988}
-    UMASK: ${var.UMASK:-002}
+    PUID: ${var.PUID || "1001"}
+    PGID: ${var.PGID || "988"}
+    UMASK: ${var.UMASK || "002"}
     
     # Core application settings
     ADDON_NAME: MediaFusion | ${var.domain}
@@ -33,15 +33,15 @@ spec:
     METADATA_PRIMARY_SOURCE: tmdb
     
     # Database and cache settings
-    MONGO_URI: ${var.MONGO_URI:-mongodb://mongodb:27017/mediafusion}
+    MONGO_URI: ${var.MONGO_URI || "mongodb://mongodb:27017/mediafusion"}
     DB_MAX_CONNECTIONS: 50
-    REDIS_URL: ${var.REDIS_INTERNAL_URL:-redis://redis:6379}
+    REDIS_URL: ${var.REDIS_INTERNAL_URL || "redis://redis:6379"}
     REDIS_MAX_CONNECTIONS: 100
     
     # External service settings
-    PLAYWRIGHT_CDP_URL: ${var.PLAYWRIGHT_CDP_URL:-ws://playwright-service:3000?blockAds=true&stealth=true}
-    FLARESOLVERR_URL: ${var.FLARESOLVERR_URL:-https://flaresolverr.${var.domain}/v1}
-    TMDB_API_KEY: ${var.TMDB_API_KEY:-}
+    PLAYWRIGHT_CDP_URL: ${var.PLAYWRIGHT_CDP_URL || "ws://playwright-service:3000?blockAds=true&stealth=true"}
+    FLARESOLVERR_URL: ${var.FLARESOLVERR_URL || "https://flaresolverr.${var.domain}/v1"}
+    TMDB_API_KEY: ${var.TMDB_API_KEY || ""}
     
     # Prowlarr settings
     IS_SCRAP_FROM_PROWLARR: true
@@ -70,12 +70,12 @@ spec:
     # Zilean settings
     IS_SCRAP_FROM_ZILEAN: true
     ZILEAN_SEARCH_INTERVAL_HOUR: 24
-    ZILEAN_URL: ${var.ZILEAN_URL:-https://zilean.elfhosted.com}
+    ZILEAN_URL: ${var.ZILEAN_URL || "https://zilean.elfhosted.com"}
     
     # Torrentio settings
     IS_SCRAP_FROM_TORRENTIO: true
     TORRENTIO_SEARCH_INTERVAL_DAYS: 3
-    TORRENTIO_URL: ${var.TORRENTIO_URL:-https://torrentio.strem.fun}
+    TORRENTIO_URL: ${var.TORRENTIO_URL || "https://torrentio.strem.fun"}
     
     # MediaFusion settings
     IS_SCRAP_FROM_MEDIAFUSION: true
