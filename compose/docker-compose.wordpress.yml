@@ -1,10 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
 
 
+
 services:
   wordpress:
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_started
     image: docker.io/wordpress:latest
     container_name: wordpress
     hostname: wordpress
@@ -16,7 +18,7 @@ services:
     volumes:
       - '${CONFIG_PATH:-./volumes}/wordpress/wordpress-files:/var/www/html'
     environment:
-      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_HOST: mariadb:3306
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:?}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:?}
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-wordpress}
@@ -52,11 +54,6 @@ services:
       MYSQL_DATABASE: ${WORDPRESS_DB_NAME:-wordpress}
       MYSQL_USER: ${WORDPRESS_DB_USER:?}
       MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD:?}
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p $$MYSQL_ROOT_PASSWORD > /dev/null 2>&1 || exit 1"]
-      interval: 5s
-      timeout: 20s
-      retries: 10
     restart: always
 
 

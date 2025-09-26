@@ -1,26 +1,11 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
 
-volumes:
-  caddy_data:
-  caddy_config:
-  alertmanager_data:
 
 
 secrets:
   premiumize-auth:
     file: ${CONFIG_PATH:-./volumes}/premiumize-auth.txt
 
-
-networks:
-  crowdsec_gf:
-    external: true  # docker network create crowdsec_gf -o com.docker.network.bridge.name=br_crowdsec_gf --subnet=${CROWDSEC_GF_SUBNET:-10.0.6.0/24} --gateway=${CROWDSEC_GF_GATEWAY:-10.0.6.1}
-    attachable: true
-    driver_opts:
-      com.docker.network.bridge.name: "br_crowdsec_gf"
-    ipam:
-      config:
-        - subnet: ${CROWDSEC_GF_SUBNET:-10.0.6.0/24}
-          gateway: ${CROWDSEC_GF_GATEWAY:-10.0.6.1}
 
 
 configs:
@@ -4560,7 +4545,6 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
-      - crowdsec_gf
       - backend
     expose:
       - ${VICTORIAMETRICS_PORT:-8428}  # VM UI
@@ -4631,7 +4615,6 @@ services:
     hostname: prometheus
     networks:
       - backend
-      - crowdsec_gf
       - publicnet
     extra_hosts:
       - host.docker.internal:host-gateway
@@ -4707,7 +4690,6 @@ services:
     networks:
       - backend
       - publicnet
-      - crowdsec_gf
     expose:
       - 3000
     environment:
@@ -4827,7 +4809,6 @@ services:
     hostname: node_exporter
     networks:
       - backend
-      - crowdsec_gf
     expose:
       - 9100
     volumes:
@@ -4870,7 +4851,6 @@ services:
     networks:
       - backend
       - publicnet
-      - crowdsec_gf
     expose:
       - 8080
     volumes:
@@ -4889,7 +4869,7 @@ services:
       - '--store_container_labels=${CADVISOR_STORE_CONTAINER_LABELS:-false}'
     labels:
       traefik.enable: true
-      traefik.http.routers.cadvisor.middlewares: nginx-auth@file  # TODO: specify crowdsec_gf ipv4 cidr and whitelist in nginx-traefik-extensions conf.
+      traefik.http.routers.cadvisor.middlewares: nginx-auth@file
       traefik.http.routers.cadvisor.rule: Host(`cadvisor.$DOMAIN`) || Host(`cadvisor.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.services.cadvisor.loadbalancer.server.port: 8080
       homepage.group: Monitoring
@@ -4913,7 +4893,6 @@ services:
     hostname: blackbox-exporter
     networks:
       - backend
-      - crowdsec_gf
       - publicnet
     expose:
       - 9115

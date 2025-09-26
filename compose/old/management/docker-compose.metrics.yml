@@ -1,3 +1,8 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+
+
+
 x-common-env: &common-env
   TZ: ${TZ:-America/Chicago} # Your Timezone
   PUID: ${PUID:-1002}
@@ -7,64 +12,16 @@ x-common-env: &common-env
 x-common-uidgid: &common-uidgid
   user: ${PUID:-1002}:${PGID:-988}
 
-x-resource-limits: &resource-limits
-  cpu_shares: 1024
-  labels:
-    autoheal: "true"
-
-x-common-deploy: &common-deploy
-  restart_policy:
-    condition: on-failure
-    delay: 5s
-    window: 120s
-  labels:
-    autoheal: "true"
-    swarm.autoscaler: "true"
-
-x-swarm-resource-limits: &swarm-resource-limits
-  resources:
-    limits:
-      cpus: "0.10"
-      memory: 512M
-
-x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
-  placement:
-    preferences:
-      - spread: node.labels.worker_priority
-
-x-swarm-constraints-worker-only: &swarm-constraints-worker-only
-  placement:
-    constraints:
-      - node.role == worker
-
-x-swarm-constraints-manager-only: &swarm-constraints-manager-only
-  placement:
-    constraints:
-      - node.role == manager
-
-x-glances-labels: &glances-labels
-  traefik.enable: "true"
-  traefik.http.services.glances.loadbalancer.server.port: 61208
-
-x-umami-labels: &umami-labels
-  traefik.enable: "true"
-  traefik.http.services.umami.loadbalancer.server.port: 3000
-
-x-librespeed-labels: &librespeed-labels
-  traefik.enable: "true"
-  traefik.http.routers.librespeed.middlewares: authelia@docker
-  traefik.http.services.librespeed.loadbalancer.server.port: 8080
-
 services:
   glances:
     # 🔹🔹 Glances 🔹🔹
     image: nicolargo/glances
     container_name: glances
     hostname: glances
-    <<: [*common-uidgid, *common-logging, *resource-limits]
-    ports:
-      - ${GLANCES_PORT:-61208}:61208
-      - ${GLANCES_PORT2:-61209}:61209
+    <<: *common-uidgid
+    expose:
+      - ${GLANCES_PORT:-61208}
+      - ${GLANCES_PORT2:-61209}
     pid: host
     volumes:
       - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock
@@ -72,23 +29,20 @@ services:
       <<: *common-env
     #      GLANCES_OPT: ${GLANCES_OPT:-"-w"}
     labels:
-      <<: *glances-labels
+      traefik.enable: true
+      traefik.http.services.glances.loadbalancer.server.port: 61208
       homepage.group: System Monitoring
       homepage.name: Glances
       homepage.icon: glances.png
       homepage.href: http://glances.$DOMAIN
       homepage.description: A cross-platform monitoring tool that provides a detailed overview of your system's performance and resources.
-    deploy:
-      <<: [ *common-deploy, *swarm-resource-limits, *swarm-constraints-manager-only]
-      labels:
-        <<: *glances-labels
     restart: always
 
   umami_postgres:
     image: postgres:17.4
     restart: always
     container_name: umami_postgres
-    <<: [*common-uidgid, *common-logging, *resource-limits]
+    <<: *common-uidgid
     volumes:
       - ${CONFIG_PATH:-./volumes}/umami/postgres:/var/lib/postgresql/data
     environment:
@@ -98,8 +52,6 @@ services:
       POSTGRES_PASSWORD: ${UMAMI_POSTGRES_PASSWORD:-umami}
     networks:
       - infranet
-    deploy:
-      <<: [ *common-deploy, *swarm-resource-limits, *swarm-constraints-manager-only ]
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
       interval: 5s
@@ -107,29 +59,26 @@ services:
       retries: 5
 
   umami:
-    image: ghcr.io/umami-software/umami:postgresql-latest
-    container_name: umami
-    user: ${PUID:-1002}
     depends_on:
       umami_postgres:
         condition: service_healthy
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: umami
+    networks:
+      - infranet
+    <<: *common-uidgid
+    secrets:
+      - umami_app_secret
     environment:
       <<: *common-env
       DATABASE_URL: postgresql://${UMAMI_POSTGRES_USER:-umami}:${UMAMI_POSTGRES_PASSWORD:-umami}@umami_postgres:5432/${UMAMI_POSTGRES_DB:-umami}
       DATABASE_TYPE: postgresql
       APP_SECRET: /run/secrets/umami_app_secret
-    secrets:
-      - umami_app_secret
     labels:
-      <<: *umami-labels
-    networks:
-      - infranet
-    deploy:
-      <<: [ *common-deploy, *swarm-resource-limits, *swarm-preferences-worker-priority ]
-      labels:
-        <<: *umami-labels
+      traefik.enable: true
+      traefik.http.services.umami.loadbalancer.server.port: 3000
     healthcheck:
-      test: [ "CMD-SHELL", "curl http://localhost:3000/api/heartbeat" ]
+      test: [ "CMD-SHELL", "curl http://127.0.0.1:3000/api/heartbeat" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -142,28 +91,27 @@ services:
     networks:
       - infranet
       - traefik_public
-    ports:
-      - ${LIBRE_SPEED_PORT:-8088}:8080
-    cpu_count: 2
-    mem_limit: 500M
-    memswap_limit: 500M
-    <<: [*common-uidgid, *common-logging]
+    expose:
+      - 8080
+    <<: *common-uidgid
     read_only: true
     cap_drop:
       - ALL
     volumes:  # touch ${CONFIG_PATH:-./volumes}/librespeed-rs/config.toml
       - ${CONFIG_PATH:-./volumes}/librespeed-rs:/usr/local/bin
+    cpu_count: 2
+    mem_limit: 500M
+    memswap_limit: 500M
     labels:
-      <<: *librespeed-labels
+      traefik.enable: true
+      traefik.http.routers.librespeed.middlewares: nginx-auth@file  # authelia@docker
+      traefik.http.services.librespeed.loadbalancer.server.port: 8080
       homepage.group: Utilities
       homepage.name: Librespeed
       homepage.icon: librespeed.png
-      homepage.href: https://librespeed.${DOMAIN:-bolabaden.org}/
+      homepage.href: https://librespeed.$DOMAIN
       homepage.description: A simple, fast, and reliable speed test tool for measuring internet connection speed.
-    deploy:
-      <<: *common-deploy
-      labels:
-        <<: *librespeed-labels
+    restart: always
 
 secrets:
   umami_app_secret:

@@ -55,7 +55,6 @@ services:
       traefik.http.middlewares.gzip.compress: true
       traefik.http.routers.authentik-server.middlewares: gzip
       traefik.http.routers.authentik-server.service: authentik-server
-      traefik.http.routers.authentik-server.rule: Host(`authentikserver.$DOMAIN`) || Host(`authentikserver.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.services.authentik-server.loadbalancer.server.port: 9000
       kuma.authentik-server.http.name: ${AUTHENTIK_FQDN:-authentikserver.$TS_HOSTNAME.$DOMAIN}
       kuma.authentik-server.http.url: ${AUTHENTIK_URL:-https://authentikserver.$DOMAIN}

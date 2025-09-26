@@ -1,11 +1,13 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
 
 
+
 x-common-env: &common-env
   TZ: ${TZ:-America/Chicago}
   PUID: ${PUID:-1001}
   PGID: ${PGID:-999}
   UMASK: ${UMASK:-002}
+
 
 
 networks:  # https://docs.docker.com/engine/network/drivers/bridge/#differences-between-user-defined-bridges-and-the-default-bridge
@@ -39,9 +41,6 @@ networks:  # https://docs.docker.com/engine/network/drivers/bridge/#differences-
           gateway: ${BACKEND_GATEWAY:-10.0.7.1}
 
 
-volumes:
-  portainer_data:
-
 
 include:
 #  - compose/docker-compose.authentik.yml
@@ -54,11 +53,14 @@ include:
 #  - compose/docker-compose.unsend.yml
   - compose/docker-compose.stremio-group.yml
   - compose/docker-compose.warp-nat-routing.yml
-#  - compose/docker-compose.wordpress.yml
+  - compose/docker-compose.wordpress.yml
 #  - compose/docker-compose.vpn-docker.yml
 
 
 
+# reminder: everything in docker-compose.yml's `configs:` section must have dollar signs ($) escaped with another dollar sign ($$).
+# Single dollar sign specifies that we're expecting docker to resolve the variable itself at deploy time (e.g. when `docker compose up` is ran).
+# Double dollar sign specifies a literal dollar sign in the configuration content.
 configs:
   watchtower-config.json:
     file: ~/.docker/config.json  # docker credentials acquired through `docker login` on host!
@@ -192,7 +194,6 @@ services:
         max-file: "1"
     labels:
       traefik.enable: true
-      traefik.http.routers.searxng.rule: Host(`searxng.$DOMAIN`) || Host(`searxng.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.services.searxng.loadbalancer.server.port: ${SEARXNG_PORT:-8080}
       homepage.group: Search
       homepage.name: SearxNG
@@ -204,7 +205,6 @@ services:
       kuma.searxng.http.interval: 30
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${SEARXNG_PORT:-8080}/ || exit 1"]
-      interval: 30s
       timeout: 10s
       retries: 3
     restart: always
@@ -247,7 +247,6 @@ services:
       traefik.http.middlewares.codeserver-redirect.redirectRegex.replacement: 'https://code-server.$1$2'
       traefik.http.middlewares.codeserver-redirect.redirectRegex.permanent: false
       # Main router for code-server
-      traefik.http.routers.code-server.rule: Host(`code-server.$DOMAIN`) || Host(`code-server.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.routers.code-server.middlewares: nginx-auth@file
       traefik.http.services.code-server.loadbalancer.server.port: 8443
       # Routers for redirects
@@ -346,9 +345,7 @@ services:
         python3 session_manager.py
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${KOTORSCRIPT_SESSION_MANAGER_PORT:-8080}/health > /dev/null 2>&1 || exit 1"]
-      interval: 30s
       timeout: 10s
-      retries: 3
       start_period: 30s
     restart: always
 
@@ -380,7 +377,6 @@ services:
       traefik.http.middlewares.bolabaden-error-pages.errors.service: bolabaden-nextjs@docker
       traefik.http.middlewares.bolabaden-error-pages.errors.query: /api/error/{status}
       # Router for bolabaden-nextjs
-      traefik.http.routers.bolabaden-nextjs.service: bolabaden-nextjs@docker
       traefik.http.routers.bolabaden-nextjs.rule: Host(`$DOMAIN`) || Host(`$TS_HOSTNAME.$DOMAIN`)
       # bolabaden-nextjs Service definition
       traefik.http.services.bolabaden-nextjs.loadbalancer.server.port: 3000
@@ -389,12 +385,33 @@ services:
       kuma.bolabaden-nextjs.http.interval: 30
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:$${PORT:-3000} > /dev/null 2>&1 || exit 1"]
-      interval: 30s
       timeout: 10s
       start_period: 30s
     restart: always
+  # This is an optional security container.
+  # This will be used to filter ONLY get requests to the Docker Engine API.
+  # It stops stuff like https://blog.quarkslab.com/why-is-exposing-the-docker-socket-a-really-bad-idea.html
+  dockerproxy-ro:
+    image: tecnativa/docker-socket-proxy
+    container_name: dockerproxy-ro
+    hostname: dockerproxy-ro
+    networks:
+      - default
+    privileged: true
+    userns_mode: host # this is needed if https://docs.docker.com/engine/security/userns-remap/#enable-userns-remap-on-the-daemon is setup
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
+    environment:
+      <<: *common-env
+      CONTAINERS: 1
+      EVENTS: 1
+      INFO: 1
+      DISABLE_IPV6: ${DISABLE_IPV6:-0}
+    restart: always
   dozzle:
     # 🔹🔹 Dozzle 🔹🔹
+    depends_on:
+      - dockerproxy-ro
     image: docker.io/amir20/dozzle:latest
     container_name: dozzle
     hostname: dozzle
@@ -402,20 +419,33 @@ services:
       - host.docker.internal:host-gateway
     networks:
       - backend
+      - default
       - publicnet
     expose:
-      - 8080
-    volumes:
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+      - ${DOZZLE_PORT:-8080}
+    #volumes:
+    #  - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    environment:
+      DOZZLE_NO_ANALYTICS: ${DOZZLE_NO_ANALYTICS:-true}
+      DOZZLE_FILTER: ${DOZZLE_FILTER:-}
+      DOZZLE_ENABLE_ACTIONS: ${DOZZLE_ENABLE_ACTIONS:-false}
+      DOZZLE_AUTH_HEADER_NAME: ${DOZZLE_AUTH_HEADER_NAME:-}
+      DOZZLE_AUTH_HEADER_USER: ${DOZZLE_AUTH_USER:-}
+      DOZZLE_AUTH_HEADER_EMAIL: ${DOZZLE_AUTH_EMAIL:-}
+      DOZZLE_AUTH_PROVIDER: ${DOZZLE_AUTH_PROVIDER:-none}
+      DOZZLE_LEVEL: ${DOZZLE_LEVEL:-info}  # default: info
+      DOZZLE_HOSTNAME: ${DOZZLE_HOSTNAME:-}
+      DOZZLE_BASE: ${DOZZLE_BASE:-/}
+      DOZZLE_ADDR: ${DOZZLE_ADDR:-:${DOZZLE_PORT:-8080}}
+      DOZZLE_REMOTE_HOST: tcp://dockerproxy-ro:2375
     labels:
       traefik.enable: true
-      traefik.http.routers.dozzle.rule: Host(`dozzle.$DOMAIN`) || Host(`dozzle.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.routers.dozzle.middlewares: nginx-auth@file
-      traefik.http.services.dozzle.loadbalancer.server.port: 8080
+      traefik.http.services.dozzle.loadbalancer.server.port: ${DOZZLE_PORT:-8080}
       homepage.group: System Monitoring
       homepage.name: Dozzle
       homepage.icon: dozzle.png
-      homepage.href: https://dozzle.$DOMAIN/
+      homepage.href: https://dozzle.$DOMAIN
       homepage.description: Real-time web UI for viewing Docker container logs across the host
       kuma.dozzle.http.name: dozzle.$TS_HOSTNAME.$DOMAIN
       kuma.dozzle.http.url: https://dozzle.$DOMAIN
@@ -471,14 +501,12 @@ services:
       HOMEPAGE_VAR_WEATHER_UNIT: fahrenheit
     labels:
       traefik.enable: true
-      traefik.http.routers.homepage.rule: Host(`homepage.$DOMAIN`) || Host(`homepage.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.services.homepage.loadbalancer.server.port: 3000
       kuma.homepage.http.name: homepage.$TS_HOSTNAME.$DOMAIN
       kuma.homepage.http.url: https://homepage.$DOMAIN
       kuma.homepage.http.interval: 30
     healthcheck:  # docker exec homepage ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1"]
-      interval: 30s
       timeout: 15s
       retries: 3
     cpus: 0.25
@@ -708,6 +736,7 @@ services:
       - host.docker.internal:host-gateway
     networks:
       - backend
+      - default
     privileged: true
     ports:
       - 127.0.0.1:2375:2375
@@ -846,7 +875,7 @@ services:
     expose:
       - ${REDIS_PORT:-6379}
     ports:
-      - 127.0.0.1:${REDIS_PORT:-6379}:${REDIS_PORT:-6379}
+      - ${REDIS_PORT:-6379}:${REDIS_PORT:-6379}
     volumes:
       - ${CONFIG_PATH:-./volumes}/redis:/data
     privileged: true  # for `sysctl vm.overcommit_memory=1` to work
@@ -913,9 +942,37 @@ services:
       traefik.enable: true
       traefik.http.routers.portainer.middlewares: nginx-auth@file
       traefik.http.routers.portainer.service: portainer@docker
-      traefik.http.routers.portainer.rule: Host(`portainer.$DOMAIN`) || Host(`portainer.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.services.portainer.loadbalancer.server.port: 9000
       kuma.portainer.http.name: portainer.$TS_HOSTNAME.$DOMAIN
       kuma.portainer.http.url: https://portainer.$DOMAIN
       kuma.portainer.http.interval: 60
+    restart: always
+
+  qdrant:
+    # 🔹🔹 Qdrant 🔹🔹
+    profiles:
+      - extras
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    hostname: qdrant
+    networks:
+      - publicnet
+    expose:
+      - 6333
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/qdrant/storage:/qdrant/storage
+    environment:
+      <<: *common-env
+      QDRANT_STORAGE_PATH: /qdrant/storage
+      QDRANT_STORAGE_TYPE: disk
+      QDRANT_STORAGE_DISK_PATH: /qdrant/storage
+      QDRANT_STORAGE_DISK_TYPE: disk
+    labels:
+      traefik.enable: true
+      traefik.http.services.qdrant.loadbalancer.server.port: 6333
+      homepage.group: AI
+      homepage.name: Qdrant
+      homepage.icon: qdrant.png
+      homepage.href: https://qdrant.$DOMAIN
+      homepage.description: Qdrant is a vector database for storing and querying vectors.
     restart: always

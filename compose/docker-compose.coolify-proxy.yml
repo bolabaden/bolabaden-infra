@@ -3,15 +3,6 @@
 
 
 networks:
-  crowdsec_gf:
-    external: true  # docker network create crowdsec_gf -o com.docker.network.bridge.name=br_crowdsec_gf --subnet=${CROWDSEC_GF_SUBNET:-10.0.6.0/24} --gateway=${CROWDSEC_GF_GATEWAY:-10.0.6.1}
-    attachable: true
-    driver_opts:
-      com.docker.network.bridge.name: "br_crowdsec_gf"
-    ipam:
-      config:
-        - subnet: ${CROWDSEC_GF_SUBNET:-10.0.6.0/24}
-          gateway: ${CROWDSEC_GF_GATEWAY:-10.0.6.1}
   nginx_net:
     #external: true  # docker network create --driver=bridge --attachable nginx_net -o com.docker.network.bridge.name=br_nginx_traefik --subnet=${NGINX_TRAEFIK_SUBNET:-10.0.8.0/24} --gateway=${NGINX_TRAEFIK_GATEWAY:-10.0.8.1}
     attachable: true
@@ -363,19 +354,12 @@ configs:
             {{- $$healthTimeout = index $$c.Labels "kuma.healthcheck.timeout" }}
           {{- end }}
 
-          {{ $$name }}-with-failover:
-            failover:
-              service: {{ $$name }}-direct@file
-              fallback: {{ $$name }}-servers@file
           {{ $$name }}-direct:
             loadBalancer:
               servers:
                 - url: http://{{ $$name }}:{{ (index $$c.Addresses 0).Port }}
-              healthCheck:
-                path: "{{ $$healthPath }}"
-                interval: "{{ $$healthInterval }}"
-                timeout: "{{ $$healthTimeout }}"
-          {{ $$name }}-servers:
+
+          {{ $$name }}-with-failover:
             loadBalancer:
               servers:
                 - url: https://{{ $$name }}.beatapostapita.$DOMAIN
@@ -394,20 +378,21 @@ configs:
                 timeout: "{{ $$healthTimeout }}"
         {{- end }}
       {{- end }}
+
   traefik-dynamic.yaml:
     content: |
       # yaml-language-server: $$schema=https://www.schemastore.org/traefik-v3-file-provider.json
       http:
         routers:
-          catchall:
-            entryPoints:
-              - web
-              - websecure
-            service: noop@internal
-            rule: Host(`$DOMAIN`) || Host(`$TS_HOSTNAME.$DOMAIN`) || HostRegexp("{host:.+}")  # HostRegexp(`^(.+)$$`)
-            priority: 1
-            middlewares:
-              - bolabaden-error-pages@file
+        #  catchall:
+        #    entryPoints:
+        #      - web
+        #      - websecure
+        #    service: noop@internal
+        #    rule: Host(`$DOMAIN`) || Host(`$TS_HOSTNAME.$DOMAIN`) || HostRegexp(`^(.+)$$`)
+        #    priority: 1
+        #    middlewares:
+        #      - bolabaden-error-pages@file
         services:
           nginx-traefik-extensions:
             loadBalancer:
@@ -589,7 +574,6 @@ configs:
       cat > /etc/logrotate.d/traefik << EOF
       $TRAEFIK_LOG_DIR/*.log {
           hourly
-          size 1M
           rotate 20
           compress
           delaycompress
@@ -1010,7 +994,7 @@ services:
       - host.docker.internal:host-gateway
     networks:
       - backend
-      - crowdsec_gf
+      - default
     ports:
       - 127.0.0.1:9876:${CROWDSEC_LAPI_PORT:-8080}  # Port mapping for local firewall bouncers
     expose:
@@ -1073,13 +1057,14 @@ services:
     # https://doc.traefik.io
     depends_on:
       - crowdsec
+      - dockerproxy-ro
     image:  docker.io/traefik:v3.5.2  # Built on 2025-09-09T10:16:55Z
     container_name: traefik
     hostname: traefik
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
-      - crowdsec_gf
+      - default
       - nginx_net
       - publicnet
     expose:
@@ -1093,12 +1078,10 @@ services:
     cap_add:
       - NET_ADMIN
     volumes:
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
-      - ${CONFIG_PATH:-./volumes}/traefik/traefik/dynamic:/traefik/dynamic
+    #  - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+      - ${CONFIG_PATH:-./volumes}/traefik/dynamic:/traefik/dynamic
       - ${CONFIG_PATH:-./volumes}/traefik/certs:/certs
-      - ${CONFIG_PATH:-./volumes}/traefik/traefik/config:/config
-      - ${CONFIG_PATH:-./volumes}/traefik/traefik/plugins-local:/plugins-local
-      - ${CONFIG_PATH:-./volumes}/traefik/traefik/etc/traefik:/etc/traefik/
+      - ${CONFIG_PATH:-./volumes}/traefik/plugins-local:/plugins-local
       - ${CONFIG_PATH:-./volumes}/traefik/logs:/var/log/traefik:rw
     #      - /etc/localtime:/etc/localtime:ro
     configs:
@@ -1106,6 +1089,7 @@ services:
         target: /traefik/dynamic/core.yaml
         mode: 0644
     environment:
+      DOCKER_HOST: tcp://dockerproxy-ro:2375
       LETS_ENCRYPT_EMAIL: ${ACME_RESOLVER_EMAIL:?}
       CLOUDFLARE_EMAIL: ${CLOUDFLARE_EMAIL:?}
       CLOUDFLARE_API_KEY: ${CLOUDFLARE_API_KEY:?}
@@ -1147,21 +1131,22 @@ services:
       - '--entryPoints.web.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32'
       - '--entryPoints.websecure.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32'
       - '--entryPoints.web.http.encodeQuerySemiColons=true'
-      - '--entryPoints.web.http2.maxConcurrentStreams=250'
+      - '--entryPoints.web.http2.maxConcurrentStreams=100'
       - '--entryPoints.websecure.address=:443'
       - '--entryPoints.websecure.http.encodeQuerySemiColons=true'
       - '--entryPoints.websecure.http.middlewares=bolabaden-error-pages@file,crowdsec@file,strip-www@file'
       - '--entryPoints.websecure.http.tls=true'
       - '--entryPoints.websecure.http.tls.certResolver=letsencrypt'
       - '--entryPoints.websecure.http.tls.domains[0].main=$DOMAIN'
-      - '--entryPoints.websecure.http.tls.domains[0].sans=*.$DOMAIN,*.$TS_HOSTNAME.$DOMAIN'
-      - '--entryPoints.websecure.http2.maxConcurrentStreams=250'
+      - '--entryPoints.websecure.http.tls.domains[0].sans=www.$DOMAIN,*.$DOMAIN,*.$TS_HOSTNAME.$DOMAIN'
+      - '--entryPoints.websecure.http2.maxConcurrentStreams=100'
       - '--entryPoints.websecure.http3'
       - '--global.checkNewVersion=true'
       - '--global.sendAnonymousUsage=false'
-      - '--log.level=INFO'
+      - '--log.level=DEBUG'
       - '--ping=true'
       - '--providers.docker=true'
+      - '--providers.docker.endpoint=tcp://dockerproxy-ro:2375'
       - '--providers.docker.network=${STACK_NAME:?}_publicnet'
       - '--providers.docker.defaultRule=Host(`{{ normalize .ContainerName }}.$DOMAIN`) || Host(`{{ normalize .Name }}.$DOMAIN`) || Host(`{{ normalize .ContainerName }}.$TS_HOSTNAME.$DOMAIN`) || Host(`{{ normalize .Name }}.$TS_HOSTNAME.$DOMAIN`)'
       - '--providers.docker.exposedByDefault=false'
@@ -1215,7 +1200,6 @@ services:
       - 53:53/udp       #DNS service
     labels:
       traefik.enable: true
-      traefik.http.routers.dns-server.rule: Host(`ns1.$DOMAIN`) || Host(`ns1.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.services.dns-server.loadbalancer.server.port: 5380
       homepage.group: Infrastructure
       homepage.name: DNS Server
@@ -1240,7 +1224,6 @@ services:
       - 80
     labels:
       traefik.enable: true
-      traefik.http.routers.whoami.rule: Host(`whoami.$DOMAIN`) || Host(`whoami.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.routers.whoami.service: whoami@docker
       traefik.http.services.whoami.loadBalancer.server.port: 80
 #      traefik.http.routers.whoami.middlewares: legalbar@file
@@ -1256,24 +1239,24 @@ services:
       kuma.whoami.http.interval: 60
     restart: always
   docker-gen-failover:
-    profiles:
-      - experimental
     image: docker.io/nginxproxy/docker-gen
     container_name: docker-gen-failover
-    network_mode: none
+    networks:
+      - backend
+      - default
     configs:
       - source: traefik-failover-dynamic.conf.tmpl
         target: /templates/traefik-failover-dynamic.conf.tmpl
         mode: 0400
     volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:rw
-      - ${CONFIG_PATH:-./volumes}/traefik/traefik/dynamic:/traefik/dynamic
+    #  - ${DOCKER_SOCKET:-/var/run/docker.sock}:/tmp/docker.sock:ro
+      - ${CONFIG_PATH:-./volumes}/traefik/dynamic:/traefik/dynamic
     command: |
+      -endpoint tcp://dockerproxy-rw:2375
       -only-exposed
       -include-stopped
-      -watch /templates/traefik-failover-dynamic.conf.tmpl /traefik/dynamic/failover-fallbacks.yaml
-      -notify "restart traefik" /templates/traefik-failover-dynamic.conf.tmpl /traefik/dynamic/failover-fallbacks.yaml
-    restart: always
+      /templates/traefik-failover-dynamic.conf.tmpl /traefik/dynamic/failover-fallbacks.yaml
+    restart: no
   logrotate-traefik:
     # 🔹🔹 Logrotate for Traefik logs 🔹🔹
     image: docker.io/alpine:latest

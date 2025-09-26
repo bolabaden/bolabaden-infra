@@ -1,4 +1,7 @@
-version: '3.8'
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+
+
 networks:
   vpn-network:
     driver: bridge
@@ -6,6 +9,9 @@ networks:
       config:
         - subnet: 10.89.0.0/16
           gateway: 10.89.0.1
+
+
+
 configs:
   openvpn-client-config:
     content: |
