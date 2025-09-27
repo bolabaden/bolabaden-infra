@@ -1773,7 +1773,7 @@ services:
   ## Zilean (optional scraper service) (https://ipromknight.github.io/zilean/getting-started.html)
   zilean:
     profiles:
-      
+      - extras
     depends_on:
       riven-db:
         condition: service_healthy

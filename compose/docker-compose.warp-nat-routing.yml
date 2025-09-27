@@ -24,7 +24,7 @@ configs:
       HOST_VETH_IP="$${HOST_VETH_IP:-169.254.100.1}"
       CONT_VETH_IP="$${CONT_VETH_IP:-169.254.100.2}"
       ROUTING_TABLE="$${ROUTING_TABLE:-warp-nat-routing}"
-      VETH_HOST="$${VETH_HOST:-veth-warp-nat-host}" 
+      VETH_HOST="$${VETH_HOST:-veth-warp}" 
 
       # VETH_CONT is derived from VETH_HOST
       VETH_CONT="$${VETH_HOST#veth-}-nat-cont"

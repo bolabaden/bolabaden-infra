@@ -22,16 +22,16 @@ networks:  # https://docs.docker.com/engine/network/drivers/bridge/#differences-
         - subnet: ${WARP_NAT_NET_SUBNET:-10.0.2.0/24}
           gateway: ${WARP_NAT_NET_GATEWAY:-10.0.2.1}
   publicnet:
-    #external: true  # docker network create --driver=bridge --attachable publicnet -o com.docker.network.bridge.name=br_publicnet --subnet=${PUBLICNET_SUBNET:-10.0.5.0/24} --gateway=${PUBLICNET_GATEWAY:-10.0.5.1}
+    #external: true  # docker network create --driver=bridge --attachable publicnet -o com.docker.network.bridge.name=br_publicnet --subnet=${PUBLICNET_SUBNET:-10.76.0.0/16} --gateway=${PUBLICNET_GATEWAY:-10.76.0.1}
     attachable: true
     driver_opts:
       com.docker.network.bridge.name: br_publicnet
     ipam:
       config:
-        - subnet: ${PUBLICNET_SUBNET:-10.0.5.0/24}
-          gateway: ${PUBLICNET_GATEWAY:-10.0.5.1}
+        - subnet: ${PUBLICNET_SUBNET:-10.76.0.0/16}
+          gateway: ${PUBLICNET_GATEWAY:-10.76.0.1}
   backend:
-    #external: true  # docker network create backend -o com.docker.network.bridge.name=br_backend --subnet=${BACKEND_SUBNET:-10.0.7.0/24} --gateway=${BACKEND_GATEWAY:-10.0.7.1}
+    #external: true  # docker network create backend -o com.docker.network.bridge.name=br_backend --subnet=${BACKEND_SUBNET:-10.0.7.0/16} --gateway=${BACKEND_GATEWAY:-10.0.7.1}
     attachable: true
     driver_opts:
       com.docker.network.bridge.name: br_backend

@@ -15,7 +15,7 @@ services:
     build:
       context: https://github.com/firecrawl/firecrawl.git#main:/apps/playwright-service-ts
       dockerfile: Dockerfile
-    image: docker.io/th3w1zard1/playwright-service:latest
+    image: docker.io/bolabaden/playwright-service:latest
     container_name: playwright-service
     hostname: playwright-service
     extra_hosts:
@@ -186,7 +186,7 @@ services:
     build:
       context: https://github.com/firecrawl/firecrawl.git#main:/apps/nuq-postgres
       dockerfile: Dockerfile
-    image: docker.io/th3w1zard1/nuq-postgres:latest
+    image: docker.io/bolabaden/nuq-postgres
     container_name: nuq-postgres
     hostname: ${NUQ_POSTGRES_HOSTNAME:-nuq-postgres}
     extra_hosts:
