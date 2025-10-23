@@ -7,7 +7,7 @@ dependencies:
   - deploy.rclone
 
 spec:
-  image: ghcr.io/coanghel/rclone-docker-automount/rclone-init:latest
+  image: ghcr.io/coanghel/rclone-docker-automount/rclone-init
   env:
     RCLONE_USERNAME: ""
     RCLONE_PASSWORD: ""

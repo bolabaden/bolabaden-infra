@@ -139,7 +139,7 @@ configs:
 services:
   mongodb:
     # 🔹🔹 MongoDB 🔹🔹
-    image: docker.io/mongo:latest
+    image: docker.io/mongo
     container_name: mongodb
     hostname: ${MONGODB_HOSTNAME:-mongodb}
     extra_hosts:
@@ -171,7 +171,7 @@ services:
   searxng:
     # 🔹🔹 SearxNG 🔹🔹  # https://hub.docker.com/r/searxng/searxng
     # SearxNG is a privacy-respecting, hackable, open-source metasearch engine.
-    image: docker.io/searxng/searxng:latest
+    image: docker.io/searxng/searxng
     container_name: searxng
     hostname: searxng
     extra_hosts:
@@ -212,7 +212,7 @@ services:
     # 🔹🔹 Code Server 🔹🔹
     profiles:
       - extras
-    image: lscr.io/linuxserver/code-server:latest
+    image: lscr.io/linuxserver/code-server
     container_name: code-server
     hostname: code-server
     extra_hosts:
@@ -267,7 +267,7 @@ services:
     restart: always
 
   session-manager:
-    image: alpine:latest
+    image: alpine
     container_name: session-manager
     hostname: session-manager
     extra_hosts:
@@ -353,7 +353,7 @@ services:
     build:
       context: ${SRC_PATH:-./projects}/website/bolabaden-site
       dockerfile: Dockerfile
-    image: docker.io/bolabaden/bolabaden-nextjs:latest
+    image: docker.io/bolabaden/bolabaden-nextjs
     container_name: bolabaden-nextjs
     hostname: bolabaden-nextjs
     networks:
@@ -391,7 +391,7 @@ services:
   # This will be used to filter ONLY get requests to the Docker Engine API.
   # It stops stuff like https://blog.quarkslab.com/why-is-exposing-the-docker-socket-a-really-bad-idea.html
   dockerproxy-ro:
-    image: docker.io/tecnativa/docker-socket-proxy:latest
+    image: docker.io/tecnativa/docker-socket-proxy
     container_name: dockerproxy-ro
     hostname: dockerproxy-ro
     networks:
@@ -411,7 +411,7 @@ services:
     # 🔹🔹 Dozzle 🔹🔹
     depends_on:
       - dockerproxy-ro
-    image: docker.io/amir20/dozzle:latest
+    image: docker.io/amir20/dozzle
     container_name: dozzle
     hostname: dozzle
     extra_hosts:
@@ -515,7 +515,7 @@ services:
 
   watchtower:
     # 🔹🔹 Watchtower 🔹🔹
-    image: docker.io/containrrr/watchtower:latest
+    image: docker.io/containrrr/watchtower
     container_name: watchtower
     hostname: watchtower
     extra_hosts:
@@ -727,7 +727,7 @@ services:
       restart: always
   dockerproxy-rw:
     # 🔹🔹 Docker Socket Proxy 🔹🔹
-    image: lscr.io/linuxserver/socket-proxy:latest
+    image: lscr.io/linuxserver/socket-proxy
     container_name: dockerproxy-rw
     hostname: dockerproxy-rw
     extra_hosts:
@@ -919,7 +919,7 @@ services:
     mem_limit: 4G
     restart: always
   portainer:
-    image: docker.io/portainer/portainer-ce:latest
+    image: docker.io/portainer/portainer-ce
     container_name: portainer
     hostname: portainer
     extra_hosts:
@@ -949,7 +949,7 @@ services:
   dns-server:
     profiles:
       - experimental
-    image: docker.io/technitium/dns-server:latest
+    image: docker.io/technitium/dns-server
     container_name: dns-server
     hostname: dns-server.$DOMAIN
     extra_hosts:

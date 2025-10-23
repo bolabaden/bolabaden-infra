@@ -1,0 +1,42 @@
+{{- /*
+NOTES for the comet Helm chart.
+*/ -}}
+
+This chart deploys the Comet Stremio addon.
+
+{{- $envFilePath := .Values.envFilePath | default "" -}}
+{{- if and $envFilePath (not (.Files.Exists $envFilePath)) }}
+**WARNING:**
+Environment file path specified but not found: {{ $envFilePath }}
+The application may not start correctly without its environment variables.
+Please ensure the file exists at the specified path within the chart before installation.
+{{ end }}
+
+{{- if .Values.persistence.enabled }}
+**Volume Info:**
+This chart uses hostPath for persistence, mounting the host directory
+`{{ .Values.configPath }}/{{ .Values.cometDataSubPath }}` to `{{ .Values.volumeMountPath }}` inside the container.
+Ensure the host path exists and has correct permissions on the target Kubernetes node(s).
+{{ end }}
+
+To get the Service URL (if using LoadBalancer or NodePort):
+
+{{- if contains "LoadBalancer" .Values.service.type }}
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "comet.fullname" . }} --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}")
+  echo "Access Comet at: http{{ if .Values.ingress.tls }}s{{ end }}://$SERVICE_IP:{{ .Values.service.port }}"
+{{- else if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "comet.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo "Access Comet at: http://$NODE_IP:$NODE_PORT"
+{{- else }}
+  # For ClusterIP, access via port-forwarding or Ingress
+  echo "Comet service type is ClusterIP."
+  echo "Access via port-forward: kubectl port-forward svc/{{ include "comet.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.targetPort }}"
+  echo "Then access at: http://127.0.0.1:{{ .Values.service.port }}"
+  {{- if .Values.ingress.enabled }}
+  echo "Or access via Ingress at defined hosts."
+  {{- end }}
+{{- end }}
+
+2. **Environment Variables from .env file:**
+   This chart replicates the `env_file`

@@ -1,0 +1,131 @@
+{{/* 
+  Check if we have any UDP configuration
+  Source: pkg/provider/docker/config.go:62-71 - Checking for UDP configuration
+*/}}
+{{ $hasUDPConfig := false }}
+{{ range $c := $enabledContainers }}
+  {{ range $key, $value := $c.Labels }}
+    {{ if or (hasPrefix $key "traefik.udp.routers.") (hasPrefix $key "traefik.udp.services.") }}
+      {{ $hasUDPConfig = true }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ if $hasUDPConfig }}
+udp:
+  {{/* 
+    UDP Routers section
+    Source: pkg/provider/docker/config.go:70-71 - BuildUDPRouterConfiguration is called
+    Source: pkg/provider/provider.go - BuildUDPRouterConfiguration function builds router config from labels
+  */}}
+  {{ $allUDPRouterNames := dict }}
+  {{ range $c := $enabledContainers }}
+    {{ $containerName := trimPrefix "/" $c.Name }}
+    {{ $labels := $c.Labels }}
+    
+    {{/* 
+      Collect router names from this container
+      Source: pkg/config/label/label.go:18-19 - DecodeConfiguration parses traefik.udp labels
+    */}}
+    {{ range $key, $value := $labels }}
+      {{ if hasPrefix $key "traefik.udp.routers." }}
+        {{ $withoutPrefix := trimPrefix "traefik.udp.routers." $key }}
+        {{ $routerName := index (split $withoutPrefix ".") 0 }}
+        {{ if $routerName }}
+          {{ $_ := set $allUDPRouterNames $routerName $c }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  
+  {{ if $allUDPRouterNames }}
+  routers:
+    {{ range $routerName, $container := $allUDPRouterNames }}
+      {{ $containerName := trimPrefix "/" $container.Name }}
+      {{ $labels := $container.Labels }}
+      {{ $routerPrefix := printf "traefik.udp.routers.%s." $routerName }}
+      
+    {{ $routerName }}:
+      {{/* Source: docs/content/reference/dynamic-configuration/docker-labels.yml:278-281 */}}
+      {{ if hasKey $labels (printf "%sservice" $routerPrefix) }}
+        {{ $service := index $labels (printf "%sservice" $routerPrefix) }}
+      service: {{ $service }}
+      {{ else }}
+      service: {{ $containerName }}
+      {{ end }}
+      
+      {{ if hasKey $labels (printf "%sentrypoints" $routerPrefix) }}
+        {{ $entrypoints := index $labels (printf "%sentrypoints" $routerPrefix) }}
+      entryPoints:
+        {{ $eps := split $entrypoints "," }}
+        {{ range $entrypoint := $eps }}
+        - {{ trim $entrypoint " " }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  
+  {{/* 
+    UDP Services section
+    Source: pkg/provider/docker/config.go:131-153 - buildUDPServiceConfiguration builds services
+  */}}
+  {{ $allUDPServiceNames := dict }}
+  {{ range $c := $enabledContainers }}
+    {{ $containerName := trimPrefix "/" $c.Name }}
+    {{ $labels := $c.Labels }}
+    
+    {{/* 
+      Collect service names from this container
+      Source: pkg/config/label/label.go:18-19 - DecodeConfiguration parses traefik.udp labels
+    */}}
+    {{ range $key, $value := $labels }}
+      {{ if hasPrefix $key "traefik.udp.services." }}
+        {{ $withoutPrefix := trimPrefix "traefik.udp.services." $key }}
+        {{ $serviceName := index (split $withoutPrefix ".") 0 }}
+        {{ if $serviceName }}
+          {{ $_ := set $allUDPServiceNames $serviceName $c }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+    
+    {{/* 
+      If no explicit services but UDP router exists, create default service
+      Source: pkg/provider/docker/config.go:134-139 - Creates default service if none exists
+    */}}
+    {{ $hasUDPRouterLabels := false }}
+    {{ $hasUDPServiceLabels := false }}
+    {{ range $key, $value := $labels }}
+      {{ if hasPrefix $key "traefik.udp.routers." }}
+        {{ $hasUDPRouterLabels = true }}
+      {{ end }}
+      {{ if hasPrefix $key "traefik.udp.services." }}
+        {{ $hasUDPServiceLabels = true }}
+      {{ end }}
+    {{ end }}
+    {{ if and $hasUDPRouterLabels (not $hasUDPServiceLabels) }}
+      {{ $_ := set $allUDPServiceNames $containerName $c }}
+    {{ end }}
+  {{ end }}
+  
+  {{ if $allUDPServiceNames }}
+  services:
+    {{ range $serviceName, $container := $allUDPServiceNames }}
+      {{ $containerName := trimPrefix "/" $container.Name }}
+      {{ $labels := $container.Labels }}
+      {{ $servicePrefix := printf "traefik.udp.services.%s." $serviceName }}
+      {{ $containerPort := "" }}
+      {{ if gt (len $container.Addresses) 0 }}
+        {{ $containerPort = (index $container.Addresses 0).Port }}
+      {{ end }}
+      
+    {{ $serviceName }}:
+      {{/* Source: docs/content/reference/dynamic-configuration/docker-labels.yml:282 */}}
+      loadBalancer:
+        {{ $serverPort := index $labels (printf "%sloadbalancer.server.port" $servicePrefix) }}
+        {{ if not $serverPort }}{{ $serverPort = $containerPort }}{{ end }}
+        
+        servers:
+          - address: {{ $containerName }}:{{ $serverPort }}
+    {{ end }}
+  {{ end }}
+{{ end }}

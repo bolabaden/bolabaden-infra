@@ -8,7 +8,7 @@ dependencies:
   - deploy.victoriametrics
 
 spec:
-  image: docker.io/prom/prometheus:latest
+  image: docker.io/prom/prometheus
   env:
     PROMETHEUS_RETENTION_TIME: ${var.PROMETHEUS_RETENTION_TIME || "15d"}
     PROMETHEUS_RETENTION_SIZE: ${var.PROMETHEUS_RETENTION_SIZE || "0"}

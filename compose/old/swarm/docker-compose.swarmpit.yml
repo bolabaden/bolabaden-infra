@@ -108,7 +108,7 @@ services:
   swarmpit-agent-arm:
     profiles:
       - arm
-    image: swarmpit/agent:latest
+    image: swarmpit/agent
     container_name: swarmpit-agent-arm
     hostname: swarmpit-agent-arm
     networks:

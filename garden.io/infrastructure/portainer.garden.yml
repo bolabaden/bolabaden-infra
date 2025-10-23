@@ -5,7 +5,7 @@ description: Docker container management UI
 type: container
 
 spec:
-  image: docker.io/portainer/portainer-ce:latest
+  image: docker.io/portainer/portainer-ce
   env:
     TZ: ${var.tz}
   ports:

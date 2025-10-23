@@ -191,7 +191,7 @@ configs:
         --auth-nocache
 services:
   openvpn-router:
-    image: alpine:latest
+    image: alpine
     container_name: openvpn-router
     cap_add:
       - NET_ADMIN

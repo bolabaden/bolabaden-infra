@@ -30,7 +30,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    image: docker.io/unsend/unsend:latest
+    image: docker.io/unsend/unsend
     container_name: unsend
     hostname: unsend
     extra_hosts:

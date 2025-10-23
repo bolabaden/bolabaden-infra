@@ -1,0 +1,265 @@
+TEXT github.com/debridmediamanager/zurg/internal/clear.ClearTorrents(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/internal/clear/torrents.go
+  torrents.go:13	0x3ef2c0		f9400b90		MOVD 16(R28), R16										
+  torrents.go:13	0x3ef2c4		d10683f1		SUB $416, RSP, R17										
+  torrents.go:13	0x3ef2c8		eb10023f		CMP R16, R17											
+  torrents.go:13	0x3ef2cc		54001f69		BLS 251(PC)											
+  torrents.go:13	0x3ef2d0		d10883f4		SUB $544, RSP, R20										
+  torrents.go:13	0x3ef2d4		a93ffa9d		STP (R29, R30), -8(R20)										
+  torrents.go:13	0x3ef2d8		9100029f		MOVD R20, RSP											
+  torrents.go:13	0x3ef2dc		d10023fd		SUB $8, RSP, R29										
+  torrents.go:14	0x3ef2e0		f9011fe2		MOVD R2, 568(RSP)										
+  torrents.go:14	0x3ef2e4		f9011be1		MOVD R1, 560(RSP)										
+  torrents.go:14	0x3ef2e8		f90117e0		MOVD R0, 552(RSP)										
+  torrents.go:14	0x3ef2ec		a91e7fff		STP (ZR, ZR), 480(RSP)										
+  torrents.go:14	0x3ef2f0		d0000225		ADRP 286720(PC), R5										
+  torrents.go:14	0x3ef2f4		910c00a5		ADD $768, R5, R5										
+  torrents.go:14	0x3ef2f8		f900f3e5		MOVD R5, 480(RSP)										
+  torrents.go:14	0x3ef2fc		b0000d86		ADRP 1773568(PC), R6										
+  torrents.go:14	0x3ef300		9129c0c6		ADD $2672, R6, R6										
+  torrents.go:14	0x3ef304		f900f7e6		MOVD R6, 488(RSP)										
+  print.go:314		0x3ef308		d000253b		ADRP 4874240(PC), R27										
+  print.go:314		0x3ef30c		f9434f66		MOVD 1688(R27), R6										
+  print.go:314		0x3ef310		b24003e3		ORR $1, ZR, R3											
+  print.go:314		0x3ef314		aa0303e4		MOVD R3, R4											
+  print.go:314		0x3ef318		d0000d80		ADRP 1777664(PC), R0										
+  print.go:314		0x3ef31c		91268000		ADD $2464, R0, R0										
+  print.go:314		0x3ef320		aa0603e1		MOVD R6, R1											
+  print.go:314		0x3ef324		910783e2		ADD $480, RSP, R2										
+  print.go:314		0x3ef328		97f45c5a		CALL fmt.Fprintln(SB)										
+  print.go:314		0x3ef32c		b24003e0		ORR $1, ZR, R0											
+  print.go:314		0x3ef330		aa1f03e1		MOVD ZR, R1											
+  torrents.go:14	0x3ef334		14000003		JMP 3(PC)											
+  torrents.go:20	0x3ef338		aa0503e0		MOVD R5, R0											
+  torrents.go:40	0x3ef33c		aa0203e1		MOVD R2, R1											
+  torrents.go:40	0x3ef340		f90027e1		MOVD R1, 72(RSP)										
+  torrents.go:20	0x3ef344		f9002fe0		MOVD R0, 88(RSP)										
+  torrents.go:20	0x3ef348		f9411be2		MOVD 560(RSP), R2										
+  torrents.go:20	0x3ef34c		aa1f03e3		MOVD ZR, R3											
+  torrents.go:20	0x3ef350		aa0003e4		MOVD R0, R4											
+  torrents.go:20	0x3ef354		f9411fe0		MOVD 568(RSP), R0										
+  torrents.go:20	0x3ef358		f94117e1		MOVD 552(RSP), R1										
+  torrents.go:20	0x3ef35c		97ffe155		CALL github.com/debridmediamanager/zurg/pkg/realdebrid.(*RealDebrid).GetTorrents(SB)		
+  torrents.go:21	0x3ef360		b5000523		CBNZ R3, 41(PC)											
+  torrents.go:25	0x3ef364		b40004c1		CBZ R1, 38(PC)											
+  torrents.go:20	0x3ef368		f9002be1		MOVD R1, 80(RSP)										
+  torrents.go:20	0x3ef36c		f90043e0		MOVD R0, 128(RSP)										
+  torrents.go:29	0x3ef370		a91c7fff		STP (ZR, ZR), 448(RSP)										
+  torrents.go:29	0x3ef374		a91d7fff		STP (ZR, ZR), 464(RSP)										
+  torrents.go:29	0x3ef378		f9402fe0		MOVD 88(RSP), R0										
+  torrents.go:29	0x3ef37c		97f0bf11		CALL runtime.convT64(SB)									
+  torrents.go:29	0x3ef380		d0000221		ADRP 286720(PC), R1										
+  torrents.go:29	0x3ef384		91150021		ADD $1344, R1, R1										
+  torrents.go:29	0x3ef388		f900e3e1		MOVD R1, 448(RSP)										
+  torrents.go:29	0x3ef38c		f900e7e0		MOVD R0, 456(RSP)										
+  torrents.go:29	0x3ef390		f9402be0		MOVD 80(RSP), R0										
+  torrents.go:29	0x3ef394		97f0bf0b		CALL runtime.convT64(SB)									
+  torrents.go:29	0x3ef398		d0000221		ADRP 286720(PC), R1										
+  torrents.go:29	0x3ef39c		91150021		ADD $1344, R1, R1										
+  torrents.go:29	0x3ef3a0		f900ebe1		MOVD R1, 464(RSP)										
+  torrents.go:29	0x3ef3a4		f900efe0		MOVD R0, 472(RSP)										
+  print.go:233		0x3ef3a8		d000253b		ADRP 4874240(PC), R27										
+  print.go:233		0x3ef3ac		f9434f62		MOVD 1688(R27), R2										
+  print.go:233		0x3ef3b0		d0000d80		ADRP 1777664(PC), R0										
+  print.go:233		0x3ef3b4		91268000		ADD $2464, R0, R0										
+  print.go:233		0x3ef3b8		d28004e3		MOVD $39, R3											
+  print.go:233		0x3ef3bc		910703e4		ADD $448, RSP, R4										
+  print.go:233		0x3ef3c0		b27f03e5		ORR $2, ZR, R5											
+  print.go:233		0x3ef3c4		aa0503e6		MOVD R5, R6											
+  print.go:233		0x3ef3c8		aa0203e1		MOVD R2, R1											
+  print.go:233		0x3ef3cc		b00007e2		ADRP 1036288(PC), R2										
+  print.go:233		0x3ef3d0		9125a842		ADD $2410, R2, R2										
+  print.go:233		0x3ef3d4		97f45ac7		CALL fmt.Fprintf(SB)										
+  torrents.go:31	0x3ef3d8		f94043e1		MOVD 128(RSP), R1										
+  torrents.go:31	0x3ef3dc		f9402be0		MOVD 80(RSP), R0										
+  torrents.go:40	0x3ef3e0		f94027e2		MOVD 72(RSP), R2										
+  torrents.go:31	0x3ef3e4		14000056		JMP 86(PC)											
+  torrents.go:46	0x3ef3e8		f9402fe5		MOVD 88(RSP), R5										
+  torrents.go:46	0x3ef3ec		910004a5		ADD $1, R5, R5											
+  torrents.go:49	0x3ef3f0		f10190bf		CMP $100, R5											
+  torrents.go:49	0x3ef3f4		54fffa2d		BLE -47(PC)											
+  torrents.go:49	0x3ef3f8		140000ae		JMP 174(PC)											
+  torrents.go:54	0x3ef3fc		f94027e0		MOVD 72(RSP), R0										
+  torrents.go:26	0x3ef400		1400001e		JMP 30(PC)											
+  torrents.go:20	0x3ef404		f900a7e4		MOVD R4, 328(RSP)										
+  torrents.go:20	0x3ef408		f90037e3		MOVD R3, 104(RSP)										
+  torrents.go:22	0x3ef40c		a91f7fff		STP (ZR, ZR), 496(RSP)										
+  torrents.go:22	0x3ef410		910803fb		ADD $512, RSP, R27										
+  torrents.go:22	0x3ef414		a9007f7f		STP (ZR, ZR), (R27)										
+  torrents.go:22	0x3ef418		f9402fe0		MOVD 88(RSP), R0										
+  torrents.go:22	0x3ef41c		97f0bee9		CALL runtime.convT64(SB)									
+  torrents.go:22	0x3ef420		d0000221		ADRP 286720(PC), R1										
+  torrents.go:22	0x3ef424		91150021		ADD $1344, R1, R1										
+  torrents.go:22	0x3ef428		f900fbe1		MOVD R1, 496(RSP)										
+  torrents.go:22	0x3ef42c		f900ffe0		MOVD R0, 504(RSP)										
+  torrents.go:22	0x3ef430		f94037e0		MOVD 104(RSP), R0										
+  torrents.go:22	0x3ef434		b4000060		CBZ R0, 3(PC)											
+  torrents.go:22	0x3ef438		f9400403		MOVD 8(R0), R3											
+  torrents.go:22	0x3ef43c		14000002		JMP 2(PC)											
+  torrents.go:22	0x3ef440		aa0003e3		MOVD R0, R3											
+  torrents.go:22	0x3ef444		f90103e3		MOVD R3, 512(RSP)										
+  torrents.go:22	0x3ef448		f940a7e5		MOVD 328(RSP), R5										
+  torrents.go:22	0x3ef44c		f90107e5		MOVD R5, 520(RSP)										
+  torrents.go:22	0x3ef450		d00007c0		ADRP 1024000(PC), R0										
+  torrents.go:22	0x3ef454		91370000		ADD $3520, R0, R0										
+  torrents.go:22	0x3ef458		d2800461		MOVD $35, R1											
+  torrents.go:22	0x3ef45c		9107c3e2		ADD $496, RSP, R2										
+  torrents.go:22	0x3ef460		b27f03e3		ORR $2, ZR, R3											
+  torrents.go:22	0x3ef464		aa0303e4		MOVD R3, R4											
+  torrents.go:22	0x3ef468		97f44fc6		CALL fmt.Errorf(SB)										
+  torrents.go:22	0x3ef46c		a97ffbfd		LDP -8(RSP), (R29, R30)										
+  torrents.go:22	0x3ef470		910883ff		ADD $544, RSP, RSP										
+  torrents.go:22	0x3ef474		d65f03c0		RET												
+  torrents.go:54	0x3ef478		a9167fff		STP (ZR, ZR), 352(RSP)										
+  torrents.go:54	0x3ef47c		97f0bed1		CALL runtime.convT64(SB)									
+  torrents.go:54	0x3ef480		d0000221		ADRP 286720(PC), R1										
+  torrents.go:54	0x3ef484		91150021		ADD $1344, R1, R1										
+  torrents.go:54	0x3ef488		f900b3e1		MOVD R1, 352(RSP)										
+  torrents.go:54	0x3ef48c		f900b7e0		MOVD R0, 360(RSP)										
+  print.go:233		0x3ef490		d000253b		ADRP 4874240(PC), R27										
+  print.go:233		0x3ef494		f9434f62		MOVD 1688(R27), R2										
+  print.go:233		0x3ef498		d0000d80		ADRP 1777664(PC), R0										
+  print.go:233		0x3ef49c		91268000		ADD $2464, R0, R0										
+  print.go:233		0x3ef4a0		d2800423		MOVD $33, R3											
+  print.go:233		0x3ef4a4		910583e4		ADD $352, RSP, R4										
+  print.go:233		0x3ef4a8		b24003e5		ORR $1, ZR, R5											
+  print.go:233		0x3ef4ac		aa0503e6		MOVD R5, R6											
+  print.go:233		0x3ef4b0		aa0203e1		MOVD R2, R1											
+  print.go:233		0x3ef4b4		b00007c2		ADRP 1019904(PC), R2										
+  print.go:233		0x3ef4b8		9122e042		ADD $2232, R2, R2										
+  print.go:233		0x3ef4bc		97f45a8d		CALL fmt.Fprintf(SB)										
+  torrents.go:57	0x3ef4c0		f9411fe0		MOVD 568(RSP), R0										
+  torrents.go:57	0x3ef4c4		f94117e1		MOVD 552(RSP), R1										
+  torrents.go:57	0x3ef4c8		f9411be2		MOVD 560(RSP), R2										
+  torrents.go:57	0x3ef4cc		97ffe399		CALL github.com/debridmediamanager/zurg/pkg/realdebrid.(*RealDebrid).GetActiveTorrentCount(SB)	
+  torrents.go:57	0x3ef4d0		b5000241		CBNZ R1, 18(PC)											
+  torrents.go:58	0x3ef4d4		a9157fff		STP (ZR, ZR), 336(RSP)										
+  torrents.go:58	0x3ef4d8		97f0beba		CALL runtime.convT64(SB)									
+  torrents.go:58	0x3ef4dc		d0000221		ADRP 286720(PC), R1										
+  torrents.go:58	0x3ef4e0		91150021		ADD $1344, R1, R1										
+  torrents.go:58	0x3ef4e4		f900abe1		MOVD R1, 336(RSP)										
+  torrents.go:58	0x3ef4e8		f900afe0		MOVD R0, 344(RSP)										
+  print.go:233		0x3ef4ec		d000253b		ADRP 4874240(PC), R27										
+  print.go:233		0x3ef4f0		f9434f61		MOVD 1688(R27), R1										
+  print.go:233		0x3ef4f4		d0000d80		ADRP 1777664(PC), R0										
+  print.go:233		0x3ef4f8		91268000		ADD $2464, R0, R0										
+  print.go:233		0x3ef4fc		f00007a2		ADRP 1011712(PC), R2										
+  print.go:233		0x3ef500		9116ac42		ADD $1451, R2, R2										
+  print.go:233		0x3ef504		b27f0fe3		ORR $30, ZR, R3											
+  print.go:233		0x3ef508		910543e4		ADD $336, RSP, R4										
+  print.go:233		0x3ef50c		b24003e5		ORR $1, ZR, R5											
+  print.go:233		0x3ef510		aa0503e6		MOVD R5, R6											
+  print.go:233		0x3ef514		97f45a77		CALL fmt.Fprintf(SB)										
+  torrents.go:61	0x3ef518		aa1f03e0		MOVD ZR, R0											
+  torrents.go:61	0x3ef51c		aa1f03e1		MOVD ZR, R1											
+  torrents.go:61	0x3ef520		a97ffbfd		LDP -8(RSP), (R29, R30)										
+  torrents.go:61	0x3ef524		910883ff		ADD $544, RSP, RSP										
+  torrents.go:61	0x3ef528		d65f03c0		RET												
+  torrents.go:31	0x3ef52c		f9410be5		MOVD 528(RSP), R5										
+  torrents.go:31	0x3ef530		9102e0a1		ADD $184, R5, R1										
+  torrents.go:31	0x3ef534		f9403fe5		MOVD 120(RSP), R5										
+  torrents.go:31	0x3ef538		d10004a0		SUB $1, R5, R0											
+  torrents.go:31	0x3ef53c		f100001f		CMP $0, R0											
+  torrents.go:31	0x3ef540		54fff54d		BLE -86(PC)											
+  torrents.go:31	0x3ef544		f9003fe0		MOVD R0, 120(RSP)										
+  torrents.go:40	0x3ef548		f9003be2		MOVD R2, 112(RSP)										
+  torrents.go:31	0x3ef54c		f9010be1		MOVD R1, 528(RSP)										
+  torrents.go:31	0x3ef550		910223f5		ADD $136, RSP, R21										
+  torrents.go:31	0x3ef554		aa0103f4		MOVD R1, R20											
+  torrents.go:31	0x3ef558		1000009b		ADR 16(PC), R27											
+  torrents.go:31	0x3ef55c		a93eeffd		STP (R29, R27), -24(RSP)									
+  torrents.go:31	0x3ef560		d10063fd		SUB $24, RSP, R29										
+  torrents.go:31	0x3ef564		97f26c35		CALL -889803(PC)										
+  torrents.go:31	0x3ef568		d10023fd		SUB $8, RSP, R29										
+  torrents.go:31	0x3ef56c		f9405822		MOVD 176(R1), R2										
+  torrents.go:31	0x3ef570		f9009fe2		MOVD R2, 312(RSP)										
+  torrents.go:32	0x3ef574		a9197fff		STP (ZR, ZR), 400(RSP)										
+  torrents.go:32	0x3ef578		a91a7fff		STP (ZR, ZR), 416(RSP)										
+  torrents.go:32	0x3ef57c		a91b7fff		STP (ZR, ZR), 432(RSP)										
+  torrents.go:33	0x3ef580		f9404fe0		MOVD 152(RSP), R0										
+  torrents.go:33	0x3ef584		f94053e2		MOVD 160(RSP), R2										
+  torrents.go:33	0x3ef588		aa0203e1		MOVD R2, R1											
+  torrents.go:33	0x3ef58c		97f0bead		CALL runtime.convTstring(SB)									
+  torrents.go:33	0x3ef590		d0000222		ADRP 286720(PC), R2										
+  torrents.go:33	0x3ef594		910c0042		ADD $768, R2, R2										
+  torrents.go:33	0x3ef598		f900cbe2		MOVD R2, 400(RSP)										
+  torrents.go:33	0x3ef59c		f900cfe0		MOVD R0, 408(RSP)										
+  torrents.go:33	0x3ef5a0		f9404be1		MOVD 144(RSP), R1										
+  torrents.go:33	0x3ef5a4		f94047e0		MOVD 136(RSP), R0										
+  torrents.go:33	0x3ef5a8		97f0bea6		CALL runtime.convTstring(SB)									
+  torrents.go:33	0x3ef5ac		d0000222		ADRP 286720(PC), R2										
+  torrents.go:33	0x3ef5b0		910c0042		ADD $768, R2, R2										
+  torrents.go:33	0x3ef5b4		f900d3e2		MOVD R2, 416(RSP)										
+  torrents.go:33	0x3ef5b8		f900d7e0		MOVD R0, 424(RSP)										
+  torrents.go:33	0x3ef5bc		f94073e0		MOVD 224(RSP), R0										
+  torrents.go:33	0x3ef5c0		f94077e1		MOVD 232(RSP), R1										
+  torrents.go:33	0x3ef5c4		97f0be9f		CALL runtime.convTstring(SB)									
+  torrents.go:33	0x3ef5c8		d0000222		ADRP 286720(PC), R2										
+  torrents.go:33	0x3ef5cc		910c0042		ADD $768, R2, R2										
+  torrents.go:33	0x3ef5d0		f900dbe2		MOVD R2, 432(RSP)										
+  torrents.go:33	0x3ef5d4		f900dfe0		MOVD R0, 440(RSP)										
+  print.go:233		0x3ef5d8		d000253b		ADRP 4874240(PC), R27										
+  print.go:233		0x3ef5dc		f9434f61		MOVD 1688(R27), R1										
+  print.go:233		0x3ef5e0		d0000d80		ADRP 1777664(PC), R0										
+  print.go:233		0x3ef5e4		91268000		ADD $2464, R0, R0										
+  print.go:233		0x3ef5e8		d2800543		MOVD $42, R3											
+  print.go:233		0x3ef5ec		910643e4		ADD $400, RSP, R4										
+  print.go:233		0x3ef5f0		b24007e5		ORR $3, ZR, R5											
+  print.go:233		0x3ef5f4		aa0503e6		MOVD R5, R6											
+  print.go:233		0x3ef5f8		f00007e2		ADRP 1044480(PC), R2										
+  print.go:233		0x3ef5fc		91246042		ADD $2328, R2, R2										
+  print.go:233		0x3ef600		97f45a3c		CALL fmt.Fprintf(SB)										
+  torrents.go:35	0x3ef604		f94047e3		MOVD 136(RSP), R3										
+  torrents.go:35	0x3ef608		f9404be4		MOVD 144(RSP), R4										
+  torrents.go:35	0x3ef60c		f9411fe0		MOVD 568(RSP), R0										
+  torrents.go:35	0x3ef610		f94117e1		MOVD 552(RSP), R1										
+  torrents.go:35	0x3ef614		f9411be2		MOVD 560(RSP), R2										
+  torrents.go:35	0x3ef618		97ffe236		CALL github.com/debridmediamanager/zurg/pkg/realdebrid.(*RealDebrid).DeleteTorrent(SB)		
+  torrents.go:35	0x3ef61c		b40003e0		CBZ R0, 31(PC)											
+  torrents.go:35	0x3ef620		f900a3e1		MOVD R1, 320(RSP)										
+  torrents.go:35	0x3ef624		f90033e0		MOVD R0, 96(RSP)										
+  torrents.go:36	0x3ef628		a9177fff		STP (ZR, ZR), 368(RSP)										
+  torrents.go:36	0x3ef62c		a9187fff		STP (ZR, ZR), 384(RSP)										
+  torrents.go:36	0x3ef630		f94047e0		MOVD 136(RSP), R0										
+  torrents.go:36	0x3ef634		f9404be1		MOVD 144(RSP), R1										
+  torrents.go:36	0x3ef638		97f0be82		CALL runtime.convTstring(SB)									
+  torrents.go:36	0x3ef63c		d0000222		ADRP 286720(PC), R2										
+  torrents.go:36	0x3ef640		910c0042		ADD $768, R2, R2										
+  torrents.go:36	0x3ef644		f900bbe2		MOVD R2, 368(RSP)										
+  torrents.go:36	0x3ef648		f900bfe0		MOVD R0, 376(RSP)										
+  torrents.go:36	0x3ef64c		f94033e0		MOVD 96(RSP), R0										
+  torrents.go:36	0x3ef650		b4000040		CBZ R0, 2(PC)											
+  torrents.go:36	0x3ef654		f9400400		MOVD 8(R0), R0											
+  torrents.go:36	0x3ef658		f900c3e0		MOVD R0, 384(RSP)										
+  torrents.go:36	0x3ef65c		f940a3e7		MOVD 320(RSP), R7										
+  torrents.go:36	0x3ef660		f900c7e7		MOVD R7, 392(RSP)										
+  print.go:233		0x3ef664		d000253b		ADRP 4874240(PC), R27										
+  print.go:233		0x3ef668		f9434f61		MOVD 1688(R27), R1										
+  print.go:233		0x3ef66c		d0000d80		ADRP 1777664(PC), R0										
+  print.go:233		0x3ef670		91268000		ADD $2464, R0, R0										
+  print.go:233		0x3ef674		f00007a2		ADRP 1011712(PC), R2										
+  print.go:233		0x3ef678		91163442		ADD $1421, R2, R2										
+  print.go:233		0x3ef67c		b27f0fe3		ORR $30, ZR, R3											
+  print.go:233		0x3ef680		9105c3e4		ADD $368, RSP, R4										
+  print.go:233		0x3ef684		b27f03e5		ORR $2, ZR, R5											
+  print.go:233		0x3ef688		aa0503e6		MOVD R5, R6											
+  print.go:233		0x3ef68c		97f45a19		CALL fmt.Fprintf(SB)										
+  torrents.go:40	0x3ef690		f9403be2		MOVD 112(RSP), R2										
+  torrents.go:37	0x3ef694		17ffffa6		JMP -90(PC)											
+  torrents.go:43	0x3ef698		d29c2000		MOVD $57600, R0											
+  torrents.go:43	0x3ef69c		f2a0bea0		MOVK $(1525<<16), R0										
+  torrents.go:43	0x3ef6a0		97f25cfc		CALL time.Sleep(SB)										
+  torrents.go:40	0x3ef6a4		f9403be1		MOVD 112(RSP), R1										
+  torrents.go:40	0x3ef6a8		91000422		ADD $1, R1, R2											
+  torrents.go:43	0x3ef6ac		17ffffa0		JMP -96(PC)											
+  torrents.go:54	0x3ef6b0		aa0203e0		MOVD R2, R0											
+  torrents.go:50	0x3ef6b4		17ffff71		JMP -143(PC)											
+  torrents.go:13	0x3ef6b8		f90007e0		MOVD R0, 8(RSP)											
+  torrents.go:13	0x3ef6bc		f9000be1		MOVD R1, 16(RSP)										
+  torrents.go:13	0x3ef6c0		f9000fe2		MOVD R2, 24(RSP)										
+  torrents.go:13	0x3ef6c4		aa1e03e3		MOVD R30, R3											
+  torrents.go:13	0x3ef6c8		97f26152		CALL runtime.morestack_noctxt.abi0(SB)								
+  torrents.go:13	0x3ef6cc		f94007e0		MOVD 8(RSP), R0											
+  torrents.go:13	0x3ef6d0		f9400be1		MOVD 16(RSP), R1										
+  torrents.go:13	0x3ef6d4		f9400fe2		MOVD 24(RSP), R2										
+  torrents.go:13	0x3ef6d8		17fffefa		JMP github.com/debridmediamanager/zurg/internal/clear.ClearTorrents(SB)				
+  torrents.go:13	0x3ef6dc		00000000		?												

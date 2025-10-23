@@ -55,7 +55,7 @@ services:
   channels-dvr:
     # 🔹🔹 Channels DVR 🔹🔹    # https://github.com/fancybits/channels-dvr
     # todo: docs
-    image: fancybits/channels-dvr:latest
+    image: fancybits/channels-dvr
     # Use the fancybits/channels-dvr:tve image if you need TV Everywhere support
     container_name: channels-dvr
     hostname: channels-dvr

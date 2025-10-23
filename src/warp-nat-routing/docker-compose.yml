@@ -1,0 +1,136 @@
+
+networks:
+  warp_network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br_warp_network
+      com.docker.network.bridge.enable_ip_masquerade: "false"
+    ipam:
+      config:
+        - subnet: 10.46.0.0/16
+          gateway: 10.46.0.1
+  public:
+
+services:
+  warp_nat_gateway:
+    image: docker.io/caomingjun/warp:latest
+    container_name: warp_nat_gateway
+    hostname: warp_nat_gateway
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "1080:1080"  # SOCKS5 proxy port
+    # add removed rule back (https://github.com/opencontainers/runc/pull/3468)
+    device_cgroup_rules:
+      - 'c 10:200 rwm'
+    cap_add:
+      # Docker already have them, these are for podman users
+      - MKNOD
+      - AUDIT_WRITE
+      # additional required cap for warp, both for podman and docker
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
+      - net.ipv6.conf.all.accept_ra=2
+    volumes:
+      - warp-config-data:/var/lib/cloudflare-warp
+    environment:
+      # If set, will add checks for host connectivity into healthchecks and automatically fix it if necessary.
+      # See https://github.com/cmj2002/warp-docker/blob/main/docs/host-connectivity.md for more information.
+      BETA_FIX_HOST_CONNECTIVITY: false
+      # The arguments passed to GOST. The default is -L :1080, which means to listen on port 1080 in the container at the same time through HTTP and SOCKS5 protocols.
+      # If you want to have UDP support or use advanced features provided by other protocols, you can modify this parameter. For more information, refer to https://v2.gost.run/en/.
+      # If you modify the port number, ensure you modify the `ports:` section above.
+      GOST_ARGS: "${GOST_ARGS:--L :1080}"
+      # If set, will register consumer account (WARP or WARP+, in contrast to Zero Trust) even when mdm.xml exists.
+      # You usually don't need this, as mdm.xml are usually used for Zero Trust.
+      # However, some users may want to adjust advanced settings in mdm.xml while still using consumer account.
+      #REGISTER_WHEN_MDM_EXISTS: ""
+      # If set, will work as warp mode and turn NAT on.
+      # You can route L3 traffic through warp-docker to Warp.
+      # See https://github.com/cmj2002/warp-docker/blob/main/docs/nat-gateway.md for more information.
+      WARP_ENABLE_NAT: true
+      # The license key of the WARP client, which is optional.
+      # If you have subscribed to WARP+ service, you can fill in the key in this environment variable.
+      # If you have not subscribed to WARP+ service, you can ignore this environment variable.
+      WARP_LICENSE_KEY: "${WARP_LICENSE_KEY:-}"
+      # The time to wait for the WARP daemon to start, in seconds.
+      # If the time is too short, it may cause the WARP daemon to not start before using the proxy, resulting in the proxy not working properly.
+      # If the time is too long, it may cause the container to take too long to start. If your server has poor performance, you can increase this value appropriately.
+      WARP_SLEEP: 2  # The default is 2 seconds.
+    restart: always
+
+  ip_checker_naked:
+    # 🔹🔹 IP Checker Naked 🔹🔹
+    # This is a service that checks the IP address of the container.
+    # It uses the default network interface of the host.
+    build: &ip-checker-dockerfile
+      dockerfile_inline: |
+        FROM alpine:latest
+        RUN apk add --no-cache curl
+        CMD ["/bin/sh", "-c", "while true; do echo \"$(date): $(curl -s ifconfig.me)\"; sleep 60; done"]
+    container_name: ip_checker_naked
+    command: "/bin/sh -c 'while true; do echo \"$(date): $(curl -s ifconfig.me)\"; sleep 60; done'"
+  ip_checker_warp:
+    # 🔹🔹 IP Checker WARP 🔹🔹
+    # This is a service that checks the IP address of the container.
+    # It uses the WARP network interface.
+    build: *ip-checker-dockerfile
+    container_name: ip_checker_warp
+    networks:
+      - warp_network
+    command: "/bin/sh -c 'while true; do echo \"$(date): $(curl -s ifconfig.me)\"; sleep 60; done'"
+  ip_checker_warp_multi_uses_public:
+    # 🔹🔹 IP Checker WARP Multi Uses Public 🔹🔹
+    # This is a service that checks the IP address of the container.
+    # `warp_network` is a low priority network by default, so this will use public network (the default network interface on the host)
+    build: *ip-checker-dockerfile
+    container_name: ip_checker_warp_multi_uses_public
+    networks:
+      - warp_network
+      - public
+    command: "/bin/sh -c 'while true; do echo \"$(date): $(curl -s ifconfig.me)\"; sleep 60; done'"
+  ip_checker_warp_multi_uses_warp:
+    # 🔹🔹 IP Checker WARP Multi Uses WARP 🔹🔹
+    # This is a service that checks the IP address of the container.
+    # `warp_network` gateway priority 1, higher than public, so warp will be used by default.
+    build: *ip-checker-dockerfile
+    container_name: ip_checker_warp_multi_uses_warp
+    networks:
+      warp_network:
+        gw_priority: 1
+      public: {}
+    command: "/bin/sh -c 'while true; do echo \"$(date): $(curl -s ifconfig.me)\"; sleep 60; done'"
+  warp_router:
+    depends_on:
+      - warp_nat_gateway
+    build:
+      dockerfile_inline: |
+        FROM ubuntu:22.04
+        RUN apt-get update && apt-get install -y \
+            iproute2 \
+            iptables \
+            bc \
+            docker.io \
+            && rm -rf /var/lib/apt/lists/*
+        COPY warp-up.sh /usr/local/bin/
+        COPY warp-down.sh /usr/local/bin/
+        RUN chmod +x /usr/local/bin/warp-up.sh /usr/local/bin/warp-down.sh
+        ENTRYPOINT ["/usr/local/bin/warp-up.sh --network-name warp_network --docker-net 10.46.0.0/16 --routing-table warp_routing_table"]
+    container_name: warp_router
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_ADMIN
+    networks:
+      - warp_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+
+volumes:
+  warp-config-data:

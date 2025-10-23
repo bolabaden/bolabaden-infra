@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  zurg:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zurg
+    restart: unless-stopped
+    ports:
+      - "9999:9999"
+    environment:
+      - TZ=UTC
+    volumes:
+      - ./config.yml:/app/config.yml:ro
+      - ./logs:/app/logs
+      - zurg_data:/app/data
+    healthcheck:
+      test: ["CMD", "/app/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - zurg_network
+
+  # Optional: Add a reverse proxy for HTTPS
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: zurg_proxy
+  #   restart: unless-stopped
+  #   ports:
+  #     - "443:443"
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./ssl:/etc/ssl/certs:ro
+  #   depends_on:
+  #     - zurg
+  #   networks:
+  #     - zurg_network
+
+volumes:
+  zurg_data:
+    driver: local
+
+networks:
+  zurg_network:
+    driver: bridge

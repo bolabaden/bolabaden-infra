@@ -592,7 +592,7 @@ services:
 #      args:
 #        GOST_VERSION: 2.12.0
 #        TARGETPLATFORM: linux/arm64 # or linux/arm64, or leave out for automatic
-    image: caomingjun/warp:latest
+    image: caomingjun/warp
     container_name: warp
     hostname: warp
     networks:

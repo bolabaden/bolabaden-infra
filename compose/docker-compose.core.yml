@@ -6,7 +6,7 @@
 services:
   mongodb:
     # 🔹🔹 MongoDB 🔹🔹
-    image: docker.io/mongo:latest
+    image: docker.io/mongo
     container_name: mongodb
     hostname: ${MONGODB_HOSTNAME:-mongodb}
     extra_hosts:
@@ -100,7 +100,7 @@ services:
   searxng:
     # 🔹🔹 SearxNG 🔹🔹  # https://hub.docker.com/r/searxng/searxng
     # SearxNG is a privacy-respecting, hackable, open-source metasearch engine.
-    image: docker.io/searxng/searxng:latest
+    image: docker.io/searxng/searxng
     container_name: searxng
     hostname: searxng
     extra_hosts:
@@ -141,7 +141,7 @@ services:
     # 🔹🔹 Qdrant 🔹🔹
     profiles:
       - extras
-    image: qdrant/qdrant:latest
+    image: qdrant/qdrant
     container_name: qdrant
     hostname: qdrant
     networks:

@@ -175,7 +175,7 @@ services:
     restart: unless-stopped
 
   calibre-web:
-    image: linuxserver/calibre-web:latest
+    image: linuxserver/calibre-web
     container_name: calibre-web
     hostname: calibre-web
     <<: [*common-logging, *resource-limits]

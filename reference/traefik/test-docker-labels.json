@@ -1,0 +1,64 @@
+[
+  {
+    "Name": "/test-container",
+    "Labels": {
+      "traefik.enable": "true",
+      "traefik.http.routers.test-router.rule": "Host(`example.com`)",
+      "traefik.http.routers.test-router.entrypoints": "websecure",
+      "traefik.http.routers.test-router.middlewares": "test-middleware",
+      "traefik.http.routers.test-router.tls": "true",
+      "traefik.http.services.test-service.loadbalancer.server.port": "8080",
+      "traefik.http.middlewares.test-middleware.headers.customrequestheaders.X-Custom-Header": "test-value"
+    },
+    "Addresses": [
+      {
+        "IP": "172.17.0.2",
+        "Port": "80"
+      }
+    ]
+  },
+  {
+    "Name": "/tcp-test",
+    "Labels": {
+      "traefik.enable": "true",
+      "traefik.tcp.routers.tcp-router.rule": "HostSNI(`tcp.example.com`)",
+      "traefik.tcp.routers.tcp-router.entrypoints": "tcp",
+      "traefik.tcp.services.tcp-service.loadbalancer.server.port": "9000"
+    },
+    "Addresses": [
+      {
+        "IP": "172.17.0.3",
+        "Port": "9000"
+      }
+    ]
+  },
+  {
+    "Name": "/udp-test",
+    "Labels": {
+      "traefik.enable": "true",
+      "traefik.udp.routers.udp-router.entrypoints": "udp",
+      "traefik.udp.services.udp-service.loadbalancer.server.port": "53"
+    },
+    "Addresses": [
+      {
+        "IP": "172.17.0.4",
+        "Port": "53"
+      }
+    ]
+  },
+  {
+    "Name": "/tls-test",
+    "Labels": {
+      "traefik.enable": "true",
+      "traefik.tls.stores.default.defaultgeneratedcert.domain.main": "example.org",
+      "traefik.tls.stores.default.defaultgeneratedcert.domain.sans": "*.example.org,test.example.org",
+      "traefik.tls.stores.default.defaultgeneratedcert.resolver": "myresolver"
+    },
+    "Addresses": [
+      {
+        "IP": "172.17.0.5",
+        "Port": "80"
+      }
+    ]
+  }
+]

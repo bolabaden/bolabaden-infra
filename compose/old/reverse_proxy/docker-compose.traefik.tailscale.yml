@@ -1,0 +1,249 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Chicago} # Your Timezone
+  PUID: ${PUID:-1002}
+  PGID: ${PGID:-988}
+  UMASK: ${UMASK:-002}
+
+x-common-uidgid: &common-uidgid
+  user: ${PUID:-1002}:${PGID:-988}
+
+x-resource-limits: &resource-limits
+  cpu_shares: 1024
+  labels:
+    autoheal: "true"
+
+x-common-deploy: &common-deploy
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    window: 120s
+  labels:
+    autoheal: "true"
+    swarm.autoscaler: "true"
+
+x-swarm-resource-limits: &swarm-resource-limits
+  resources:
+    limits:
+      cpus: "0.10"
+      memory: 512M
+
+x-swarm-preferences-worker-priority: &swarm-preferences-worker-priority
+  placement:
+    preferences:
+      - spread: node.labels.worker_priority
+
+x-swarm-constraints-worker-only: &swarm-constraints-worker-only
+  placement:
+    constraints:
+      - node.role == worker
+
+x-swarm-constraints-manager-only: &swarm-constraints-manager-only
+  placement:
+    constraints:
+      - node.role == manager
+
+x-traefik-labels: &traefik-labels
+  traefik.enable: "true"
+  #  traefik.http.middlewares.admin-auth.basicauth.users: ${TRAEFIK_USERNAME:-admin}:${TRAEFIK_HASHED_PASSWORD:-$$apr1$$89eqM5Ro$$CxaFELthUKV21DpI3UTQO.}
+  traefik.http.services.api@internal.loadbalancer.server.port: 8099
+  homepage.group: Infrastructure
+  homepage.name: Traefik
+  homepage.icon: traefik
+  homepage.href: https://traefik.$DOMAIN
+  homepage.description: Reverse proxy
+  homepage.widget.type: traefik
+  homepage.widget.url: http://traefik.$DOMAIN
+  homepage.widget.fields: '["routers", "services", "middleware"]'
+
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    hostname: ${TS_HOSTNAME:-bolabaden-the-fourth}
+    networks:
+      infranet:
+        ipv4_address: ${TS_HOST_IP:-192.50.0.224}
+    cap_add:
+      - NET_ADMIN
+    user: root:988
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ${CONFIG_DIR:-./configs}/tailscale/state:/var/lib/tailscale
+    secrets:
+      - tailscale_authkey
+    environment:
+      # Accept DNS configuration from the admin console.
+      # Not accepted by default.
+      TS_ACCEPT_DNS: "true"
+      # Attempt to log in only if not already logged in.
+      # False by default, to forcibly log in every time the container starts.
+      TS_AUTH_ONCE: "false"
+      # An auth key used to authenticate the container.
+      # This is equivalent to what you'd pass to tailscale login --auth-key=.
+      # It is also possible to use an OAuth client secret here but the associated tag must be provided using TS_EXTRA_ARGS=--advertise-tags=tag:ci.
+      # To mark a containerized node as ephemeral append ?ephemeral=true to the auth key or OAuth client secret.
+      TS_AUTHKEY: ${TS_AUTHKEY:-}  # or suffix the var name with _FILE to use a file (in this example, docker secret)
+      # Proxy all incoming Tailscale traffic to the specified destination IP.
+      TS_DEST_IP: ""
+      # Set to true to enable an unauthenticated /healthz endpoint at the address specified by TS_LOCAL_ADDR_PORT.
+      # The health check returns 200 OK if the node has at least one [meshnet](https://tailscale.com/kb/1136/meshnet) IP address, otherwise it returns 503.
+      TS_ENABLE_HEALTH_CHECK: "true"
+      # Set to true to enable an unauthenticated /metrics endpoint at the address specified by TS_LOCAL_ADDR_PORT.
+      # See https://tailscale.com/kb/1482/client-metrics
+      TS_ENABLE_METRICS: "true"
+      # Any other flags to pass in to the Tailscale CLI in a tailscale up command.
+      # https://tailscale.com/kb/1080/cli
+      TS_EXTRA_ARGS: ""  # e.g. --accept-routes to accept TS_ROUTES
+      # Use the specified hostname for the node.
+      # This is equivalent to tailscale set --hostname=.
+      TS_HOSTNAME: "${TS_HOSTNAME:-bolabaden-the-fourth}"
+      # If running in Kubernetes, the Kubernetes secret name where Tailscale state is stored.
+      # The default is tailscale. If TS_AUTHKEY is not set, and TS_KUBE_SECRET contains a secret with an authkey field, that key is used as a Tailscale auth key.
+      # https://tailscale.com/kb/1185/kubernetes  https://kubernetes.io/docs/concepts/configuration/secret
+      TS_KUBE_SECRET: "tailscale"
+      # Specifies the [<addr>]:<port> on which to serve local metrics and health check HTTP endpoints if enabled through TS_ENABLE_METRICS or TS_ENABLE_HEALTH_CHECK.
+      # Defaults to [::]:9002 on all available interfaces.
+      TS_LOCAL_ADDR_PORT: "[::]:9002"
+      # Set an address and port for the HTTP proxy.
+      # This will be passed to tailscaled --outbound-http-proxy-listen=.
+      # For example, to set the HTTP proxy to port 1055, this is :1055, which is equivalent to tailscaled --outbound-http-proxy-listen=:1055.
+      TS_OUTBOUND_HTTP_PROXY_LISTEN: ":1055"
+      # Advertise subnet routes.
+      # This is equivalent to tailscale set --advertise-routes=.
+      # To accept advertised routes, use TS_EXTRA_ARGS to pass in --accept-routes.
+      TS_ROUTES: "${TS_ROUTES:-}"
+      # Accepts a JSON file to programmatically configure Serve and Funnel functionality.
+      # Use tailscale serve status --json to export your current configuration in the correct format.
+      # If this file is bind mounted using a Docker volume, it must be done so as a directory and not an individual file for configuration updates to be correctly detected.
+      TS_SERVE_CONFIG: ""
+      # Unix socket path used by the Tailscale binary, where the tailscaled LocalAPI socket is created.
+      # The default is /var/run/tailscale/tailscaled.sock.
+      # This is equivalent to tailscaled tailscale --socket=
+      TS_SOCKET: "/var/run/tailscale/tailscaled.sock"
+      # Set an address and port for the SOCKS5 proxy.
+      # This will be passed to tailscaled --socks5-server=.
+      # For example, to set the SOCKS5 proxy to port 1055, this is :1055, which is equivalent to tailscaled --socks5-server=:1055.
+      TS_SOCKS5_SERVER: ":1055"
+      # Directory where the state of tailscaled is stored.
+      # This needs to persist across container restarts.
+      # This will be passed to tailscaled --statedir=.
+      # When running on Kubernetes, state is stored by default in the Kubernetes secret with name:tailscale.
+      # To store state on local disk instead, set TS_KUBE_SECRET="" and TS_STATE_DIR=/path/to/storage/dir.
+      TS_STATE_DIR: "/var/lib/tailscale"
+      # Any other flags to pass in to tailscaled.
+      # https://tailscale.com/kb/1278/tailscaled#flags-to-tailscaled
+      TS_TAILSCALED_EXTRA_ARGS: ""
+      # Enable userspace networking, instead of kernel networking.
+      # Enabled by default.
+      # This is equivalent to tailscaled --tun=userspace-networking.
+      # https://tailscale.com/kb/1112/userspace-networking
+      TS_USERSPACE: "false"
+    labels:
+      traefik.expose: "false"
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      labels:
+        traefik.expose: "false"
+    restart: always
+  # Multiple DNS challenge provider are not supported with Traefik,
+  # but you can use CNAME to handle that. For example, if you have example.org (account foo) and
+  # example.com (account bar) you can create a CNAME on example.org called _acme-challenge.example.org
+  # pointing to challenge.example.com. This way, you can obtain certificates for example.org with the bar account.
+  traefik:
+    # 🔹🔹 Traefik 🔹🔹
+    image: traefik
+    container_name: traefik
+    hostname: traefik
+    <<: [*common-uidgid, *common-logging, *resource-limits]
+    networks:
+      - infranet
+    ports:
+      # Listen on port 80, default for HTTP, necessary to redirect to HTTPS
+      - ${TRAEFIK_WEB_PORT:-80}:${TRAEFIK_WEB_PORT:-80}
+      # Listen on port 443, default for HTTPS
+      - ${TRAEFIK_WEBSECURE_PORT:-443}:${TRAEFIK_WEBSECURE_PORT:-443}
+      # Listen on port 8099, default for the Traefik API and Dashboard
+      - ${TRAEFIK_DASHBOARD_PORT:-8099}:${TRAEFIK_DASHBOARD_PORT:-8099}
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: ${DISABLE_IPV6:-1}
+    volumes:
+      - ${SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock:z
+      - ${CONFIG_DIR:-./configs}/traefik/config:/config
+      - ${CONFIG_DIR:-./configs}/traefik/config:/etc/traefik
+      - ${CERTS_PATH:-./certs}:/certs
+    #      - /etc/localtime:/etc/localtime:ro
+    environment:
+      <<: *common-env
+      # CNAME are supported (and sometimes even encouraged), but there are a few cases where they can be problematic.
+      # If needed, CNAME support can be disabled with the following environment variable:
+      LEGO_DISABLE_CNAME_SUPPORT: ${LEGO_DISABLE_CNAME_SUPPORT:-false} # Disable CNAME support for DNS challenges. (Default: false)
+      ZEROSSL_API_KEY: ${ZEROSSL_API_KEY:-} # ZeroSSL API key.
+    command:
+      - --accesslog=true # Enable the access log, with HTTP requests
+      - --api # Enable api/dashboard. When set to true, its sub option api.dashboard is also set to true.
+      - --api.dashboard=true # Enable dashboard (default: false)
+      - --api.debug=true # Enable additional endpoints for debugging and profiling (default: false)
+      - --api.disabledashboardad=true # Disable the advertisement from the dashboard (default: false)
+      - --api.insecure=true # Enable the API and the dashboard on the entryPoint named traefik (default: false)
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.asdefault=false # Adds this EntryPoint to the list of default EntryPoints to be used on routers that don't have any Entrypoint defined. (Default: false)
+      - --entrypoints.web.observability.accesslogs=true
+      - --entrypoints.web.observability.metrics=true
+      - --entrypoints.web.observability.tracing=true
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.asdefault=true # Adds this EntryPoint to the list of default EntryPoints to be used on routers that don't have any Entrypoint defined. (Default: false)
+      - --entrypoints.websecure.http.tls.certresolver=myresolver
+      - --entrypoints.websecure.http.tls.domains[0].main=$TS_DOMAIN
+      - --entrypoints.websecure.http.tls.domains[0].sans=*.$TS_DOMAIN
+      - --entrypoints.websecure.http.tls=true
+      - --certificatesresolvers.myresolver.tailscale=true
+      - --global.checknewversion=true # Periodically check if a new version has been released. (Default: true)
+      - --global.sendanonymoususage=false # Periodically send anonymous usage statistics. If the option is not specified, it will be disabled by default. (Default: false)
+      - --log # Enable the Traefik log, for configurations and errors
+      - --log.level=INFO # Log level. (Default: INFO)
+      - --ping.terminatingstatuscode=503 # Terminating status code (Default: 503)
+      - --ping=true # Enable the ping endpoint. (Default: true)
+      - --providers.docker.defaultrule=Host(`{{ .ContainerName }}.$DOMAIN`) || Host(`{{ .ContainerName }}.$TS_DOMAIN`)
+      - --providers.docker.endpoint=unix:///var/run/docker.sock # Docker server endpoint. Can be a TCP or a Unix socket endpoint. (Default: unix:///var/run/docker.sock)
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.network=infranet # Default Docker network used.
+      - --providers.docker=true # Enable Docker in Traefik, so that it reads labels from Docker services
+      - --providers.file.directory=/config
+      - --providers.swarm.defaultrule=Host(`{{ .ContainerName }}.$DOMAIN`) || Host(`{{ .ContainerName }}.$TS_DOMAIN`)
+      - --providers.swarm.endpoint=unix:///var/run/docker.sock
+      - --providers.swarm.exposedByDefault=false
+      - --providers.swarm.network=infranet
+      - --providers.swarm=true
+    labels:
+      <<: *traefik-labels
+    deploy:
+      <<: [*common-deploy, *swarm-resource-limits]
+      # While in Swarm Mode, Traefik uses labels found on services, not on individual containers.
+      # Therefore, if you use a compose file with Swarm Mode, labels should be defined in the deploy part of your service
+      # as shown:
+      labels:
+        <<: *traefik-labels
+      placement:
+        constraints: [node.role == manager]
+    restart: always
+
+
+networks:
+  infranet:
+    driver: macvlan
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+      com.docker.network.bridge.enable_icc: "true"
+      parent: ${TS_INTERFACE_NAME:-tailscale0}
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24
+          gateway: 192.168.0.1
+          ip_range: 192.168.0.224/27
+          aux_addresses:
+            host: 192.168.0.225
+  # if you prefer an external network, use the following command:
+  # docker network create -d ipvlan --subnet ${TS_SUBNET:-192.50.0.0/16} --ip-range ${TS_IP_RANGE:-192.50.0.0/16} --gateway ${TS_HOST_IP:-192.50.0.1} -o parent=${TS_INTERFACE_NAME:-tailscale0} infranet

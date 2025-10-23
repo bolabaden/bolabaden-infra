@@ -1,0 +1,44 @@
+{
+  "vpns": [
+    {
+      "name": "primary-openvpn",
+      "type": "openvpn",
+      "config_path": "/etc/openvpn/client/vpn_config.conf",
+      "auth_path": "/etc/openvpn/client/auth.conf",
+      "priority": 1,
+      "health_check_url": "https://httpbin.org/ip",
+      "health_check_interval": 30,
+      "health_check_timeout": 10,
+      "max_failures": 3,
+      "reconnect_delay": 60,
+      "enabled": true
+    },
+    {
+      "name": "backup-openvpn",
+      "type": "openvpn",
+      "config_path": "/etc/openvpn/client/backup_config.conf",
+      "auth_path": "/etc/openvpn/client/backup_auth.conf",
+      "priority": 2,
+      "health_check_url": "https://httpbin.org/ip",
+      "health_check_interval": 30,
+      "health_check_timeout": 10,
+      "max_failures": 3,
+      "reconnect_delay": 60,
+      "enabled": true
+    },
+    {
+      "name": "warp-fallback",
+      "type": "warp",
+      "config_path": "",
+      "priority": 3,
+      "health_check_url": "https://httpbin.org/ip",
+      "health_check_interval": 30,
+      "health_check_timeout": 10,
+      "max_failures": 3,
+      "reconnect_delay": 60,
+      "enabled": true
+    }
+  ],
+  "docker_network": "vpn-network",
+  "log_level": "INFO"
+} 

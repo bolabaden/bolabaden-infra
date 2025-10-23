@@ -7,7 +7,7 @@ dependencies:
   - deploy.mariadb
 
 spec:
-  image: docker.io/wordpress:latest
+  image: docker.io/wordpress
   env:
     WORDPRESS_DB_HOST: mariadb
     WORDPRESS_DB_USER: ${var.WORDPRESS_DB_USER}

@@ -1,0 +1,17 @@
+TEXT main.main.func3(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/cmd/zurg/main.go
+  main.go:52		0x3f16c0		f9400b90		MOVD 16(R28), R16							
+  main.go:52		0x3f16c4		eb3063ff		CMP R16, RSP								
+  main.go:52		0x3f16c8		54000109		BLS 8(PC)								
+  main.go:52		0x3f16cc		f81f0ffe		MOVD.W R30, -16(RSP)							
+  main.go:52		0x3f16d0		f81f83fd		MOVD R29, -8(RSP)							
+  main.go:52		0x3f16d4		d10023fd		SUB $8, RSP, R29							
+  main.go:53		0x3f16d8		97fffc7a		CALL github.com/debridmediamanager/zurg/internal.ShowVersion(SB)	
+  main.go:54		0x3f16dc		a97ffbfd		LDP -8(RSP), (R29, R30)							
+  main.go:54		0x3f16e0		910043ff		ADD $16, RSP, RSP							
+  main.go:54		0x3f16e4		d65f03c0		RET									
+  main.go:52		0x3f16e8		aa1e03e3		MOVD R30, R3								
+  main.go:52		0x3f16ec		97f25949		CALL runtime.morestack_noctxt.abi0(SB)					
+  main.go:52		0x3f16f0		17fffff4		JMP main.main.func3(SB)							
+  main.go:52		0x3f16f4		00000000		?									
+  main.go:52		0x3f16f8		00000000		?									
+  main.go:52		0x3f16fc		00000000		?									

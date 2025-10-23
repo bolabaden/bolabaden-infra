@@ -15,6 +15,26 @@ networks:
 
 
 
+secrets:
+  cloudflare-api-token:
+    file: ${SECRETS_PATH:?}/cf-api-token.txt
+  cloudflare-api-key:
+    file: ${SECRETS_PATH:?}/cf-api-key.txt
+  nginx-auth-api-key:
+    file: ${SECRETS_PATH:?}/nginx-auth-api-key.txt
+  tinyauth-secret:
+    file: ${SECRETS_PATH:?}/tinyauth-secret.txt
+  tinyauth-google-client-secret:
+    file: ${SECRETS_PATH:?}/tinyauth-google-client-secret.txt
+  tinyauth-github-client-secret:
+    file: ${SECRETS_PATH:?}/tinyauth-github-client-secret.txt
+  crowdsec-lapi-key:
+    file: ${SECRETS_PATH:?}/crowdsec-lapi-key.txt
+  sudo-password:
+    file: ${SECRETS_PATH:?}/sudo-password.txt
+
+
+
 # reminder: everything in docker-compose.yml's `configs:` section must have dollar signs ($) escaped with another dollar sign ($$).
 # Single dollar sign specifies that we're expecting docker to resolve the variable itself at deploy time (e.g. when `docker compose up` is ran).
 # Double dollar sign specifies a literal dollar sign in the configuration content.
@@ -302,13 +322,63 @@ configs:
       group_threshold: ${CROWDSEC_FILE_FIRST_NOTIFICATION_GROUP_THRESHOLD:-10}  # if alerts exceed this, then the plugin will be sent the message
 
       # Use full path EG /tmp/crowdsec_alerts.json or %TEMP%\crowdsec_alerts.json
-      log_path: ${CROWDSEC_FILE_FIRST_NOTIFICATION_LOG_PATH:-"/tmp/crowdsec_alerts.json"}
+      log_path: "${CROWDSEC_FILE_FIRST_NOTIFICATION_LOG_PATH:-/tmp/crowdsec_alerts.json}"
       rotate:
         enabled: ${CROWDSEC_FILE_FIRST_NOTIFICATION_ROTATE_ENABLED:-true}  # Change to false if you want to handle log rotate on system basis
         max_size: ${CROWDSEC_FILE_FIRST_NOTIFICATION_MAX_SIZE:-500}  # in MB
         max_files: ${CROWDSEC_FILE_FIRST_NOTIFICATION_MAX_FILES:-5}
         max_age: ${CROWDSEC_FILE_FIRST_NOTIFICATION_MAX_AGE:-5}
         compress: ${CROWDSEC_FILE_FIRST_NOTIFICATION_COMPRESS:-true}
+  crowdsec-config.yaml:
+    content: |
+      common:
+        log_media: stdout
+        log_level: info
+        log_dir: /var/log/
+      config_paths:
+        config_dir: /etc/crowdsec/
+        data_dir: /var/lib/crowdsec/data/
+        simulation_path: /etc/crowdsec/simulation.yaml
+        hub_dir: /etc/crowdsec/hub/
+        index_path: /etc/crowdsec/hub/.index.json
+        notification_dir: /etc/crowdsec/notifications/
+        plugin_dir: /usr/local/lib/crowdsec/plugins/
+      crowdsec_service:
+        acquisition_path: /etc/crowdsec/acquis.yaml
+        acquisition_dir: /etc/crowdsec/acquis.d
+        parser_routines: 1
+      plugin_config:
+        user: nobody
+        group: nobody
+      cscli:
+        output: human
+      db_config:
+        log_level: info
+        type: sqlite
+        db_path: /var/lib/crowdsec/data/crowdsec.db
+        flush:
+          max_items: 5000
+          max_age: 7d
+        use_wal: false
+      api:
+        client:
+          insecure_skip_verify: false
+          credentials_path: /etc/crowdsec/local_api_credentials.yaml
+        server:
+          log_level: info
+          listen_uri: 0.0.0.0:${CROWDSEC_LAPI_PORT:-8080}
+          profiles_path: /etc/crowdsec/profiles.yaml
+          trusted_ips: # IP ranges, or IPs which can have admin API access
+            - 127.0.0.1
+            - ::1
+          online_client: # Central API credentials (to push signals and receive bad IPs)
+            credentials_path: /etc/crowdsec//online_api_credentials.yaml
+          enable: true
+      prometheus:
+        enabled: true
+        level: full
+        listen_addr: 0.0.0.0
+        listen_port: ${PROMETHEUS_PORT:-6060}
   traefik-failover-dynamic.conf.tmpl:
     content: |
       # yaml-language-server: $$schema=https://www.schemastore.org/traefik-v3-file-provider.json
@@ -332,25 +402,19 @@ configs:
           {{- $$name := trimPrefix "/" $$c.Name }}
           {{- /* Get healthcheck path from container labels */}}
           {{- $$healthPath := "/" }}
-          {{- if index $$c.Labels "traefik.healthcheck.path" }}
-            {{- $$healthPath = index $$c.Labels "traefik.healthcheck.path" }}
-          {{- else if index $$c.Labels "kuma.healthcheck.path" }}
+          {{- if index $$c.Labels "kuma.healthcheck.path" }}
             {{- $$healthPath = index $$c.Labels "kuma.healthcheck.path" }}
           {{- end }}
 
           {{- /* Get healthcheck interval from container labels */}}
           {{- $$healthInterval := "5m" }}
-          {{- if index $$c.Labels "traefik.healthcheck.interval" }}
-            {{- $$healthInterval = index $$c.Labels "traefik.healthcheck.interval" }}
-          {{- else if index $$c.Labels "kuma.healthcheck.interval" }}
+          {{- if index $$c.Labels "kuma.healthcheck.interval" }}
             {{- $$healthInterval = index $$c.Labels "kuma.healthcheck.interval" }}
           {{- end }}
 
           {{- /* Get healthcheck timeout from container labels */}}
           {{- $$healthTimeout := "15s" }}
-          {{- if index $$c.Labels "traefik.healthcheck.timeout" }}
-            {{- $$healthTimeout = index $$c.Labels "traefik.healthcheck.timeout" }}
-          {{- else if index $$c.Labels "kuma.healthcheck.timeout" }}
+          {{- if index $$c.Labels "kuma.healthcheck.timeout" }}
             {{- $$healthTimeout = index $$c.Labels "kuma.healthcheck.timeout" }}
           {{- end }}
 
@@ -362,16 +426,17 @@ configs:
           {{ $$name }}-with-failover:
             loadBalancer:
               servers:
-                - url: https://{{ $$name }}.beatapostapita.$DOMAIN
+                - url: http://{{ $$name }}:{{ (index $$c.Addresses 0).Port }}
                 - url: https://{{ $$name }}.micklethefickle.$DOMAIN
-              # - url: https://{{ $$name }}.vractormania.$DOMAIN
-              # - url: https://{{ $$name }}.arnialtrashlid.$DOMAIN
-              # - url: https://{{ $$name }}.wizard-pc.$DOMAIN
-              # - url: https://{{ $$name }}.wizard-pc-wsl.$DOMAIN
-              # - url: https://{{ $$name }}.wizard-laptop.$DOMAIN
-              # - url: https://{{ $$name }}.cloudserver1.$DOMAIN
-              # - url: https://{{ $$name }}.cloudserver2.$DOMAIN
-              # - url: https://{{ $$name }}.cloudserver3.$DOMAIN
+                - url: https://{{ $$name }}.beatapostapita.$DOMAIN
+                - url: https://{{ $$name }}.vractormania.$DOMAIN
+              #  - url: https://{{ $$name }}.arnialtrashlid.$DOMAIN
+              #  - url: https://{{ $$name }}.wizard-pc.$DOMAIN
+              #  - url: https://{{ $$name }}.wizard-pc-wsl.$DOMAIN
+              #  - url: https://{{ $$name }}.wizard-laptop.$DOMAIN
+              #  - url: https://{{ $$name }}.cloudserver1.$DOMAIN
+              #  - url: https://{{ $$name }}.cloudserver2.$DOMAIN
+              #  - url: https://{{ $$name }}.cloudserver3.$DOMAIN
               healthCheck:
                 path: "{{ $$healthPath }}"
                 interval: "{{ $$healthInterval }}"
@@ -424,10 +489,6 @@ configs:
             redirectRegex:
               regex: '^(http|https)?://www\.(.+)$$'
               replacement: '$$1://$$2'
-              permanent: false
-          http-to-https-redirect-simple:
-            redirectScheme:
-              scheme: https
               permanent: false
           crowdsec:
             plugin:
@@ -704,17 +765,19 @@ configs:
 services:
   cloudflare-ddns:
     image: docker.io/favonia/cloudflare-ddns:1  # - "1" for the latest stable version whose major version is 1
-    #image: docker.io/favonia/cloudflare-ddns:latest  # - "latest" for the latest stable version (which could become 2.x.y in the future and break things)
+    #image: docker.io/favonia/cloudflare-ddns  # - "latest" for the latest stable version (which could become 2.x.y in the future and break things)
     container_name: cloudflare-ddns
     network_mode: host  # This bypasses network isolation and makes IPv6 easier (optional; see below)
     read_only: true  # Make the container filesystem read-only (optional but recommended)
     cap_drop: [all]  # Drop all Linux capabilities (optional but recommended)
     security_opt: [no-new-privileges:true]  # Another protection to restrict superuser privileges (optional but recommended)
+    secrets:
+      - cloudflare-api-token
     environment:
       TZ: ${TZ:-America/Chicago}
       # The value of CLOUDFLARE_API_TOKEN should be an API token (not an API key), which can be obtained from the API Tokens page.
       # Use the Edit zone DNS template to create a token. The less secure API key authentication is deliberately not supported.
-      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:?}  # Your Cloudflare API token
+      CLOUDFLARE_API_TOKEN_FILE: /run/secrets/cloudflare-api-token
 
       # There is an optional feature (available since version 1.14.0) that lets you maintain a WAF list of detected IP addresses.
       # To use this feature, edit the token and grant it the Account - Account Filter Lists - Edit permission.
@@ -822,20 +885,24 @@ services:
     networks:
       - backend
       - publicnet
+    secrets:
+      - tinyauth-secret
+      - tinyauth-google-client-secret
+      - tinyauth-github-client-secret
     expose:
       - 3000
     volumes:
       - ${CONFIG_PATH:-./volumes}/traefik/tinyauth:/data
     environment:
-      SECRET: ${TINYAUTH_SECRET:?}
+      SECRET_FILE: /run/secrets/tinyauth-secret
       APP_URL: ${TINYAUTH_APP_URL:-https://auth.$DOMAIN}
       USERS: $TINYAUTH_USERS
       # Google OAuth Configuration
       GOOGLE_CLIENT_ID: ${TINYAUTH_GOOGLE_CLIENT_ID:?}
-      GOOGLE_CLIENT_SECRET: ${TINYAUTH_GOOGLE_CLIENT_SECRET:?}
+      GOOGLE_CLIENT_SECRET_FILE: /run/secrets/tinyauth-google-client-secret
       # GitHub OAuth Configuration
       GITHUB_CLIENT_ID: ${TINYAUTH_GITHUB_CLIENT_ID:?}
-      GITHUB_CLIENT_SECRET: ${TINYAUTH_GITHUB_CLIENT_SECRET:?}
+      GITHUB_CLIENT_SECRET_FILE: /run/secrets/tinyauth-github-client-secret
       # Additional recommended settings
       SESSION_EXPIRY: ${TINYAUTH_SESSION_EXPIRY:-604800} # 2 weeks session expiry
       COOKIE_SECURE: ${TINYAUTH_COOKIE_SECURE:-true} # Send cookie only with HTTPS
@@ -875,7 +942,7 @@ services:
     expose:
       - ${CROWDSEC_LAPI_PORT:-8080}    # HTTP API for bouncers
       - ${CROWDSEC_APPSEC_PORT:-7422}  # AppSec WAF endpoint
-      - 6060                           # Metrics endpoint for prometheus
+      - ${PROMETHEUS_PORT:-6060}       # Metrics endpoint for prometheus
     environment:
       UID: ${PUID:-1001}
       GID: ${PGID:-999}
@@ -884,6 +951,9 @@ services:
       # CrowdSec files are typically access restricted (644) by the root user.
       # If your log files are stored onto an NFS share, you may want to use poll_without_inotify: true for each log source as outlined by CrowdSec here.
       # https://docs.crowdsec.net/docs/data_sources/file/?ref=blog.lrvt.de#poll_without_inotify
+      - source: crowdsec-config.yaml
+        target: /etc/crowdsec/config.yaml
+        mode: 0644
       - source: crowdsec-acquis.yaml
         target: /etc/crowdsec/acquis.yaml
         mode: 0644
@@ -926,6 +996,12 @@ services:
       - ${CONFIG_PATH:-./volumes}/traefik/crowdsec/plugins:/usr/local/lib/crowdsec/plugins:rw
       # Log bind mounts into crowdsec
       - ${CONFIG_PATH:-./volumes}/traefik/logs:/var/log/traefik:ro
+    healthcheck:
+      test: ["CMD-SHELL", "cscli version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     restart: always
   traefik:
     # 🔹🔹 Traefik 🔹🔹
@@ -933,7 +1009,7 @@ services:
     depends_on:
       - crowdsec
       - dockerproxy-ro
-    image:  docker.io/traefik:v3.5.2  # Built on 2025-09-09T10:16:55Z
+    image: docker.io/traefik:v3.5.2  # Built on 2025-09-09T10:16:55Z
     container_name: traefik
     hostname: traefik
     extra_hosts:
@@ -942,14 +1018,16 @@ services:
       - default
       - nginx_net
       - publicnet
+    secrets:
+      - cloudflare-api-key
     expose:
       - 8080          # Dashboard API
     ports:
       - 80:80         # HTTP
       - 443:443       # HTTPS
       - 443:443/udp   # HTTPS/3
-      - 853:853       # DNS over TLS
-      - 3000:3000     # Ping
+    #  - 853:853       # DNS over TLS
+    #  - 3000:3000     # Ping
     cap_add:
       - NET_ADMIN
     volumes:
@@ -967,7 +1045,7 @@ services:
       DOCKER_HOST: tcp://dockerproxy-ro:2375
       LETS_ENCRYPT_EMAIL: ${ACME_RESOLVER_EMAIL:?}
       CLOUDFLARE_EMAIL: ${CLOUDFLARE_EMAIL:?}
-      CLOUDFLARE_API_KEY: ${CLOUDFLARE_API_KEY:?}
+      CLOUDFLARE_API_KEY_FILE: /run/secrets/cloudflare-api-key
       CLOUDFLARE_ZONE_ID: ${CLOUDFLARE_ZONE_ID:?}
     command:
       - '--accessLog=true'
@@ -983,6 +1061,7 @@ services:
       - '--api.debug=true'
       - '--api.disableDashboardAd=true'
       - '--api.insecure=false'
+      - '--api=true'
       # use staging for testing/development/debugging to avoid rate limiting
       #- '--certificatesResolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory'
       - '--certificatesResolvers.letsencrypt.acme.caServer=${TRAEFIK_CA_SERVER:-https://acme-v02.api.letsencrypt.org/directory}'
@@ -996,8 +1075,8 @@ services:
       - '--certificatesResolvers.letsencrypt.acme.storage=/certs/acme.json'
       #- '--certificatesResolvers.letsencrypt.acme.dnsChallenge.propagation.disableChecks=true'
       #- '--certificatesResolvers.letsencrypt.acme.dnsChallenge.propagation.delayBeforeChecks=60'
-      - '--entryPoints.dot.address=:853'
-      - '--entryPoints.ping.address=:3000'
+      #- '--entryPoints.dot.address=:853'
+      #- '--entryPoints.ping.address=:3000'
       - '--entryPoints.web.address=:80'
       # Redirect HTTP to HTTPS
       - '--entryPoints.web.http.redirections.entryPoint.scheme=https'
@@ -1005,8 +1084,6 @@ services:
       # Ensures that the Traefik logs obtain the correct IP address of site visitors, defined in CloudFlare's `CF_CONNECTING_IP` HTTP header.
       - '--entryPoints.web.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32'
       - '--entryPoints.websecure.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32'
-      - '--entryPoints.web.http.encodeQuerySemiColons=true'
-      - '--entryPoints.web.http2.maxConcurrentStreams=100'
       - '--entryPoints.websecure.address=:443'
       - '--entryPoints.websecure.http.encodeQuerySemiColons=true'
       - '--entryPoints.websecure.http.middlewares=bolabaden-error-pages@file,crowdsec@file,strip-www@file'
@@ -1106,6 +1183,13 @@ services:
       -endpoint tcp://dockerproxy-rw:2375
       -only-exposed
       -include-stopped
+      -event-filter event=start
+      -event-filter event=create
+      -event-filter event=expose
+      -event-filter event=update
+      -event-filter event=connect
+      -event-filter label=traefik.enable=true
+      -container-filter label=traefik.enable=true
       -watch /templates/traefik-failover-dynamic.conf.tmpl /traefik/dynamic/failover-fallbacks.yaml
     restart: no
   logrotate-traefik:
@@ -1113,7 +1197,7 @@ services:
     build:
       context: ${SRC_PATH:-./projects}/reverse_proxy/logrotate-traefik
       dockerfile: Dockerfile
-    image: docker.io/bolabaden/logrotate-traefik:latest
+    image: docker.io/bolabaden/logrotate-traefik
     container_name: logrotate-traefik
     network_mode: none
     volumes:
@@ -1131,7 +1215,7 @@ services:
     mem_reservation: 8M
     restart: always
   autokuma:
-    image: ghcr.io/bigboot/autokuma:latest
+    image: ghcr.io/bigboot/autokuma
     container_name: autokuma
     hostname: autokuma
     extra_hosts:
@@ -1144,7 +1228,7 @@ services:
       # --- Uptime Kuma connection settings ---
       AUTOKUMA__KUMA__URL: https://uptimekuma.$DOMAIN  # kuma.url: The URL AutoKuma should use to connect to Uptime Kuma
       AUTOKUMA__KUMA__USERNAME: ${AUTOKUMA__KUMA__USERNAME:-admin}  # kuma.username: The username for logging into Uptime Kuma (required unless auth is disabled)
-      AUTOKUMA__KUMA__PASSWORD: ${AUTOKUMA__KUMA__PASSWORD:-password}  # kuma.password: The password for logging into Uptime Kuma (required unless auth is disabled)
+      AUTOKUMA__KUMA__PASSWORD: ${AUTOKUMA__KUMA__PASSWORD:?}  # kuma.password: The password for logging into Uptime Kuma (required unless auth is disabled)
       AUTOKUMA__KUMA__CALL_TIMEOUT: ${AUTOKUMA__KUMA__CALL_TIMEOUT:-5}  # kuma.call_timeout: The timeout for executing calls to the Uptime Kuma server
       AUTOKUMA__KUMA__CONNECT_TIMEOUT: ${AUTOKUMA__KUMA__CONNECT_TIMEOUT:-5}  # kuma.connect_timeout: The timeout for the initial connection to Uptime Kuma
     restart: always

@@ -49,7 +49,7 @@ services:
     build:
       context: ./src/index-insurance
       dockerfile: Dockerfile
-    image: index-insurance:latest
+    image: index-insurance
     container_name: index-insurance
     hostname: index-insurance
     networks:

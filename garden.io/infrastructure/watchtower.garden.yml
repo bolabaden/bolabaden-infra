@@ -5,7 +5,7 @@ description: Automatic container updates
 type: container
 
 spec:
-  image: docker.io/containrrr/watchtower:latest
+  image: docker.io/containrrr/watchtower
   env:
     TZ: ${var.tz}
     DOCKER_HOST: ${var.DOCKER_HOST || "unix:///var/run/docker.sock"}

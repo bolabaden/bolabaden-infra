@@ -1,0 +1,138 @@
+# Default values for aiostreams chart.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/viren070/aiostreams
+  pullPolicy: IfNotPresent
+  tag: latest # Match the docker-compose image tag
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Base path for configuration files on the host, mirroring docker-compose ${CONFIG_PATH}.
+# This is used when hostPath persistence is enabled.
+configPath: "./configs"
+
+# Path to the .env file relative to the chart's root directory.
+# Helm will read this file via .Files.Get to create the necessary secret.
+# The user must place the .env file at this location within the chart structure before installing.
+# Example: charts/aiostreams/env/config.env
+envFilePath: "env/config.env"
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 3005 # Corresponds to AIOSTREAMS_PORT default
+  targetPort: 3005 # Internal port of the aiostreams container
+
+ingress:
+  # Ingress settings are kept for potential use, but will need configuration.
+  # For 1:1 docker-compose, external access was likely via Traefik labels,
+  # which should be configured on the Traefik side or via Ingress annotations.
+  enabled: false
+  className: ""
+  annotations: {}
+    # Traefik labels from docker-compose would translate to annotations here
+    # e.g., traefik.http.routers.aiostreams.service: aiostreams
+    #       traefik.http.routers.aiostreams.entrypoints: websecure
+    #       traefik.http.routers.aiostreams.tls: true
+    #       traefik.http.routers.aiostreams.http.scheme: https
+    #       traefik.http.services.aiostreams.loadbalancer.server.port: 3005
+  hosts:
+    - host: aiostreams.local # This needs to be set based on ${DOMAIN} or similar
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+# Persistence Configuration
+persistence:
+  # No volumes explicitly defined for aiostreams in the docker-compose service block.
+  # If env_file path implies a volume mount was intended, enable and configure here.
+  enabled: false
+  # If enabled, default type is hostPath to match docker-compose bind mounts.
+  # Ensure the specified host path exists on the target Kubernetes nodes.
+  # hostPath: "" # Specify the HOST path here if enabled
+  # storageClassName: "" # Alternative: Use PVC
+  # accessMode: ReadWriteOnce # For PVC
+  # size: 1Gi # For PVC
+  # existingClaim: "" # For existing PVC
+
+# volumeMountPath: /path/in/container # Container path if persistence enabled
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Container name override
+containerName: aiostreams
+
+# Default restart policy
+restartPolicy: Always
+
+# Healthcheck configuration from docker-compose
+healthcheck:
+  enabled: true
+  command: ["wget", "-qO-", "http://localhost:3005/health"]
+  intervalSeconds: 60 # 1m
+  timeoutSeconds: 10
+  retries: 5
+  startPeriodSeconds: 10
+
+# Default labels from docker-compose (translated to annotations/values)
+# These would typically be applied to Ingress or Service annotations for Homepage integration
+homepage:
+  enabled: true # Controls inclusion of homepage labels/annotations
+  group: Media Streaming
+  name: AIOStreams
+  icon: aiostreams.png
+  # href needs to be constructed, potentially using Ingress host
+  # href: https://aiostreams.${DOMAIN}/ # Requires DOMAIN variable
+
+# Healthcheck parameters corresponding to the docker-compose healthcheck
+healthcheck:
+  interval: "1m"
+  timeout: "10s"
+  retries: 5
+  start_period: "10s"
+  # For Kubernetes, liveness/readiness probes are configured below
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http # Use the name of the container port
+    initialDelaySeconds: 10 # Corresponds to start_period
+    periodSeconds: 60 # Corresponds to interval
+    timeoutSeconds: 10 # Corresponds to timeout
+    failureThreshold: 5 # Corresponds to retries
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 10
+    periodSeconds: 60
+    timeoutSeconds: 10
+    failureThreshold: 5
+
+# Homepage integration specific values (if needed)
+homepage:
+  enabled: true
+  group: Media Streaming
+  name: AIOStreams
+  icon: aiostreams.png
+  # href is typically derived from the ingress host 

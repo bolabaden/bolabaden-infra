@@ -5,7 +5,7 @@ description: WARP in Docker with NAT routing
 type: container
 
 spec:
-  image: docker.io/caomingjun/warp:latest
+  image: docker.io/caomingjun/warp
   privileged: true
   capAdd:
     - MKNOD

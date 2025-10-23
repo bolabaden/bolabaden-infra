@@ -1,0 +1,204 @@
+{{/* 
+  HTTP Middlewares section
+  Source: pkg/config/label/label.go:18-19 - DecodeConfiguration parses traefik.http labels
+  Source: docs/content/reference/dynamic-configuration/docker-labels.yml:3-167 - Middleware labels
+*/}}
+{{ $allMiddlewareNames := dict }}
+{{ range $c := $enabledContainers }}
+  {{ $labels := $c.Labels }}
+  
+  {{/* 
+    Collect middleware names from this container
+    Source: pkg/config/label/label.go:18-19 - DecodeConfiguration parses traefik.http labels
+  */}}
+  {{ range $key, $value := $labels }}
+    {{ if hasPrefix $key "traefik.http.middlewares." }}
+      {{ $withoutPrefix := trimPrefix "traefik.http.middlewares." $key }}
+      {{ $middlewareName := index (split $withoutPrefix ".") 0 }}
+      {{ if $middlewareName }}
+        {{ $_ := set $allMiddlewareNames $middlewareName $c }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ if $allMiddlewareNames }}
+middlewares:
+  {{ range $middlewareName, $container := $allMiddlewareNames }}
+    {{ $labels := $container.Labels }}
+    {{ $middlewarePrefix := printf "traefik.http.middlewares.%s." $middlewareName }}
+    
+  {{ $middlewareName }}:
+    {{/* 
+      Check for each middleware type
+      Source: docs/content/reference/dynamic-configuration/docker-labels.yml:3-167 - Middleware types
+    */}}
+    {{ $middlewareTypes := slice "addprefix" "basicauth" "buffering" "chain" "circuitbreaker" "compress" "contenttype" "digestauth" "errors" "forwardauth" "grpcweb" "headers" "ipallowlist" "ipwhitelist" "inflightreq" "passtlsclientcert" "plugin" "ratelimit" "redirectregex" "redirectscheme" "replacepath" "replacepathregex" "retry" "stripprefix" "stripprefixregex" }}
+    
+    {{ range $type := $middlewareTypes }}
+      {{ $hasType := false }}
+      {{ range $key, $value := $labels }}
+        {{ if hasPrefix $key (printf "%s%s." $middlewarePrefix $type) }}
+          {{ $hasType = true }}
+        {{ end }}
+      {{ end }}
+      {{ $enabledValue := index $labels (printf "%s%s" $middlewarePrefix $type) }}
+      
+      {{ if or $hasType (eq $enabledValue "true") }}
+        {{ if eq $type "addprefix" }}
+    {{/* Source: docs/content/reference/dynamic-configuration/docker-labels.yml:3 */}}
+    addPrefix:
+          {{ if hasKey $labels (printf "%saddprefix.prefix" $middlewarePrefix) }}
+            {{ $prefix := index $labels (printf "%saddprefix.prefix" $middlewarePrefix) }}
+      prefix: {{ $prefix }}
+          {{ end }}
+        {{ end }}
+        
+        {{ if eq $type "basicauth" }}
+    {{/* Source: docs/content/reference/dynamic-configuration/docker-labels.yml:4-8 */}}
+    basicAuth:
+          {{ if hasKey $labels (printf "%sbasicauth.users" $middlewarePrefix) }}
+            {{ $users := index $labels (printf "%sbasicauth.users" $middlewarePrefix) }}
+      users:
+            {{ $userList := split $users "," }}
+            {{ range $user := $userList }}
+        - {{ trim $user " " }}
+            {{ end }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sbasicauth.usersfile" $middlewarePrefix) }}
+            {{ $usersFile := index $labels (printf "%sbasicauth.usersfile" $middlewarePrefix) }}
+      usersFile: {{ $usersFile }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sbasicauth.realm" $middlewarePrefix) }}
+            {{ $realm := index $labels (printf "%sbasicauth.realm" $middlewarePrefix) }}
+      realm: {{ $realm }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sbasicauth.headerfield" $middlewarePrefix) }}
+            {{ $headerField := index $labels (printf "%sbasicauth.headerfield" $middlewarePrefix) }}
+      headerField: {{ $headerField }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sbasicauth.removeheader" $middlewarePrefix) }}
+            {{ $removeHeader := index $labels (printf "%sbasicauth.removeheader" $middlewarePrefix) }}
+            {{ if eq $removeHeader "true" }}
+      removeHeader: true
+            {{ end }}
+          {{ end }}
+        {{ end }}
+        
+        {{ if eq $type "headers" }}
+    {{/* Source: docs/content/reference/dynamic-configuration/docker-labels.yml:55-90 */}}
+    headers:
+          {{/* Custom Request Headers */}}
+          {{ $hasCustomRequestHeaders := false }}
+          {{ range $key, $value := $labels }}
+            {{ if hasPrefix $key (printf "%sheaders.customrequestheaders." $middlewarePrefix) }}
+              {{ $hasCustomRequestHeaders = true }}
+            {{ end }}
+          {{ end }}
+          {{ if $hasCustomRequestHeaders }}
+      customRequestHeaders:
+            {{ range $key, $value := $labels }}
+              {{ if hasPrefix $key (printf "%sheaders.customrequestheaders." $middlewarePrefix) }}
+                {{ $headerName := trimPrefix (printf "%sheaders.customrequestheaders." $middlewarePrefix) $key }}
+        {{ $headerName }}: {{ $value }}
+              {{ end }}
+            {{ end }}
+          {{ end }}
+          
+          {{/* Custom Response Headers */}}
+          {{ $hasCustomResponseHeaders := false }}
+          {{ range $key, $value := $labels }}
+            {{ if hasPrefix $key (printf "%sheaders.customresponseheaders." $middlewarePrefix) }}
+              {{ $hasCustomResponseHeaders = true }}
+            {{ end }}
+          {{ end }}
+          {{ if $hasCustomResponseHeaders }}
+      customResponseHeaders:
+            {{ range $key, $value := $labels }}
+              {{ if hasPrefix $key (printf "%sheaders.customresponseheaders." $middlewarePrefix) }}
+                {{ $headerName := trimPrefix (printf "%sheaders.customresponseheaders." $middlewarePrefix) $key }}
+        {{ $headerName }}: {{ $value }}
+              {{ end }}
+            {{ end }}
+          {{ end }}
+          
+          {{/* SSL Proxy Headers */}}
+          {{ $hasSSLProxyHeaders := false }}
+          {{ range $key, $value := $labels }}
+            {{ if hasPrefix $key (printf "%sheaders.sslproxyheaders." $middlewarePrefix) }}
+              {{ $hasSSLProxyHeaders = true }}
+            {{ end }}
+          {{ end }}
+          {{ if $hasSSLProxyHeaders }}
+      sslProxyHeaders:
+            {{ range $key, $value := $labels }}
+              {{ if hasPrefix $key (printf "%sheaders.sslproxyheaders." $middlewarePrefix) }}
+                {{ $headerName := trimPrefix (printf "%sheaders.sslproxyheaders." $middlewarePrefix) $key }}
+        {{ $headerName }}: {{ $value }}
+              {{ end }}
+            {{ end }}
+          {{ end }}
+          
+          {{/* Other header options - simplified for brevity */}}
+          {{ if hasKey $labels (printf "%sheaders.accesscontrolallowcredentials" $middlewarePrefix) }}
+            {{ $accessControlAllowCredentials := index $labels (printf "%sheaders.accesscontrolallowcredentials" $middlewarePrefix) }}
+            {{ if eq $accessControlAllowCredentials "true" }}
+      accessControlAllowCredentials: true
+            {{ end }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sheaders.accesscontrolallowheaders" $middlewarePrefix) }}
+            {{ $accessControlAllowHeaders := index $labels (printf "%sheaders.accesscontrolallowheaders" $middlewarePrefix) }}
+      accessControlAllowHeaders:
+            {{ $headerList := split $accessControlAllowHeaders "," }}
+            {{ range $header := $headerList }}
+        - {{ trim $header " " }}
+            {{ end }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sheaders.accesscontrolallowmethods" $middlewarePrefix) }}
+            {{ $accessControlAllowMethods := index $labels (printf "%sheaders.accesscontrolallowmethods" $middlewarePrefix) }}
+      accessControlAllowMethods:
+            {{ $methodList := split $accessControlAllowMethods "," }}
+            {{ range $method := $methodList }}
+        - {{ trim $method " " }}
+            {{ end }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sheaders.accesscontrolalloworiginlist" $middlewarePrefix) }}
+            {{ $accessControlAllowOriginList := index $labels (printf "%sheaders.accesscontrolalloworiginlist" $middlewarePrefix) }}
+      accessControlAllowOriginList:
+            {{ $originList := split $accessControlAllowOriginList "," }}
+            {{ range $origin := $originList }}
+        - {{ trim $origin " " }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+        
+        {{ if eq $type "stripprefix" }}
+    {{/* Source: docs/content/reference/dynamic-configuration/docker-labels.yml:165-166 */}}
+    stripPrefix:
+          {{ if hasKey $labels (printf "%sstripprefix.prefixes" $middlewarePrefix) }}
+            {{ $prefixes := index $labels (printf "%sstripprefix.prefixes" $middlewarePrefix) }}
+      prefixes:
+            {{ $prefixList := split $prefixes "," }}
+            {{ range $prefix := $prefixList }}
+        - {{ trim $prefix " " }}
+            {{ end }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sstripprefix.forceslash" $middlewarePrefix) }}
+            {{ $forceSlash := index $labels (printf "%sstripprefix.forceslash" $middlewarePrefix) }}
+            {{ if eq $forceSlash "true" }}
+      forceSlash: true
+            {{ end }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}

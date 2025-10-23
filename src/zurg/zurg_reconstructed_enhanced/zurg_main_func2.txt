@@ -1,0 +1,29 @@
+TEXT main.main.func2(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/cmd/zurg/main.go
+  main.go:40		0x3f15c0		f9400b90		MOVD 16(R28), R16						
+  main.go:40		0x3f15c4		eb3063ff		CMP R16, RSP							
+  main.go:40		0x3f15c8		540002e9		BLS 23(PC)							
+  main.go:40		0x3f15cc		f81c0ffe		MOVD.W R30, -64(RSP)						
+  main.go:40		0x3f15d0		f81f83fd		MOVD R29, -8(RSP)						
+  main.go:40		0x3f15d4		d10023fd		SUB $8, RSP, R29						
+  main.go:40		0x3f15d8		f9400f44		MOVD 24(R26), R4						
+  main.go:40		0x3f15dc		f9400740		MOVD 8(R26), R0							
+  main.go:40		0x3f15e0		f9400b41		MOVD 16(R26), R1						
+  main.go:41		0x3f15e4		f9400082		MOVD (R4), R2							
+  main.go:41		0x3f15e8		f9400483		MOVD 8(R4), R3							
+  main.go:41		0x3f15ec		97fff83d		CALL github.com/debridmediamanager/zurg/internal.MainApp(SB)	
+  main.go:41		0x3f15f0		b4000140		CBZ R0, 10(PC)							
+  main.go:42		0x3f15f4		a902ffff		STP (ZR, ZR), 40(RSP)						
+  main.go:42		0x3f15f8		b4000040		CBZ R0, 2(PC)							
+  main.go:42		0x3f15fc		f9400400		MOVD 8(R0), R0							
+  main.go:42		0x3f1600		f90017e0		MOVD R0, 40(RSP)						
+  main.go:42		0x3f1604		f9001be1		MOVD R1, 48(RSP)						
+  main.go:42		0x3f1608		9100a3e0		ADD $40, RSP, R0						
+  main.go:42		0x3f160c		b24003e1		ORR $1, ZR, R1							
+  main.go:42		0x3f1610		aa0103e2		MOVD R1, R2							
+  main.go:42		0x3f1614		97f48a77		CALL log.Fatal(SB)						
+  main.go:44		0x3f1618		a97ffbfd		LDP -8(RSP), (R29, R30)						
+  main.go:44		0x3f161c		910103ff		ADD $64, RSP, RSP						
+  main.go:44		0x3f1620		d65f03c0		RET								
+  main.go:40		0x3f1624		aa1e03e3		MOVD R30, R3							
+  main.go:40		0x3f1628		97f2595a		CALL runtime.morestack.abi0(SB)					
+  main.go:40		0x3f162c		17ffffe5		JMP main.main.func2(SB)						

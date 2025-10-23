@@ -1,0 +1,39 @@
+{{- /*
+NOTES for the mediaflow-proxy Helm chart.
+*/ -}}
+
+This chart deploys the MediaFlow Proxy application.
+
+**Network Mode Limitation:**
+In Docker Compose, this service used `network_mode: service:gluetun-premiumize`.
+Kubernetes does not support sharing network namespaces this way.
+This Helm chart deploys MediaFlow Proxy in its own pod network.
+Communication with the `gluetun-premiumize` service (if deployed separately via Helm)
+needs to happen through its Kubernetes Service (e.g., `gluetun-premiumize.{{ .Release.Namespace }}.svc.cluster.local`).
+
+{{- $envFilePath := .Values.envFilePath | default "" -}}
+{{- if and $envFilePath (not (.Files.Exists $envFilePath)) }}
+**WARNING:**
+Environment file path specified but not found: {{ $envFilePath }}
+The application requires API_PASSWORD and potentially other variables from this file to function correctly.
+Please ensure the file exists at `{{ $envFilePath }}` within the chart structure before installation.
+{{ end }}
+
+To get the Service URL (if using LoadBalancer or NodePort):
+
+{{- if contains "LoadBalancer" .Values.service.type }}
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "mediaflow-proxy.fullname" . }} --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}")
+  echo "Access MediaFlow Proxy at: http{{ if .Values.ingress.tls }}s{{ end }}://$SERVICE_IP:{{ .Values.service.port }}"
+{{- else if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "mediaflow-proxy.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo "Access MediaFlow Proxy at: http://$NODE_IP:$NODE_PORT"
+{{- else }}
+  # For ClusterIP, access via port-forwarding or Ingress
+  echo "MediaFlow Proxy service type is ClusterIP."
+  echo "Access via port-forward: kubectl port-forward svc/{{ include "mediaflow-proxy.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.targetPort }}"
+  echo "Then access at: http://127.0.0.1:{{ .Values.service.port }}"
+  {{- if .Values.ingress.enabled }}
+  echo "Or access via Ingress at defined hosts."
+  {{- end }}
+{{- end }} 

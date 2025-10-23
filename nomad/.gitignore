@@ -1,0 +1,25 @@
+# Nomad Secrets - NEVER commit these files
+secrets.auto.tfvars.hcl
+secrets.*.hcl
+*.secret.hcl
+*.secrets.hcl
+
+# Backup files
+*.backup
+*.bak
+
+# Terraform state (if using Terraform with Nomad)
+*.tfstate
+*.tfstate.*
+
+# Local override files
+override.hcl
+override.*.hcl
+*.override.hcl
+
+# Crash log files
+crash.log
+
+# Ignore CLI configuration files
+.nomad/
+

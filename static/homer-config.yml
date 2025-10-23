@@ -1,0 +1,164 @@
+# Homepage configuration
+# See https://fontawesome.com/icons for icons options
+
+# Optional: Use external configuration file.
+# Using this will ignore remaining config in this file
+# externalConfig: https://bolabaden.org/server-luci/config.yaml
+subtitle: "boCLOUD ..."
+title: "boCLOUD!"
+documentTitle: "bolabaden.org - micklethefickle" # Customize the browser tab text
+# Alternatively a fa icon can be provided:
+icon: "fas fa-wand-magic-sparkles"
+#logo: https://bolabaden.org/images/logo.png
+header: true # Set to false to hide the header
+footer: Version 1.417.0
+columns: "3" # "auto" or number (must be a factor of 12: 1, 2, 3, 4, 6, 12)
+connectivityCheck: false # whether you want to display a message when the apps are not accessible anymore (VPN disconnected for example)
+# Optional theming
+# theme: default # 'default' or one of the themes available in 'src/assets/themes'.
+# Optional custom stylesheet
+# Will load custom CSS files. Especially useful for custom icon sets.
+#stylesheet:
+#  - "assets/custom.css"
+# Here is the exhaustive list of customization parameters
+# However all value are optional and will fallback to default if not set.
+# if you want to change only some of the colors, feel free to remove all unused key.
+colors:
+  light:
+    highlight-primary: "#222526"
+    highlight-secondary: "#4285F4"
+    highlight-hover: "#5A95F5"
+    background: "#222526"
+    card-background: "#FFFFFF"
+    text: "#363636"
+    text-header: "#FFFFFF"
+    text-title: "#303030"
+    text-subtitle: "#424242"
+    card-shadow: "rgba(0, 0, 0, 0.1)"
+    link-hover: "#363636"
+    background-image: /assets/backgrounds/background-light.jpg
+  dark:
+    highlight-primary: "#222526"
+    highlight-secondary: "#4285F4"
+    highlight-hover: "#5A95F5"
+    background: "#222526"
+    card-background: "#2B2B2B"
+    text: "#EAEAEA"
+    text-header: "#FFFFFF"
+    text-title: "#FAFAFA"
+    text-subtitle: "#F5F5F5"
+    card-shadow: "rgba(0, 0, 0, 0.4)"
+    link-hover: "#FFDD57"
+    background-image: /assets/backgrounds/background-dark.jpg
+# Optional message
+message:
+  url: "https://bolabaden.org/assets/message/message.json"
+  # mapping:
+  #   content: 'message'
+  #   style: 'style'
+  #   title: 'title'
+  refreshInterval: 10000
+  icon: "fas fa-door-open"
+# Optional navbar
+# links: [] # Allows for navbar (dark mode, layout, and search) without any links
+links:
+  - name: "Apps"
+    icon: "fas fa-couch"
+    url: "#config"
+  - name: "Health"
+    icon: "fas fa-heartbeat"
+    url: "https://homer-health.bolabaden.org"
+    target: "_blank" # optional html tag target attribute
+# Services
+# First level array represents a group.
+# Leave only a "items" key if not using group (group name, icon & tagstyle are optional, section separation will not be displayed).
+services:
+  - name: "Consume Media"
+    icon: "fas fa-couch"
+    # A path to an image can also be provided. Note that icon take precedence if both icon and logo are set.
+    # logo: "path/to/logo"
+    items:
+      - name: "Plex"
+        logo: "assets/png/plex.png"
+        # Alternatively a fa icon can be provided:
+        # icon: "fab fa-photo-video"
+        subtitle: "Watch Movies/TV"
+        tag: "public"
+        tagstyle: "is-danger"
+        url: "https://plex.bolabaden.org"
+        target: "_blank"  # Optional html tag target attribute
+      - name: "Jellyfin"
+        logo: "assets/png/jellyfin.png"
+        subtitle: "Watch Movies/TV"
+        tag: "public"
+        tagstyle: "is-danger"
+        url: "https://jellyfin.bolabaden.org"
+        target: "_blank"  # Optional html tag target attribute
+  - name: "Manage Media"
+    icon: "fas fa-photo-video"
+    items:
+      - name: "Wizarr"
+        icon: "fas fa-hat-wizard"
+        subtitle: "Manage Plex / Emby / Jellyfin Accounts / Invites"
+        tag: "public"
+        tagstyle: "is-danger"
+        url: "https://wizarr.bolabaden.org"
+        target: "_blank"  # Optional html tag target attribute
+      - name: "Riven"
+        icon: "fas fa-mountain"
+        subtitle: "All-in-one Debrid Media Management"
+        tag: "protected"
+        tagstyle: "is-success"
+        url: "https://riven.bolabaden.org"
+        target: "_blank"  # Optional html tag target attribute
+      - name: "Riven (backend)"
+        icon: "fas fa-mountain"
+        subtitle: "Geek out over Riven's backend"
+        tag: "protected"
+        tagstyle: "is-success"
+        url: "https://riven-backend.bolabaden.org"
+        target: "_blank"  # Optional html tag target attribute
+  - name: "Download Media"
+    icon: "fas fa-cloud-arrow-down"
+    items:
+      - name: "Zurg"
+        logo: "assets/png/real-debrid.png"
+        subtitle: "Manage RealDebrid Mount"
+        tag: "protected"
+        tagstyle: "is-success"
+        url: "https://zurg.bolabaden.org/http/"
+        target: "_blank"  # Optional html tag target attribute
+  - name: "Tools"
+    icon: "fas fa-toolbox"
+    items:
+      - name: "FileBrowser"
+        logo: "assets/png/filebrowser.png"
+        subtitle: "Manage Files"
+        tag: "protected"
+        tagstyle: "is-success"
+        url: "https://filebrowser.bolabaden.org"
+        target: "_blank"  # Optional html tag target attribute
+      - name: "code-server"
+        icon: "fas fa-terminal"
+        subtitle: "Enter the code-server.. 🪄"
+        tag: "protected"
+        tagstyle: "is-success"
+        url: "https://code-server.bolabaden.org"
+        target: "_blank"  # Optional html tag target attribute
+  - name: "Rclone"
+    icon: "fas fa-truck"
+    items:
+      - name: "Rclone Remotes"
+        logo: "assets/png/rclone.png"
+        subtitle: "Rclone remotes"
+        tag: "protected"
+        tagstyle: "is-success"
+        url: "https://filebrowser.bolabaden.org/files/config/rclone/rclone.conf"
+        target: "_blank"  # Optional html tag target attribute
+      - name: "Rclone UI"
+        logo: "assets/png/rclone.png"
+        subtitle: "Rclone UI"
+        tag: "protected"
+        tagstyle: "is-success"
+        url: "https://rclone.bolabaden.org"
+        target: "_blank"  # Optional html tag target attribute

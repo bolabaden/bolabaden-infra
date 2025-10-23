@@ -1,0 +1,256 @@
+{{/* 
+  HTTP Services section
+  Source: pkg/provider/docker/config.go:155-178 - buildServiceConfiguration builds services
+*/}}
+{{ $allServiceNames := dict }}
+{{ range $c := $enabledContainers }}
+  {{ $containerName := trimPrefix "/" $c.Name }}
+  {{ $labels := $c.Labels }}
+  
+  {{/* 
+    Collect service names from this container
+    Source: pkg/config/label/label.go:18-19 - DecodeConfiguration parses traefik.http labels
+  */}}
+  {{ range $key, $value := $labels }}
+    {{ if hasPrefix $key "traefik.http.services." }}
+      {{ $withoutPrefix := trimPrefix "traefik.http.services." $key }}
+      {{ $serviceName := index (split $withoutPrefix ".") 0 }}
+      {{ if $serviceName }}
+        {{ $_ := set $allServiceNames $serviceName $c }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  
+  {{/* 
+    If no explicit services but traefik.enable=true, create default service
+    Source: pkg/provider/docker/config.go:158-165 - Creates default service if none exists
+  */}}
+  {{ $hasServiceLabels := false }}
+  {{ range $key, $value := $labels }}
+    {{ if hasPrefix $key "traefik.http.services." }}
+      {{ $hasServiceLabels = true }}
+    {{ end }}
+  {{ end }}
+  {{ if not $hasServiceLabels }}
+    {{ $_ := set $allServiceNames $containerName $c }}
+  {{ end }}
+{{ end }}
+
+{{ if $allServiceNames }}
+services:
+  {{ range $serviceName, $container := $allServiceNames }}
+    {{ $containerName := trimPrefix "/" $container.Name }}
+    {{ $labels := $container.Labels }}
+    {{ $servicePrefix := printf "traefik.http.services.%s." $serviceName }}
+    {{ $containerPort := "" }}
+    {{ if gt (len $container.Addresses) 0 }}
+      {{ $containerPort = (index $container.Addresses 0).Port }}
+    {{ end }}
+    
+    {{/* 
+      Check if this is an explicit service or default
+      Source: pkg/provider/docker/config.go:158-165 - Checks for explicit service config
+    */}}
+    {{ $isExplicitService := false }}
+    {{ range $key, $value := $labels }}
+      {{ if hasPrefix $key $servicePrefix }}
+        {{ $isExplicitService = true }}
+      {{ end }}
+    {{ end }}
+    
+  {{ $serviceName }}:
+    {{ if $isExplicitService }}
+      {{/* 
+        Explicit service configuration
+        Source: pkg/provider/docker/config.go:171-176 - Adds server to loadbalancer
+      */}}
+      {{ $hasLoadBalancer := false }}
+      {{ range $key, $value := $labels }}
+        {{ if hasPrefix $key (printf "%sloadbalancer." $servicePrefix) }}
+          {{ $hasLoadBalancer = true }}
+        {{ end }}
+      {{ end }}
+      
+      {{ if $hasLoadBalancer }}
+    loadBalancer:
+        {{ $serverPort := index $labels (printf "%sloadbalancer.server.port" $servicePrefix) }}
+        {{ if not $serverPort }}{{ $serverPort = $containerPort }}{{ end }}
+        
+        {{ $serverScheme := index $labels (printf "%sloadbalancer.server.scheme" $servicePrefix) }}
+        {{ if not $serverScheme }}{{ $serverScheme = "http" }}{{ end }}
+        
+        {{ $serverURL := index $labels (printf "%sloadbalancer.server.url" $servicePrefix) }}
+        {{ if $serverURL }}
+      servers:
+        - url: {{ $serverURL }}
+        {{ else }}
+      servers:
+        - url: {{ $serverScheme }}://{{ $containerName }}:{{ $serverPort }}
+        {{ end }}
+        
+        {{ if hasKey $labels (printf "%sloadbalancer.passhostheader" $servicePrefix) }}
+          {{ $passHostHeader := index $labels (printf "%sloadbalancer.passhostheader" $servicePrefix) }}
+          {{ if eq $passHostHeader "false" }}
+      passHostHeader: false
+          {{ end }}
+        {{ end }}
+        
+        {{ if hasKey $labels (printf "%sloadbalancer.sticky" $servicePrefix) }}
+          {{ $sticky := index $labels (printf "%sloadbalancer.sticky" $servicePrefix) }}
+          {{ if eq $sticky "true" }}
+      sticky:
+            {{ $cookieName := index $labels (printf "%sloadbalancer.sticky.cookie.name" $servicePrefix) }}
+            {{ $cookieSecure := index $labels (printf "%sloadbalancer.sticky.cookie.secure" $servicePrefix) }}
+            {{ $cookieHttpOnly := index $labels (printf "%sloadbalancer.sticky.cookie.httponly" $servicePrefix) }}
+            {{ $cookieSameSite := index $labels (printf "%sloadbalancer.sticky.cookie.samesite" $servicePrefix) }}
+            {{ $cookieDomain := index $labels (printf "%sloadbalancer.sticky.cookie.domain" $servicePrefix) }}
+            {{ $cookiePath := index $labels (printf "%sloadbalancer.sticky.cookie.path" $servicePrefix) }}
+            {{ $cookieMaxAge := index $labels (printf "%sloadbalancer.sticky.cookie.maxage" $servicePrefix) }}
+            {{ if or $cookieName $cookieSecure $cookieHttpOnly $cookieSameSite $cookieDomain $cookiePath $cookieMaxAge }}
+        cookie:
+              {{ if $cookieName }}
+          name: {{ $cookieName }}
+              {{ end }}
+              {{ if $cookieSecure }}
+          secure: {{ $cookieSecure }}
+              {{ end }}
+              {{ if $cookieHttpOnly }}
+          httpOnly: {{ $cookieHttpOnly }}
+              {{ end }}
+              {{ if $cookieSameSite }}
+          sameSite: {{ $cookieSameSite }}
+              {{ end }}
+              {{ if $cookieDomain }}
+          domain: {{ $cookieDomain }}
+              {{ end }}
+              {{ if $cookiePath }}
+          path: {{ $cookiePath }}
+              {{ end }}
+              {{ if $cookieMaxAge }}
+          maxAge: {{ $cookieMaxAge }}
+              {{ end }}
+            {{ else }}
+        {}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+        
+        {{/* 
+          Health Check Configuration
+          Source: pkg/provider/docker/config.go:171-176 - Health check configuration is part of loadbalancer
+          Source: docs/content/reference/dynamic-configuration/docker-labels.yml:202-214 - Health check labels
+        */}}
+        {{ $hasHealthCheck := false }}
+        {{ range $key, $value := $labels }}
+          {{ if hasPrefix $key (printf "%sloadbalancer.healthcheck." $servicePrefix) }}
+            {{ $hasHealthCheck = true }}
+          {{ end }}
+        {{ end }}
+        {{ if $hasHealthCheck }}
+      healthCheck:
+          {{ if hasKey $labels (printf "%sloadbalancer.healthcheck.path" $servicePrefix) }}
+            {{ $healthCheckPath := index $labels (printf "%sloadbalancer.healthcheck.path" $servicePrefix) }}
+        path: {{ $healthCheckPath }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sloadbalancer.healthcheck.port" $servicePrefix) }}
+            {{ $healthCheckPort := index $labels (printf "%sloadbalancer.healthcheck.port" $servicePrefix) }}
+        port: {{ $healthCheckPort }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sloadbalancer.healthcheck.interval" $servicePrefix) }}
+            {{ $healthCheckInterval := index $labels (printf "%sloadbalancer.healthcheck.interval" $servicePrefix) }}
+        interval: {{ $healthCheckInterval }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sloadbalancer.healthcheck.timeout" $servicePrefix) }}
+            {{ $healthCheckTimeout := index $labels (printf "%sloadbalancer.healthcheck.timeout" $servicePrefix) }}
+        timeout: {{ $healthCheckTimeout }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sloadbalancer.healthcheck.scheme" $servicePrefix) }}
+            {{ $healthCheckScheme := index $labels (printf "%sloadbalancer.healthcheck.scheme" $servicePrefix) }}
+        scheme: {{ $healthCheckScheme }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sloadbalancer.healthcheck.hostname" $servicePrefix) }}
+            {{ $healthCheckHostname := index $labels (printf "%sloadbalancer.healthcheck.hostname" $servicePrefix) }}
+        hostname: {{ $healthCheckHostname }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sloadbalancer.healthcheck.followredirects" $servicePrefix) }}
+            {{ $healthCheckFollowRedirects := index $labels (printf "%sloadbalancer.healthcheck.followredirects" $servicePrefix) }}
+        followRedirects: {{ $healthCheckFollowRedirects }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sloadbalancer.healthcheck.method" $servicePrefix) }}
+            {{ $healthCheckMethod := index $labels (printf "%sloadbalancer.healthcheck.method" $servicePrefix) }}
+        method: {{ $healthCheckMethod }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sloadbalancer.healthcheck.status" $servicePrefix) }}
+            {{ $healthCheckStatus := index $labels (printf "%sloadbalancer.healthcheck.status" $servicePrefix) }}
+        status: {{ $healthCheckStatus }}
+          {{ end }}
+          
+          {{/* 
+            Health check headers
+            Source: docs/content/reference/dynamic-configuration/docker-labels.yml:203-204 - Health check headers
+          */}}
+          {{ $hasHealthCheckHeaders := false }}
+          {{ range $key, $value := $labels }}
+            {{ if hasPrefix $key (printf "%sloadbalancer.healthcheck.headers." $servicePrefix) }}
+              {{ $hasHealthCheckHeaders = true }}
+            {{ end }}
+          {{ end }}
+          {{ if $hasHealthCheckHeaders }}
+        headers:
+            {{ range $key, $value := $labels }}
+              {{ if hasPrefix $key (printf "%sloadbalancer.healthcheck.headers." $servicePrefix) }}
+                {{ $headerName := trimPrefix (printf "%sloadbalancer.healthcheck.headers." $servicePrefix) $key }}
+          {{ $headerName }}: {{ $value }}
+              {{ end }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+        
+        {{/* 
+          Response Forwarding
+          Source: docs/content/reference/dynamic-configuration/docker-labels.yml:218 - Response forwarding labels
+        */}}
+        {{ if hasKey $labels (printf "%sloadbalancer.responseforwarding.flushinterval" $servicePrefix) }}
+          {{ $flushInterval := index $labels (printf "%sloadbalancer.responseforwarding.flushinterval" $servicePrefix) }}
+      responseForwarding:
+        flushInterval: {{ $flushInterval }}
+        {{ end }}
+        
+        {{/* 
+          Servers Transport
+          Source: docs/content/reference/dynamic-configuration/docker-labels.yml:219 - Servers transport label
+        */}}
+        {{ if hasKey $labels (printf "%sloadbalancer.serverstransport" $servicePrefix) }}
+          {{ $serversTransport := index $labels (printf "%sloadbalancer.serverstransport" $servicePrefix) }}
+      serversTransport: {{ $serversTransport }}
+        {{ end }}
+        
+        {{/* 
+          Strategy
+          Source: docs/content/reference/dynamic-configuration/docker-labels.yml:229 - Strategy label
+        */}}
+        {{ if hasKey $labels (printf "%sloadbalancer.strategy" $servicePrefix) }}
+          {{ $strategy := index $labels (printf "%sloadbalancer.strategy" $servicePrefix) }}
+      strategy: {{ $strategy }}
+        {{ end }}
+      {{ end }}
+    {{ else }}
+      {{/* 
+        Default service configuration
+        Source: pkg/provider/docker/config.go:158-165 - Creates default service with loadbalancer
+        Source: pkg/provider/docker/config.go:259-294 - addServer adds URL to loadbalancer
+      */}}
+    loadBalancer:
+      servers:
+        - url: http://{{ $containerName }}:{{ $containerPort }}
+    {{ end }}
+  {{ end }}
+{{ end }}

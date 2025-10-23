@@ -1,0 +1,310 @@
+{{/* 
+  Check if we have any TCP configuration
+  Source: pkg/provider/docker/config.go:51-58 - Checking for TCP configuration
+*/}}
+{{ $hasTCPConfig := false }}
+{{ range $c := $enabledContainers }}
+  {{ range $key, $value := $c.Labels }}
+    {{ if or (hasPrefix $key "traefik.tcp.routers.") (hasPrefix $key "traefik.tcp.services.") (hasPrefix $key "traefik.tcp.middlewares.") }}
+      {{ $hasTCPConfig = true }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ if $hasTCPConfig }}
+tcp:
+  {{/* 
+    TCP Routers section
+    Source: pkg/provider/docker/config.go:59-60 - BuildTCPRouterConfiguration is called
+    Source: pkg/provider/provider.go - BuildTCPRouterConfiguration function builds router config from labels
+  */}}
+  {{ $allTCPRouterNames := dict }}
+  {{ range $c := $enabledContainers }}
+    {{ $containerName := trimPrefix "/" $c.Name }}
+    {{ $labels := $c.Labels }}
+    
+    {{/* 
+      Collect router names from this container
+      Source: pkg/config/label/label.go:18-19 - DecodeConfiguration parses traefik.tcp labels
+    */}}
+    {{ range $key, $value := $labels }}
+      {{ if hasPrefix $key "traefik.tcp.routers." }}
+        {{ $withoutPrefix := trimPrefix "traefik.tcp.routers." $key }}
+        {{ $routerName := index (split $withoutPrefix ".") 0 }}
+        {{ if $routerName }}
+          {{ $_ := set $allTCPRouterNames $routerName $c }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  
+  {{ if $allTCPRouterNames }}
+  routers:
+    {{ range $routerName, $container := $allTCPRouterNames }}
+      {{ $containerName := trimPrefix "/" $container.Name }}
+      {{ $labels := $container.Labels }}
+      {{ $routerPrefix := printf "traefik.tcp.routers.%s." $routerName }}
+      
+    {{ $routerName }}:
+      {{/* Source: docs/content/reference/dynamic-configuration/docker-labels.yml:237-251 */}}
+      {{ if hasKey $labels (printf "%srule" $routerPrefix) }}
+        {{ $rule := index $labels (printf "%srule" $routerPrefix) }}
+      rule: {{ $rule }}
+      {{ end }}
+      
+      {{ if hasKey $labels (printf "%sservice" $routerPrefix) }}
+        {{ $service := index $labels (printf "%sservice" $routerPrefix) }}
+      service: {{ $service }}
+      {{ else }}
+      service: {{ $containerName }}
+      {{ end }}
+      
+      {{ if hasKey $labels (printf "%sentrypoints" $routerPrefix) }}
+        {{ $entrypoints := index $labels (printf "%sentrypoints" $routerPrefix) }}
+      entryPoints:
+        {{ $eps := split $entrypoints "," }}
+        {{ range $entrypoint := $eps }}
+        - {{ trim $entrypoint " " }}
+        {{ end }}
+      {{ end }}
+      
+      {{ if hasKey $labels (printf "%smiddlewares" $routerPrefix) }}
+        {{ $middlewares := index $labels (printf "%smiddlewares" $routerPrefix) }}
+      middlewares:
+        {{ $mws := split $middlewares "," }}
+        {{ range $middleware := $mws }}
+        - {{ trim $middleware " " }}
+        {{ end }}
+      {{ end }}
+      
+      {{ if hasKey $labels (printf "%spriority" $routerPrefix) }}
+        {{ $priority := index $labels (printf "%spriority" $routerPrefix) }}
+      priority: {{ $priority }}
+      {{ end }}
+      
+      {{/* 
+        TLS Configuration
+        Source: pkg/provider/provider.go - BuildTCPRouterConfiguration handles TLS config
+      */}}
+      {{ $tlsEnabled := index $labels (printf "%stls" $routerPrefix) }}
+      {{ $certResolver := index $labels (printf "%stls.certresolver" $routerPrefix) }}
+      {{ $tlsOptions := index $labels (printf "%stls.options" $routerPrefix) }}
+      {{ $passthrough := index $labels (printf "%stls.passthrough" $routerPrefix) }}
+      
+      {{/* 
+        Parse domains
+        Source: pkg/provider/provider.go - BuildTCPRouterConfiguration parses domain labels with array indices
+      */}}
+      {{ $domains := slice }}
+      {{ $domainIndices := dict }}
+      {{ range $key, $value := $labels }}
+        {{ if hasPrefix $key (printf "%stls.domains" $routerPrefix) }}
+          {{ $withoutPrefix := trimPrefix (printf "%stls.domains" $routerPrefix) $key }}
+          {{ if regexMatch "^\\[([0-9]+)\\]\\.main$" $withoutPrefix }}
+            {{ $index := regexReplaceAll "^\\[([0-9]+)\\]\\.main$" $withoutPrefix "$1" }}
+            {{ $_ := set $domainIndices $index true }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+      
+      {{ range $index, $_ := $domainIndices }}
+        {{ $domain := dict }}
+        {{ $mainKey := printf "%stls.domains[%s].main" $routerPrefix $index }}
+        {{ $sansKey := printf "%stls.domains[%s].sans" $routerPrefix $index }}
+        
+        {{ if hasKey $labels $mainKey }}
+          {{ $_ := set $domain "main" (index $labels $mainKey) }}
+        {{ end }}
+        
+        {{ if hasKey $labels $sansKey }}
+          {{ $sansValue := index $labels $sansKey }}
+          {{ $sans := split $sansValue "," }}
+          {{ $_ := set $domain "sans" $sans }}
+        {{ end }}
+        
+        {{ $domains = append $domains $domain }}
+      {{ end }}
+      
+      {{ if or (eq $tlsEnabled "true") $certResolver $domains $tlsOptions (eq $passthrough "true") }}
+      tls:
+        {{ if eq $tlsEnabled "true" }}
+        {}
+        {{ end }}
+        {{ if $certResolver }}
+        certResolver: {{ $certResolver }}
+        {{ end }}
+        {{ if $domains }}
+        domains:
+          {{ range $domain := $domains }}
+          - main: {{ $domain.main }}
+            {{ if $domain.sans }}
+            sans:
+              {{ range $san := $domain.sans }}
+              - {{ trim $san " " }}
+              {{ end }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+        {{ if $tlsOptions }}
+        options: {{ $tlsOptions }}
+        {{ end }}
+        {{ if eq $passthrough "true" }}
+        passthrough: true
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  
+  {{/* 
+    TCP Services section
+    Source: pkg/provider/docker/config.go:106-129 - buildTCPServiceConfiguration builds services
+  */}}
+  {{ $allTCPServiceNames := dict }}
+  {{ range $c := $enabledContainers }}
+    {{ $containerName := trimPrefix "/" $c.Name }}
+    {{ $labels := $c.Labels }}
+    
+    {{/* 
+      Collect service names from this container
+      Source: pkg/config/label/label.go:18-19 - DecodeConfiguration parses traefik.tcp labels
+    */}}
+    {{ range $key, $value := $labels }}
+      {{ if hasPrefix $key "traefik.tcp.services." }}
+        {{ $withoutPrefix := trimPrefix "traefik.tcp.services." $key }}
+        {{ $serviceName := index (split $withoutPrefix ".") 0 }}
+        {{ if $serviceName }}
+          {{ $_ := set $allTCPServiceNames $serviceName $c }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+    
+    {{/* 
+      If no explicit services but TCP router exists, create default service
+      Source: pkg/provider/docker/config.go:109-114 - Creates default service if none exists
+    */}}
+    {{ $hasTCPRouterLabels := false }}
+    {{ $hasTCPServiceLabels := false }}
+    {{ range $key, $value := $labels }}
+      {{ if hasPrefix $key "traefik.tcp.routers." }}
+        {{ $hasTCPRouterLabels = true }}
+      {{ end }}
+      {{ if hasPrefix $key "traefik.tcp.services." }}
+        {{ $hasTCPServiceLabels = true }}
+      {{ end }}
+    {{ end }}
+    {{ if and $hasTCPRouterLabels (not $hasTCPServiceLabels) }}
+      {{ $_ := set $allTCPServiceNames $containerName $c }}
+    {{ end }}
+  {{ end }}
+  
+  {{ if $allTCPServiceNames }}
+  services:
+    {{ range $serviceName, $container := $allTCPServiceNames }}
+      {{ $containerName := trimPrefix "/" $container.Name }}
+      {{ $labels := $container.Labels }}
+      {{ $servicePrefix := printf "traefik.tcp.services.%s." $serviceName }}
+      {{ $containerPort := "" }}
+      {{ if gt (len $container.Addresses) 0 }}
+        {{ $containerPort = (index $container.Addresses 0).Port }}
+      {{ end }}
+      
+    {{ $serviceName }}:
+      {{/* Source: docs/content/reference/dynamic-configuration/docker-labels.yml:266-271 */}}
+      loadBalancer:
+        {{ if hasKey $labels (printf "%sloadbalancer.serverstransport" $servicePrefix) }}
+          {{ $serversTransport := index $labels (printf "%sloadbalancer.serverstransport" $servicePrefix) }}
+        serversTransport: {{ $serversTransport }}
+        {{ end }}
+        
+        {{ if hasKey $labels (printf "%sloadbalancer.proxyprotocol" $servicePrefix) }}
+          {{ $proxyProtocol := index $labels (printf "%sloadbalancer.proxyprotocol" $servicePrefix) }}
+          {{ if eq $proxyProtocol "true" }}
+        proxyProtocol: {}
+          {{ end }}
+        {{ end }}
+        
+        {{ if hasKey $labels (printf "%sloadbalancer.proxyprotocol.version" $servicePrefix) }}
+          {{ $proxyProtocolVersion := index $labels (printf "%sloadbalancer.proxyprotocol.version" $servicePrefix) }}
+        proxyProtocol:
+          version: {{ $proxyProtocolVersion }}
+        {{ end }}
+        
+        {{ if hasKey $labels (printf "%sloadbalancer.terminationdelay" $servicePrefix) }}
+          {{ $terminationDelay := index $labels (printf "%sloadbalancer.terminationdelay" $servicePrefix) }}
+        terminationDelay: {{ $terminationDelay }}
+        {{ end }}
+        
+        {{ $serverPort := index $labels (printf "%sloadbalancer.server.port" $servicePrefix) }}
+        {{ if not $serverPort }}{{ $serverPort = $containerPort }}{{ end }}
+        
+        {{ $serverTLS := index $labels (printf "%sloadbalancer.server.tls" $servicePrefix) }}
+        
+        servers:
+          - address: {{ $containerName }}:{{ $serverPort }}
+            {{ if eq $serverTLS "true" }}
+            tls: {}
+            {{ end }}
+    {{ end }}
+  {{ end }}
+  
+  {{/* 
+    TCP Middlewares section
+    Source: docs/content/reference/dynamic-configuration/docker-labels.yml:235-236 - TCP middleware labels
+  */}}
+  {{ $allTCPMiddlewareNames := dict }}
+  {{ range $c := $enabledContainers }}
+    {{ $labels := $c.Labels }}
+    
+    {{/* 
+      Collect middleware names from this container
+      Source: pkg/config/label/label.go:18-19 - DecodeConfiguration parses traefik.tcp labels
+    */}}
+    {{ range $key, $value := $labels }}
+      {{ if hasPrefix $key "traefik.tcp.middlewares." }}
+        {{ $withoutPrefix := trimPrefix "traefik.tcp.middlewares." $key }}
+        {{ $middlewareName := index (split $withoutPrefix ".") 0 }}
+        {{ if $middlewareName }}
+          {{ $_ := set $allTCPMiddlewareNames $middlewareName $c }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  
+  {{ if $allTCPMiddlewareNames }}
+  middlewares:
+    {{ range $middlewareName, $container := $allTCPMiddlewareNames }}
+      {{ $labels := $container.Labels }}
+      {{ $middlewarePrefix := printf "traefik.tcp.middlewares.%s." $middlewareName }}
+      
+    {{ $middlewareName }}:
+      {{/* Check for ipAllowList */}}
+      {{ if hasKey $labels (printf "%sipallowlist.sourcerange" $middlewarePrefix) }}
+        {{ $sourceRange := index $labels (printf "%sipallowlist.sourcerange" $middlewarePrefix) }}
+      ipAllowList:
+        sourceRange:
+          {{ $rangeList := split $sourceRange "," }}
+          {{ range $range := $rangeList }}
+          - {{ trim $range " " }}
+          {{ end }}
+      {{ end }}
+      
+      {{/* Check for ipWhiteList */}}
+      {{ if hasKey $labels (printf "%sipwhitelist.sourcerange" $middlewarePrefix) }}
+        {{ $sourceRange := index $labels (printf "%sipwhitelist.sourcerange" $middlewarePrefix) }}
+      ipWhiteList:
+        sourceRange:
+          {{ $rangeList := split $sourceRange "," }}
+          {{ range $range := $rangeList }}
+          - {{ trim $range " " }}
+          {{ end }}
+      {{ end }}
+      
+      {{/* Check for inflightConn */}}
+      {{ if hasKey $labels (printf "%sinflightconn.amount" $middlewarePrefix) }}
+        {{ $amount := index $labels (printf "%sinflightconn.amount" $middlewarePrefix) }}
+      inflightConn:
+        amount: {{ $amount }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}

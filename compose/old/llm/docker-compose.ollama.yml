@@ -44,7 +44,7 @@ x-swarm-constraints-manager-only: &swarm-constraints-manager-only
 
 services:
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama
     ports:
       - ${OLLAMA_PORT:-11434}:11434
     volumes:

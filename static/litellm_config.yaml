@@ -1,0 +1,843 @@
+general_settings:
+  proxy_batch_write_at: 60
+
+router_settings:
+  redis_host: redis
+  redis_port: 6379
+  redis_password:
+  enable_pre_call_check: true
+  allowed_fails: 3
+  allowed_fails_policy:
+    BadRequestErrorAllowedFails: 1000
+    AuthenticationErrorAllowedFails: 10
+    TimeoutErrorAllowedFails: 12
+    RateLimitErrorAllowedFails: 10000
+    ContentPolicyViolationErrorAllowedFails: 15
+    InternalServerErrorAllowedFails: 20
+  cooldown_time: 30
+  disable_cooldowns: false
+  enable_pre_call_checks: true
+  enable_tag_filtering: true
+  retry_policy:
+    AuthenticationErrorRetries: 3
+    TimeoutErrorRetries: 3
+    RateLimitErrorRetries: 3
+    ContentPolicyViolationErrorRetries: 4
+    InternalServerErrorRetries: 4
+  routing_strategy: simple-shuffle
+
+litellm_settings:
+  cache: true
+  cache_params:
+    type: redis
+    host: redis
+    port: 6379
+    password:
+    namespace: "litellm_cache"
+    ttl: 600
+  content_policy_fallbacks: []
+  context_window_fallbacks: []
+  default_fallbacks: []
+  set_verbose: false
+  force_ipv4: true
+  json_logs: true
+  log_raw_request_response: true
+  turn_off_message_logging: false
+  redact_user_api_key_info: true
+  drop_params: true
+  # max_budget: 100
+  # budget_duration: 30d
+  num_retries: 3
+  request_timeout: 600
+  telemetry: false
+model_list:
+- model_name: moonshotai/kimi-k2:free
+  litellm_params:
+    model: openai/moonshotai/kimi-k2:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 65536
+    metadata:
+      notes: Kimi K2 Instruct is a large-scale Mixture-of-Experts (MoE) language model developed by Moonshot AI, featuring 1 trillion total parameters with 32 billion active per forward pass. It is optimized for agentic capabilities, including advanced tool use, reasoning, and code synthesis. Kimi K2 excels across a broad range of benchmarks, particularly in coding (LiveCodeBench, SWE-bench), reasoning (ZebraLogic, GPQA), and tool-use (Tau2, AceBench) tasks. It supports long-context inference up to 128K tokens and is designed with a novel training stack that includes the MuonClip optimizer for stable large-scale MoE training.
+    litellm_provider: openrouter
+- model_name: cognitivecomputations/dolphin-mistral-24b-venice-edition:free
+  litellm_params:
+    model: openai/cognitivecomputations/dolphin-mistral-24b-venice-edition:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: Venice Uncensored Dolphin Mistral 24B Venice Edition is a fine-tuned variant of Mistral-Small-24B-Instruct-2501, developed by dphn.ai in collaboration with Venice.ai. This model is designed as an “uncensored” instruct-tuned LLM, preserving user control over alignment, system prompts, and behavior. Intended for advanced and unrestricted use cases, Venice Uncensored emphasizes steerability and transparent behavior, removing default safety and alignment layers typically found in mainstream assistant models.
+    litellm_provider: openrouter
+- model_name: google/gemma-3n-e2b-it:free
+  litellm_params:
+    model: openai/google/gemma-3n-e2b-it:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 8192
+    max_output_tokens: 2048
+    metadata:
+      notes: Gemma 3n E2B IT is a multimodal, instruction-tuned model developed by Google DeepMind, designed to operate efficiently at an effective parameter size of 2B while leveraging a 6B architecture. Based on the MatFormer architecture, it supports nested submodels and modular composition via the Mix-and-Match framework. Gemma 3n models are optimized for low-resource deployment, offering 32K context length and strong multilingual and reasoning performance across common benchmarks. This variant is trained on a diverse corpus including code, math, web, and multimodal data.
+    litellm_provider: openrouter
+- model_name: tencent/hunyuan-a13b-instruct:free
+  litellm_params:
+    model: openai/tencent/hunyuan-a13b-instruct:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: Hunyuan-A13B is a 13B active parameter Mixture-of-Experts (MoE) language model developed by Tencent, with a total parameter count of 80B and support for reasoning via Chain-of-Thought. It offers competitive benchmark performance across mathematics, science, coding, and multi-turn reasoning tasks, while maintaining high inference efficiency via Grouped Query Attention (GQA) and quantization support (FP8, GPTQ, etc.).
+    litellm_provider: openrouter
+- model_name: tngtech/deepseek-r1t2-chimera:free
+  litellm_params:
+    model: openai/tngtech/deepseek-r1t2-chimera:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 163840
+    metadata:
+      notes: DeepSeek-TNG-R1T2-Chimera is the second-generation Chimera model from TNG Tech. It is a 671 B-parameter mixture-of-experts text-generation model assembled from DeepSeek-AI’s R1-0528, R1, and V3-0324 checkpoints with an Assembly-of-Experts merge. The tri-parent design yields strong reasoning performance while running roughly 20 % faster than the original R1 and more than 2× faster than R1-0528 under vLLM, giving a favorable cost-to-intelligence trade-off. The checkpoint supports contexts up to 60 k tokens in standard use (tested to ~130 k) and maintains consistent <think> token behaviour, making it suitable for long-context analysis, dialogue and other open-ended generation tasks.
+    litellm_provider: openrouter
+- model_name: mistralai/mistral-small-3.2-24b-instruct:free
+  litellm_params:
+    model: openai/mistralai/mistral-small-3.2-24b-instruct:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 96000
+    mode: chat
+    supports_vision: true
+    metadata:
+      notes: 'Mistral-Small-3.2-24B-Instruct-2506 is an updated 24B parameter model from Mistral optimized for instruction following, repetition reduction, and improved function calling. Compared to the 3.1 release, version 3.2 significantly improves accuracy on WildBench and Arena Hard, reduces infinite generations, and delivers gains in tool use and structured output tasks. It supports image and text inputs with structured outputs, function/tool calling, and strong performance across coding (HumanEval+, MBPP), STEM (MMLU, MATH, GPQA), and vision benchmarks (ChartQA, DocVQA).'
+    supports_function_calling: true
+    litellm_provider: openrouter
+- model_name: moonshotai/kimi-dev-72b:free
+  litellm_params:
+    model: openai/moonshotai/kimi-dev-72b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 131072
+    metadata:
+      notes: Kimi-Dev-72B is an open-source large language model fine-tuned for software engineering and issue resolution tasks. Based on Qwen2.5-72B, it is optimized using large-scale reinforcement learning that applies code patches in real repositories and validates them via full test suite execution—rewarding only correct, robust completions. The model achieves 60.4% on SWE-bench Verified, setting a new benchmark among open-source models for software bug fixing and code reasoning.
+    litellm_provider: openrouter
+- model_name: deepseek/deepseek-r1-0528-qwen3-8b:free
+  litellm_params:
+    model: openai/deepseek/deepseek-r1-0528-qwen3-8b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 131072
+    metadata:
+      notes: 'DeepSeek-R1-0528 is a lightly upgraded release of DeepSeek R1 that taps more compute and smarter post-training tricks, pushing its reasoning and inference to the brink of flagship models like O3 and Gemini 2.5 Pro. It now tops math, programming, and logic leaderboards, showcasing a step-change in depth-of-thought. The distilled variant, DeepSeek-R1-0528-Qwen3-8B, transfers this chain-of-thought into an 8 B-parameter form, beating standard Qwen3 8B by +10 pp and tying the 235 B “thinking” giant on AIME 2024.'
+    litellm_provider: openrouter
+- model_name: deepseek/deepseek-r1-0528:free
+  litellm_params:
+    model: openai/deepseek/deepseek-r1-0528:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 163840
+    metadata:
+      notes: 'May 28th update to the [original DeepSeek R1](/deepseek/deepseek-r1) Performance on par with [OpenAI o1](/openai/o1), but open-sourced and with fully open reasoning tokens. It''s 671B parameters in size, with 37B active in an inference pass. Fully open-source model.'
+    litellm_provider: openrouter
+- model_name: sarvamai/sarvam-m:free
+  litellm_params:
+    model: openai/sarvamai/sarvam-m:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: 'Sarvam-M is a 24 B-parameter, instruction-tuned derivative of Mistral-Small-3.1-24B-Base-2503, post-trained on English plus eleven major Indic languages (bn, hi, kn, gu, mr, ml, or, pa, ta, te). The model introduces a dual-mode interface: “non-think” for low-latency chat and a optional “think” phase that exposes chain-of-thought tokens for more demanding reasoning, math, and coding tasks. Benchmark reports show solid gains versus similarly sized open models on Indic-language QA, GSM-8K math, and SWE-Bench coding, making Sarvam-M a practical general-purpose choice for multilingual conversational agents as well as analytical workloads that mix English, native Indic scripts, or romanized text.'
+    litellm_provider: openrouter
+- model_name: mistralai/devstral-small-2505:free
+  litellm_params:
+    model: openai/mistralai/devstral-small-2505:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: 'Devstral-Small-2505 is a 24B parameter agentic LLM fine-tuned from Mistral-Small-3.1, jointly developed by Mistral AI and All Hands AI for advanced software engineering tasks. It is optimized for codebase exploration, multi-file editing, and integration into coding agents, achieving state-of-the-art results on SWE-Bench Verified (46.8%). Devstral supports a 128k context window and uses a custom Tekken tokenizer. It is text-only, with the vision encoder removed, and is suitable for local deployment on high-end consumer hardware (e.g., RTX 4090, 32GB RAM Macs). Devstral is best used in agentic workflows via the OpenHands scaffold and is compatible with inference frameworks like vLLM, Transformers, and Ollama. It is released under the Apache 2.0 license.'
+    litellm_provider: openrouter
+- model_name: google/gemma-3n-e4b-it:free
+  litellm_params:
+    model: openai/google/gemma-3n-e4b-it:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 8192
+    max_output_tokens: 2048
+    metadata:
+      notes: 'Gemma 3n E4B-it is optimized for efficient execution on mobile and low-resource devices, such as phones, laptops, and tablets. It supports multimodal inputs—including text, visual data, and audio—enabling diverse tasks such as text generation, speech recognition, translation, and image analysis. Leveraging innovations like Per-Layer Embedding (PLE) caching and the MatFormer architecture, Gemma 3n dynamically manages memory usage and computational load by selectively activating model parameters, significantly reducing runtime resource requirements. This model supports a wide linguistic range (trained in over 140 languages) and features a flexible 32K token context window. Gemma 3n can selectively load parameters, optimizing memory and computational efficiency based on the task or device capabilities, making it well-suited for privacy-focused, offline-capable applications and on-device AI solutions. [Read more in the blog post](https://developers.googleblog.com/en/introducing-gemma-3n/)'
+    litellm_provider: openrouter
+- model_name: qwen/qwen3-4b:free
+  litellm_params:
+    model: openai/qwen/qwen3-4b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 40960
+    metadata:
+      notes: Qwen3-4B is a 4 billion parameter dense language model from the Qwen3 series, designed to support both general-purpose and reasoning-intensive tasks. It introduces a dual-mode architecture—thinking and non-thinking—allowing dynamic switching between high-precision logical reasoning and efficient dialogue generation. This makes it well-suited for multi-turn chat, instruction following, and complex agent workflows.
+    litellm_provider: openrouter
+- model_name: qwen/qwen3-30b-a3b:free
+  litellm_params:
+    model: openai/qwen/qwen3-30b-a3b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 40960
+    metadata:
+      notes: 'Qwen3, the latest generation in the Qwen large language model series, features both dense and mixture-of-experts (MoE) architectures to excel in reasoning, multilingual support, and advanced agent tasks. Its unique ability to switch seamlessly between a thinking mode for complex reasoning and a non-thinking mode for efficient dialogue ensures versatile, high-quality performance. Significantly outperforming prior models like QwQ and Qwen2.5, Qwen3 delivers superior mathematics, coding, commonsense reasoning, creative writing, and interactive dialogue capabilities. The Qwen3-30B-A3B variant includes 30.5 billion parameters (3.3 billion activated), 48 layers, 128 experts (8 activated per task), and supports up to 131K token contexts with YaRN, setting a new standard among open-source models.'
+    litellm_provider: openrouter
+- model_name: qwen/qwen3-8b:free
+  litellm_params:
+    model: openai/qwen/qwen3-8b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 40960
+    max_output_tokens: 40960
+    metadata:
+      notes: Qwen3-8B is a dense 8.2B parameter causal language model from the Qwen3 series, designed for both reasoning-heavy tasks and efficient dialogue. It supports seamless switching between "thinking" mode for math, coding, and logical inference, and "non-thinking" mode for general conversation. The model is fine-tuned for instruction-following, agent integration, creative writing, and multilingual use across 100+ languages and dialects. It natively supports a 32K token context window and can extend to 131K tokens with YaRN scaling.
+    litellm_provider: openrouter
+- model_name: qwen/qwen3-14b:free
+  litellm_params:
+    model: openai/qwen/qwen3-14b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 40960
+    metadata:
+      notes: Qwen3-14B is a dense 14.8B parameter causal language model from the Qwen3 series, designed for both complex reasoning and efficient dialogue. It supports seamless switching between a "thinking" mode for tasks like math, programming, and logical inference, and a "non-thinking" mode for general-purpose conversation. The model is fine-tuned for instruction-following, agent tool use, creative writing, and multilingual tasks across 100+ languages and dialects. It natively handles 32K token contexts and can extend to 131K tokens using YaRN-based scaling.
+    litellm_provider: openrouter
+- model_name: qwen/qwen3-32b:free
+  litellm_params:
+    model: openai/qwen/qwen3-32b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 40960
+    metadata:
+      notes: 'Qwen3-32B is a dense 32.8B parameter causal language model from the Qwen3 series, optimized for both complex reasoning and efficient dialogue. It supports seamless switching between a "thinking" mode for tasks like math, coding, and logical inference, and a "non-thinking" mode for faster, general-purpose conversation. The model demonstrates strong performance in instruction-following, agent tool use, creative writing, and multilingual tasks across 100+ languages and dialects. It natively handles 32K token contexts and can extend to 131K tokens using YaRN-based scaling. '
+    litellm_provider: openrouter
+- model_name: qwen/qwen3-235b-a22b:free
+  litellm_params:
+    model: openai/qwen/qwen3-235b-a22b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 131072
+    metadata:
+      notes: Qwen3-235B-A22B is a 235B parameter mixture-of-experts (MoE) model developed by Qwen, activating 22B parameters per forward pass. It supports seamless switching between a "thinking" mode for complex reasoning, math, and code tasks, and a "non-thinking" mode for general conversational efficiency. The model demonstrates strong reasoning ability, multilingual support (100+ languages and dialects), advanced instruction-following, and agent tool-calling capabilities. It natively handles a 32K token context window and extends up to 131K tokens using YaRN-based scaling.
+    litellm_provider: openrouter
+- model_name: tngtech/deepseek-r1t-chimera:free
+  litellm_params:
+    model: openai/tngtech/deepseek-r1t-chimera:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 163840
+    metadata:
+      notes: 'DeepSeek-R1T-Chimera is created by merging DeepSeek-R1 and DeepSeek-V3 (0324), combining the reasoning capabilities of R1 with the token efficiency improvements of V3. It is based on a DeepSeek-MoE Transformer architecture and is optimized for general text generation tasks. The model merges pretrained weights from both source models to balance performance across reasoning, efficiency, and instruction-following tasks. It is released under the MIT license and intended for research and commercial use.'
+    litellm_provider: openrouter
+- model_name: microsoft/mai-ds-r1:free
+  litellm_params:
+    model: openai/microsoft/mai-ds-r1:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 163840
+    metadata:
+      notes: 'MAI-DS-R1 is a post-trained variant of DeepSeek-R1 developed by the Microsoft AI team to improve the model’s responsiveness on previously blocked topics while enhancing its safety profile. Built on top of DeepSeek-R1’s reasoning foundation, it integrates 110k examples from the Tulu-3 SFT dataset and 350k internally curated multilingual safety-alignment samples. The model retains strong reasoning, coding, and problem-solving capabilities, while unblocking a wide range of prompts previously restricted in R1. MAI-DS-R1 demonstrates improved performance on harm mitigation benchmarks and maintains competitive results across general reasoning tasks. It surpasses R1-1776 in satisfaction metrics for blocked queries and reduces leakage in harmful content categories. The model is based on a transformer MoE architecture and is suitable for general-purpose use cases, excluding high-stakes domains such as legal, medical, or autonomous systems.'
+    litellm_provider: openrouter
+- model_name: thudm/glm-z1-32b:free
+  litellm_params:
+    model: openai/thudm/glm-z1-32b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: 'GLM-Z1-32B-0414 is an enhanced reasoning variant of GLM-4-32B, built for deep mathematical, logical, and code-oriented problem solving. It applies extended reinforcement learning—both task-specific and general pairwise preference-based—to improve performance on complex multi-step tasks. Compared to the base GLM-4-32B model, Z1 significantly boosts capabilities in structured reasoning and formal domains. The model supports enforced “thinking” steps via prompt engineering and offers improved coherence for long-form outputs. It’s optimized for use in agentic workflows, and includes support for long context (via YaRN), JSON tool calling, and fine-grained sampling configuration for stable inference. Ideal for use cases requiring deliberate, multi-step reasoning or formal derivations.'
+    litellm_provider: openrouter
+- model_name: thudm/glm-4-32b:free
+  litellm_params:
+    model: openai/thudm/glm-4-32b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: GLM-4-32B-0414 is a 32B bilingual (Chinese-English) open-weight language model optimized for code generation, function calling, and agent-style tasks. Pretrained on 15T of high-quality and reasoning-heavy data, it was further refined using human preference alignment, rejection sampling, and reinforcement learning. The model excels in complex reasoning, artifact generation, and structured output tasks, achieving performance comparable to GPT-4o and DeepSeek-V3-0324 across several benchmarks.
+    supports_function_calling: true
+    litellm_provider: openrouter
+- model_name: shisa-ai/shisa-v2-llama3.3-70b:free
+  litellm_params:
+    model: openai/shisa-ai/shisa-v2-llama3.3-70b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: 'Shisa V2 Llama 3.3 70B is a bilingual Japanese-English chat model fine-tuned by Shisa.AI on Meta’s Llama-3.3-70B-Instruct base. It prioritizes Japanese language performance while retaining strong English capabilities. The model was optimized entirely through post-training, using a refined mix of supervised fine-tuning (SFT) and DPO datasets including regenerated ShareGPT-style data, translation tasks, roleplaying conversations, and instruction-following prompts. Unlike earlier Shisa releases, this version avoids tokenizer modifications or extended pretraining. Shisa V2 70B achieves leading Japanese task performance across a wide range of custom and public benchmarks, including JA MT Bench, ELYZA 100, and Rakuda. It supports a 128K token context length and integrates smoothly with inference frameworks like vLLM and SGLang. While it inherits safety characteristics from its base model, no additional alignment was applied. The model is intended for high-performance bilingual chat, instruction following, and translation tasks across JA/EN.'
+    litellm_provider: openrouter
+- model_name: arliai/qwq-32b-arliai-rpr-v1:free
+  litellm_params:
+    model: openai/arliai/qwq-32b-arliai-rpr-v1:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: 'QwQ-32B-ArliAI-RpR-v1 is a 32B parameter model fine-tuned from Qwen/QwQ-32B using a curated creative writing and roleplay dataset originally developed for the RPMax series. It is designed to maintain coherence and reasoning across long multi-turn conversations by introducing explicit reasoning steps per dialogue turn, generated and refined using the base model itself. The model was trained using RS-QLORA+ on 8K sequence lengths and supports up to 128K context windows (with practical performance around 32K). It is optimized for creative roleplay and dialogue generation, with an emphasis on minimizing cross-context repetition while preserving stylistic diversity.'
+    litellm_provider: openrouter
+- model_name: agentica-org/deepcoder-14b-preview:free
+  litellm_params:
+    model: openai/agentica-org/deepcoder-14b-preview:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 96000
+    metadata:
+      notes: DeepCoder-14B-Preview is a 14B parameter code generation model fine-tuned from DeepSeek-R1-Distill-Qwen-14B using reinforcement learning with GRPO+ and iterative context lengthening. It is optimized for long-context program synthesis and achieves strong performance across coding benchmarks, including 60.6% on LiveCodeBench v5, competitive with models like o3-Mini
+    litellm_provider: openrouter
+- model_name: moonshotai/kimi-vl-a3b-thinking:free
+  litellm_params:
+    model: openai/moonshotai/kimi-vl-a3b-thinking:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 131072
+    mode: chat
+    supports_vision: true
+    metadata:
+      notes: Kimi-VL is a lightweight Mixture-of-Experts vision-language model that activates only 2.8B parameters per step while delivering strong performance on multimodal reasoning and long-context tasks. The Kimi-VL-A3B-Thinking variant, fine-tuned with chain-of-thought and reinforcement learning, excels in math and visual reasoning benchmarks like MathVision, MMMU, and MathVista, rivaling much larger models such as Qwen2.5-VL-7B and Gemma-3-12B. It supports 128K context and high-resolution input via its MoonViT encoder.
+    litellm_provider: openrouter
+- model_name: nvidia/llama-3.1-nemotron-ultra-253b-v1:free
+  litellm_params:
+    model: openai/nvidia/llama-3.1-nemotron-ultra-253b-v1:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 131072
+    metadata:
+      notes: 'Llama-3.1-Nemotron-Ultra-253B-v1 is a large language model (LLM) optimized for advanced reasoning, human-interactive chat, retrieval-augmented generation (RAG), and tool-calling tasks. Derived from Meta’s Llama-3.1-405B-Instruct, it has been significantly customized using Neural Architecture Search (NAS), resulting in enhanced efficiency, reduced memory usage, and improved inference latency. The model supports a context length of up to 128K tokens and can operate efficiently on an 8x NVIDIA H100 node. Note: you must include `detailed thinking on` in the system prompt to enable reasoning. Please see [Usage Recommendations](https://huggingface.co/nvidia/Llama-3_1-Nemotron-Ultra-253B-v1#quick-start-and-usage-recommendations) for more.'
+    litellm_provider: openrouter
+- model_name: deepseek/deepseek-v3-base:free
+  litellm_params:
+    model: openai/deepseek/deepseek-v3-base:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 163840
+    metadata:
+      notes: 'Note that this is a base model mostly meant for testing, you need to provide detailed prompts for the model to return useful responses. DeepSeek-V3 Base is a 671B parameter open Mixture-of-Experts (MoE) language model with 37B active parameters per forward pass and a context length of 128K tokens. Trained on 14.8T tokens using FP8 mixed precision, it achieves high training efficiency and stability, with strong performance across language, reasoning, math, and coding tasks. DeepSeek-V3 Base is the pre-trained model behind [DeepSeek V3](/deepseek/deepseek-chat-v3)'
+    litellm_provider: openrouter
+- model_name: google/gemini-2.5-pro-exp-03-25
+  litellm_params:
+    model: openai/google/gemini-2.5-pro-exp-03-25
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 1048576
+    max_output_tokens: 65535
+    mode: chat
+    supports_vision: true
+    metadata:
+      notes: 'This model has been deprecated by Google in favor of the (paid Preview model)[google/gemini-2.5-pro-preview]   Gemini 2.5 Pro is Google’s state-of-the-art AI model designed for advanced reasoning, coding, mathematics, and scientific tasks. It employs “thinking” capabilities, enabling it to reason through responses with enhanced accuracy and nuanced context handling. Gemini 2.5 Pro achieves top-tier performance on multiple benchmarks, including first-place positioning on the LMArena leaderboard, reflecting superior human-preference alignment and complex problem-solving abilities.'
+    litellm_provider: openrouter
+- model_name: qwen/qwen2.5-vl-32b-instruct:free
+  litellm_params:
+    model: openai/qwen/qwen2.5-vl-32b-instruct:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 8192
+    mode: chat
+    supports_vision: true
+    metadata:
+      notes: Qwen2.5-VL-32B is a multimodal vision-language model fine-tuned through reinforcement learning for enhanced mathematical reasoning, structured outputs, and visual problem-solving capabilities. It excels at visual analysis tasks, including object recognition, textual interpretation within images, and precise event localization in extended videos. Qwen2.5-VL-32B demonstrates state-of-the-art performance across multimodal benchmarks such as MMMU, MathVista, and VideoMME, while maintaining strong reasoning and clarity in text-based tasks like MMLU, mathematical problem-solving, and code generation.
+    litellm_provider: openrouter
+- model_name: deepseek/deepseek-chat-v3-0324:free
+  litellm_params:
+    model: openai/deepseek/deepseek-chat-v3-0324:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    max_output_tokens: 16384
+    metadata:
+      notes: 'DeepSeek V3, a 685B-parameter, mixture-of-experts model, is the latest iteration of the flagship chat model family from the DeepSeek team. It succeeds the [DeepSeek V3](/deepseek/deepseek-chat-v3) model and performs really well on a variety of tasks.'
+    litellm_provider: openrouter
+- model_name: featherless/qwerky-72b:free
+  litellm_params:
+    model: openai/featherless/qwerky-72b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    max_output_tokens: 4096
+    metadata:
+      notes: Qwerky-72B is a linear-attention RWKV variant of the Qwen 2.5 72B model, optimized to significantly reduce computational cost at scale. Leveraging linear attention, it achieves substantial inference speedups (>1000x) while retaining competitive accuracy on common benchmarks like ARC, HellaSwag, Lambada, and MMLU. It inherits knowledge and language support from Qwen 2.5, supporting approximately 30 languages, making it suitable for efficient inference in large-context applications.
+    litellm_provider: openrouter
+- model_name: mistralai/mistral-small-3.1-24b-instruct:free
+  litellm_params:
+    model: openai/mistralai/mistral-small-3.1-24b-instruct:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 128000
+    mode: chat
+    supports_vision: true
+    metadata:
+      notes: Mistral Small 3.1 24B Instruct is an upgraded variant of Mistral Small 3 (2501), featuring 24 billion parameters with advanced multimodal capabilities. It provides state-of-the-art performance in text-based reasoning and vision tasks, including image analysis, programming, mathematical reasoning, and multilingual support across dozens of languages. Equipped with an extensive 128k token context window and optimized for efficient local inference, it supports use cases such as conversational agents, function calling, long-document comprehension, and privacy-sensitive deployments. The updated version is [Mistral Small 3.2](mistralai/mistral-small-3.2-24b-instruct)
+    supports_function_calling: true
+    litellm_provider: openrouter
+- model_name: google/gemma-3-4b-it:free
+  litellm_params:
+    model: openai/google/gemma-3-4b-it:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    max_output_tokens: 8192
+    mode: chat
+    supports_vision: true
+    metadata:
+      notes: Gemma 3 introduces multimodality, supporting vision-language input and text outputs. It handles context windows up to 128k tokens, understands over 140 languages, and offers improved math, reasoning, and chat capabilities, including structured outputs and function calling.
+    supports_function_calling: true
+    litellm_provider: openrouter
+- model_name: google/gemma-3-12b-it:free
+  litellm_params:
+    model: openai/google/gemma-3-12b-it:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 96000
+    max_output_tokens: 8192
+    mode: chat
+    supports_vision: true
+    metadata:
+      notes: Gemma 3 introduces multimodality, supporting vision-language input and text outputs. It handles context windows up to 128k tokens, understands over 140 languages, and offers improved math, reasoning, and chat capabilities, including structured outputs and function calling. Gemma 3 12B is the second largest in the family of Gemma 3 models after [Gemma 3 27B](google/gemma-3-27b-it)
+    supports_function_calling: true
+    litellm_provider: openrouter
+- model_name: rekaai/reka-flash-3:free
+  litellm_params:
+    model: openai/rekaai/reka-flash-3:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: 'Reka Flash 3 is a general-purpose, instruction-tuned large language model with 21 billion parameters, developed by Reka. It excels at general chat, coding tasks, instruction-following, and function calling. Featuring a 32K context length and optimized through reinforcement learning (RLOO), it provides competitive performance comparable to proprietary models within a smaller parameter footprint. Ideal for low-latency, local, or on-device deployments, Reka Flash 3 is compact, supports efficient quantization (down to 11GB at 4-bit precision), and employs explicit reasoning tags ("<reasoning>") to indicate its internal thought process. Reka Flash 3 is primarily an English model with limited multilingual understanding capabilities. The model weights are released under the Apache 2.0 license.'
+    supports_function_calling: true
+    litellm_provider: openrouter
+- model_name: google/gemma-3-27b-it:free
+  litellm_params:
+    model: openai/google/gemma-3-27b-it:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 96000
+    max_output_tokens: 8192
+    mode: chat
+    supports_vision: true
+    metadata:
+      notes: Gemma 3 introduces multimodality, supporting vision-language input and text outputs. It handles context windows up to 128k tokens, understands over 140 languages, and offers improved math, reasoning, and chat capabilities, including structured outputs and function calling. Gemma 3 27B is Google's latest open source model, successor to [Gemma 2](google/gemma-2-27b-it)
+    supports_function_calling: true
+    litellm_provider: openrouter
+- model_name: qwen/qwq-32b:free
+  litellm_params:
+    model: openai/qwen/qwq-32b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: QwQ is the reasoning model of the Qwen series. Compared with conventional instruction-tuned models, QwQ, which is capable of thinking and reasoning, can achieve significantly enhanced performance in downstream tasks, especially hard problems. QwQ-32B is the medium-sized reasoning model, which is capable of achieving competitive performance against state-of-the-art reasoning models, e.g., DeepSeek-R1, o1-mini.
+    litellm_provider: openrouter
+- model_name: nousresearch/deephermes-3-llama-3-8b-preview:free
+  litellm_params:
+    model: openai/nousresearch/deephermes-3-llama-3-8b-preview:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 131072
+    metadata:
+      notes: 'DeepHermes 3 Preview is the latest version of our flagship Hermes series of LLMs by Nous Research, and one of the first models in the world to unify Reasoning (long chains of thought that improve answer accuracy) and normal LLM response modes into one model. We have also improved LLM annotation, judgement, and function calling. DeepHermes 3 Preview is one of the first LLM models to unify both "intuitive", traditional mode responses and long chain of thought reasoning responses into a single model, toggled by a system prompt.'
+    supports_function_calling: true
+    litellm_provider: openrouter
+- model_name: cognitivecomputations/dolphin3.0-r1-mistral-24b:free
+  litellm_params:
+    model: openai/cognitivecomputations/dolphin3.0-r1-mistral-24b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: 'Dolphin 3.0 R1 is the next generation of the Dolphin series of instruct-tuned models.  Designed to be the ultimate general purpose local model, enabling coding, math, agentic, function calling, and general use cases. The R1 version has been trained for 3 epochs to reason using 800k reasoning traces from the Dolphin-R1 dataset. Dolphin aims to be a general purpose reasoning instruct model, similar to the models behind ChatGPT, Claude, Gemini. Part of the [Dolphin 3.0 Collection](https://huggingface.co/collections/cognitivecomputations/dolphin-30-677ab47f73d7ff66743979a3) Curated and trained by [Eric Hartford](https://huggingface.co/ehartford), [Ben Gitter](https://huggingface.co/bigstorm), [BlouseJury](https://huggingface.co/BlouseJury) and [Cognitive Computations](https://huggingface.co/cognitivecomputations)'
+    supports_function_calling: true
+    litellm_provider: openrouter
+- model_name: cognitivecomputations/dolphin3.0-mistral-24b:free
+  litellm_params:
+    model: openai/cognitivecomputations/dolphin3.0-mistral-24b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: 'Dolphin 3.0 is the next generation of the Dolphin series of instruct-tuned models.  Designed to be the ultimate general purpose local model, enabling coding, math, agentic, function calling, and general use cases. Dolphin aims to be a general purpose instruct model, similar to the models behind ChatGPT, Claude, Gemini. Part of the [Dolphin 3.0 Collection](https://huggingface.co/collections/cognitivecomputations/dolphin-30-677ab47f73d7ff66743979a3) Curated and trained by [Eric Hartford](https://huggingface.co/ehartford), [Ben Gitter](https://huggingface.co/bigstorm), [BlouseJury](https://huggingface.co/BlouseJury) and [Cognitive Computations](https://huggingface.co/cognitivecomputations)'
+    supports_function_calling: true
+    litellm_provider: openrouter
+- model_name: qwen/qwen2.5-vl-72b-instruct:free
+  litellm_params:
+    model: openai/qwen/qwen2.5-vl-72b-instruct:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    mode: chat
+    supports_vision: true
+    metadata:
+      notes: Qwen2.5-VL is proficient in recognizing common objects such as flowers, birds, fish, and insects. It is also highly capable of analyzing texts, charts, icons, graphics, and layouts within images.
+    litellm_provider: openrouter
+- model_name: mistralai/mistral-small-24b-instruct-2501:free
+  litellm_params:
+    model: openai/mistralai/mistral-small-24b-instruct-2501:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: 'Mistral Small 3 is a 24B-parameter language model optimized for low-latency performance across common AI tasks. Released under the Apache 2.0 license, it features both pre-trained and instruction-tuned versions designed for efficient local deployment. The model achieves 81% accuracy on the MMLU benchmark and performs competitively with larger models like Llama 3.3 70B and Qwen 32B, while operating at three times the speed on equivalent hardware. [Read the blog post about the model here.](https://mistral.ai/news/mistral-small-3/)'
+    litellm_provider: openrouter
+- model_name: deepseek/deepseek-r1-distill-qwen-14b:free
+  litellm_params:
+    model: openai/deepseek/deepseek-r1-distill-qwen-14b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 64000
+    metadata:
+      notes: 'DeepSeek R1 Distill Qwen 14B is a distilled large language model based on [Qwen 2.5 14B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B), using outputs from [DeepSeek R1](/deepseek/deepseek-r1). It outperforms OpenAI''s o1-mini across various benchmarks, achieving new state-of-the-art results for dense models. Other benchmark results include: - AIME 2024 pass@1: 69.7 - MATH-500 pass@1: 93.9 - CodeForces Rating: 1481 The model leverages fine-tuning from DeepSeek R1''s outputs, enabling competitive performance comparable to larger frontier models.'
+    litellm_provider: openrouter
+- model_name: deepseek/deepseek-r1-distill-llama-70b:free
+  litellm_params:
+    model: openai/deepseek/deepseek-r1-distill-llama-70b:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 8192
+    max_output_tokens: 4096
+    metadata:
+      notes: 'DeepSeek R1 Distill Llama 70B is a distilled large language model based on [Llama-3.3-70B-Instruct](/meta-llama/llama-3.3-70b-instruct), using outputs from [DeepSeek R1](/deepseek/deepseek-r1). The model combines advanced distillation techniques to achieve high performance across multiple benchmarks, including: - AIME 2024 pass@1: 70.0 - MATH-500 pass@1: 94.5 - CodeForces Rating: 1633 The model leverages fine-tuning from DeepSeek R1''s outputs, enabling competitive performance comparable to larger frontier models.'
+    litellm_provider: openrouter
+- model_name: deepseek/deepseek-r1:free
+  litellm_params:
+    model: openai/deepseek/deepseek-r1:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 163840
+    metadata:
+      notes: 'DeepSeek R1 is here: Performance on par with [OpenAI o1](/openai/o1), but open-sourced and with fully open reasoning tokens. It''s 671B parameters in size, with 37B active in an inference pass. Fully open-source model & [technical report](https://api-docs.deepseek.com/news/news250120). MIT licensed: Distill & commercialize freely!'
+    litellm_provider: openrouter
+- model_name: deepseek/deepseek-chat:free
+  litellm_params:
+    model: openai/deepseek/deepseek-chat:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 163840
+    metadata:
+      notes: 'DeepSeek-V3 is the latest model from the DeepSeek team, building upon the instruction following and coding abilities of the previous versions. Pre-trained on nearly 15 trillion tokens, the reported evaluations reveal that the model outperforms other open-source models and rivals leading closed-source models. For model details, please visit [the DeepSeek-V3 repo](https://github.com/deepseek-ai/DeepSeek-V3) for more information, or see the [launch announcement](https://api-docs.deepseek.com/news/news1226).'
+    litellm_provider: openrouter
+- model_name: google/gemini-2.0-flash-exp:free
+  litellm_params:
+    model: openai/google/gemini-2.0-flash-exp:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 1048576
+    max_output_tokens: 8192
+    mode: chat
+    supports_vision: true
+    metadata:
+      notes: 'Gemini Flash 2.0 offers a significantly faster time to first token (TTFT) compared to [Gemini Flash 1.5](/google/gemini-flash-1.5), while maintaining quality on par with larger models like [Gemini Pro 1.5](/google/gemini-pro-1.5). It introduces notable enhancements in multimodal understanding, coding capabilities, complex instruction following, and function calling. These advancements come together to deliver more seamless and robust agentic experiences.'
+    supports_function_calling: true
+    litellm_provider: openrouter
+- model_name: meta-llama/llama-3.3-70b-instruct:free
+  litellm_params:
+    model: openai/meta-llama/llama-3.3-70b-instruct:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 65536
+    metadata:
+      notes: 'The Meta Llama 3.3 multilingual large language model (LLM) is a pretrained and instruction tuned generative model in 70B (text in/text out). The Llama 3.3 instruction tuned text only model is optimized for multilingual dialogue use cases and outperforms many of the available open source and closed chat models on common industry benchmarks. Supported languages: English, German, French, Italian, Portuguese, Hindi, Spanish, and Thai. [Model Card](https://github.com/meta-llama/llama-models/blob/main/models/llama3_3/MODEL_CARD.md)'
+    litellm_provider: openrouter
+- model_name: qwen/qwen-2.5-coder-32b-instruct:free
+  litellm_params:
+    model: openai/qwen/qwen-2.5-coder-32b-instruct:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: 'Qwen2.5-Coder is the latest series of Code-Specific Qwen large language models (formerly known as CodeQwen). Qwen2.5-Coder brings the following improvements upon CodeQwen1.5: - Significantly improvements in **code generation**, **code reasoning** and **code fixing**. - A more comprehensive foundation for real-world applications such as **Code Agents**. Not only enhancing coding capabilities but also maintaining its strengths in mathematics and general competencies. To read more about its evaluation results, check out [Qwen 2.5 Coder''s blog](https://qwenlm.github.io/blog/qwen2.5-coder-family/).'
+    litellm_provider: openrouter
+- model_name: meta-llama/llama-3.2-3b-instruct:free
+  litellm_params:
+    model: openai/meta-llama/llama-3.2-3b-instruct:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 131072
+    metadata:
+      notes: 'Llama 3.2 3B is a 3-billion-parameter multilingual large language model, optimized for advanced natural language processing tasks like dialogue generation, reasoning, and summarization. Designed with the latest transformer architecture, it supports eight languages, including English, Spanish, and Hindi, and is adaptable for additional languages. Trained on 9 trillion tokens, the Llama 3.2 3B model excels in instruction-following, complex reasoning, and tool use. Its balanced performance makes it ideal for applications needing accuracy and efficiency in text generation across multilingual settings. Click here for the [original model card](https://github.com/meta-llama/llama-models/blob/main/models/llama3_2/MODEL_CARD.md). Usage of this model is subject to [Meta''s Acceptable Use Policy](https://www.llama.com/llama3/use-policy/).'
+    litellm_provider: openrouter
+- model_name: meta-llama/llama-3.2-11b-vision-instruct:free
+  litellm_params:
+    model: openai/meta-llama/llama-3.2-11b-vision-instruct:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 131072
+    max_output_tokens: 2048
+    mode: chat
+    supports_vision: true
+    metadata:
+      notes: 'Llama 3.2 11B Vision is a multimodal model with 11 billion parameters, designed to handle tasks combining visual and textual data. It excels in tasks such as image captioning and visual question answering, bridging the gap between language generation and visual reasoning. Pre-trained on a massive dataset of image-text pairs, it performs well in complex, high-accuracy image analysis. Its ability to integrate visual understanding with language processing makes it an ideal solution for industries requiring comprehensive visual-linguistic AI applications, such as content creation, AI-driven customer service, and research. Click here for the [original model card](https://github.com/meta-llama/llama-models/blob/main/models/llama3_2/MODEL_CARD_VISION.md). Usage of this model is subject to [Meta''s Acceptable Use Policy](https://www.llama.com/llama3/use-policy/).'
+    litellm_provider: openrouter
+- model_name: qwen/qwen-2.5-72b-instruct:free
+  litellm_params:
+    model: openai/qwen/qwen-2.5-72b-instruct:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    metadata:
+      notes: 'Qwen2.5 72B is the latest series of Qwen large language models. Qwen2.5 brings the following improvements upon Qwen2: - Significantly more knowledge and has greatly improved capabilities in coding and mathematics, thanks to our specialized expert models in these domains. - Significant improvements in instruction following, generating long texts (over 8K tokens), understanding structured data (e.g, tables), and generating structured outputs especially JSON. More resilient to the diversity of system prompts, enhancing role-play implementation and condition-setting for chatbots. - Long-context Support up to 128K tokens and can generate up to 8K tokens. - Multilingual support for over 29 languages, including Chinese, English, French, Spanish, Portuguese, German, Italian, Russian, Japanese, Korean, Vietnamese, Thai, Arabic, and more. Usage of this model is subject to [Tongyi Qianwen LICENSE AGREEMENT](https://huggingface.co/Qwen/Qwen1.5-110B-Chat/blob/main/LICENSE).'
+    litellm_provider: openrouter
+- model_name: meta-llama/llama-3.1-405b-instruct:free
+  litellm_params:
+    model: openai/meta-llama/llama-3.1-405b-instruct:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 65536
+    metadata:
+      notes: 'The highly anticipated 400B class of Llama3 is here! Clocking in at 128k context with impressive eval scores, the Meta AI team continues to push the frontier of open-source LLMs. Meta''s latest class of model (Llama 3.1) launched with a variety of sizes & flavors. This 405B instruct-tuned version is optimized for high quality dialogue usecases. It has demonstrated strong performance compared to leading closed-source models including GPT-4o and Claude 3.5 Sonnet in evaluations. To read more about the model release, [click here](https://ai.meta.com/blog/meta-llama-3-1/). Usage of this model is subject to [Meta''s Acceptable Use Policy](https://llama.meta.com/llama3/use-policy/).'
+    litellm_provider: openrouter
+- model_name: mistralai/mistral-nemo:free
+  litellm_params:
+    model: openai/mistralai/mistral-nemo:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 131072
+    max_output_tokens: 128000
+    metadata:
+      notes: 'A 12B parameter model with a 128k token context length built by Mistral in collaboration with NVIDIA. The model is multilingual, supporting English, French, German, Spanish, Italian, Portuguese, Chinese, Japanese, Korean, Arabic, and Hindi. It supports function calling and is released under the Apache 2.0 license.'
+    supports_function_calling: true
+    litellm_provider: openrouter
+- model_name: google/gemma-2-9b-it:free
+  litellm_params:
+    model: openai/google/gemma-2-9b-it:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 8192
+    max_output_tokens: 8192
+    metadata:
+      notes: 'Gemma 2 9B by Google is an advanced, open-source language model that sets a new standard for efficiency and performance in its size.  Designed for a wide variety of tasks, it empowers developers and researchers to build innovative applications, while maintaining  , safety, and cost-effectiveness.  See the [launch announcement](https://blog.google/technology/developers/google-gemma-2/) for more details.  Usage of Gemma is subject to Google''s [Gemma Terms of Use](https://ai.google.dev/gemma/terms).'
+    litellm_provider: openrouter
+- model_name: mistralai/mistral-7b-instruct:free
+  litellm_params:
+    model: openai/mistralai/mistral-7b-instruct:free
+    api_base: https://openrouter.ai/api/v1
+    api_key: ${OPENROUTER_API_KEY}
+    input_cost_per_token: 0.0
+    output_cost_per_token: 0.0
+    input_cost_per_image: 0.0
+    input_cost_per_query: 0.0
+    max_input_tokens: 32768
+    max_output_tokens: 16384
+    metadata:
+      notes: 'A high-performing, industry-standard 7.3B parameter model, with optimizations for speed and context length.  *Mistral 7B Instruct has multiple version variants, and this is intended to be the latest version.*'
+    litellm_provider: openrouter

@@ -1,0 +1,15 @@
+
+[[roles]]
+name = "public"
+routes = [
+  "GET /v1/openvpn/status",
+  "PUT /v1/openvpn/status",
+  "GET /v1/openvpn/portforwarded",
+  "GET /v1/openvpn/settings",
+  "GET /v1/dns/status",
+  "PUT /v1/dns/status",
+  "GET /v1/updater/status",
+  "PUT /v1/updater/status",
+  "GET /v1/publicip/ip"
+]
+auth = "none"

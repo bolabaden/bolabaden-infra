@@ -5,7 +5,7 @@ description: Logrotate for Traefik logs with human-readable output
 type: container
 
 spec:
-  image: docker.io/alpine:latest
+  image: docker.io/alpine
   user: root:root
   env:
     TZ: ${var.tz}

@@ -1,0 +1,37 @@
+{
+  "mcpServers": {
+    "context7": {
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "curl": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mcp-get-community/server-curl"
+      ]
+    },
+    "firecrawl": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "firecrawl-mcp"
+      ],
+      "env": {
+        "FIRECRAWL_API_KEY": "$FIRECRAWL_API_KEY",
+        "FIRE_CRAWL_API_KEY": "$FIRECRAWL_API_KEY",
+        "FIRECRAWL_API_URL": "https://firecrawl-api.$DOMAIN",
+        "FIRE_CRAWL_API_URL": "https://firecrawl-api.$DOMAIN"
+      }
+    },
+    "tavily": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "tavily-mcp@latest"
+      ],
+      "env": {
+        "TAVILY_API_KEY": "$TAVILY_API_KEY"
+      }
+    }
+  }
+}

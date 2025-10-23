@@ -1,0 +1,407 @@
+TEXT main.main(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/cmd/zurg/main.go
+  main.go:15		0x3f10d0		f9400b90		MOVD 16(R28), R16						
+  main.go:15		0x3f10d4		d101c3f1		SUB $112, RSP, R17						
+  main.go:15		0x3f10d8		eb10023f		CMP R16, R17							
+  main.go:15		0x3f10dc		54002289		BLS 276(PC)							
+  main.go:15		0x3f10e0		f8110ffe		MOVD.W R30, -240(RSP)						
+  main.go:15		0x3f10e4		f81f83fd		MOVD R29, -8(RSP)						
+  main.go:15		0x3f10e8		d10023fd		SUB $8, RSP, R29						
+  main.go:15		0x3f10ec		f90073ff		MOVD ZR, 224(RSP)						
+  main.go:15		0x3f10f0		39017fff		MOVB ZR, 95(RSP)						
+  main.go:16		0x3f10f4		b0000da0		ADRP 1789952(PC), R0						
+  main.go:16		0x3f10f8		91116000		ADD $1112, R0, R0						
+  main.go:16		0x3f10fc		90002861		ADRP 5292032(PC), R1						
+  main.go:16		0x3f1100		913e8021		ADD $4000, R1, R1						
+  main.go:16		0x3f1104		97f30707		CALL context.WithCancel(SB)					
+  main.go:16		0x3f1108		f90047e2		MOVD R2, 136(RSP)						
+  main.go:16		0x3f110c		f90033e0		MOVD R0, 96(RSP)						
+  main.go:16		0x3f1110		f9003be1		MOVD R1, 112(RSP)						
+  main.go:17		0x3f1114		f90073e2		MOVD R2, 224(RSP)						
+  main.go:17		0x3f1118		b24003e3		ORR $1, ZR, R3							
+  main.go:17		0x3f111c		39017fe3		MOVB R3, 95(RSP)						
+  main.go:20		0x3f1120		b0000220		ADRP 282624(PC), R0						
+  main.go:20		0x3f1124		913b0000		ADD $3776, R0, R0						
+  main.go:20		0x3f1128		b24003e1		ORR $1, ZR, R1							
+  main.go:20		0x3f112c		97f0a169		CALL runtime.makechan(SB)					
+  main.go:20		0x3f1130		f9004fe0		MOVD R0, 152(RSP)						
+  main.go:21		0x3f1134		a90bffff		STP (ZR, ZR), 184(RSP)						
+  main.go:21		0x3f1138		a90cffff		STP (ZR, ZR), 200(RSP)						
+  main.go:21		0x3f113c		d000249b		ADRP 4792320(PC), R27						
+  main.go:21		0x3f1140		f9447362		MOVD 2272(R27), R2						
+  main.go:21		0x3f1144		d000249b		ADRP 4792320(PC), R27						
+  main.go:21		0x3f1148		f9447763		MOVD 2280(R27), R3						
+  main.go:21		0x3f114c		f9005fe2		MOVD R2, 184(RSP)						
+  main.go:21		0x3f1150		f90063e3		MOVD R3, 192(RSP)						
+  main.go:21		0x3f1154		d0000d82		ADRP 1777664(PC), R2						
+  main.go:21		0x3f1158		913e2042		ADD $3976, R2, R2						
+  main.go:21		0x3f115c		f90067e2		MOVD R2, 200(RSP)						
+  main.go:21		0x3f1160		d0000d62		ADRP 1761280(PC), R2						
+  main.go:21		0x3f1164		91104042		ADD $1040, R2, R2						
+  main.go:21		0x3f1168		f9006be2		MOVD R2, 208(RSP)						
+  main.go:21		0x3f116c		9102e3e1		ADD $184, RSP, R1						
+  main.go:21		0x3f1170		b27f03e2		ORR $2, ZR, R2							
+  main.go:21		0x3f1174		aa0203e3		MOVD R2, R3							
+  main.go:21		0x3f1178		97f48cf6		CALL os/signal.Notify(SB)					
+  main.go:22		0x3f117c		b00004c0		ADRP 626688(PC), R0						
+  main.go:22		0x3f1180		91068000		ADD $416, R0, R0						
+  main.go:22		0x3f1184		97f0c2e3		CALL runtime.newobject(SB)					
+  main.go:22		0x3f1188		90000002		ADRP 0(PC), R2							
+  main.go:22		0x3f118c		9118c042		ADD $1584, R2, R2						
+  main.go:22		0x3f1190		f9000002		MOVD R2, (R0)							
+  main.go:22		0x3f1194		b000287b		ADRP 5296128(PC), R27						
+  main.go:22		0x3f1198		b9448362		MOVWU 1152(R27), R2						
+  main.go:22		0x3f119c		35000082		CBNZW R2, 4(PC)							
+  main.go:22		0x3f11a0		f9404fe1		MOVD 152(RSP), R1						
+  main.go:22		0x3f11a4		f94047e2		MOVD 136(RSP), R2						
+  main.go:22		0x3f11a8		14000006		JMP 6(PC)							
+  main.go:22		0x3f11ac		97f26389		CALL runtime.gcWriteBarrier2(SB)				
+  main.go:22		0x3f11b0		f9404fe1		MOVD 152(RSP), R1						
+  main.go:22		0x3f11b4		f9000321		MOVD R1, (R25)							
+  main.go:22		0x3f11b8		f94047e2		MOVD 136(RSP), R2						
+  main.go:22		0x3f11bc		f9000722		MOVD R2, 8(R25)							
+  main.go:22		0x3f11c0		f9000401		MOVD R1, 8(R0)							
+  main.go:22		0x3f11c4		f9000802		MOVD R2, 16(R0)							
+  main.go:22		0x3f11c8		97f1a86e		CALL runtime.newproc(SB)					
+  main.go:28		0x3f11cc		90000220		ADRP 278528(PC), R0						
+  main.go:28		0x3f11d0		910c0000		ADD $768, R0, R0						
+  main.go:28		0x3f11d4		97f0c2cf		CALL runtime.newobject(SB)					
+  main.go:28		0x3f11d8		f9006fe0		MOVD R0, 216(RSP)						
+  main.go:28		0x3f11dc		f900001f		MOVD ZR, (R0)							
+  main.go:30		0x3f11e0		90000720		ADRP 933888(PC), R0						
+  main.go:30		0x3f11e4		91208000		ADD $2080, R0, R0						
+  main.go:30		0x3f11e8		97f0c2ca		CALL runtime.newobject(SB)					
+  main.go:30		0x3f11ec		f9004be0		MOVD R0, 144(RSP)						
+  main.go:31		0x3f11f0		b27e03e1		ORR $4, ZR, R1							
+  main.go:31		0x3f11f4		f9000401		MOVD R1, 8(R0)							
+  main.go:31		0x3f11f8		f0000721		ADRP 946176(PC), R1						
+  main.go:31		0x3f11fc		911cc821		ADD $1842, R1, R1						
+  main.go:31		0x3f1200		f9000001		MOVD R1, (R0)							
+  main.go:32		0x3f1204		b27b03e1		ORR $32, ZR, R1							
+  main.go:32		0x3f1208		f9002401		MOVD R1, 72(R0)							
+  main.go:32		0x3f120c		d00007a1		ADRP 1007616(PC), R1						
+  main.go:32		0x3f1210		91114c21		ADD $1107, R1, R1						
+  main.go:32		0x3f1214		f9002001		MOVD R1, 64(R0)							
+  main.go:33		0x3f1218		d2802f81		MOVD $380, R1							
+  main.go:33		0x3f121c		f9003401		MOVD R1, 104(R0)						
+  main.go:33		0x3f1220		b0000841		ADRP 1085440(PC), R1						
+  main.go:33		0x3f1224		91125421		ADD $1173, R1, R1						
+  main.go:33		0x3f1228		f9003001		MOVD R1, 96(R0)							
+  main.go:40		0x3f122c		b00004c0		ADRP 626688(PC), R0						
+  main.go:40		0x3f1230		91090000		ADD $576, R0, R0						
+  main.go:40		0x3f1234		97f0c2b7		CALL runtime.newobject(SB)					
+  main.go:40		0x3f1238		90000001		ADRP 0(PC), R1							
+  main.go:40		0x3f123c		91170021		ADD $1472, R1, R1						
+  main.go:40		0x3f1240		f9000001		MOVD R1, (R0)							
+  main.go:40		0x3f1244		f94033e1		MOVD 96(RSP), R1						
+  main.go:40		0x3f1248		f9000401		MOVD R1, 8(R0)							
+  main.go:40		0x3f124c		b000287b		ADRP 5296128(PC), R27						
+  main.go:40		0x3f1250		b9448361		MOVWU 1152(R27), R1						
+  main.go:40		0x3f1254		350000a1		CBNZW R1, 5(PC)							
+  main.go:40		0x3f1258		f9403be1		MOVD 112(RSP), R1						
+  main.go:40		0x3f125c		f9406fe2		MOVD 216(RSP), R2						
+  main.go:40		0x3f1260		f9404be3		MOVD 144(RSP), R3						
+  main.go:40		0x3f1264		1400000a		JMP 10(PC)							
+  main.go:40		0x3f1268		97f26362		CALL runtime.gcWriteBarrier4(SB)				
+  main.go:40		0x3f126c		f9403be1		MOVD 112(RSP), R1						
+  main.go:40		0x3f1270		f9000321		MOVD R1, (R25)							
+  main.go:40		0x3f1274		f9406fe2		MOVD 216(RSP), R2						
+  main.go:40		0x3f1278		f9000722		MOVD R2, 8(R25)							
+  main.go:40		0x3f127c		f9000b20		MOVD R0, 16(R25)						
+  main.go:40		0x3f1280		f9404be3		MOVD 144(RSP), R3						
+  main.go:40		0x3f1284		f9408c64		MOVD 280(R3), R4						
+  main.go:40		0x3f1288		f9000f24		MOVD R4, 24(R25)						
+  main.go:40		0x3f128c		f9000801		MOVD R1, 16(R0)							
+  main.go:40		0x3f1290		f9000c02		MOVD R2, 24(R0)							
+  main.go:40		0x3f1294		f9008c60		MOVD R0, 280(R3)						
+  main.go:47		0x3f1298		aa0303e0		MOVD R3, R0							
+  main.go:47		0x3f129c		97f78b49		CALL github.com/spf13/cobra.(*Command).PersistentFlags(SB)	
+  main.go:47		0x3f12a0		f9406fe1		MOVD 216(RSP), R1						
+  main.go:47		0x3f12a4		f0000722		ADRP 946176(PC), R2						
+  main.go:47		0x3f12a8		91385042		ADD $3604, R2, R2						
+  main.go:47		0x3f12ac		b27f07e3		ORR $6, ZR, R3							
+  main.go:47		0x3f12b0		d0000d64		ADRP 1761280(PC), R4						
+  main.go:47		0x3f12b4		91100084		ADD $1024, R4, R4						
+  main.go:47		0x3f12b8		b24003e5		ORR $1, ZR, R5							
+  main.go:47		0x3f12bc		aa1f03e6		MOVD ZR, R6							
+  main.go:47		0x3f12c0		aa1f03e7		MOVD ZR, R7							
+  main.go:47		0x3f12c4		f0000748		ADRP 962560(PC), R8						
+  main.go:47		0x3f12c8		913ee908		ADD $4026, R8, R8						
+  main.go:47		0x3f12cc		b27c03e9		ORR $16, ZR, R9							
+  main.go:47		0x3f12d0		97f64a3c		CALL github.com/spf13/pflag.(*FlagSet).StringVarP(SB)		
+  main.go:49		0x3f12d4		90000720		ADRP 933888(PC), R0						
+  main.go:49		0x3f12d8		91208000		ADD $2080, R0, R0						
+  main.go:49		0x3f12dc		97f0c28d		CALL runtime.newobject(SB)					
+  main.go:49		0x3f12e0		f90037e0		MOVD R0, 104(RSP)						
+  main.go:50		0x3f12e4		b2400be1		ORR $7, ZR, R1							
+  main.go:50		0x3f12e8		f9000401		MOVD R1, 8(R0)							
+  main.go:50		0x3f12ec		90000741		ADRP 950272(PC), R1						
+  main.go:50		0x3f12f0		91094821		ADD $594, R1, R1						
+  main.go:50		0x3f12f4		f9000001		MOVD R1, (R0)							
+  main.go:51		0x3f12f8		b27d07e1		ORR $24, ZR, R1							
+  main.go:51		0x3f12fc		f9002401		MOVD R1, 72(R0)							
+  main.go:51		0x3f1300		90000781		ADRP 983040(PC), R1						
+  main.go:51		0x3f1304		91318021		ADD $3168, R1, R1						
+  main.go:51		0x3f1308		f9002001		MOVD R1, 64(R0)							
+  main.go:52		0x3f130c		b0000981		ADRP 1249280(PC), R1						
+  main.go:52		0x3f1310		91174021		ADD $1488, R1, R1						
+  main.go:52		0x3f1314		f9008c01		MOVD R1, 280(R0)						
+  main.go:57		0x3f1318		90000720		ADRP 933888(PC), R0						
+  main.go:57		0x3f131c		91208000		ADD $2080, R0, R0						
+  main.go:57		0x3f1320		97f0c27c		CALL runtime.newobject(SB)					
+  main.go:57		0x3f1324		f90043e0		MOVD R0, 128(RSP)						
+  main.go:58		0x3f1328		b2400fe1		ORR $15, ZR, R1							
+  main.go:58		0x3f132c		f9000401		MOVD R1, 8(R0)							
+  main.go:58		0x3f1330		f0000741		ADRP 962560(PC), R1						
+  main.go:58		0x3f1334		91234021		ADD $2256, R1, R1						
+  main.go:58		0x3f1338		f9000001		MOVD R1, (R0)							
+  main.go:59		0x3f133c		d2800481		MOVD $36, R1							
+  main.go:59		0x3f1340		f9002401		MOVD R1, 72(R0)							
+  main.go:59		0x3f1344		b00007c1		ADRP 1019904(PC), R1						
+  main.go:59		0x3f1348		910bc821		ADD $754, R1, R1						
+  main.go:59		0x3f134c		f9002001		MOVD R1, 64(R0)							
+  main.go:60		0x3f1350		d2800a21		MOVD $81, R1							
+  main.go:60		0x3f1354		f9003401		MOVD R1, 104(R0)						
+  main.go:60		0x3f1358		f0000821		ADRP 1077248(PC), R1						
+  main.go:60		0x3f135c		91160021		ADD $1408, R1, R1						
+  main.go:60		0x3f1360		f9003001		MOVD R1, 96(R0)							
+  main.go:61		0x3f1364		f0000420		ADRP 552960(PC), R0						
+  main.go:61		0x3f1368		91320000		ADD $3200, R0, R0						
+  main.go:61		0x3f136c		97f0c269		CALL runtime.newobject(SB)					
+  main.go:61		0x3f1370		90000001		ADRP 0(PC), R1							
+  main.go:61		0x3f1374		91160021		ADD $1408, R1, R1						
+  main.go:61		0x3f1378		f9000001		MOVD R1, (R0)							
+  main.go:61		0x3f137c		b000287b		ADRP 5296128(PC), R27						
+  main.go:61		0x3f1380		b9448361		MOVWU 1152(R27), R1						
+  main.go:61		0x3f1384		35000081		CBNZW R1, 4(PC)							
+  main.go:61		0x3f1388		f9406fe1		MOVD 216(RSP), R1						
+  main.go:61		0x3f138c		f94043e2		MOVD 128(RSP), R2						
+  main.go:61		0x3f1390		14000008		JMP 8(PC)							
+  main.go:61		0x3f1394		97f26313		CALL runtime.gcWriteBarrier3(SB)				
+  main.go:61		0x3f1398		f9406fe1		MOVD 216(RSP), R1						
+  main.go:61		0x3f139c		f9000321		MOVD R1, (R25)							
+  main.go:61		0x3f13a0		f9000720		MOVD R0, 8(R25)							
+  main.go:61		0x3f13a4		f94043e2		MOVD 128(RSP), R2						
+  main.go:61		0x3f13a8		f9408c43		MOVD 280(R2), R3						
+  main.go:61		0x3f13ac		f9000b23		MOVD R3, 16(R25)						
+  main.go:61		0x3f13b0		f9000401		MOVD R1, 8(R0)							
+  main.go:61		0x3f13b4		f9008c40		MOVD R0, 280(R2)						
+  main.go:66		0x3f13b8		90000720		ADRP 933888(PC), R0						
+  main.go:66		0x3f13bc		91208000		ADD $2080, R0, R0						
+  main.go:66		0x3f13c0		97f0c254		CALL runtime.newobject(SB)					
+  main.go:66		0x3f13c4		f9003fe0		MOVD R0, 120(RSP)						
+  main.go:67		0x3f13c8		b27f0be1		ORR $14, ZR, R1							
+  main.go:67		0x3f13cc		f9000401		MOVD R1, 8(R0)							
+  main.go:67		0x3f13d0		f0000741		ADRP 962560(PC), R1						
+  main.go:67		0x3f13d4		91097021		ADD $604, R1, R1						
+  main.go:67		0x3f13d8		f9000001		MOVD R1, (R0)							
+  main.go:68		0x3f13dc		d2800461		MOVD $35, R1							
+  main.go:68		0x3f13e0		f9002401		MOVD R1, 72(R0)							
+  main.go:68		0x3f13e4		900007c1		ADRP 1015808(PC), R1						
+  main.go:68		0x3f13e8		911ef021		ADD $1980, R1, R1						
+  main.go:68		0x3f13ec		f9002001		MOVD R1, 64(R0)							
+  main.go:69		0x3f13f0		d2800a01		MOVD $80, R1							
+  main.go:69		0x3f13f4		f9003401		MOVD R1, 104(R0)						
+  main.go:69		0x3f13f8		f0000821		ADRP 1077248(PC), R1						
+  main.go:69		0x3f13fc		910c0021		ADD $768, R1, R1						
+  main.go:69		0x3f1400		f9003001		MOVD R1, 96(R0)							
+  main.go:70		0x3f1404		f0000420		ADRP 552960(PC), R0						
+  main.go:70		0x3f1408		91320000		ADD $3200, R0, R0						
+  main.go:70		0x3f140c		97f0c241		CALL runtime.newobject(SB)					
+  main.go:70		0x3f1410		90000001		ADRP 0(PC), R1							
+  main.go:70		0x3f1414		91150021		ADD $1344, R1, R1						
+  main.go:70		0x3f1418		f9000001		MOVD R1, (R0)							
+  main.go:70		0x3f141c		b000287b		ADRP 5296128(PC), R27						
+  main.go:70		0x3f1420		b9448361		MOVWU 1152(R27), R1						
+  main.go:70		0x3f1424		35000081		CBNZW R1, 4(PC)							
+  main.go:70		0x3f1428		f9406fe4		MOVD 216(RSP), R4						
+  main.go:70		0x3f142c		f9403fe5		MOVD 120(RSP), R5						
+  main.go:70		0x3f1430		14000008		JMP 8(PC)							
+  main.go:70		0x3f1434		97f262eb		CALL runtime.gcWriteBarrier3(SB)				
+  main.go:70		0x3f1438		f9406fe4		MOVD 216(RSP), R4						
+  main.go:70		0x3f143c		f9000324		MOVD R4, (R25)							
+  main.go:70		0x3f1440		f9000720		MOVD R0, 8(R25)							
+  main.go:70		0x3f1444		f9403fe5		MOVD 120(RSP), R5						
+  main.go:70		0x3f1448		f9408ca6		MOVD 280(R5), R6						
+  main.go:70		0x3f144c		f9000b26		MOVD R6, 16(R25)						
+  main.go:70		0x3f1450		f9000404		MOVD R4, 8(R0)							
+  main.go:70		0x3f1454		f9008ca0		MOVD R0, 280(R5)						
+  main.go:75		0x3f1458		f9005bff		MOVD ZR, 176(RSP)						
+  main.go:75		0x3f145c		f94037e4		MOVD 104(RSP), R4						
+  main.go:75		0x3f1460		f9005be4		MOVD R4, 176(RSP)						
+  main.go:75		0x3f1464		f9404be0		MOVD 144(RSP), R0						
+  main.go:75		0x3f1468		9102c3e1		ADD $176, RSP, R1						
+  main.go:75		0x3f146c		b24003e2		ORR $1, ZR, R2							
+  main.go:75		0x3f1470		aa0203e3		MOVD R2, R3							
+  main.go:75		0x3f1474		97f7813b		CALL github.com/spf13/cobra.(*Command).AddCommand(SB)		
+  main.go:76		0x3f1478		f9005bff		MOVD ZR, 176(RSP)						
+  main.go:76		0x3f147c		f94043e4		MOVD 128(RSP), R4						
+  main.go:76		0x3f1480		f9005be4		MOVD R4, 176(RSP)						
+  main.go:76		0x3f1484		f9404be0		MOVD 144(RSP), R0						
+  main.go:76		0x3f1488		9102c3e1		ADD $176, RSP, R1						
+  main.go:76		0x3f148c		b24003e2		ORR $1, ZR, R2							
+  main.go:76		0x3f1490		aa0203e3		MOVD R2, R3							
+  main.go:76		0x3f1494		97f78133		CALL github.com/spf13/cobra.(*Command).AddCommand(SB)		
+  main.go:77		0x3f1498		f9005bff		MOVD ZR, 176(RSP)						
+  main.go:77		0x3f149c		f9403fe4		MOVD 120(RSP), R4						
+  main.go:77		0x3f14a0		f9005be4		MOVD R4, 176(RSP)						
+  main.go:77		0x3f14a4		f9404be0		MOVD 144(RSP), R0						
+  main.go:77		0x3f14a8		9102c3e1		ADD $176, RSP, R1						
+  main.go:77		0x3f14ac		b24003e2		ORR $1, ZR, R2							
+  main.go:77		0x3f14b0		aa0203e3		MOVD R2, R3							
+  main.go:77		0x3f14b4		97f7812b		CALL github.com/spf13/cobra.(*Command).AddCommand(SB)		
+  command.go:1041	0x3f14b8		f9404be0		MOVD 144(RSP), R0						
+  command.go:1041	0x3f14bc		97f77ca5		CALL github.com/spf13/cobra.(*Command).ExecuteC(SB)		
+  main.go:79		0x3f14c0		b4000201		CBZ R1, 16(PC)							
+  main.go:80		0x3f14c4		a90a7fff		STP (ZR, ZR), 160(RSP)						
+  main.go:80		0x3f14c8		b4000041		CBZ R1, 2(PC)							
+  main.go:80		0x3f14cc		f9400421		MOVD 8(R1), R1							
+  main.go:80		0x3f14d0		f90053e1		MOVD R1, 160(RSP)						
+  main.go:80		0x3f14d4		f90057e2		MOVD R2, 168(RSP)						
+  print.go:314		0x3f14d8		9000253b		ADRP 4866048(PC), R27						
+  print.go:314		0x3f14dc		f9434f61		MOVD 1688(R27), R1						
+  print.go:314		0x3f14e0		90000d80		ADRP 1769472(PC), R0						
+  print.go:314		0x3f14e4		91268000		ADD $2464, R0, R0						
+  print.go:314		0x3f14e8		910283e2		ADD $160, RSP, R2						
+  print.go:314		0x3f14ec		b24003e3		ORR $1, ZR, R3							
+  print.go:314		0x3f14f0		aa0303e4		MOVD R3, R4							
+  print.go:314		0x3f14f4		97f453e7		CALL fmt.Fprintln(SB)						
+  main.go:81		0x3f14f8		b24003e0		ORR $1, ZR, R0							
+  main.go:81		0x3f14fc		97f43385		CALL os.Exit(SB)						
+  main.go:83		0x3f1500		39017fff		MOVB ZR, 95(RSP)						
+  main.go:83		0x3f1504		f94073fa		MOVD 224(RSP), R26						
+  main.go:83		0x3f1508		f9400340		MOVD (R26), R0							
+  main.go:83		0x3f150c		d63f0000		CALL (R0)							
+  main.go:83		0x3f1510		a97ffbfd		LDP -8(RSP), (R29, R30)						
+  main.go:83		0x3f1514		9103c3ff		ADD $240, RSP, RSP						
+  main.go:83		0x3f1518		d65f03c0		RET								
+  main.go:83		0x3f151c		97f16e59		CALL runtime.deferreturn(SB)					
+  main.go:83		0x3f1520		a97ffbfd		LDP -8(RSP), (R29, R30)						
+  main.go:83		0x3f1524		9103c3ff		ADD $240, RSP, RSP						
+  main.go:83		0x3f1528		d65f03c0		RET								
+  main.go:15		0x3f152c		aa1e03e3		MOVD R30, R3							
+  main.go:15		0x3f1530		97f259b8		CALL runtime.morestack_noctxt.abi0(SB)				
+  main.go:15		0x3f1534		17fffee7		JMP main.main(SB)						
+  main.go:15		0x3f1538		00000000		?								
+  main.go:15		0x3f153c		00000000		?								
+
+TEXT main.main.func5(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/cmd/zurg/main.go
+  main.go:70		0x3f1540		f9400b90		MOVD 16(R28), R16							
+  main.go:70		0x3f1544		eb3063ff		CMP R16, RSP								
+  main.go:70		0x3f1548		54000169		BLS 11(PC)								
+  main.go:70		0x3f154c		f81e0ffe		MOVD.W R30, -32(RSP)							
+  main.go:70		0x3f1550		f81f83fd		MOVD R29, -8(RSP)							
+  main.go:70		0x3f1554		d10023fd		SUB $8, RSP, R29							
+  main.go:70		0x3f1558		f9400742		MOVD 8(R26), R2								
+  main.go:71		0x3f155c		f9400040		MOVD (R2), R0								
+  main.go:71		0x3f1560		f9400441		MOVD 8(R2), R1								
+  main.go:71		0x3f1564		97fffe2b		CALL github.com/debridmediamanager/zurg/internal.ClearTorrents(SB)	
+  main.go:72		0x3f1568		a97ffbfd		LDP -8(RSP), (R29, R30)							
+  main.go:72		0x3f156c		910083ff		ADD $32, RSP, RSP							
+  main.go:72		0x3f1570		d65f03c0		RET									
+  main.go:70		0x3f1574		aa1e03e3		MOVD R30, R3								
+  main.go:70		0x3f1578		97f25986		CALL runtime.morestack.abi0(SB)						
+  main.go:70		0x3f157c		17fffff1		JMP main.main.func5(SB)							
+
+TEXT main.main.func4(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/cmd/zurg/main.go
+  main.go:61		0x3f1580		f9400b90		MOVD 16(R28), R16							
+  main.go:61		0x3f1584		eb3063ff		CMP R16, RSP								
+  main.go:61		0x3f1588		54000169		BLS 11(PC)								
+  main.go:61		0x3f158c		f81e0ffe		MOVD.W R30, -32(RSP)							
+  main.go:61		0x3f1590		f81f83fd		MOVD R29, -8(RSP)							
+  main.go:61		0x3f1594		d10023fd		SUB $8, RSP, R29							
+  main.go:61		0x3f1598		f9400742		MOVD 8(R26), R2								
+  main.go:62		0x3f159c		f9400040		MOVD (R2), R0								
+  main.go:62		0x3f15a0		f9400441		MOVD 8(R2), R1								
+  main.go:62		0x3f15a4		97fffd8f		CALL github.com/debridmediamanager/zurg/internal.ClearDownloads(SB)	
+  main.go:63		0x3f15a8		a97ffbfd		LDP -8(RSP), (R29, R30)							
+  main.go:63		0x3f15ac		910083ff		ADD $32, RSP, RSP							
+  main.go:63		0x3f15b0		d65f03c0		RET									
+  main.go:61		0x3f15b4		aa1e03e3		MOVD R30, R3								
+  main.go:61		0x3f15b8		97f25976		CALL runtime.morestack.abi0(SB)						
+  main.go:61		0x3f15bc		17fffff1		JMP main.main.func4(SB)							
+
+TEXT main.main.func2(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/cmd/zurg/main.go
+  main.go:40		0x3f15c0		f9400b90		MOVD 16(R28), R16						
+  main.go:40		0x3f15c4		eb3063ff		CMP R16, RSP							
+  main.go:40		0x3f15c8		540002e9		BLS 23(PC)							
+  main.go:40		0x3f15cc		f81c0ffe		MOVD.W R30, -64(RSP)						
+  main.go:40		0x3f15d0		f81f83fd		MOVD R29, -8(RSP)						
+  main.go:40		0x3f15d4		d10023fd		SUB $8, RSP, R29						
+  main.go:40		0x3f15d8		f9400f44		MOVD 24(R26), R4						
+  main.go:40		0x3f15dc		f9400740		MOVD 8(R26), R0							
+  main.go:40		0x3f15e0		f9400b41		MOVD 16(R26), R1						
+  main.go:41		0x3f15e4		f9400082		MOVD (R4), R2							
+  main.go:41		0x3f15e8		f9400483		MOVD 8(R4), R3							
+  main.go:41		0x3f15ec		97fff83d		CALL github.com/debridmediamanager/zurg/internal.MainApp(SB)	
+  main.go:41		0x3f15f0		b4000140		CBZ R0, 10(PC)							
+  main.go:42		0x3f15f4		a902ffff		STP (ZR, ZR), 40(RSP)						
+  main.go:42		0x3f15f8		b4000040		CBZ R0, 2(PC)							
+  main.go:42		0x3f15fc		f9400400		MOVD 8(R0), R0							
+  main.go:42		0x3f1600		f90017e0		MOVD R0, 40(RSP)						
+  main.go:42		0x3f1604		f9001be1		MOVD R1, 48(RSP)						
+  main.go:42		0x3f1608		9100a3e0		ADD $40, RSP, R0						
+  main.go:42		0x3f160c		b24003e1		ORR $1, ZR, R1							
+  main.go:42		0x3f1610		aa0103e2		MOVD R1, R2							
+  main.go:42		0x3f1614		97f48a77		CALL log.Fatal(SB)						
+  main.go:44		0x3f1618		a97ffbfd		LDP -8(RSP), (R29, R30)						
+  main.go:44		0x3f161c		910103ff		ADD $64, RSP, RSP						
+  main.go:44		0x3f1620		d65f03c0		RET								
+  main.go:40		0x3f1624		aa1e03e3		MOVD R30, R3							
+  main.go:40		0x3f1628		97f2595a		CALL runtime.morestack.abi0(SB)					
+  main.go:40		0x3f162c		17ffffe5		JMP main.main.func2(SB)						
+
+TEXT main.main.func1(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/cmd/zurg/main.go
+  main.go:22		0x3f1630		f9400b90		MOVD 16(R28), R16		
+  main.go:22		0x3f1634		eb3063ff		CMP R16, RSP			
+  main.go:22		0x3f1638		540003c9		BLS 30(PC)			
+  main.go:22		0x3f163c		f81b0ffe		MOVD.W R30, -80(RSP)		
+  main.go:22		0x3f1640		f81f83fd		MOVD R29, -8(RSP)		
+  main.go:22		0x3f1644		d10023fd		SUB $8, RSP, R29		
+  main.go:22		0x3f1648		f9400b42		MOVD 16(R26), R2		
+  main.go:22		0x3f164c		f9001be2		MOVD R2, 48(RSP)		
+  main.go:22		0x3f1650		f9400740		MOVD 8(R26), R0			
+  main.go:23		0x3f1654		aa1f03e1		MOVD ZR, R1			
+  main.go:23		0x3f1658		97f0a3de		CALL runtime.chanrecv1(SB)	
+  main.go:24		0x3f165c		a903ffff		STP (ZR, ZR), 56(RSP)		
+  main.go:24		0x3f1660		90000222		ADRP 278528(PC), R2		
+  main.go:24		0x3f1664		910c0042		ADD $768, R2, R2		
+  main.go:24		0x3f1668		f9001fe2		MOVD R2, 56(RSP)		
+  main.go:24		0x3f166c		d0000d62		ADRP 1761280(PC), R2		
+  main.go:24		0x3f1670		911e8042		ADD $1952, R2, R2		
+  main.go:24		0x3f1674		f90023e2		MOVD R2, 64(RSP)		
+  print.go:314		0x3f1678		9000253b		ADRP 4866048(PC), R27		
+  print.go:314		0x3f167c		f9434f61		MOVD 1688(R27), R1		
+  print.go:314		0x3f1680		90000d80		ADRP 1769472(PC), R0		
+  print.go:314		0x3f1684		91268000		ADD $2464, R0, R0		
+  print.go:314		0x3f1688		9100e3e2		ADD $56, RSP, R2		
+  print.go:314		0x3f168c		b24003e3		ORR $1, ZR, R3			
+  print.go:314		0x3f1690		aa0303e4		MOVD R3, R4			
+  print.go:314		0x3f1694		97f4537f		CALL fmt.Fprintln(SB)		
+  main.go:25		0x3f1698		f9401bfa		MOVD 48(RSP), R26		
+  main.go:25		0x3f169c		f9400342		MOVD (R26), R2			
+  main.go:25		0x3f16a0		d63f0040		CALL (R2)			
+  main.go:26		0x3f16a4		a97ffbfd		LDP -8(RSP), (R29, R30)		
+  main.go:26		0x3f16a8		910143ff		ADD $80, RSP, RSP		
+  main.go:26		0x3f16ac		d65f03c0		RET				
+  main.go:22		0x3f16b0		aa1e03e3		MOVD R30, R3			
+  main.go:22		0x3f16b4		97f25937		CALL runtime.morestack.abi0(SB)	
+  main.go:22		0x3f16b8		17ffffde		JMP main.main.func1(SB)		
+  main.go:22		0x3f16bc		00000000		?				
+
+TEXT main.main.func3(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/cmd/zurg/main.go
+  main.go:52		0x3f16c0		f9400b90		MOVD 16(R28), R16							
+  main.go:52		0x3f16c4		eb3063ff		CMP R16, RSP								
+  main.go:52		0x3f16c8		54000109		BLS 8(PC)								
+  main.go:52		0x3f16cc		f81f0ffe		MOVD.W R30, -16(RSP)							
+  main.go:52		0x3f16d0		f81f83fd		MOVD R29, -8(RSP)							
+  main.go:52		0x3f16d4		d10023fd		SUB $8, RSP, R29							
+  main.go:53		0x3f16d8		97fffc7a		CALL github.com/debridmediamanager/zurg/internal.ShowVersion(SB)	
+  main.go:54		0x3f16dc		a97ffbfd		LDP -8(RSP), (R29, R30)							
+  main.go:54		0x3f16e0		910043ff		ADD $16, RSP, RSP							
+  main.go:54		0x3f16e4		d65f03c0		RET									
+  main.go:52		0x3f16e8		aa1e03e3		MOVD R30, R3								
+  main.go:52		0x3f16ec		97f25949		CALL runtime.morestack_noctxt.abi0(SB)					
+  main.go:52		0x3f16f0		17fffff4		JMP main.main.func3(SB)							
+  main.go:52		0x3f16f4		00000000		?									
+  main.go:52		0x3f16f8		00000000		?									
+  main.go:52		0x3f16fc		00000000		?									

@@ -5,7 +5,7 @@ description: AutoKuma for automatic Uptime Kuma monitor creation
 type: container
 
 spec:
-  image: ghcr.io/bigboot/autokuma:latest
+  image: ghcr.io/bigboot/autokuma
   env:
     TZ: ${var.tz}
     AUTOKUMA__KUMA__URL: https://uptimekuma.${var.domain}

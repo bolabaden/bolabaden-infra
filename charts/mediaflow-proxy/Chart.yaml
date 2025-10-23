@@ -1,0 +1,5 @@
+apiVersion: v2
+name: mediaflow-proxy
+description: A Helm chart for MediaFlow Proxy.
+version: 0.1.0
+appVersion: "latest" # Assuming latest, adjust if a specific version is needed 

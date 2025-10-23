@@ -5,6 +5,12 @@
 secrets:
   premiumize-auth:
     file: ${CONFIG_PATH:-./volumes}/premiumize-auth.txt
+  grafana-admin-password:
+    file: ${SECRETS_PATH:?}/grafana-password.txt
+  grafana-secret-key:
+    file: ${SECRETS_PATH:?}/grafana-secret-key.txt
+  sudo-password:
+    file: ${SECRETS_PATH:?}/sudo-password.txt
 
 
 
@@ -364,7 +370,8 @@ configs:
       secret_key = ${GF_SECURITY_SECRET_KEY:-SW2YcwTIb9zpOOhoPsMm}
 
       # current key provider used for envelope encryption, default to static value specified by secret_key
-      encryption_provider = ${GF_SECURITY_ENCRYPTION_PROVIDER:-secretKey.v1}
+      # Using empty/default provider instead of secretKey.v1 to avoid configuration issues
+      encryption_provider = ${GF_SECURITY_ENCRYPTION_PROVIDER:-}
 
       # list of configured key providers, space separated (Enterprise only): e.g., awskms.v1 azurekv.v1
       available_encryption_providers = ${GF_SECURITY_AVAILABLE_ENCRYPTION_PROVIDERS:-}
@@ -1916,7 +1923,7 @@ configs:
       # Instruct headless browser instance to use a default timezone when not provided by Grafana, e.g. when rendering panel image of alert.
       # See ICU’s metaZones.txt (https://cs.chromium.org/chromium/src/third_party/icu/source/data/misc/metaZones.txt) for a list of supported
       # timezone IDs. Fallbacks to TZ environment variable if not set.
-      rendering_timezone = ${GF_PLUGIN_GRAFANA_IMAGE_RENDERER_RENDERING_TIMEZONE:-}
+      rendering_timezone = ${TZ:-America/Chicago}
 
       # Instruct headless browser instance to use a default language when not provided by Grafana, e.g. when rendering panel image of alert.
       # Please refer to the HTTP header Accept-Language to understand how to format this value, e.g. 'fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5'.
@@ -1977,8 +1984,8 @@ configs:
 
       # Change the listening host and port of the gRPC server. Default host is 127.0.0.1 and default port is 0 and will automatically assign
       # a port not in use.
-      grpc_host = ${GF_PLUGIN_GRAFANA_IMAGE_RENDERER_GRPC_HOST:-}
-      grpc_port = ${GF_PLUGIN_GRAFANA_IMAGE_RENDERER_GRPC_PORT:-}
+      grpc_host = ${GF_PLUGIN_GRAFANA_IMAGE_RENDERER_GRPC_HOST:-127.0.0.1}
+      grpc_port = ${GF_PLUGIN_GRAFANA_IMAGE_RENDERER_GRPC_PORT:-0}
 
       [enterprise]
       license_path = ${GF_ENTERPRISE_LICENSE_PATH:-}
@@ -2160,7 +2167,8 @@ configs:
       # Used for signing
       secret_key = ${GF_SECRETS_MANAGER_SECRET_KEY:-SW2YcwTIb9zpOOhoPsMm}
       # Current key provider used for envelope encryption, default to static value specified by secret_key
-      encryption_provider = ${GF_SECRETS_MANAGER_ENCRYPTION_PROVIDER:-secretKey.v1}
+      # Using empty/default provider instead of secretKey.v1 to avoid configuration issues
+      encryption_provider = ${GF_SECRETS_MANAGER_ENCRYPTION_PROVIDER:-}
       # List of configured key providers, space separated (Enterprise only): e.g., awskms.v1 azurekv.v1
       available_encryption_providers = ${GF_SECRETS_MANAGER_AVAILABLE_ENCRYPTION_PROVIDERS:-}
 
@@ -2237,7 +2245,7 @@ configs:
           type: loki
           access: proxy
           uid: loki_uid
-          url: ${LOKI_URL:-http://loki:3100}
+          url: ${LOKI_URL:-http://loki:${LOKI_HTTP_LISTEN_PORT:-3100}}
           editable: false
           jsonData:
             maxLines: 1000
@@ -2262,140 +2270,6 @@ configs:
           secureJsonData:
             # Add basic auth if needed
             # basicAuthPassword: "${ALERTMANAGER_PASSWORD:-}"
-        - name: Jaeger
-          type: jaeger
-          access: proxy
-          uid: jaeger_uid
-          url: ${JAEGER_URL:-http://jaeger:16686}
-          editable: false
-          jsonData:
-            tracesToLogs:
-              datasourceUid: "loki_uid"
-              tags: ["job", "instance", "pod", "namespace"]
-              mappedTags: [{"key": "service.name", "value": "service"}]
-              mapTagNamesEnabled: false
-              spanStartTimeShift: "1h"
-              spanEndTimeShift: "1h"
-              filterByTraceID: false
-              filterBySpanID: false
-            tracesToMetrics:
-              datasourceUid: "victoriametrics_uid"
-              tags: [{"key": "service.name", "value": "service"}, {"key": "job"}]
-              queries:
-                - name: "Sample query"
-                  query: "sum(rate(traces_spanmetrics_latency_bucket[$$__rate_interval])) by (le)"
-            nodeGraph:
-              enabled: true
-            spanBar:
-              type: "Tag"
-              tag: "http.status_code"
-        - name: Elasticsearch
-          type: elasticsearch
-          access: proxy
-          uid: elasticsearch_uid
-          url: ${ELASTICSEARCH_URL:-http://elasticsearch:9200}
-          database: "[homelab-*]"
-          editable: false
-          jsonData:
-            timeField: "@timestamp"
-            esVersion: "7.10.0"
-            interval: "Daily"
-            logMessageField: "message"
-            logLevelField: "level"
-            includeFrozen: false
-            xpack: false
-          secureJsonData:
-            # Add basic auth if needed
-            # basicAuthPassword: "${ELASTICSEARCH_PASSWORD:-${SUDO_PASSWORD:?}}"
-        - name: InfluxDB
-          type: influxdb
-          access: proxy
-          uid: influxdb_uid
-          url: ${INFLUXDB_URL:-http://influxdb:8086}
-          database: homelab
-          user: ${INFLUXDB_USER:-root}
-          editable: false
-          jsonData:
-            timeInterval: "10s"
-            httpMode: "GET"
-            version: "1.8"
-          secureJsonData:
-            # Add basic auth if needed
-            # password: "${INFLUXDB_PASSWORD:-${SUDO_PASSWORD:?}}"
-        - name: Zabbix
-          type: alexanderzobnin-zabbix-datasource
-          access: proxy
-          uid: zabbix_uid
-          url: ${ZABBIX_URL:-http://zabbix:80/api_jsonrpc.php}
-          editable: false
-          jsonData:
-            username: "${ZABBIX_USER:-Admin}"
-            trends: true
-            trendsFrom: "7d"
-            trendsRange: "4d"
-            cacheTTL: "1h"
-            timeout: "30s"
-            directDBConnection: false
-          secureJsonData:
-            password: "${ZABBIX_PASSWORD:-${SUDO_PASSWORD:?}}"
-        - name: MySQL
-          type: mysql
-          access: proxy
-          uid: mysql_uid
-          url: ${MYSQL_URL:-mysql:3306}
-          user: ${MYSQL_USER:-root}
-          database: ${MYSQL_DATABASE:-homelab}
-          editable: false
-          jsonData:
-            maxOpenConns: 100
-            maxIdleConns: 2
-            connMaxLifetime: 14400
-            timezone: "UTC"
-          secureJsonData:
-            password: "${MYSQL_PASSWORD:-${SUDO_PASSWORD:?}}"
-        - name: PostgreSQL
-          type: postgres
-          access: proxy
-          uid: postgres_uid
-          url: ${POSTGRES_URL:-postgres:5432}
-          user: ${POSTGRES_USER:-postgres}
-          database: ${POSTGRES_DATABASE:-homelab}
-          editable: false
-          jsonData:
-            sslmode: "disable"
-            maxOpenConns: 100
-            maxIdleConns: 2
-            connMaxLifetime: 14400
-            postgresVersion: 1200
-            timescaledb: false
-          secureJsonData:
-            password: "${POSTGRES_PASSWORD:-${SUDO_PASSWORD:?}}"
-        - name: Graphite
-          type: graphite
-          access: proxy
-          uid: graphite_uid
-          url: ${GRAPHITE_URL:-http://graphite:8080}
-          editable: false
-          jsonData:
-            graphiteVersion: "1.1"
-            graphiteType: "default"
-          secureJsonData:
-            # Add basic auth if needed
-            # basicAuthPassword: "${GRAPHITE_PASSWORD:-${SUDO_PASSWORD:?}}"
-        - name: CloudWatch
-          type: cloudwatch
-          uid: cloudwatch_uid
-          editable: false
-          jsonData:
-            authType: keys
-            defaultRegion: us-east-1
-            assumeRoleArn: "${AWS_ASSUME_ROLE_ARN:-}"
-            externalId: "${AWS_EXTERNAL_ID:-}"
-            profile: "${AWS_PROFILE:-default}"
-            endpoint: "${AWS_ENDPOINT:-}"
-          secureJsonData:
-            accessKey: "${AWS_ACCESS_KEY_ID:-}"
-            secretKey: "${AWS_SECRET_ACCESS_KEY:-}"
         - name: Flaresolverr
           type: prometheus
           access: proxy
@@ -2503,7 +2377,7 @@ configs:
         # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
         - job_name: 'prometheus'
           static_configs:
-            - targets: ['localhost:9090']
+            - targets: ['localhost:${PROMETHEUS_PORT:-9090}']
 
         - job_name: 'victoriametrics'
           static_configs:
@@ -2513,17 +2387,17 @@ configs:
 
         - job_name: 'node-exporter'
           static_configs:
-            - targets: ['node-exporter:9100']
+            - targets: ['node-exporter:${NODE_EXPORTER_PORT:-9100}']
           scrape_interval: 5s
 
         - job_name: 'cadvisor'
           static_configs:
-            - targets: ['cadvisor:8080']
+            - targets: ['cadvisor:${CADVISOR_PORT:-8080}']
           scrape_interval: 5s
 
         - job_name: 'grafana'
           static_configs:
-            - targets: ['grafana:3000']
+            - targets: ['grafana:${GRAFANA_PORT:-3000}']
           scrape_interval: 15s
 
         - job_name: 'traefik'
@@ -2543,58 +2417,48 @@ configs:
 
         - job_name: 'flaresolverr'
           static_configs:
-            - targets: ['flaresolverr:9090']
+            - targets: ['flaresolverr:${FLARESOLVERR_PORT:-9090}']
           scrape_interval: 15s
           metrics_path: /metrics
 
         - job_name: 'redis'
           static_configs:
-            - targets: ['redis:6379']
+            - targets: ['redis:${REDIS_PORT:-6379}']
           scrape_interval: 15s
 
         - job_name: 'mongodb'
           static_configs:
-            - targets: ['mongodb:27017']
+            - targets: ['mongodb:${MONGODB_PORT:-27017}']
           scrape_interval: 30s
 
         - job_name: 'homepage'
           static_configs:
-            - targets: ['homepage:3000']
+            - targets: ['homepage:${HOMEPAGE_PORT:-3000}']
           scrape_interval: 30s
 
         - job_name: 'portainer'
           static_configs:
-            - targets: ['portainer:9000']
-          scrape_interval: 30s
-
-        - job_name: 'hedgedoc'
-          static_configs:
-            - targets: ['hedgedoc:3000']
+            - targets: ['portainer:${PORTAINER_PORT:-9000}']
           scrape_interval: 30s
 
         - job_name: 'searxng'
           static_configs:
-            - targets: ['searxng:8080']
+            - targets: ['searxng:${SEARXNG_PORT:-8080}']
           scrape_interval: 30s
 
         - job_name: 'code-server'
           static_configs:
-            - targets: ['code-server:8443']
+            - targets: ['code-server:${CODE_SERVER_PORT:-8443}']
           scrape_interval: 30s
 
         - job_name: 'dozzle'
           static_configs:
-            - targets: ['dozzle:8080']
+            - targets: ['dozzle:${DOZZLE_PORT:-8080}']
           scrape_interval: 30s
-
-        - job_name: 'watchtower'
-          static_configs:
-            - targets: ['watchtower:8080']
-          scrape_interval: 60s
 
         - job_name: 'bolabaden-nextjs'
           static_configs:
-            - targets: ['bolabaden-nextjs:3000']
+            - targets: ['bolabaden-nextjs:${BOLABADEN_NEXTJS_PORT:-3000}']
           scrape_interval: 30s
 
         # Blackbox exporter for endpoint monitoring
@@ -2612,7 +2476,6 @@ configs:
               - https://flaresolverr.$DOMAIN
               - https://homepage.$DOMAIN
               - https://portainer.$DOMAIN
-              - https://hedgedoc.$DOMAIN
               - https://searxng.$DOMAIN
               - https://code-server.$DOMAIN
               - https://dozzle.$DOMAIN
@@ -4519,7 +4382,78 @@ configs:
         "uid": "victoriametrics_single",
         "version": 1
       }
+  loki.yaml:
+    content: |
+      # This is a complete configuration to deploy Loki backed by the filesystem.
+      # The index will be shipped to the storage via tsdb-shipper.
+      auth_enabled: false
 
+      server:
+        http_listen_port: ${LOKI_HTTP_LISTEN_PORT:-3100}
+
+      common:
+        ring:
+          instance_addr: 127.0.0.1
+          kvstore:
+            store: inmemory
+        replication_factor: 1
+        path_prefix: /tmp/loki
+
+      schema_config:
+        configs:
+        - from: 2020-05-15
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+
+      storage_config:
+        filesystem:
+          directory: /tmp/loki/chunks
+      limits_config:
+        volume_enabled: true
+  promtail.yaml:
+    content: |
+      server:
+        http_listen_port: ${PROMTAIL_HTTP_LISTEN_PORT:-9080}
+        grpc_listen_port: ${PROMTAIL_GRPC_LISTEN_PORT:-0}
+
+      positions:
+        filename: /tmp/positions.yaml
+
+      clients:
+        - url: http://loki:${LOKI_PORT:-3100}/loki/api/v1/push
+
+      scrape_configs:
+        # 🔑 Scrape Docker container logs
+        - job_name: docker
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+              regex: "/(.*)"
+              replacement: "$1"
+
+        # 🔑 Scrape host syslog and other files
+        - job_name: system-logs
+          static_configs:
+            - targets:
+                - localhost
+              labels:
+                job: varlogs
+                __path__: /var/log/*.log
+
+        # 🔑 Scrape custom mounted logs
+        - job_name: extra-logs
+          static_configs:
+            - targets:
+                - localhost
+              labels:
+                job: extralogs
+                __path__: /mnt/extra-logs/*.log
 
 services:
   # VictoriaMetrics initialization container
@@ -4593,7 +4527,7 @@ services:
       start_period: 40s
     restart: always
   init_prometheus:
-    image: docker.io/prom/prometheus:latest
+    image: docker.io/prom/prometheus
     container_name: init_prometheus
     hostname: init_prometheus
     extra_hosts:
@@ -4610,7 +4544,7 @@ services:
         condition: service_completed_successfully
       victoriametrics:
         condition: service_healthy
-    image: docker.io/prom/prometheus:latest
+    image: docker.io/prom/prometheus
     container_name: prometheus
     hostname: prometheus
     networks:
@@ -4678,11 +4612,11 @@ services:
       retries: 3
       start_period: 40s
     restart: always
-  grafana:
+  grafana:  # Dashboards
     depends_on:
       prometheus:
         condition: service_healthy
-    image: docker.io/grafana/grafana:12.1.1
+    image: docker.io/grafana/grafana
     container_name: grafana
     hostname: grafana
     extra_hosts:
@@ -4692,39 +4626,54 @@ services:
       - publicnet
     expose:
       - 3000
+    secrets:
+      - grafana-admin-password
+      - grafana-secret-key
     environment:
       # Enhanced plugin list including VictoriaMetrics datasource and monitoring plugins
-      GF_PLUGINS_PREINSTALL: grafana-piechart-panel,grafana-worldmap-panel,natel-discrete-panel,flant-statusmap-panel,vonage-status-panel,michaeldmoore-multistat-panel,grafana-polystat-panel,marcusolsson-dynamictext-panel,yesoreyeram-boomtable-panel,grafana-clock-panel,grafana-simple-json-datasource,btplc-status-dot-panel,camptocamp-prometheus-alertmanager-datasource
       GF_LOG_LEVEL: ${GF_LOG_LEVEL:-info}  # For detailed logs
-      GF_PATHS_PROVISIONING: ${GF_PATHS_PROVISIONING:-/etc/grafana/provisioning}
-      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD:?}
-      GF_SERVER_DOMAIN: ${GF_FQDN:-grafana.$DOMAIN}
-      GF_SERVER_ROOT_URL: ${GF_URL:-https://${GF_FQDN:-grafana.$DOMAIN}}
-      GF_SERVER_SERVE_FROM_SUB_PATH: ${GF_SERVE_FROM_SUB_PATH:-false}  # Explicitly disable if no subpath
       # VictoriaMetrics specific settings
       GF_FEATURE_TOGGLES_ENABLE: ${GF_FEATURE_TOGGLES_ENABLE:-}
+      # Disabling custom encryption provider - using default (override .env values)
+      GF_SECURITY_ENCRYPTION_PROVIDER: ""
+      GF_SECURITY_AVAILABLE_ENCRYPTION_PROVIDERS: ""
+      # Core required settings
+      GF_SERVER_DOMAIN: ${GF_FQDN:-grafana.$DOMAIN}
+      GF_SERVER_ROOT_URL: ${GF_URL:-https://${GF_FQDN:-grafana.$DOMAIN}}
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER:-admin}
+      # Security settings using Docker secrets
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana-admin-password
+      GF_SECURITY_SECRET_KEY__FILE: /run/secrets/grafana-secret-key
+      GF_SECRETS_MANAGER_SECRET_KEY__FILE: /run/secrets/grafana-secret-key
+      # Paths configuration
+      GF_PATHS_PROVISIONING: ${GF_PATHS_PROVISIONING:-/etc/grafana/provisioning}
+      # Server configuration
+      GF_SERVER_SERVE_FROM_SUB_PATH: ${GF_SERVE_FROM_SUB_PATH:-false}  # Explicitly disable if no subpath
+      # VictoriaMetrics plugin support
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ${GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS:-victoriametrics-datasource}
-      # Enhanced security and performance settings
+      GF_PLUGINS_PREINSTALL: grafana-piechart-panel,grafana-worldmap-panel,natel-discrete-panel,flant-statusmap-panel,vonage-status-panel,michaeldmoore-multistat-panel,grafana-polystat-panel,marcusolsson-dynamictext-panel,yesoreyeram-boomtable-panel,grafana-clock-panel,grafana-simple-json-datasource,btplc-status-dot-panel,camptocamp-prometheus-alertmanager-datasource
+      # Security settings - all required
       GF_SECURITY_COOKIE_SECURE: ${GF_SECURITY_COOKIE_SECURE:-true}
       GF_SECURITY_COOKIE_SAMESITE: ${GF_SECURITY_COOKIE_SAMESITE:-lax}
       GF_SECURITY_CONTENT_TYPE_PROTECTION: ${GF_SECURITY_CONTENT_TYPE_PROTECTION:-true}
       GF_SECURITY_X_CONTENT_TYPE_OPTIONS: ${GF_SECURITY_X_CONTENT_TYPE_OPTIONS:-nosniff}
       GF_SECURITY_X_XSS_PROTECTION: ${GF_SECURITY_X_XSS_PROTECTION:-true}
       GF_SECURITY_STRICT_TRANSPORT_SECURITY: ${GF_SECURITY_STRICT_TRANSPORT_SECURITY:-true}
+      # User management - strict settings
       GF_USERS_ALLOW_SIGN_UP: ${GF_USERS_ALLOW_SIGN_UP:-false}
       GF_USERS_ALLOW_ORG_CREATE: ${GF_USERS_ALLOW_ORG_CREATE:-false}
       GF_USERS_AUTO_ASSIGN_ORG: ${GF_USERS_AUTO_ASSIGN_ORG:-true}
       GF_USERS_AUTO_ASSIGN_ORG_ROLE: ${GF_USERS_AUTO_ASSIGN_ORG_ROLE:-Viewer}
-      # Performance settings
+      # Database performance settings
       GF_DATABASE_MAX_IDLE_CONN: ${GF_DATABASE_MAX_IDLE_CONN:-2}
       GF_DATABASE_MAX_OPEN_CONN: ${GF_DATABASE_MAX_OPEN_CONN:-0}
       GF_DATABASE_CONN_MAX_LIFETIME: ${GF_DATABASE_CONN_MAX_LIFETIME:-14400}
       # Email settings (using your contact email)
-      GF_SMTP_ENABLED: ${GF_SMTP_ENABLED:-false}
-      GF_SMTP_HOST: ${GF_SMTP_HOST:-localhost:587}
       GF_SMTP_USER: ${GF_SMTP_USER:-}
       GF_SMTP_PASSWORD: ${GF_SMTP_PASSWORD:-}
+      # SMTP settings
+      GF_SMTP_ENABLED: ${GF_SMTP_ENABLED:-false}
+      GF_SMTP_HOST: ${GF_SMTP_HOST:-localhost:587}
       GF_SMTP_FROM_ADDRESS: ${GF_SMTP_FROM_ADDRESS:-contact@bolabaden.org}
       GF_SMTP_FROM_NAME: ${GF_SMTP_FROM_NAME:-Grafana}
     configs:
@@ -4804,7 +4753,7 @@ services:
 
   # Node Exporter for system metrics
   node_exporter:
-    image: docker.io/prom/node-exporter:latest
+    image: docker.io/prom/node-exporter
     container_name: node_exporter
     hostname: node_exporter
     networks:
@@ -4845,7 +4794,7 @@ services:
 
   # cAdvisor for container metrics
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
+    image: gcr.io/cadvisor/cadvisor
     container_name: cadvisor
     hostname: cadvisor
     networks:
@@ -4885,15 +4834,58 @@ services:
       prometheus.io/port: 8080
       prometheus.io/path: metrics
     restart: always
+  loki:  # Logs
+    image: docker.io/grafana/loki
+    container_name: loki
+    hostname: loki
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - 3100  # Loki API endpoint
+    configs:
+      - source: loki.yaml
+        target: /etc/loki/config.yaml
+        mode: 0777
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/loki/data:/loki
+    command: -config.file=/etc/loki/config.yaml
+    restart: always
+
+  promtail:
+    depends_on:
+      - loki
+      - dockerproxy-ro
+    image: docker.io/grafana/promtail
+    container_name: promtail
+    hostname: promtail
+    networks:
+      - backend
+      - publicnet
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    configs:
+      - source: promtail.yaml
+        target: /etc/promtail/config.yaml
+        mode: 0777
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/var/log:ro
+    environment:
+      - DOCKER_HOST=tcp://dockerproxy-ro:9323
+    command: -config.file=/etc/promtail/config.yaml
+    restart: always
 
   # Blackbox Exporter for endpoint monitoring
   blackbox-exporter:
-    image: docker.io/prom/blackbox-exporter:latest
+    image: docker.io/prom/blackbox-exporter
     container_name: blackbox-exporter
     hostname: blackbox-exporter
     networks:
       - backend
       - publicnet
+    extra_hosts:
+      - host.docker.internal:host-gateway
     expose:
       - 9115
     configs:

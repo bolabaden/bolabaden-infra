@@ -48,7 +48,7 @@ services:
     build:
       context: ${ROOT_DIR:-.}/src/glauth-ui
       dockerfile: Dockerfile
-    image: glauthui:latest
+    image: glauthui
     container_name: glauthui
     hostname: glauthui
     networks:

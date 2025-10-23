@@ -1,0 +1,49 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "aiostreams.fullname" . }}
+  labels:
+    {{- include "aiostreams.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className }}
+    # Traefik specific annotations derived from docker-compose labels
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    # The scheme annotation might depend on specific Traefik setup or be implicit
+    # traefik.ingress.kubernetes.io/service.scheme: https 
+    {{- with .Values.ingress.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+    # Homepage specific annotations - these might need a custom controller or manual setup
+    homepage.gethomepage.io/group: {{ .Values.homepage.group | quote }}
+    homepage.gethomepage.io/name: {{ .Values.homepage.name | quote }}
+    homepage.gethomepage.io/icon: {{ .Values.homepage.icon | quote }}
+    homepage.gethomepage.io/href: "https://{{ (index .Values.ingress.hosts 0).host }}/"
+spec:
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "aiostreams.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          {{- end }}
+    {{- end }}
+{{- end }} 

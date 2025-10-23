@@ -1383,7 +1383,7 @@ services:
     depends_on:
       riven:
         condition: service_healthy
-    image: spoked/riven-frontend:latest
+    image: spoked/riven-frontend
     container_name: riven-frontend
     hostname: riven-frontend
     extra_hosts: *common-hostname-aliases
@@ -1419,7 +1419,7 @@ services:
     depends_on:
       riven-db:
         condition: service_healthy
-    image: docker.io/spoked/riven:latest
+    image: docker.io/spoked/riven
     container_name: riven
     hostname: riven
     extra_hosts: *common-hostname-aliases
@@ -1777,7 +1777,7 @@ services:
     depends_on:
       riven-db:
         condition: service_healthy
-    image: ipromknight/zilean:latest
+    image: ipromknight/zilean
     container_name: zilean
     hostname: zilean
     extra_hosts: *common-hostname-aliases
@@ -2130,7 +2130,7 @@ services:
   rclone-zurg:
     depends_on:
       - rclone
-    image: ghcr.io/coanghel/rclone-docker-automount/rclone-init:latest
+    image: ghcr.io/coanghel/rclone-docker-automount/rclone-init
     container_name: rclone-zurg
     hostname: rclone-zurg
     extra_hosts: *common-hostname-aliases
@@ -2162,7 +2162,7 @@ services:
       start_period: 10s
     restart: always
   rclone:
-    image: rclone/rclone:latest
+    image: rclone/rclone
     container_name: rclone
     hostname: rclone
     extra_hosts: *common-hostname-aliases
@@ -2409,7 +2409,7 @@ services:
     restart: always
   tautulli:
     # 🔹🔹 Tautulli 🔹🔹
-    image: ghcr.io/tautulli/tautulli:latest
+    image: ghcr.io/tautulli/tautulli
     container_name: tautulli
     hostname: ${TAUTULLI_HOSTNAME:-tautulli}
     extra_hosts: *common-hostname-aliases
@@ -2450,7 +2450,7 @@ services:
     restart: always
   mongodb:
     # 🔹🔹 MongoDB 🔹🔹
-    image: mongo:latest
+    image: mongo
     container_name: mongodb
     hostname: ${MONGODB_HOSTNAME:-mongodb}
     extra_hosts: *common-hostname-aliases
@@ -2911,7 +2911,7 @@ services:
   searxng:
     # 🔹🔹 SearxNG 🔹🔹  # https://hub.docker.com/r/searxng/searxng
     # SearxNG is a privacy-respecting, hackable, open-source metasearch engine.
-    image: docker.io/searxng/searxng:latest
+    image: docker.io/searxng/searxng
     container_name: searxng
     hostname: ${SEARXNG_HOSTNAME:-searxng}
     extra_hosts: *common-hostname-aliases
@@ -2947,7 +2947,7 @@ services:
     # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
     # Gluetun is a VPN client that supports various VPN protocols, providing secure and private internet access for your applications.
     # use this one with arm:
-    # image: ghcr.io/qdm12/gluetun:latest@sha256:f035267182d3928d6d8351eb1b21f74dce0f97c1a521ffe4c18ce6376614806d
+    # image: ghcr.io/qdm12/gluetun@sha256:f035267182d3928d6d8351eb1b21f74dce0f97c1a521ffe4c18ce6376614806d
     image: ghcr.io/qdm12/gluetun
     container_name: gluetun-premiumize-nl
     hostname: gluetun-premiumize-nl
@@ -3006,7 +3006,7 @@ services:
 #    build:
 #      context: https://github.com/cmj2002/warp-docker.git#main
 #      dockerfile: Dockerfile
-    image: caomingjun/warp:latest
+    image: caomingjun/warp
     container_name: warp
     extra_hosts: *gluetun-hosts-workaround
     networks:
@@ -3143,7 +3143,7 @@ services:
     restart: always
   code-server:
     # 🔹🔹 Code Server 🔹🔹
-    image: docker.io/linuxserver/code-server:latest
+    image: docker.io/linuxserver/code-server
     container_name: code-server
     hostname: code-server
     extra_hosts: *common-hostname-aliases
@@ -3250,7 +3250,7 @@ services:
         condition: service_healthy
       bolabaden-nextjs:
         condition: service_healthy
-    image: traefik:latest
+    image: traefik
     container_name: coolify-proxy
     hostname: traefik
     extra_hosts: *common-hostname-aliases
@@ -3376,8 +3376,8 @@ services:
     # use this one with amd64:
     #image: geti2p/i2p
     # use these with arm64:
-    #image: ghcr.io/purplei2p/i2pd:latest
-    image: purplei2p/i2pd:latest
+    #image: ghcr.io/purplei2p/i2pd
+    image: purplei2p/i2pd
     container_name: i2pd
     hostname: i2pd
     extra_hosts: *common-hostname-aliases
@@ -3465,7 +3465,7 @@ services:
     restart: always
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus
     container_name: prometheus
     hostname: prometheus
     extra_hosts: *common-hostname-aliases
@@ -3500,7 +3500,7 @@ services:
     build:
       context: ${SRC_PATH:-./projects}/bolabaden-site
       dockerfile: Dockerfile
-    image: th3w1zard1/bolabaden-nextjs:latest
+    image: th3w1zard1/bolabaden-nextjs
     container_name: bolabaden-nextjs
     hostname: bolabaden-nextjs
     extra_hosts: *common-hostname-aliases
@@ -3591,7 +3591,7 @@ services:
 
   whoami:
     # 🔹🔹 Whoami 🔹🔹
-    image: traefik/whoami:latest
+    image: traefik/whoami
     container_name: whoami
     hostname: whoami
     extra_hosts: *common-hostname-aliases
@@ -3611,7 +3611,7 @@ services:
   crowdsec:
     # 🔹🔹 CrowdSec 🔹🔹
     # Highly recommend this guide: https://blog.lrvt.de/configuring-crowdsec-with-traefik/
-    image: docker.io/crowdsecurity/crowdsec:latest
+    image: docker.io/crowdsecurity/crowdsec
     container_name: crowdsec
     hostname: crowdsec
     extra_hosts: *common-hostname-aliases
@@ -3859,7 +3859,7 @@ services:
 
   watchtower:
     # 🔹🔹 Watchtower 🔹🔹
-    image: containrrr/watchtower:latest
+    image: containrrr/watchtower
     container_name: watchtower
     hostname: watchtower
     extra_hosts: *common-hostname-aliases
@@ -3902,8 +3902,8 @@ services:
 
   flaresolverr:
     # 🔹🔹 Flaresolverr 🔹🔹  # https://github.com/flaresolverr/flaresolverr
-    image: ghcr.io/flaresolverr/flaresolverr:latest
-    #image: ghcr.io/thephaseless/byparr:latest
+    image: ghcr.io/flaresolverr/flaresolverr
+    #image: ghcr.io/thephaseless/byparr
     container_name: flaresolverr
     hostname: flaresolverr
     extra_hosts: *common-hostname-aliases
@@ -3962,8 +3962,8 @@ services:
 #      context: ${SRC_PATH:-./projects}/stremio/stremio-docker
 #      context: https://github.com/tsaridas/stremio-docker.git#main
 #      dockerfile: Dockerfile
-#    image: tsaridas/stremio-docker:latest
-    image: th3w1zard1/stremio-docker:latest
+#    image: tsaridas/stremio-docker
+    image: th3w1zard1/stremio-docker
     container_name: stremio
     network_mode: service:warp
     volumes:
@@ -4013,7 +4013,7 @@ services:
       context: https://github.com/viren070/aiostreams.git#main
       dockerfile: Dockerfile
       tags:
-        - th3w1zard1/aiostreams:latest
+        - th3w1zard1/aiostreams
     image: ghcr.io/viren070/aiostreams
     container_name: aiostreams
     hostname: ${AIOSTREAMS_HOSTNAME:-aiostreams}
@@ -4695,7 +4695,7 @@ services:
       start_period: 120s
     restart: always
   comet:
-    image: g0ldyy/comet:latest
+    image: g0ldyy/comet
     container_name: comet
     network_mode: service:warp
     volumes:
@@ -4756,7 +4756,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    image: mhdzumair/mediafusion:latest
+    image: mhdzumair/mediafusion
     container_name: mediafusion
     network_mode: service:warp
     environment:
@@ -4924,7 +4924,7 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    image: muniftanjim/stremthru:latest
+    image: muniftanjim/stremthru
     container_name: stremthru
     hostname: stremthru
     extra_hosts: *common-hostname-aliases
@@ -5033,7 +5033,7 @@ services:
       #context: https://github.com/th3w1zard1/gpt-researcher.git#master  # :/frontend/nextjs
       context: ./src/gpt-researcher
       dockerfile: Dockerfile.fullstack
-    image: th3w1zard1/ai-researchwizard:latest
+    image: th3w1zard1/ai-researchwizard
     container_name: gptr
     hostname: gptr
     extra_hosts: *common-hostname-aliases
@@ -5116,7 +5116,7 @@ services:
     # 🔹🔹 Qdrant 🔹🔹
     profiles:
       - extras
-    image: qdrant/qdrant:latest
+    image: qdrant/qdrant
     container_name: qdrant
     hostname: qdrant
     extra_hosts: *common-hostname-aliases
@@ -5148,7 +5148,7 @@ services:
     # 🔹🔹 LobeChat 🔹🔹
     profiles:
       - extras
-    image: lobehub/lobe-chat:latest
+    image: lobehub/lobe-chat
     container_name: lobechat
     hostname: ${LOBECHAT_HOSTNAME:-lobechat}
     extra_hosts: *common-hostname-aliases
@@ -5231,7 +5231,7 @@ services:
 
   homer:
     # 🔹🔹 Homer Dashboard 🔹🔹
-    image: docker.io/b4bz/homer:latest
+    image: docker.io/b4bz/homer
     container_name: homer
     hostname: homer
     extra_hosts: *common-hostname-aliases
@@ -5281,7 +5281,7 @@ services:
 
   wizarr:
     # 🔹🔹 Wizarr User Management 🔹🔹
-    image: ghcr.io/wizarrrr/wizarr:latest
+    image: ghcr.io/wizarrrr/wizarr
     container_name: wizarr
     hostname: wizarr
     extra_hosts: *common-hostname-aliases
@@ -5380,7 +5380,7 @@ services:
     depends_on:
       rclone-zurg:
         condition: service_healthy
-    image: ghcr.io/debridmediamanager/zurg-testing:latest
+    image: ghcr.io/debridmediamanager/zurg-testing
     container_name: zurg
     network_mode: service:warp
     volumes:

@@ -1,0 +1,22 @@
+{
+  "extends": [
+    "@tsconfig/node18/tsconfig.json"
+  ],
+  "compilerOptions": {
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "resolveJsonModule": true,
+    "useDefineForClassFields": false,
+    "preserveWatchOutput": true,
+    "allowJs": true
+  }
+}

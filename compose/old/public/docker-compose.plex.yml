@@ -715,7 +715,7 @@ services:
     depends_on:
       riven:
         condition: service_healthy
-    image: 'docker.io/spoked/riven-frontend:latest'
+    image: 'docker.io/spoked/riven-frontend'
     container_name: riven-frontend
     hostname: riven-frontend
     extra_hosts:
@@ -749,7 +749,7 @@ services:
     depends_on:
       riven-db:
         condition: service_healthy
-    image: 'docker.io/spoked/riven:latest'
+    image: 'docker.io/spoked/riven'
     container_name: riven
     hostname: riven
     extra_hosts:
@@ -1085,7 +1085,7 @@ services:
     depends_on:
       riven-db:
         condition: service_healthy
-    image: 'docker.io/ipromknight/zilean:latest'
+    image: 'docker.io/ipromknight/zilean'
     container_name: zilean
     hostname: zilean
     extra_hosts:
@@ -1120,7 +1120,7 @@ services:
     depends_on:
       rclone:
         condition: service_healthy
-    image: 'ghcr.io/coanghel/rclone-docker-automount/rclone-init:latest'
+    image: 'ghcr.io/coanghel/rclone-docker-automount/rclone-init'
     container_name: rclone-zurg
     extra_hosts:
       - 'host.docker.internal:host-gateway'
@@ -1152,7 +1152,7 @@ services:
       start_period: 10s
     restart: 'no'
   rclone:
-    image: 'docker.io/rclone/rclone:latest'
+    image: 'docker.io/rclone/rclone'
     container_name: rclone
     hostname: rclone
     extra_hosts:
@@ -1221,7 +1221,7 @@ services:
     restart: always
   homer:
     # 🔹🔹 Homer Dashboard 🔹🔹
-    image: docker.io/b4bz/homer:latest
+    image: docker.io/b4bz/homer
     container_name: homer
     hostname: homer
     extra_hosts:
@@ -1340,7 +1340,7 @@ services:
     depends_on:
       plex:
         condition: service_healthy
-    image: docker.io/linuxserver/overseerr:latest
+    image: docker.io/linuxserver/overseerr
     container_name: overseerr
     hostname: overseerr
     extra_hosts:
@@ -1377,7 +1377,7 @@ services:
   maintainerr:
     # 🔹🔹 Maintainerr 🔹🔹  https://docs.maintainerr.info/latest/Works/
     # Looks and smells like Overseerr, does the opposite. Maintenance tool for the Plex ecosystem
-    image: 'ghcr.io/jorenn92/maintainerr:latest'
+    image: 'ghcr.io/jorenn92/maintainerr'
     container_name: maintainerr
     hostname: maintainerr
     extra_hosts:
@@ -1413,7 +1413,7 @@ services:
     restart: always
   tautulli:
     # 🔹🔹 Tautulli 🔹🔹
-    image: ghcr.io/tautulli/tautulli:latest
+    image: ghcr.io/tautulli/tautulli
     container_name: tautulli
     hostname: ${TAUTULLI_HOSTNAME:-tautulli}
     extra_hosts:
@@ -1471,7 +1471,7 @@ services:
       TZ: ${TZ:-America/Chicago}  # The timezone to use for the cron schedule.
     restart: always
   wizarr:
-    image: 'ghcr.io/wizarrrr/wizarr:latest'
+    image: 'ghcr.io/wizarrrr/wizarr'
     container_name: wizarr
     hostname: wizarr
     extra_hosts:
@@ -1509,7 +1509,7 @@ services:
     depends_on:
       rclone-zurg:
         condition: service_healthy
-    image: 'ghcr.io/debridmediamanager/zurg-testing:latest'
+    image: 'ghcr.io/debridmediamanager/zurg-testing'
     container_name: zurg
     hostname: zurg
     extra_hosts:
@@ -1560,7 +1560,7 @@ services:
     depends_on:
       - rclone
       - plex
-    image: saltydk/autoscan:latest
+    image: saltydk/autoscan
     container_name: autoscan
     hostname: autoscan
     ports:

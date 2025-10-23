@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "aiostreams.fullname" . }}
+  labels:
+    {{- include "aiostreams.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http # Reference the container port name
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "aiostreams.selectorLabels" . | nindent 4 }} 

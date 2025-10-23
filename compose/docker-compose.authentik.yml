@@ -9,7 +9,13 @@ volumes:
 configs: {  }
 
 
-secrets: {  }
+secrets:
+  authentik-secret-key:
+    file: ${SECRETS_PATH:?}/authentik-secret-key.txt
+  gmail-app-password:
+    file: ${SECRETS_PATH:?}/gmail-app-password.txt
+  sudo-password:
+    file: ${SECRETS_PATH:?}/sudo-password.txt
 
 
 services:
@@ -19,7 +25,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.6.4}
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.8.3}
     container_name: authentik
     hostname: authentik
     extra_hosts:
@@ -27,35 +33,52 @@ services:
     networks:
       - backend
       - publicnet
+    secrets:
+      - authentik-secret-key
+      - gmail-app-password
+      - sudo-password
     environment:
       AUTHENTIK_REDIS__HOST: redis
       AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
       AUTHENTIK_POSTGRESQL__USER: authentik
       AUTHENTIK_POSTGRESQL__NAME: authentik
       AUTHENTIK_POSTGRESQL__PASSWORD: authentik
-      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-fd14e752f651b2a0b31daf49247766e9856aa93b57a479b3f6f12ae477d78b3d}
+      AUTHENTIK_SECRET_KEY: /run/secrets/authentik-secret-key
       AUTHENTIK_ERROR_REPORTING__ENABLED: true
       AUTHENTIK_EMAIL__HOST: smtp.gmail.com
       AUTHENTIK_EMAIL__PORT: 587
       AUTHENTIK_EMAIL__USERNAME: boden.crouch@gmail.com
-      AUTHENTIK_EMAIL__PASSWORD: ${GMAIL_APP_PASSWORD:?}
+      AUTHENTIK_EMAIL__PASSWORD: /run/secrets/gmail-app-password
       AUTHENTIK_EMAIL__USE_TLS: true
       AUTHENTIK_EMAIL__USE_SSL: false
       AUTHENTIK_EMAIL__TIMEOUT: 10
       AUTHENTIK_EMAIL__FROM: boden.crouch@gmail.com
       AUTHENTIK_BOOTSTRAP__EMAIL: boden.crouch@gmail.com
-      AUTHENTIK_BOOTSTRAP__PASSWORD: ${SUDO_PASSWORD:?}
-      AUTHENTIK_BOOTSTRAP_EMAIL: boden.crouch@gmail.com
-      AUTHENTIK_BOOTSTRAP_PASSWORD: ${SUDO_PASSWORD:?}
+      AUTHENTIK_BOOTSTRAP__PASSWORD: /run/secrets/sudo-password
     volumes:
       - '${CONFIG_PATH:-./volumes}/authentik/media:/media'
       - '${CONFIG_PATH:-./volumes}/authentik/custom-templates:/templates'
     labels:
       traefik.enable: true
       traefik.http.middlewares.gzip.compress: true
-      traefik.http.routers.authentik.middlewares: gzip
+      # Redirect Middlewares
+      traefik.http.middlewares.authentik-server-redirect.redirectRegex.regex: '^https?://authentik-server\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
+      traefik.http.middlewares.authentik-server-redirect.redirectRegex.replacement: 'https://authentik.$1$2'
+      traefik.http.middlewares.authentik-server-redirect.redirectRegex.permanent: false
+      traefik.http.middlewares.authentikserver-redirect.redirectRegex.regex: '^https?://authentikserver\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
+      traefik.http.middlewares.authentikserver-redirect.redirectRegex.replacement: 'https://authentik.$1$2'
+      traefik.http.middlewares.authentikserver-redirect.redirectRegex.permanent: false
+      # Redirect Routers
+      traefik.http.routers.authentik-server-redirect.service: authentik@docker
+      traefik.http.routers.authentik-server-redirect.rule: Host(`authentik-server.$DOMAIN`) || Host(`authentik-server.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.authentik-server-redirect.middlewares: authentik-server-redirect@docker
+      traefik.http.routers.authentikserver-redirect.service: authentik@docker
+      traefik.http.routers.authentikserver-redirect.rule: Host(`authentikserver.$DOMAIN`) || Host(`authentikserver.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.authentikserver-redirect.middlewares: authentikserver-redirect@docker
+      # Main Router
       traefik.http.routers.authentik.service: authentik
       traefik.http.routers.authentik.rule: Host(`authentik.$DOMAIN`) || Host(`authentik.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.authentik.middlewares: gzip
       traefik.http.services.authentik.loadbalancer.server.port: 9000
       kuma.authentik.http.name: ${AUTHENTIK_FQDN:-authentik.$TS_HOSTNAME.$DOMAIN}
       kuma.authentik.http.url: ${AUTHENTIK_URL:-https://authentik.$DOMAIN}
@@ -73,7 +96,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.6.4}
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.8.3}
     container_name: authentik-worker
     hostname: authentik-worker
     extra_hosts:
@@ -81,6 +104,10 @@ services:
     networks:
       - backend
       - publicnet
+    secrets:
+      - authentik-secret-key
+      - gmail-app-password
+      - sudo-password
     volumes:
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
       - '${CONFIG_PATH:-./volumes}/authentik/media:/media'
@@ -93,20 +120,18 @@ services:
       AUTHENTIK_POSTGRESQL__USER: authentik
       AUTHENTIK_POSTGRESQL__NAME: authentik
       AUTHENTIK_POSTGRESQL__PASSWORD: authentik
-      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-fd14e752f651b2a0b31daf49247766e9856aa93b57a479b3f6f12ae477d78b3d}
+      AUTHENTIK_SECRET_KEY: /run/secrets/authentik-secret-key
       AUTHENTIK_ERROR_REPORTING__ENABLED: true
       AUTHENTIK_EMAIL__HOST: smtp.gmail.com
       AUTHENTIK_EMAIL__PORT: 587
       AUTHENTIK_EMAIL__USERNAME: boden.crouch@gmail.com
-      AUTHENTIK_EMAIL__PASSWORD: ${GMAIL_APP_PASSWORD:?}
+      AUTHENTIK_EMAIL__PASSWORD: /run/secrets/gmail-app-password
       AUTHENTIK_EMAIL__USE_TLS: true
       AUTHENTIK_EMAIL__USE_SSL: false
       AUTHENTIK_EMAIL__TIMEOUT: 10
       AUTHENTIK_EMAIL__FROM: boden.crouch@gmail.com
       AUTHENTIK_BOOTSTRAP__EMAIL: boden.crouch@gmail.com
-      AUTHENTIK_BOOTSTRAP__PASSWORD: ${SUDO_PASSWORD:?}
-      AUTHENTIK_BOOTSTRAP_EMAIL: boden.crouch@gmail.com
-      AUTHENTIK_BOOTSTRAP_PASSWORD: ${SUDO_PASSWORD:?}
+      AUTHENTIK_BOOTSTRAP__PASSWORD: /run/secrets/sudo-password
     command: worker
     restart: always
   authentik-postgresql:

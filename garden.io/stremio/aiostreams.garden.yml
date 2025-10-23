@@ -5,7 +5,7 @@ description: AIOStreams addon for Stremio
 type: container
 
 spec:
-  image: ghcr.io/viren070/aiostreams:latest
+  image: ghcr.io/viren070/aiostreams
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}

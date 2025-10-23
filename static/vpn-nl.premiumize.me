@@ -1,0 +1,28 @@
+verify-x509-name CN=vpn-nl.premiumize.me
+auth-user-pass
+client
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+mute-replay-warnings
+reneg-sec 0
+setenv CLIENT_CERT 0
+ignore-unknown-option block-outside-dns
+ca /etc/openvpn/premiumize-ca.pem
+proto udp
+remote 185.107.94.249 1194
+dev tun0
+mute-replay-warnings
+auth-nocache
+pull-filter ignore "auth-token"
+auth-retry nointeract
+suppress-timestamps
+verb 1
+data-ciphers-fallback aes-256-cbc
+data-ciphers aes-256-cbc
+pull-filter ignore "route-ipv6"
+pull-filter ignore "ifconfig-ipv6"
+user nonrootuser
+persist-tun
+persist-key
