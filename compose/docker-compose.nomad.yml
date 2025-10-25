@@ -8,7 +8,7 @@ networks:
 
 services:
   consul:
-    image: docker.io/hashicorp/consul:latest
+    image: docker.io/hashicorp/consul
     container_name: consul
     hostname: consul
     extra_hosts:

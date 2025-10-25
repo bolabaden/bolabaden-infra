@@ -92,7 +92,7 @@ services:
     # 🔹🔹 Gluetun 🔹🔹  # https://github.com/qdm12/gluetun
     # image: ghcr.io/qdm12/gluetun
     # use this one with arm:
-    image: ghcr.io/qdm12/gluetun:latest@sha256:f035267182d3928d6d8351eb1b21f74dce0f97c1a521ffe4c18ce6376614806d
+    image: ghcr.io/qdm12/gluetun@sha256:f035267182d3928d6d8351eb1b21f74dce0f97c1a521ffe4c18ce6376614806d
     container_name: gluetun
     hostname: gluetun
     networks:

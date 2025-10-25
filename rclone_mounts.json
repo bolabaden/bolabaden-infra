@@ -1,0 +1,85 @@
+[
+  {
+    "fs": "pm:",
+    "LogLevel": "DEBUG",
+    "mainOpt": {
+      "LogLevel": "DEBUG"
+    },
+    "mountOpt": {
+      "AllowNonEmpty": true,
+      "AllowOther": true,
+      "AttrTimeout": "87600h",
+      "DirCacheTime": "60s",
+      "DirPerms": "0777",
+      "ExtraFlags": [
+        "--config=/config/rclone/rclone.conf",
+        "--log-level=DEBUG",
+        "--log-file=/config/rclone/rclone.log"
+      ],
+      "FilePerms": "0666",
+      "GID": 1000,
+      "PollInterval": "30s",
+      "UID": 1000
+    },
+    "mountPoint": "/mnt/remote/premiumize",
+    "vfsOpt": {
+      "BufferSize": "128M",
+      "CacheMaxAge": "2m",
+      "CacheMaxSize": "100G",
+      "CacheMode": "full",
+      "CachePollInterval": "30s",
+      "ChunkSize": "2M",
+      "ChunkSizeLimit": "64M",
+      "DiskSpaceTotalSize": "1T",
+      "ExtraOptions": [
+        "--vfs-refresh",
+        "--transfers=16",
+        "--checkers=16",
+        "--multi-thread-streams=4",
+        "--cache-dir=/mnt/remote/cache/realdebrid"
+      ],
+      "FastFingerprint": true,
+      "MinFreeSpace": "1G",
+      "ReadAhead": "128M",
+      "ReadWait": "40ms"
+    }
+  },
+  {
+    "fs": "alldebrid:",
+    "mainOpt": {
+      "ExtraFlags": [
+        "--cutoff-mode=cautious",
+        "--network-mode",
+        "--config=/config/rclone/rclone.conf",
+        "--log-level=DEBUG",
+        "--log-file=/config/rclone/rclone.log"
+      ],
+      "LogLevel": "DEBUG",
+      "MultiThreadStreams": 0,
+      "TPSLimit": 12,
+      "Transfers": 8
+    },
+    "mountOpt": {
+      "AllowNonEmpty": true,
+      "AllowOther": true,
+      "DirPerms": "0777",
+      "ExtraFlags": [
+        "--cache-dir=/mnt/remote/cache/alldebrid"
+      ],
+      "FilePerms": "0666",
+      "VolumeName": "AllDebrid"
+    },
+    "mountPoint": "/mnt/remote/alldebrid",
+    "vfsOpt": {
+      "BufferSize": "128M",
+      "CacheMaxAge": "1h",
+      "CacheMaxSize": "100G",
+      "CacheMode": "full",
+      "ChunkSize": "128M",
+      "ChunkSizeLimit": "0",
+      "DirCacheTime": "160h",
+      "ExtraOptions": [],
+      "ReadAhead": "0"
+    }
+  }
+]

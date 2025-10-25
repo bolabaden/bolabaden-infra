@@ -1,0 +1,4827 @@
+name: my-media-stack
+services:
+  aiostreams:
+    build:
+      context: https://github.com/viren070/aiostreams.git#main
+      dockerfile: Dockerfile
+      tags:
+        - th3w1zard1/aiostreams:latest
+    container_name: aiostreams
+    environment:
+      ADDON_CATALOG_CACHE_TTL: "300"
+      ADDON_ID: aiostreams.$DOMAIN
+      ADDON_NAME: BadenAIO
+      ADDON_PASSWORD: sk_4dc059c0399c43fd94c09baaf0b94da119fc526775914bf2b3a3fb6e073e26d9
+      ADDON_PROXY: http://warp:1080
+      ANIME_CATALOGS_URL: https://1fe84bc728af-stremio-anime-catalogs.baby-beamup.club/
+      ANIME_KITSU_URL: https://anime-kitsu.strem.fun/
+      BASE_URL: https://aiostreams.$DOMAIN
+      CATALOG_API_RATE_LIMIT_MAX_REQUESTS: "5"
+      CATALOG_API_RATE_LIMIT_WINDOW: "5"
+      CATALOG_CACHE_TTL: "300"
+      COMET_URL: http://comet:2020
+      CUSTOM_HTML: ""
+      DATABASE_URI: sqlite://./data/db.sqlite
+      DC_UNIVERSE_URL: https://addon-dc-cq85.onrender.com/
+      DEBRIDIO_TMDB_URL: https://tmdb-addon.debridio.com/
+      DEBRIDIO_TV_URL: https://tv-addon.debridio.com/
+      DEBRIDIO_TVDB_URL: https://tvdb-addon.debridio.com/
+      DEBRIDIO_URL: https://addon.debridio.com/
+      DEBRIDIO_WATCHTOWER_URL: https://wt-addon.debridio.com/
+      DEFAULT_ALLDEBRID_API_KEY: ""
+      DEFAULT_DEBRIDLINK_API_KEY: vvppT6-RCIXJVyr1O2j8VYIBAAPy4EmcY_OVgELZWujQOBt5iz_19Rpz6A6xxwwS
+      DEFAULT_EASYDEBRID_API_KEY: ""
+      DEFAULT_EASYNEWS_PASSWORD: ""
+      DEFAULT_EASYNEWS_USERNAME: ""
+      DEFAULT_JACKETTIO_INDEXERS: '["bitsearch", "eztv", "thepiratebay", "therarbg", "yts"]'
+      DEFAULT_JACKETTIO_STREMTHRU_URL: https://stremthru.13377001.xyz
+      DEFAULT_MAX_CACHE_SIZE: "100000"
+      DEFAULT_OFFCLOUD_API_KEY: ""
+      DEFAULT_OFFCLOUD_EMAIL: ""
+      DEFAULT_OFFCLOUD_PASSWORD: ""
+      DEFAULT_PIKPAK_EMAIL: ""
+      DEFAULT_PIKPAK_PASSWORD: ""
+      DEFAULT_PREMIUMIZE_API_KEY: 6i6zgswm35baj3ur
+      DEFAULT_PROXY_CREDENTIALS: bolabaden:duckdns
+      DEFAULT_PROXY_ENABLED: "true"
+      DEFAULT_PROXY_URL: http://stremthru:8080
+      DEFAULT_PUTIO_CLIENT_ID: ""
+      DEFAULT_PUTIO_CLIENT_SECRET: ""
+      DEFAULT_REALDEBRID_API_KEY: MTc0MDcxNDk2MTY5MDRmMDcxYmM1LTI5ODktNGJiMy05NzExLTdhYjYyMWQxMDAyOQ==
+      DEFAULT_SEEDR_ENCODED_TOKEN: ""
+      DEFAULT_TIMEOUT: "15000"
+      DEFAULT_TORBOX_API_KEY: d490b7b1-1f6d-44e8-9cc8-3e735c87874b
+      DISABLE_RATE_LIMITS: "false"
+      DISABLE_SELF_SCRAPING: "false"
+      DOCTOR_WHO_UNIVERSE_URL: https://new-who.onrender.com
+      EASYNEWS_PLUS_PLUS_URL: https://easynews-cloudflare-worker.jqrw92fchz.workers.dev/
+      EASYNEWS_PLUS_URL: https://b89262c192b0-stremio-easynews-addon.baby-beamup.club/
+      EASYNEWS_URL: https://ea627ddf0ee7-easynews.baby-beamup.club/
+      ENCRYPT_MEDIAFLOW_URLS: "true"
+      ENCRYPT_STREMTHRU_URLS: "true"
+      FORCE_COMET_HOSTNAME: comet.$DOMAIN
+      FORCE_COMET_PORT: "443"
+      FORCE_COMET_PROTOCOL: https
+      FORCE_PROXY_ID: stremthru
+      FORCE_PUBLIC_PROXY_HOST: stremthru.$DOMAIN
+      FORCE_PUBLIC_PROXY_PORT: "443"
+      FORCE_PUBLIC_PROXY_PROTOCOL: https
+      FORCE_STREMTHRU_STORE_HOST: stremthru.$DOMAIN
+      FORCE_STREMTHRU_STORE_PORT: "443"
+      FORCE_STREMTHRU_STORE_PROTOCOL: https
+      FORMAT_API_RATE_LIMIT_MAX_REQUESTS: "30"
+      FORMAT_API_RATE_LIMIT_WINDOW: "5"
+      JACKETTIO_URL: https://jackettio.elfhosted.com/
+      LOG_FORMAT: text
+      LOG_LEVEL: verbose
+      LOG_SENSITIVE_INFO: "true"
+      LOG_TIMEZONE: America/Chicago
+      MANIFEST_CACHE_TTL: "300"
+      MARVEL_UNIVERSE_URL: https://addon-marvel.onrender.com/
+      MAX_ADDONS: "100"
+      MAX_CONDITION_FILTERS: "200"
+      MAX_GROUPS: "50"
+      MAX_KEYWORD_FILTERS: "50"
+      MAX_TIMEOUT: "50000"
+      MEDIAFUSION_API_PASSWORD: h4L0m4St3R327
+      MEDIAFUSION_CONFIG_TIMEOUT: "5000"
+      MEDIAFUSION_URL: http://mediafusion:8080
+      META_CACHE_TTL: "300"
+      MIN_TIMEOUT: "1000"
+      NUVIOSTREAMS_URL: https://nuviostreams.hayd.uk/
+      OPENSUBTITLES_URL: https://opensubtitles-v3.strem.io/
+      ORION_STREMIO_ADDON_URL: https://5a0d1888fa64-orion.baby-beamup.club/
+      PEERFLIX_URL: https://peerflix-addon.onrender.com/
+      PGID: "121"
+      PORT: "3005"
+      PROXY_IP_CACHE_TTL: "900"
+      PRUNE_INTERVAL: "86400"
+      PRUNE_MAX_DAYS: "1"
+      PUID: "1001"
+      REGEX_FILTER_ACCESS: trusted
+      RPDB_API_KEY_VALIDITY_CACHE_TTL: "604800"
+      RPDB_CATALOGS_URL: https://1fe84bc728af-rpdb.baby-beamup.club/
+      SECRET_KEY: 207d3e5d2dd7edca578b121814f32ed4d73568b5059fd710637a40d310928cde
+      STAR_WARS_UNIVERSE_URL: https://addon-star-wars-u9e3.onrender.com/
+      STATIC_RATE_LIMIT_MAX_REQUESTS: "75"
+      STATIC_RATE_LIMIT_WINDOW: "5"
+      STREAM_API_RATE_LIMIT_MAX_REQUESTS: "10"
+      STREAM_API_RATE_LIMIT_WINDOW: "5"
+      STREAM_CACHE_TTL: "1"
+      STREAMFUSION_URL: https://stream-fusion.stremiofr.com/
+      STREAMING_CATALOGS_URL: https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club/
+      STREMIO_CATALOG_RATE_LIMIT_MAX_REQUESTS: "30"
+      STREMIO_CATALOG_RATE_LIMIT_WINDOW: "5"
+      STREMIO_MANIFEST_RATE_LIMIT_MAX_REQUESTS: "5"
+      STREMIO_MANIFEST_RATE_LIMIT_WINDOW: "5"
+      STREMIO_META_RATE_LIMIT_MAX_REQUESTS: "15"
+      STREMIO_META_RATE_LIMIT_WINDOW: "5"
+      STREMIO_STREAM_RATE_LIMIT_MAX_REQUESTS: "10"
+      STREMIO_STREAM_RATE_LIMIT_WINDOW: "15"
+      STREMIO_SUBTITLE_RATE_LIMIT_MAX_REQUESTS: "10"
+      STREMIO_SUBTITLE_RATE_LIMIT_WINDOW: "5"
+      STREMTHRU_STORE_URL: http://stremthru:8080/stremio/store
+      STREMTHRU_TORZ_URL: https://stremthru.elfhosted.com/stremio/torz
+      SUBTITLE_CACHE_TTL: "300"
+      TMDB_ACCESS_TOKEN: cec876f852b9c15d2c1b436b1117dff7
+      TMDB_COLLECTIONS_URL: https://61ab9c85a149-tmdb-collections.baby-beamup.club/
+      TORBOX_STREMIO_URL: https://stremio.torbox.app/
+      TORRENT_CATALOGS_URL: https://torrent-catalogs.strem.fun/
+      TORRENTIO_URL: https://torrentio.strem.fun/
+      TRUSTED_UUIDS: ""
+      TZ: America/Chicago
+      UMASK: "002"
+      USER_API_RATE_LIMIT_MAX_REQUESTS: "5"
+      USER_API_RATE_LIMIT_WINDOW: "5"
+      WEBSTREAMR_URL: https://webstreamr.hayd.uk
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: aiostreams
+    image: ghcr.io/viren070/aiostreams
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: AIOStreams is a stremio addon that combines multiple stremio addons into one, providing additional functionality that can be used for all these addons that may not natively otherwise support them.
+      homepage.group: Stremio Addons
+      homepage.href: https://aiostreams.$DOMAIN/
+      homepage.icon: aiostreams.png
+      homepage.name: AIOStreams
+      traefik.enable: "true"
+      traefik.http.routers.aiostreams.rule: Host(`aiostreams.$DOMAIN`) || Host(`aiostreams.bocloud.org`) || Host(`aiostreams.bolabaden.duckdns.org`) || Host(`aiostreams.micklethefickle.duckdns.org`)
+      traefik.http.routers.aiostreams.service: aiostreams
+      traefik.http.services.aiostreams.loadbalancer.server.port: "3005"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.200
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/stremio/addons/aiostreams/data
+        target: /app/data
+        bind:
+          create_host_path: true
+  bocloud-nextjs:
+    build:
+      context: /home/ubuntu/my-media-stack/src/bocloud-site
+      dockerfile: Dockerfile
+    container_name: bocloud-nextjs
+    depends_on:
+      tinyauth:
+        condition: service_started
+        required: true
+      traefik:
+        condition: service_started
+        required: true
+    environment:
+      HOSTNAME: 0.0.0.0
+      NODE_ENV: production
+      PGID: "121"
+      PORT: "3000"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "3000"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: bocloud-nextjs
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 40s
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.enable: "true"
+      traefik.http.middlewares.bocloud-nextjs.errors.query: /api/error/{status}
+      traefik.http.middlewares.bocloud-nextjs.errors.service: bocloud-nextjs
+      traefik.http.middlewares.bocloud-nextjs.errors.status: 400-599
+      traefik.http.routers.404-catchall.middlewares: bocloud-nextjs
+      traefik.http.routers.404-catchall.priority: "1"
+      traefik.http.routers.404-catchall.rule: Host(`*`)
+      traefik.http.routers.404-catchall.service: bocloud-nextjs
+      traefik.http.routers.bocloud-embed.rule: Host(`embed.bocloud.org`)
+      traefik.http.routers.bocloud-embed.service: bocloud-nextjs
+      traefik.http.routers.bocloud-nextjs.rule: Host(`$DOMAIN`) || Host(`bocloud.org`) || Host(`bolabaden.duckdns.org`) || Host(`micklethefickle.duckdns.org`)
+      traefik.http.routers.bocloud-nextjs.service: bocloud-nextjs
+      traefik.http.services.bocloud-nextjs.loadbalancer.server.port: "3000"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.45
+    ports:
+      - mode: ingress
+        target: 3000
+        published: "3000"
+        protocol: tcp
+    restart: always
+  code-server:
+    container_name: code-server
+    environment:
+      CODESERVER_DEFAULT_WORKSPACE: /workspace
+      CODESERVER_PASSWORD: h4L0m4St3R327
+      CODESERVER_SUDO_PASSWORD: h4L0m4St3R327
+      DEFAULT_WORKSPACE: /workspace
+      PASSWORD: h4L0m4St3R327
+      PGID: "121"
+      PUID: "1001"
+      SUDO_PASSWORD: h4L0m4St3R327
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "8443"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: code-server
+    image: docker.io/linuxserver/code-server:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Code Dev is a tool that allows you to develop code in a container.
+      homepage.group: Infrastructure
+      homepage.href: https://code-server.$DOMAIN/
+      homepage.icon: code-server.png
+      homepage.name: Code Dev
+      traefik.enable: "true"
+      traefik.http.routers.code-server.middlewares: allow-iframe-from-domain@file
+      traefik.http.routers.code-server.rule: Host(`code-server.$DOMAIN`) || Host(`code-server.bocloud.org`) || Host(`code-server.bolabaden.duckdns.org`) || Host(`code-server.micklethefickle.duckdns.org`)
+      traefik.http.services.code-server.loadbalancer.server.port: "8443"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.92
+    restart: always
+    user: 1001:121
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/code-server/dev/config
+        target: /config
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack
+        target: /workspace
+        bind:
+          create_host_path: true
+  comet:
+    container_name: comet
+    depends_on:
+      warp:
+        condition: service_started
+        restart: true
+        required: true
+    environment:
+      ADDON_ID: comet.$DOMAIN
+      ADDON_NAME: Comet | $DOMAIN
+      COMET_URL: https://comet.elfhosted.com
+      DASHBOARD_ADMIN_PASSWORD: h4L0m4St3R327
+      DATABASE_PATH: /data/comet.db
+      DATABASE_TYPE: sqlite
+      DEBRID_CACHE_TTL: "86400"
+      DOWNLOAD_TORRENT_FILES: "true"
+      FASTAPI_HOST: 0.0.0.0
+      FASTAPI_PORT: "2020"
+      FASTAPI_WORKERS: "4"
+      GET_TORRENT_TIMEOUT: "2"
+      INDEXER_MANAGER_API_KEY: 29440a82740d475cacb35327c62c87a1
+      INDEXER_MANAGER_INDEXERS: '["animetosho", "anirena", "bitsearch", "eztv", "nyaasi", "thepiratebay", "therarbg", "yts"]'
+      INDEXER_MANAGER_TIMEOUT: "60"
+      INDEXER_MANAGER_TYPE: prowlarr
+      INDEXER_MANAGER_URL: http://prowlarr:9696
+      MEDIAFUSION_URL: https://mediafusion.elfhosted.com
+      METADATA_CACHE_TTL: "2592000"
+      PGID: "121"
+      PROXY_DEBRID_STREAM: "true"
+      PROXY_DEBRID_STREAM_DEBRID_DEFAULT_APIKEY: 6i6zgswm35baj3ur
+      PROXY_DEBRID_STREAM_DEBRID_DEFAULT_SERVICE: premiumize
+      PROXY_DEBRID_STREAM_MAX_CONNECTIONS: "-1"
+      PROXY_DEBRID_STREAM_PASSWORD: brunner56:h4L0m4St3R327,bolabaden:duckdns
+      PUID: "1001"
+      REMOVE_ADULT_CONTENT: "true"
+      SCRAPE_COMET: "true"
+      SCRAPE_MEDIAFUSION: "true"
+      SCRAPE_TORRENTIO: "true"
+      SCRAPE_ZILEAN: "true"
+      STREMTHRU_URL: https://stremthru.$DOMAIN
+      TORRENT_CACHE_TTL: "1296000"
+      TORRENTIO_URL: https://torrentio.strem.fun
+      TZ: America/Chicago
+      UMASK: "002"
+      USE_GUNICORN: "true"
+      ZILEAN_URL: https://zilean.elfhosted.com
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:2020/health > /dev/null 2>&1 || exit 1
+      timeout: 5s
+      interval: 1m0s
+      retries: 3
+      start_period: 15s
+    image: g0ldyy/comet:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Comet is a Stremio Addon for finding media sources from various sources.
+      homepage.group: Stremio Addons
+      homepage.href: https://comet.$DOMAIN/
+      homepage.icon: comet.png
+      homepage.name: Comet
+    network_mode: service:warp
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/stremio/addons/comet/data
+        target: /data
+        bind:
+          create_host_path: true
+  crowdsec:
+    container_name: crowdsec
+    environment:
+      AGENT_PASSWORD: ""
+      AGENT_USERNAME: ""
+      AGENTS_ALLOWED_OU: agent-ou
+      APPSEC_CONFIGS: ""
+      APPSEC_RULES: ""
+      BOUNCER_KEY_TRAEFIK: usvi2urbIG5obProVWwcf2ImTrtB93x668jWDvrH
+      BOUNCERS_ALLOWED_OU: bouncer-ou
+      CACERT_FILE: ""
+      CAPI_WHITELISTS_PATH: ""
+      CI_TESTING: "false"
+      CLIENT_CERT_FILE: ""
+      CLIENT_KEY_FILE: ""
+      COLLECTIONS: crowdsecurity/traefik
+      CONFIG_FILE: /etc/crowdsec/config.yaml
+      CONTEXTS: ""
+      CUSTOM_HOSTNAME: localhost
+      DEBUG: "false"
+      DISABLE_AGENT: "false"
+      DISABLE_APPSEC_CONFIGS: ""
+      DISABLE_APPSEC_RULES: ""
+      DISABLE_COLLECTIONS: ""
+      DISABLE_CONTEXTS: ""
+      DISABLE_LOCAL_API: "false"
+      DISABLE_ONLINE_API: "false"
+      DISABLE_PARSERS: ""
+      DISABLE_POSTOVERFLOWS: ""
+      DISABLE_SCENARIOS: ""
+      DSN: ""
+      ENROLL_INSTANCE_NAME: ""
+      ENROLL_KEY: cm91pb2bz0011e35iltz9k6ra
+      ENROLL_TAGS: ""
+      INSECURE_SKIP_VERIFY: ""
+      LAPI_CERT_FILE: ""
+      LAPI_KEY_FILE: ""
+      LEVEL_DEBUG: "false"
+      LEVEL_ERROR: "false"
+      LEVEL_FATAL: "false"
+      LEVEL_INFO: "false"
+      LEVEL_TRACE: "false"
+      LEVEL_WARN: "false"
+      LOCAL_API_URL: http://0.0.0.0:8080
+      METRICS_PORT: "6060"
+      NO_HUB_UPGRADE: "false"
+      PARSERS: ""
+      PGID: "121"
+      PLUGIN_DIR: /usr/local/lib/crowdsec/plugins/
+      POSTOVERFLOWS: ""
+      PUID: "1001"
+      SCENARIOS: ""
+      TEST_MODE: "false"
+      TYPE: ""
+      TZ: America/Chicago
+      UMASK: "002"
+      USE_TLS: "false"
+      USE_WAL: "false"
+    expose:
+      - "6060"
+      - "8080"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: crowdsec
+    image: docker.io/crowdsecurity/crowdsec:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: CrowdSec is an open-source, behavioral, intrusion detection system.
+      homepage.group: Security
+      homepage.href: https://crowdsec.$DOMAIN/
+      homepage.icon: crowdsec.png
+      homepage.name: Crowdsec
+      homepage.widget.password: ""
+      homepage.widget.type: crowdsec
+      homepage.widget.url: http://crowdsec:8080
+      homepage.widget.username: ""
+      traefik.enable: "true"
+      traefik.http.routers.crowdsec.middlewares: nginx-auth@file
+      traefik.http.routers.crowdsec.rule: Host(`crowdsec.$DOMAIN`) || Host(`crowdsec.bocloud.org`) || Host(`crowdsec.bolabaden.duckdns.org`) || Host(`crowdsec.micklethefickle.duckdns.org`)
+      traefik.http.services.crowdsec.loadbalancer.server.port: "8080"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.104
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/crowdsec/data
+        target: /var/lib/crowdsec/data
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/crowdsec/etc/crowdsec
+        target: /etc/crowdsec
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/crowdsec/plugins
+        target: /usr/local/lib/crowdsec/plugins
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/crowdsec/logs
+        target: /var/log
+        bind:
+          create_host_path: true
+  deunhealth:
+    container_name: deunhealth
+    environment:
+      HEALTH_SERVER_ADDRESS: 127.0.0.1:9999
+      LOG_LEVEL: debug
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    image: qmcgaw/deunhealth
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: DeUnhealth is a tool that automatically restarts unhealthy containers.
+      homepage.group: Infrastructure
+      homepage.href: https://deunhealth.$DOMAIN/
+      homepage.icon: deunhealth.png
+      homepage.name: DeUnhealth
+    network_mode: none
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        bind:
+          selinux: z
+          create_host_path: true
+  dozzle:
+    container_name: dozzle
+    expose:
+      - "8080"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: dozzle
+    image: amir20/dozzle
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Real-time log viewer for Docker containers, providing an easy way to monitor application logs and troubleshoot issues.
+      homepage.group: System Monitoring
+      homepage.href: https://dozzle.$DOMAIN/
+      homepage.icon: dozzle.png
+      homepage.name: Dozzle
+      traefik.enable: "true"
+      traefik.http.routers.dozzle.middlewares: nginx-auth@file
+      traefik.http.routers.dozzle.rule: Host(`dozzle.$DOMAIN`) || Host(`dozzle.bocloud.org`) || Host(`dozzle.bolabaden.duckdns.org`) || Host(`dozzle.micklethefickle.duckdns.org`)
+      traefik.http.services.dozzle.loadbalancer.server.port: "8080"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.89
+    restart: always
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        bind:
+          selinux: z
+          create_host_path: true
+  flaresolverr:
+    container_name: flaresolverr
+    environment:
+      BROWSER_TIMEOUT: "120000"
+      CAPTCHA_SOLVER: none
+      HEADLESS: "true"
+      HOST: 0.0.0.0
+      LOG_HTML: "false"
+      LOG_LEVEL: info
+      PGID: "121"
+      PORT: "8191"
+      PROMETHEUS_ENABLED: "false"
+      PROMETHEUS_PORT: "9090"
+      PUID: "1001"
+      TEST_URL: https://www.google.com
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "8191"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: flaresolverr
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -f http://127.0.0.1:8191/health > /dev/null 2>&1 || exit 1
+      timeout: 15s
+      interval: 30s
+      retries: 3
+      start_period: 1m0s
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Flaresolverr is a proxy server that can bypass captchas and access cloudflare-captcha-protected websites.
+      homepage.group: Infrastructure
+      homepage.href: https://flaresolverr.$DOMAIN/
+      homepage.icon: flaresolverr.png
+      homepage.name: Flaresolverr
+      traefik.enable: "true"
+      traefik.http.routers.flaresolverr.middlewares: nginx-auth@file
+      traefik.http.routers.flaresolverr.rule: Host(`flaresolverr.$DOMAIN`) || Host(`flaresolverr.bocloud.org`) || Host(`flaresolverr.bolabaden.duckdns.org`) || Host(`flaresolverr.micklethefickle.duckdns.org`)
+      traefik.http.services.flaresolverr.loadbalancer.server.port: "8191"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.93
+    restart: always
+  gluetun-premiumize-nl:
+    cap_add:
+      - NET_ADMIN
+    configs:
+      - source: premiumize-auth
+        target: /config/auth.conf
+        mode: "0600"
+      - source: premiumize-ca
+        target: /etc/openvpn/premiumize-ca.pem
+        mode: "0600"
+      - source: vpn-nl.premiumize.me
+        target: /etc/openvpn/target.ovpn
+        mode: "0600"
+    container_name: gluetun-premiumize-nl
+    devices:
+      - source: /dev/net/tun
+        target: /dev/net/tun
+        permissions: rwm
+    environment:
+      FIREWALL_OUTBOUND_SUBNETS: 10.76.0.0/16,172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      OPENVPN_IPV6: "off"
+      VPN_SERVICE_PROVIDER: custom
+      VPN_TYPE: openvpn
+    expose:
+      - "51413"
+      - "8084"
+      - "6881"
+      - 6881/udp
+    extra_hosts:
+      - aiostreams=10.76.128.200
+      - autoscan=10.76.0.119
+      - beatapostapita=100.99.45.35
+      - bocloud-nextjs=10.76.128.45
+      - boden-iphone=100.97.148.14
+      - byparr=10.76.128.93
+      - code-demo=10.76.128.80
+      - code-server=10.76.128.92
+      - code=10.76.128.96
+      - comet=10.76.128.97
+      - crowdsec=10.76.128.104
+      - dash=10.76.128.23
+      - decluttarr=10.76.128.21
+      - deluge=10.76.128.97
+      - dozzle=10.76.128.89
+      - firecrawl-api=10.76.128.127
+      - firecrawl-playwright=10.76.128.130
+      - firecrawl-worker=10.76.128.128
+      - flaresolverr=10.76.128.93
+      - gatus=10.76.128.105
+      - gluetun-premiumize-nl=10.76.128.119
+      - gpt-researcher=10.76.128.43
+      - gptr=10.76.128.43
+      - homepage=10.76.128.88
+      - homer=10.76.0.106
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - jellyfin=10.76.128.120
+      - jellyseerr=10.76.128.115
+      - lobechat=10.76.128.46
+      - localhost=10.76.128.97
+      - maintainerr=10.76.128.84
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - mongodb=10.76.0.50
+      - nginx-auth=10.76.128.94
+      - open-webui=10.76.128.118
+      - overseerr=10.76.128.116
+      - plex-authentication=10.76.128.112
+      - plex-repair=10.76.0.115
+      - plex-request=10.76.128.113
+      - plex-watchlist=10.76.52.97
+      - plex=10.76.128.95
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - qdrant=10.76.128.44
+      - radarr=10.76.128.121
+      - rclone=10.76.128.111
+      - realdebrid-account-monitor=10.76.128.109
+      - recyclarr=10.76.0.117
+      - redis=10.76.128.87
+      - riven-backend=10.76.128.101
+      - riven-db=10.76.128.102
+      - riven-frontend=10.76.128.100
+      - riven=10.76.128.101
+      - script-runner=10.76.0.116
+      - searxng=10.76.128.90
+      - sonarr-anime=10.76.128.123
+      - sonarr=10.76.128.122
+      - speedtest=10.76.128.86
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - stremthru=10.76.128.99
+      - tautulli=10.76.128.103
+      - tinyauth=10.76.128.82
+      - traefik=10.76.128.85
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - watchtower=10.76.128.83
+      - whisparr=10.76.0.120
+      - whoami=10.76.128.81
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - wizarr=10.76.128.107
+      - zurg=10.76.128.97
+    hostname: gluetun-premiumize-nl
+    image: ghcr.io/qdm12/gluetun
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.$DOMAIN`) || Host(`qbittorrent.bocloud.org`) || Host(`qbittorrent.bolabaden.duckdns.org`) || Host(`qbittorrent.micklethefickle.duckdns.org`)
+      traefik.http.routers.qbittorrent.service: qbittorrent
+      traefik.http.routers.transmission.rule: Host(`transmission.$DOMAIN`) || Host(`transmission.bocloud.org`) || Host(`transmission.bolabaden.duckdns.org`) || Host(`transmission.micklethefickle.duckdns.org`)
+      traefik.http.routers.transmission.service: transmission
+      traefik.http.services.qbittorrent.loadbalancer.server.port: "8084"
+      traefik.http.services.transmission.loadbalancer.server.port: "9091"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.119
+    ports:
+      - mode: ingress
+        target: 8084
+        published: "8084"
+        protocol: tcp
+      - mode: ingress
+        target: 6881
+        published: "6881"
+        protocol: tcp
+      - mode: ingress
+        target: 6881
+        published: "6881"
+        protocol: udp
+    restart: always
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: "1"
+  gptr:
+    build:
+      context: https://github.com/th3w1zard1/gpt-researcher.git#master
+      dockerfile: Dockerfile.fullstack
+    container_name: gptr
+    environment:
+      ANTHROPIC_API_KEY: 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
+      BRAVE_API_KEY: BQYQ53Y34895489548954895489548954895489
+      CHOKIDAR_USEPOLLING: "true"
+      DEEPSEEK_API_KEY: sk-d6c4fe1d5db945ba8547fc348df03833
+      EXA_API_KEY: 4f304bea-22a0-4473-bc38-21114d0f8aaf
+      FIRE_CRAWL_API_KEY: fc-e0e316bead3d497fb24d42ea21d5daf6
+      FIRECRAWL_API_KEY: fc-e0e316bead3d497fb24d42ea21d5daf6
+      GEMINI_API_KEY: AIzaSyB-1aUePBQbb7_rpIDz5kY7AMWxguMq7Y8
+      GLAMA_API_KEY: glama_eyJhcGlLZXkiOiI4YTc1MWRkYi0xNGNjLTQyNTctOTgzMS05OTMyNDQyNGY4NDQifQ
+      GROQ_API_KEY: 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
+      HF_TOKEN: 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
+      HUGGINGFACE_ACCESS_TOKEN: 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
+      HUGGINGFACE_API_TOKEN: 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
+      LANGCHAIN_API_KEY: lsv2_0123456789012345678901234567890123456789
+      LANGSMITH_API_KEY: lsv2_0123456789012345678901234567890123456789
+      LANGSMITH_ENDPOINT: https://api.smith.langchain.com
+      LANGSMITH_TRACING: "true"
+      LOGGING_LEVEL: DEBUG
+      MISTRAL_API_KEY: rNZOe7bauJwpknHvDjOtnXV6iaKHzEt1
+      MISTRALAI_API_KEY: rNZOe7bauJwpknHvDjOtnXV6iaKHzEt1
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: ""
+      NEXT_PUBLIC_GPTR_API_URL: https://gptr.$DOMAIN
+      OPENAI_API_KEY: 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
+      OPENROUTER_API_KEY: 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
+      PERPLEXITY_API_KEY: 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
+      PERPLEXITYAI_API_KEY: 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
+      REPLICATE_API_KEY: r8_8ktlYwwthNrp8pPSLZF1DD7507tku082y7ptd
+      REVID_API_KEY: 9a9884c5-6cb6-4ea9-aadc-91b31de76653
+      SAMBANOVA_API_KEY: f3f47213-2123-4408-8247-816319bc1e84
+      SEARCH1API_KEY: DE721F1D-498C-4DBF-843C-B72A75DAFD14
+      SERPAPI_API_KEY: dfc64bfdf77ccdde0196b0fde7848a8ebc04e520
+      TAVILY_API_KEY: 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
+      TOGETHERAI_API_KEY: 3bf6c62c61e9dbfbe4e947bd7e0ec876188e41916fbd622877018188f84ab2f2
+      UNIFY_API_KEY: XeFNQpisNryyS6NrlnDEAK7D-aE0mAq4JCkwsfeDa90=
+      UPSTAGE_API_KEY: up_uPJNmSkziDbrTi75fQ7fFOkOcCTSC
+      UPSTAGEAI_API_KEY: up_uPJNmSkziDbrTi75fQ7fFOkOcCTSC
+      YOU_API_KEY: cbee3356-84ed-40ea-9d09-ce3d0afcb340<__>1QKC7nETU8N2v5f46hH6l6ax
+    expose:
+      - "3000"
+      - "3001"
+      - "8000"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: gptr
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - (wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1) && (wget -qO- http://127.0.0.1:8000 > /dev/null 2>&1 || exit 1)
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 2m0s
+    image: th3w1zard1/ai-researchwizard:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: AI Research Wizard is a web scraper and researcher that uses AI to help you find information quickly.
+      homepage.group: AI
+      homepage.href: https://gptr.$DOMAIN/
+      homepage.icon: gptr.png
+      homepage.name: AI Research Wizard
+      traefik.enable: "true"
+      traefik.http.routers.gptr-legacy.rule: Host(`gptr-legacy.$DOMAIN`) || Host(`gptr-legacy.bocloud.org`) || Host(`gptr-legacy.bolabaden.duckdns.org`) || Host(`gptr-legacy.micklethefickle.duckdns.org`)
+      traefik.http.routers.gptr-legacy.service: gptr-legacy
+      traefik.http.routers.gptr.rule: Host(`gptr.$DOMAIN`) || Host(`gptr.bocloud.org`) || Host(`gptr.bolabaden.duckdns.org`) || Host(`gptr.micklethefickle.duckdns.org`)
+      traefik.http.routers.gptr.service: gptr
+      traefik.http.services.gptr-legacy.loadbalancer.server.port: "8000"
+      traefik.http.services.gptr.loadbalancer.server.port: "3000"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.43
+    ports:
+      - mode: ingress
+        target: 3001
+        published: "3001"
+        protocol: tcp
+      - mode: ingress
+        target: 8000
+        published: "8000"
+        protocol: tcp
+    restart: always
+    stdin_open: true
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/gptr/logs
+        target: /usr/src/app/logs
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/gptr/outputs
+        target: /usr/src/app/outputs
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/gptr/reports
+        target: /usr/src/app/reports
+        bind:
+          create_host_path: true
+  headscale:
+    command:
+      - serve
+    configs:
+      - source: headscale-config
+        target: /etc/headscale/config.yml
+    container_name: headscale
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "3478"
+      - "8080"
+      - "9090"
+      - "50443"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: headscale
+    image: docker.io/headscale/headscale:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Headscale is a server that manages your Tailscale network.
+      homepage.group: Networking
+      homepage.href: https://headscale.$DOMAIN/
+      homepage.icon: headscale.png
+      homepage.name: Headscale
+      traefik.enable: "true"
+      traefik.http.routers.headscale-admin.rule: Host(`headscale-admin.$DOMAIN`) || Host(`headscale-admin.bocloud.org`) || Host(`headscale-admin.bolabaden.duckdns.org`) || Host(`headscale-admin.micklethefickle.duckdns.org`)
+      traefik.http.routers.headscale-admin.service: headscale-admin
+      traefik.http.routers.headscale.rule: Host(`headscale.$DOMAIN`) || Host(`headscale.bocloud.org`) || Host(`headscale.bolabaden.duckdns.org`) || Host(`headscale.micklethefickle.duckdns.org`)
+      traefik.http.routers.headscale.service: headscale
+      traefik.http.services.headscale-admin.loadbalancer.server.port: "9090"
+      traefik.http.services.headscale.loadbalancer.server.port: "8080"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.0.106
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/headscale/config
+        target: /etc/headscale
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/headscale/lib
+        target: /var/lib/headscale
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/headscale/run
+        target: /var/run/headscale
+        bind:
+          create_host_path: true
+  homepage:
+    container_name: homepage
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: '*'
+      HOMEPAGE_VAR_HEADER_STYLE: ""
+      HOMEPAGE_VAR_SEARCH_PROVIDER: google
+      HOMEPAGE_VAR_TITLE: Bolabaden
+      HOMEPAGE_VAR_WEATHER_CITY: Chicago
+      HOMEPAGE_VAR_WEATHER_LAT: "41.8781"
+      HOMEPAGE_VAR_WEATHER_LONG: "-87.6298"
+      HOMEPAGE_VAR_WEATHER_UNIT: fahrenheit
+      TZ: America/Chicago
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: homepage
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1
+      timeout: 15s
+      interval: 30s
+      retries: 3
+    image: ghcr.io/gethomepage/homepage
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Homepage is a dashboard that displays all of your services.
+      homepage.group: Dashboards
+      homepage.href: https://homepage.$DOMAIN/
+      homepage.icon: homepage.png
+      homepage.name: Homepage
+      traefik.enable: "true"
+      traefik.http.routers.homepage.middlewares: nginx-auth@file
+      traefik.http.routers.homepage.rule: Host(`homepage.$DOMAIN`) || Host(`homepage.bocloud.org`) || Host(`homepage.bolabaden.duckdns.org`) || Host(`homepage.micklethefickle.duckdns.org`)
+      traefik.http.services.homepage.loadbalancer.server.port: "3000"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.88
+    restart: always
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        bind:
+          selinux: z
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/homepage
+        target: /app/config
+        bind:
+          create_host_path: true
+  homer:
+    configs:
+      - source: homer-config.yml
+        target: /www/assets/config.yml
+    container_name: homer
+    environment:
+      GID: "121"
+      INIT_ASSETS: "1"
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UID: "1001"
+      UMASK: "002"
+    expose:
+      - "8080"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: homer
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:8080 || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 30s
+    image: b4bz/homer:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Static homepage dashboard
+      homepage.group: Dashboards
+      homepage.href: https://homer.$DOMAIN/
+      homepage.icon: http://127.0.0.1:8080/assets/icons/pwa-192x192.png
+      homepage.name: Homer
+      homepage.weight: "0"
+      homepage.widget.type: homer
+      homepage.widget.url: http://homer:8080
+      traefik.enable: "true"
+      traefik.http.routers.homer.rule: Host(`homer.$DOMAIN`) || Host(`homer.bocloud.org`) || Host(`homer.bolabaden.duckdns.org`) || Host(`homer.micklethefickle.duckdns.org`)
+      traefik.http.services.homer.loadbalancer.server.port: "8080"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.106
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/homer/assets
+        target: /www/assets
+        bind:
+          create_host_path: true
+  jackett:
+    container_name: jackett
+    depends_on:
+      flaresolverr:
+        condition: service_healthy
+        required: true
+      warp:
+        condition: service_started
+        restart: true
+        required: true
+    environment:
+      AUTO_UPDATE: "true"
+      JACKETT_API_KEY: nnx0n84pcj7umynyd2pbid2nl1zzuemz
+      PGID: "121"
+      PUID: "1001"
+      RUN_OPTS: ""
+      TZ: America/Chicago
+      UMASK: "002"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fs http://127.0.0.1:9117/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=nnx0n84pcj7umynyd2pbid2nl1zzuemz || exit 1
+      timeout: 10s
+      interval: 30s
+      start_period: 1m0s
+    image: linuxserver/jackett
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Connects your download applications with various source providers and indexers, making it easier to find and download content through your download clients.
+      homepage.group: Source Aggregator
+      homepage.href: https://jackett.$DOMAIN/
+      homepage.icon: jackett.png
+      homepage.name: Jackett Indexer
+      homepage.weight: "1"
+      homepage.widget.key: nnx0n84pcj7umynyd2pbid2nl1zzuemz
+      homepage.widget.type: jackett
+      homepage.widget.url: http://jackett:9117
+    logging:
+      driver: local
+      options:
+        max-file: "5"
+        max-size: 10m
+    network_mode: service:warp
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/jackett/config
+        target: /config
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /mnt/remote/realdebrid/blackhole
+        target: /blackhole
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /mnt
+        target: /mnt
+        bind:
+          create_host_path: true
+  mediaflow-proxy:
+    container_name: mediaflow-proxy
+    depends_on:
+      warp:
+        condition: service_started
+        restart: true
+        required: true
+    environment:
+      API_PASSWORD: d468d92139047f1df5ba0fae9d998957c30834a386cd63d0472a7b044d42a96a
+      ENABLE_STREAMING_PROGRESS: "true"
+      PGID: "121"
+      PORT: "8888"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - import socket; s=socket.socket(); s.connect(('127.0.0.1', 8888)); print('Healthcheck passed')
+      timeout: 10s
+      interval: 1m0s
+      retries: 5
+      start_period: 10s
+    image: mhdzumair/mediaflow-proxy
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: MediaFlow Proxy is a M3U/HSTS proxy for Stremio/Kodi.
+      homepage.group: Stremio Addons
+      homepage.href: https://mediaflow-proxy.$DOMAIN/
+      homepage.icon: mediaflow-proxy.png
+      homepage.name: MediaFlow Proxy
+    network_mode: service:warp
+    restart: always
+  mediafusion:
+    container_name: mediafusion
+    depends_on:
+      mongodb:
+        condition: service_healthy
+        required: true
+      redis:
+        condition: service_healthy
+        required: true
+      warp:
+        condition: service_started
+        restart: true
+        required: true
+    environment:
+      ADDON_NAME: MediaFusion | $DOMAIN
+      ADULT_CONTENT_FILTER_IN_TORRENT_TITLE: "True"
+      ADULT_CONTENT_REGEX_KEYWORDS: \b(porn|xxx|sex|nude|naked|erotic|fetish|bdsm|milf|anal|oral|gangbang|threesome|masturbat|orgasm|cumshot|blowjob|handjob|footjob|creampie|facial|bukkake|hentai|yaoi|yuri|ecchi|doujin|camgirl|webcam|stripper|escort|prostitut|brothel|redlight|peepshow|voyeur|exhibitionist|swinger|orgy|hardcore|softcore|playboy|penthouse|hustler|brazzers|bangbros|realitykings|naughtyamerica|digitalplayground|wickedpictures|evilangel|kink|publicagent|fakehub|teamskeet|mofos|twistys|metart|sexart|x-art|joymii|nubiles|18eighteen|lolita|incest|taboo|kinky|slutty|horny|sexy|sensual|seductive|raw|perverted|depraved)\b
+      API_PASSWORD: h4L0m4St3R327
+      ARAB_TORRENTS_SCHEDULER_CRONTAB: 0 0 * * *
+      BACKGROUND_SEARCH_CRONTAB: '*/5 * * * *'
+      BACKGROUND_SEARCH_INTERVAL_HOURS: "72"
+      BRANDING_DESCRIPTION: Hosted on $DOMAIN
+      BT4G_IMMEDIATE_MAX_PROCESS: "15"
+      BT4G_IMMEDIATE_MAX_PROCESS_TIME: "15"
+      BT4G_SEARCH_INTERVAL_HOUR: "72"
+      BT4G_SEARCH_TIMEOUT: "10"
+      BT4G_URL: https://bt4gprx.com
+      CLEANUP_EXPIRED_CACHE_TASK_CRONTAB: 0 0 * * *
+      CLEANUP_EXPIRED_SCRAPER_TASK_CRONTAB: 0 * * * *
+      CONTACT_EMAIL: boden.crouch@gmail.com
+      DB_MAX_CONNECTIONS: "50"
+      DESCRIPTION: MediaFusion | $DOMAIN
+      DISABLE_ALL_SCHEDULER: "False"
+      DISABLED_PROVIDERS: '[]'
+      DLHD_SCHEDULER_CRONTAB: 25 * * * *
+      ENABLE_FETCHING_TORRENT_METADATA_FROM_P2P: "False"
+      ENABLE_RATE_LIMIT: "True"
+      FLARESOLVERR_URL: http://flaresolverr:8191/v1
+      FORMULA_TGX_SCHEDULER_CRONTAB: '*/30 * * * *'
+      HOST_URL: https://mediafusion.$DOMAIN
+      IS_PUBLIC_INSTANCE: "False"
+      IS_SCRAP_FROM_BT4G: "True"
+      IS_SCRAP_FROM_JACKETT: "False"
+      IS_SCRAP_FROM_MEDIAFUSION: "True"
+      IS_SCRAP_FROM_PROWLARR: "False"
+      IS_SCRAP_FROM_TORRENTIO: "True"
+      IS_SCRAP_FROM_YTS: "True"
+      IS_SCRAP_FROM_ZILEAN: "True"
+      JACKETT_API_KEY: nnx0n84pcj7umynyd2pbid2nl1zzuemz
+      JACKETT_BACKGROUND_TITLE_SEARCH: "True"
+      JACKETT_FEED_SCRAPE_INTERVAL_HOUR: "3"
+      JACKETT_FEED_SCRAPER_CRONTAB: 0 */3 * * *
+      JACKETT_IMMEDIATE_MAX_PROCESS: "10"
+      JACKETT_IMMEDIATE_MAX_PROCESS_TIME: "15"
+      JACKETT_LIVE_TITLE_SEARCH: "True"
+      JACKETT_SEARCH_INTERVAL_HOUR: "72"
+      JACKETT_SEARCH_QUERY_TIMEOUT: "30"
+      JACKETT_URL: http://jackett:9117
+      LOGGING_LEVEL: INFO
+      LOGO_URL: ""
+      MEDIAFUSION_SEARCH_INTERVAL_DAYS: "3"
+      MEDIAFUSION_URL: https://mediafusion.$DOMAIN
+      META_CACHE_TTL: "1800"
+      METADATA_PRIMARY_SOURCE: tmdb
+      MIN_SCRAPING_VIDEO_SIZE: "26214400"
+      MONGO_URI: mongodb://mongodb:27017/mediafusion
+      MOTOGP_TGX_SCHEDULER_CRONTAB: 0 5 * * *
+      MOVIES_TV_TGX_SCHEDULER_CRONTAB: 0 * * * *
+      NOWMETV_SCHEDULER_CRONTAB: 0 0 * * *
+      NOWSPORTS_SCHEDULER_CRONTAB: 0 10 * * *
+      PGID: "121"
+      PLAYWRIGHT_CDP_URL: ws://browserless:3000?blockAds=true&stealth=true
+      POSTER_HOST_URL: https://mediafusion.$DOMAIN
+      PROWLARR_API_KEY: 29440a82740d475cacb35327c62c87a1
+      PROWLARR_BACKGROUND_TITLE_SEARCH: "False"
+      PROWLARR_FEED_SCRAPE_INTERVAL_HOUR: "3"
+      PROWLARR_FEED_SCRAPER_CRONTAB: 0 */3 * * *
+      PROWLARR_IMMEDIATE_MAX_PROCESS: "10"
+      PROWLARR_IMMEDIATE_MAX_PROCESS_TIME: "15"
+      PROWLARR_LIVE_TITLE_SEARCH: "True"
+      PROWLARR_SEARCH_INTERVAL_HOUR: "72"
+      PROWLARR_SEARCH_QUERY_TIMEOUT: "30"
+      PROWLARR_URL: http://prowlarr:9696
+      PUID: "1001"
+      REDIS_MAX_CONNECTIONS: "100"
+      REDIS_URL: redis://10.76.128.87:6379
+      SCRAPE_WITH_AKA_TITLES: "True"
+      SECRET_KEY: c75ac92df70c4383c8d1bb37f65454f9
+      SPORT_VIDEO_SCHEDULER_CRONTAB: '*/20 * * * *'
+      STORE_STREMTHRU_MAGNET_CACHE: "true"
+      SYNC_DEBRID_CACHE_STREAMS: "False"
+      TAMIL_BLASTERS_SCHEDULER_CRONTAB: 0 */6 * * *
+      TAMILMV_SCHEDULER_CRONTAB: 0 */3 * * *
+      TAMILULTRA_SCHEDULER_CRONTAB: 0 8 * * *
+      TELEGRAM_BOT_TOKEN: ""
+      TELEGRAM_CHAT_ID: ""
+      TMDB_API_KEY: cec876f852b9c15d2c1b436b1117dff7
+      TORRENTIO_SEARCH_INTERVAL_DAYS: "3"
+      TORRENTIO_URL: https://torrentio.strem.fun
+      TZ: America/Chicago
+      UFC_TGX_SCHEDULER_CRONTAB: 30 */3 * * *
+      UMASK: "002"
+      UPDATE_SEEDERS_CRONTAB: 0 0 * * *
+      VALIDATE_M3U8_URLS_LIVENESS: "True"
+      VALIDATE_TV_STREAMS_IN_DB_CRONTAB: 0 */6 * * *
+      VERSION: 1.0.0
+      WORKER_MAX_TASKS_PER_CHILD: "20"
+      WWE_TGX_SCHEDULER_CRONTAB: 10 */3 * * *
+      ZILEAN_SEARCH_INTERVAL_HOUR: "24"
+      ZILEAN_URL: https://zilean.elfhosted.com
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -f http://127.0.0.1:8000/health > /dev/null 2>&1 || exit 1
+      timeout: 10s
+      interval: 1m0s
+      retries: 5
+      start_period: 1m0s
+    image: mhdzumair/mediafusion:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: MediaFusion is a AIO media stream aggregator addon for Stremio/Kodi.
+      homepage.group: Stremio Addons
+      homepage.href: https://mediafusion.$DOMAIN/
+      homepage.icon: mediafusion.png
+      homepage.name: MediaFusion
+    network_mode: service:warp
+    restart: always
+  mongodb:
+    container_name: mongodb
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "27017"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: mongodb
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand("ping").ok' > /dev/null 2>&1 || exit 1
+      timeout: 10s
+      interval: 10s
+      retries: 5
+      start_period: 40s
+    image: mongo:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: MongoDB is a NoSQL database that uses JSON-like documents with optional schemas.
+      homepage.group: Databases
+      homepage.href: https://mongodb.$DOMAIN/
+      homepage.icon: mongodb.png
+      homepage.name: MongoDB
+      traefik.enable: "true"
+      traefik.http.routers.mongodb.middlewares: nginx-auth@file
+      traefik.http.routers.mongodb.rule: Host(`mongodb.$DOMAIN`) || Host(`mongodb.bocloud.org`) || Host(`mongodb.bolabaden.duckdns.org`) || Host(`mongodb.micklethefickle.duckdns.org`)
+      traefik.http.services.mongodb.loadbalancer.server.port: "27017"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.0.50
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/mongodb/data
+        target: /data/db
+        bind:
+          create_host_path: true
+  nginx-auth:
+    container_name: nginx-auth
+    environment:
+      NGINX_ACCESS_LOG: /dev/stdout
+      NGINX_ERROR_LOG: /dev/stderr
+      NGINX_LOG_LEVEL: warn
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "80"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: nginx-auth
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:80/health > /dev/null 2>&1 || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 20s
+    image: nginx:alpine
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.enable: "true"
+      traefik.http.middlewares.nginx-auth.forwardauth.address: http://nginx-auth:80/auth
+      traefik.http.middlewares.nginx-auth.forwardauth.authResponseHeaders: X-Auth-Method,X-Auth-Passed,X-Middleware-Name
+      traefik.http.middlewares.nginx-auth.forwardauth.trustForwardHeader: "true"
+      traefik.http.routers.nginx-auth.rule: Host(`nginx-auth.$DOMAIN`) || Host(`nginx-auth.bocloud.org`) || Host(`nginx-auth.bolabaden.duckdns.org`) || Host(`nginx-auth.micklethefickle.duckdns.org`)
+      traefik.http.routers.nginx-auth.service: nginx-auth
+      traefik.http.services.nginx-auth.loadbalancer.server.port: "80"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.94
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/nginx-middlewares/nginx.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/nginx-middlewares/auth
+        target: /etc/nginx/auth
+        read_only: true
+        bind:
+          create_host_path: true
+  overseerr:
+    container_name: overseerr
+    depends_on:
+      plex:
+        condition: service_healthy
+        required: true
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "5055"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: overseerr
+    image: docker.io/linuxserver/overseerr
+    labels:
+      homepage.description: Allows users to request movies and TV shows, integrating with your media server for easy content management.
+      homepage.group: Media Requests
+      homepage.href: https://overseerr.$DOMAIN/
+      homepage.icon: overseerr.png
+      homepage.name: Overseerr Requests
+      homepage.weight: "3"
+      homepage.widget.key: MTc0MDcxNDk2MTY5MDRmMDcxYmM1LTI5ODktNGJiMy05NzExLTdhYjYyMWQxMDAyOQ==
+      homepage.widget.type: overseerr
+      homepage.widget.url: https://overseerr.$DOMAIN
+      traefik.enable: "true"
+      traefik.http.routers.overseerr.rule: Host(`overseerr.$DOMAIN`) || Host(`overseerr.bocloud.org`) || Host(`overseerr.bolabaden.duckdns.org`) || Host(`overseerr.micklethefickle.duckdns.org`)
+      traefik.http.services.overseerr.loadbalancer.server.port: "5055"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.116
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/overseerr/config
+        target: /config
+        bind:
+          create_host_path: true
+  plex:
+    container_name: plex
+    environment:
+      ADVERTISE_IP: https://plex.$DOMAIN:443
+      EMAIL_TO: bolabaden.duckdns@gmail.com
+      PLEX_CLAIM: claim-RmAd7Q1DfvybLKDY8zmQ
+      PLEX_TOKEN: 18rS6gM-Wec22uq5Gw-U
+      SMTP_FROM: transcode-killer@$DOMAIN
+      SMTP_PORT: "587"
+      WAIT_FOR_MOUNT_PATHS: /mnt/remote/realdebrid
+      WAIT_FOR_URLS: http://zurg:9999/http/version.txt
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: plex
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl --connect-timeout 15 --silent --show-error --fail http://localhost:32400/identity
+      timeout: 15s
+      interval: 1m0s
+      retries: 3
+      start_period: 1m0s
+    image: plexinc/pms-docker
+    labels:
+      homepage.description: Stream your movies, TV shows, music, and photos to any device, providing a centralized media hub for all your content.
+      homepage.group: Media Streaming
+      homepage.href: https://plex.$DOMAIN/
+      homepage.icon: plex.png
+      homepage.name: Plex Media Server
+      homepage.weight: "4"
+      homepage.widget.key: 18rS6gM-Wec22uq5Gw-U
+      homepage.widget.type: plex
+      homepage.widget.url: https://plex.$DOMAIN
+      traefik.enable: "true"
+      traefik.http.routers.plex.rule: Host(`plex.$DOMAIN`) || Host(`plex.bocloud.org`) || Host(`plex.bolabaden.duckdns.org`) || Host(`plex.micklethefickle.duckdns.org`)
+      traefik.http.services.plex.loadbalancer.server.port: "32400"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.95
+    ports:
+      - mode: ingress
+        target: 1900
+        published: "1902"
+        protocol: udp
+      - mode: ingress
+        target: 32400
+        published: "32400"
+        protocol: tcp
+      - mode: ingress
+        target: 32410
+        published: "32410"
+        protocol: udp
+      - mode: ingress
+        target: 8324
+        published: "8324"
+        protocol: tcp
+      - mode: ingress
+        target: 32412
+        published: "32412"
+        protocol: udp
+      - mode: ingress
+        target: 32413
+        published: "32413"
+        protocol: udp
+      - mode: ingress
+        target: 32414
+        published: "32414"
+        protocol: udp
+      - mode: ingress
+        target: 32469
+        published: "32469"
+        protocol: tcp
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/plex/config
+        target: /config
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/plex/config/osx-config
+        target: /config/Library/Application Support/Plex Media Server
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /dev/shm
+        target: /dev/shm
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /mnt/local/transcodes/plex
+        target: /transcode
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /mnt/symlinks
+        target: /storage/symlinks
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /mnt/remote/realdebrid
+        target: /mnt/remote/realdebrid
+        bind:
+          propagation: rshared
+          create_host_path: true
+  prowlarr:
+    container_name: prowlarr
+    depends_on:
+      warp:
+        condition: service_started
+        restart: true
+        required: true
+    environment:
+      PGID: "121"
+      PROWLARR_API_KEY: 29440a82740d475cacb35327c62c87a1
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'curl -fs -H "Authorization: Bearer 29440a82740d475cacb35327c62c87a1" http://127.0.0.1:9696/api/v1/system/status || exit 1'
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 2m0s
+    image: linuxserver/prowlarr
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: An indexer manager/proxy for your Usenet and Torrent downloaders, integrating with PVR apps like Sonarr and Radarr.
+      homepage.group: Indexers
+      homepage.href: https://prowlarr.$DOMAIN/
+      homepage.icon: prowlarr.png
+      homepage.name: Prowlarr
+      homepage.weight: "1"
+      homepage.widget.key: 29440a82740d475cacb35327c62c87a1
+      homepage.widget.type: prowlarr
+      homepage.widget.url: http://prowlarr:9696
+    network_mode: service:warp
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/prowlarr/config
+        target: /config
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /mnt
+        target: /mnt
+        bind:
+          create_host_path: true
+  rclone:
+    cap_add:
+      - SYS_ADMIN
+    command:
+      - rcd
+      - --rc-web-gui
+      - --rc-web-gui-no-open-browser
+      - --rc-addr=:5572
+      - --log-level=DEBUG
+      - --rc-user=brunner56
+      - --rc-pass=h4L0m4St3R327
+      - --config=/config/rclone/rclone.conf
+      - --cache-dir=/.cache/rclone
+    configs:
+      - source: rclone-rclone.conf
+        target: /config/rclone/rclone.conf
+        mode: "0777"
+    container_name: rclone
+    devices:
+      - source: /dev/fuse
+        target: /dev/fuse
+        permissions: rwm
+    expose:
+      - "5572"
+      - "5575"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: rclone
+    image: rclone/rclone:latest
+    labels:
+      homepage.description: A web interface for Rclone.
+      homepage.group: Media Management
+      homepage.href: https://rclone.$DOMAIN/
+      homepage.icon: rclone.png
+      homepage.name: Rclone
+      homepage.weight: "0"
+      traefik.enable: "true"
+      traefik.http.routers.rclone.rule: Host(`rclone.$DOMAIN`) || Host(`rclone.bocloud.org`) || Host(`rclone.bolabaden.duckdns.org`) || Host(`rclone.micklethefickle.duckdns.org`)
+      traefik.http.routers.rclone.service: rclone
+      traefik.http.services.rclone.loadbalancer.server.port: "5572"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.111
+    restart: always
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - type: bind
+        source: /
+        target: /hostfs
+        bind:
+          propagation: rshared
+          create_host_path: true
+      - type: bind
+        source: /etc/fuse.conf
+        target: /etc/fuse.conf
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /etc/group
+        target: /etc/group
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /etc/passwd
+        target: /etc/passwd
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /mnt/remote/realdebrid
+        target: /mnt/remote/realdebrid
+        bind:
+          propagation: rshared
+          create_host_path: true
+      - type: bind
+        source: /mnt/symlinks
+        target: /mnt/symlinks
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/rclone/.cache
+        target: /.cache
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/rclone/config/rclone
+        target: /config/rclone
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/rclonefm/js
+        target: /var/lib/rclonefm/js
+        bind:
+          create_host_path: true
+  rclone-zurg:
+    cap_add:
+      - SYS_ADMIN
+    configs:
+      - source: rclone-mounts.json
+        target: /app/mounts.json
+        mode: "0777"
+    container_name: rclone-zurg
+    depends_on:
+      rclone:
+        condition: service_started
+        required: true
+    devices:
+      - source: /dev/fuse
+        target: /dev/fuse
+        permissions: rwm
+    environment:
+      RCLONE_CONFIG_PATH: /config/rclone/rclone.conf
+      RCLONE_PASSWORD: h4L0m4St3R327
+      RCLONE_PORT: "5572"
+      RCLONE_USERNAME: brunner56
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: rclone-zurg
+    healthcheck:
+      test:
+        - CMD
+        - mountpoint
+        - -q
+        - /mnt/remote/realdebrid
+      timeout: 3s
+      interval: 5s
+      retries: 2
+      start_period: 10s
+    image: ghcr.io/coanghel/rclone-docker-automount/rclone-init:latest
+    networks:
+      publicnet: null
+    privileged: true
+    restart: always
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - type: bind
+        source: /mnt/remote/realdebrid
+        target: /mnt/remote/realdebrid
+        bind:
+          propagation: rshared
+          create_host_path: true
+  redis:
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --save
+      - "60"
+      - "1"
+      - --bind
+      - 0.0.0.0
+    container_name: redis
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      REDIS_DATABASE: "0"
+      REDIS_HOST: redis
+      REDIS_PASSWORD: redis
+      REDIS_PORT: "6379"
+      REDIS_USERNAME: default
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "6379"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: redis
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - redis-cli ping > /dev/null 2>&1 || exit 1
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    image: redis:alpine
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Redis is an in-memory data structure store, used as a database, cache, and message broker.
+      homepage.group: Databases
+      homepage.href: https://redis.$DOMAIN/
+      homepage.icon: redis.png
+      homepage.name: Redis
+      traefik.enable: "true"
+      traefik.http.routers.redis.middlewares: nginx-auth@file
+      traefik.http.routers.redis.rule: Host(`redis.$DOMAIN`) || Host(`redis.bocloud.org`) || Host(`redis.bolabaden.duckdns.org`) || Host(`redis.micklethefickle.duckdns.org`)
+      traefik.http.services.redis.loadbalancer.server.port: "6379"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.87
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/redis
+        target: /data
+        bind:
+          create_host_path: true
+  riven:
+    configs:
+      - source: riven-settings.json
+        target: /riven/data/settings.json
+        mode: "0777"
+    container_name: riven
+    depends_on:
+      riven-db:
+        condition: service_healthy
+        required: true
+    deploy:
+      resources:
+        limits:
+          cpus: 1
+          memory: "1073741824"
+        reservations:
+          cpus: 0.5
+          memory: "20971520"
+    environment:
+      API_KEY: 3e0be750b16ff363727d05d18ba364fd
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@riven-db:5432/riven
+      DIALECT: postgres
+      HARD_RESET: "false"
+      PGID: "121"
+      PUID: "1001"
+      REPAIR_SYMLINKS: "false"
+      RIVEN_CONTENT_LISTRR_API_KEY: d962d6e9fd4e4db790711128ed6013b236e86b1bea534c7f9f0c17a3c4c72982
+      RIVEN_CONTENT_LISTRR_ENABLED: "false"
+      RIVEN_CONTENT_LISTRR_MOVIE_LISTS: '[]'
+      RIVEN_CONTENT_LISTRR_SHOW_LISTS: '[]'
+      RIVEN_CONTENT_LISTRR_UPDATE_INTERVAL: "300"
+      RIVEN_CONTENT_MDBLIST_API_KEY: so5wnihfjtqhacaa310gzmrq6
+      RIVEN_CONTENT_MDBLIST_ENABLED: "false"
+      RIVEN_CONTENT_MDBLIST_LISTS: '[]'
+      RIVEN_CONTENT_MDBLIST_UPDATE_INTERVAL: "300"
+      RIVEN_CONTENT_OVERSEERR_API_KEY: MTc0MDcxNDk2MTY5MDRmMDcxYmM1LTI5ODktNGJiMy05NzExLTdhYjYyMWQxMDAyOQ==
+      RIVEN_CONTENT_OVERSEERR_ENABLED: "true"
+      RIVEN_CONTENT_OVERSEERR_UPDATE_INTERVAL: "30"
+      RIVEN_CONTENT_OVERSEERR_URL: http://overseerr:5055
+      RIVEN_CONTENT_OVERSEERR_USE_WEBHOOK: "false"
+      RIVEN_CONTENT_PLEX_WATCHLIST_ENABLED: "true"
+      RIVEN_CONTENT_PLEX_WATCHLIST_RSS: '[]'
+      RIVEN_CONTENT_PLEX_WATCHLIST_UPDATE_INTERVAL: "60"
+      RIVEN_CONTENT_TRAKT_API_KEY: 052d735c61c723ed670991aee9d6322822ed6766702d66910be63a1e1a511fd0
+      RIVEN_CONTENT_TRAKT_ENABLED: "true"
+      RIVEN_CONTENT_TRAKT_UPDATE_INTERVAL: "3600"
+      RIVEN_DATABASE_URL: postgresql+psycopg2://postgres:postgres@riven-db:5432/riven
+      RIVEN_DEBUG: "false"
+      RIVEN_DOWNLOADERS_ALL_DEBRID_API_KEY: ""
+      RIVEN_DOWNLOADERS_ALL_DEBRID_ENABLED: "false"
+      RIVEN_DOWNLOADERS_PROXY_URL: http://warp:1080
+      RIVEN_DOWNLOADERS_REAL_DEBRID_API_KEY: UFZDKT6N4WTXCHIAZH5QRHNTQDAD6LPCBN4IYKLL2JRA5HGPH4YQ
+      RIVEN_DOWNLOADERS_REAL_DEBRID_ENABLED: "true"
+      RIVEN_DOWNLOADERS_TORBOX_API_KEY: d490b7b1-1f6d-44e8-9cc8-3e735c87874b
+      RIVEN_DOWNLOADERS_TORBOX_ENABLED: "false"
+      RIVEN_DOWNLOADERS_VIDEO_EXTENSIONS: '["avi","mkv","mp4"]'
+      RIVEN_EMBY_API_KEY: e0dd06e8809143a69c7c6ba174bbe129
+      RIVEN_EMBY_ENABLED: "false"
+      RIVEN_EMBY_URL: http://emby:8096
+      RIVEN_FORCE_ENV: "false"
+      RIVEN_FORCE_REFRESH: "false"
+      RIVEN_JELLYFIN_API_KEY: e0dd06e8809143a69c7c6ba174bbe129
+      RIVEN_JELLYFIN_ENABLED: "true"
+      RIVEN_JELLYFIN_URL: http://jellyfin:8096
+      RIVEN_LOG: "true"
+      RIVEN_MAP_METADATA: "true"
+      RIVEN_PLEX_ENABLED: "true"
+      RIVEN_PLEX_TOKEN: 18rS6gM-Wec22uq5Gw-U
+      RIVEN_PLEX_URL: http://plex:32400
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_AAC_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_AAC_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_AAC_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_AC3_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_AC3_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_AC3_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_ATMOS_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_ATMOS_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_ATMOS_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DOLBY_DIGITAL_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DOLBY_DIGITAL_PLUS_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DOLBY_DIGITAL_PLUS_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DOLBY_DIGITAL_PLUS_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DOLBY_DIGITAL_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DOLBY_DIGITAL_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DTS_LOSSLESS_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DTS_LOSSLESS_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DTS_LOSSLESS_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DTS_LOSSY_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DTS_LOSSY_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DTS_LOSSY_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_EAC3_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_EAC3_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_EAC3_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_FLAC_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_FLAC_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_FLAC_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_MONO_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_MONO_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_MONO_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_MP3_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_MP3_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_MP3_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_STEREO_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_STEREO_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_STEREO_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_SURROUND_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_SURROUND_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_SURROUND_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_TRUEHD_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_TRUEHD_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_TRUEHD_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_10BIT_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_10BIT_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_10BIT_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_DOLBY_VISION_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_DOLBY_VISION_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_DOLBY_VISION_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_HDR_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_HDR_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_HDR_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_HDR10PLUS_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_HDR10PLUS_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_HDR10PLUS_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_SDR_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_SDR_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_SDR_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_AV1_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_AV1_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_AV1_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_AVC_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_AVC_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_AVC_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_BLURAY_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_BLURAY_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_BLURAY_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_DVD_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_DVD_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_DVD_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_HDTV_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_HDTV_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_HDTV_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_HEVC_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_HEVC_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_HEVC_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_MPEG_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_MPEG_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_MPEG_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_REMUX_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_REMUX_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_REMUX_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_VHS_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_VHS_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_VHS_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEB_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEB_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEB_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEBDL_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEBDL_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEBDL_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEBMUX_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEBMUX_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEBMUX_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_XVID_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_XVID_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_XVID_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_BDRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_BDRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_BDRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_BRRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_BRRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_BRRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_DVDRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_DVDRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_DVDRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_HDRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_HDRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_HDRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_PPVRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_PPVRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_PPVRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_SATRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_SATRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_SATRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_TVRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_TVRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_TVRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_UHDRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_UHDRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_UHDRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_VHSRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_VHSRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_VHSRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_WEBDLRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_WEBDLRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_WEBDLRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_WEBRIP_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_WEBRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_WEBRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_EXCLUDE: '[]'
+      RIVEN_RANKING_LANGUAGES_EXCLUDE: '[]'
+      RIVEN_RANKING_LANGUAGES_PREFERRED: '["en"]'
+      RIVEN_RANKING_LANGUAGES_REQUIRED: '["en"]'
+      RIVEN_RANKING_OPTIONS_ALLOW_ENGLISH_IN_LANGUAGES: "true"
+      RIVEN_RANKING_OPTIONS_REMOVE_ALL_TRASH: "true"
+      RIVEN_RANKING_OPTIONS_REMOVE_RANKS_UNDER: "-10000"
+      RIVEN_RANKING_OPTIONS_REMOVE_UNKNOWN_LANGUAGES: "false"
+      RIVEN_RANKING_OPTIONS_TITLE_SIMILARITY: "0.85"
+      RIVEN_RANKING_PREFERRED: '[]'
+      RIVEN_RANKING_PROFILE: default
+      RIVEN_RANKING_REQUIRE: '[]'
+      RIVEN_RANKING_RESOLUTIONS_360P: "false"
+      RIVEN_RANKING_RESOLUTIONS_480P: "false"
+      RIVEN_RANKING_RESOLUTIONS_720P: "true"
+      RIVEN_RANKING_RESOLUTIONS_1080P: "true"
+      RIVEN_RANKING_RESOLUTIONS_2160P: "false"
+      RIVEN_RANKING_RESOLUTIONS_UNKNOWN: "true"
+      RIVEN_SCRAPING_AFTER_2: "2"
+      RIVEN_SCRAPING_AFTER_5: "6"
+      RIVEN_SCRAPING_AFTER_10: "24"
+      RIVEN_SCRAPING_COMET_ENABLED: "true"
+      RIVEN_SCRAPING_COMET_INDEXERS: animetosho,anirena,eztv,limetorrents,nyaasi,solidtorrents,thepiratebay,torlock,yts
+      RIVEN_SCRAPING_COMET_RATELIMIT: "false"
+      RIVEN_SCRAPING_COMET_TIMEOUT: "30"
+      RIVEN_SCRAPING_COMET_URL: http://comet:2020
+      RIVEN_SCRAPING_ENABLE_ALIASES: "true"
+      RIVEN_SCRAPING_JACKETT_API_KEY: nnx0n84pcj7umynyd2pbid2nl1zzuemz
+      RIVEN_SCRAPING_JACKETT_ENABLED: "true"
+      RIVEN_SCRAPING_JACKETT_RATELIMIT: "false"
+      RIVEN_SCRAPING_JACKETT_TIMEOUT: "10"
+      RIVEN_SCRAPING_JACKETT_URL: http://jackett:9117
+      RIVEN_SCRAPING_KNIGHTCRAWLER_ENABLED: "false"
+      RIVEN_SCRAPING_KNIGHTCRAWLER_FILTER: sort=qualitysize%7Cqualityfilter=480p,scr,cam,unknown
+      RIVEN_SCRAPING_KNIGHTCRAWLER_RATELIMIT: "true"
+      RIVEN_SCRAPING_KNIGHTCRAWLER_TIMEOUT: "30"
+      RIVEN_SCRAPING_KNIGHTCRAWLER_URL: https://knightcrawler.elfhosted.com
+      RIVEN_SCRAPING_MEDIAFUSION_CATALOGS: prowlarr_streams,torrentio_streams
+      RIVEN_SCRAPING_MEDIAFUSION_ENABLED: "true"
+      RIVEN_SCRAPING_MEDIAFUSION_RATELIMIT: "false"
+      RIVEN_SCRAPING_MEDIAFUSION_TIMEOUT: "10"
+      RIVEN_SCRAPING_MEDIAFUSION_URL: http://mediafusion:8080
+      RIVEN_SCRAPING_ORIONOID_API_KEY: LXBVEGR6DBKLBSBNLPARQHQRH8DGD7PT
+      RIVEN_SCRAPING_ORIONOID_CACHED_RESULTS_ONLY: "true"
+      RIVEN_SCRAPING_ORIONOID_ENABLED: "false"
+      RIVEN_SCRAPING_ORIONOID_PARAMETERS_LIMITCOUNT: "5"
+      RIVEN_SCRAPING_ORIONOID_PARAMETERS_VIDEO3D: "false"
+      RIVEN_SCRAPING_ORIONOID_PARAMETERS_VIDEOQUALITY: sd_hd8k
+      RIVEN_SCRAPING_ORIONOID_RATELIMIT: "true"
+      RIVEN_SCRAPING_ORIONOID_TIMEOUT: "10"
+      RIVEN_SCRAPING_PARSE_DEBUG: "false"
+      RIVEN_SCRAPING_PROWLARR_API_KEY: 29440a82740d475cacb35327c62c87a1
+      RIVEN_SCRAPING_PROWLARR_ENABLED: "false"
+      RIVEN_SCRAPING_PROWLARR_LIMITER_SECONDS: "60"
+      RIVEN_SCRAPING_PROWLARR_RATELIMIT: "false"
+      RIVEN_SCRAPING_PROWLARR_TIMEOUT: "10"
+      RIVEN_SCRAPING_PROWLARR_URL: http://prowlarr:9696
+      RIVEN_SCRAPING_TORRENTIO_ENABLED: "true"
+      RIVEN_SCRAPING_TORRENTIO_FILTER: sort=qualitysize%7Cqualityfilter=480p,scr,cam,unknown
+      RIVEN_SCRAPING_TORRENTIO_PROXY_URL: http://warp:1080
+      RIVEN_SCRAPING_TORRENTIO_RATELIMIT: "true"
+      RIVEN_SCRAPING_TORRENTIO_TIMEOUT: "30"
+      RIVEN_SCRAPING_TORRENTIO_URL: https://torrentio.strem.fun
+      RIVEN_SCRAPING_ZILEAN_ENABLED: "true"
+      RIVEN_SCRAPING_ZILEAN_RATELIMIT: "false"
+      RIVEN_SCRAPING_ZILEAN_TIMEOUT: "30"
+      RIVEN_SCRAPING_ZILEAN_URL: http://zilean.elfhosted.com
+      RIVEN_SYMLINK_LIBRARY_PATH: /mnt/symlinks
+      RIVEN_SYMLINK_RCLONE_PATH: /mnt/remote/realdebrid/__all__
+      RIVEN_SYMLINK_REPAIR_INTERVAL: "6.0"
+      RIVEN_SYMLINK_REPAIR_SYMLINKS: "true"
+      RIVEN_SYMLINK_SEPARATE_ANIME_DIRS: "true"
+      RIVEN_TRACEMALLOC: "false"
+      RIVEN_UPDATER_INTERVAL: "120"
+      RIVEN_VERSION: 0.21.21
+      SETTINGS_FILENAME: settings.json
+      SKIP_TRAKT_CACHE: "false"
+      SYMLINK_MAX_WORKERS: "4"
+      TRAKT_API_CLIENT_ID: ""
+      TZ: America/Chicago
+      UMASK: "002"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: riven
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -s http://127.0.0.1:8080 >/dev/null || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 10
+    image: docker.io/spoked/riven:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.enable: "true"
+      traefik.http.routers.riven.rule: Host(`riven-backend.$DOMAIN`) || Host(`riven-backend.bocloud.org`) || Host(`riven-backend.bolabaden.duckdns.org`) || Host(`riven-backend.micklethefickle.duckdns.org`)
+      traefik.http.services.riven.loadbalancer.server.port: "8080"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.101
+    restart: always
+    tty: true
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/riven/data
+        target: /riven/data
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /mnt/remote/realdebrid
+        target: /mnt/remote/realdebrid
+        bind:
+          propagation: rshared
+          create_host_path: true
+      - type: bind
+        source: /mnt/symlinks
+        target: /mnt/symlinks
+        bind:
+          create_host_path: true
+  riven-db:
+    container_name: riven-db
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      PGID: "121"
+      POSTGRES_DB: riven
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: riven-db
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    image: postgres:16.3-alpine3.20
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.riven-db.middlewares: nginx-auth@file
+      traefik.http.routers.riven-db.rule: Host(`riven-db.$DOMAIN`) || Host(`riven-db.bocloud.org`) || Host(`riven-db.bolabaden.duckdns.org`) || Host(`riven-db.micklethefickle.duckdns.org`)
+      traefik.http.services.riven-db.loadbalancer.server.port: "5432"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.102
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/riven/pgdata
+        target: /var/lib/postgresql/data/pgdata
+        bind:
+          create_host_path: true
+  riven-frontend:
+    container_name: riven-frontend
+    depends_on:
+      riven:
+        condition: service_healthy
+        required: true
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: riven-frontend
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:3000 || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+    image: spoked/riven-frontend:latest
+    labels:
+      homepage.description: Modern frontend for Plex Debrid
+      homepage.group: Media Management
+      homepage.href: https://riven.$DOMAIN/
+      homepage.icon: riven.png
+      homepage.name: Riven
+      traefik.enable: "true"
+      traefik.http.routers.riven-frontend.middlewares: nginx-auth@file
+      traefik.http.routers.riven-frontend.rule: Host(`riven.$DOMAIN`) || Host(`riven.bocloud.org`) || Host(`riven.bolabaden.duckdns.org`) || Host(`riven.micklethefickle.duckdns.org`)
+      traefik.http.routers.riven-frontend.service: riven-frontend
+      traefik.http.services.riven-frontend.loadbalancer.server.port: "3000"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.100
+    restart: always
+    tty: true
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/riven/config
+        target: /riven/config
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/riven/tmp
+        target: /tmp
+        bind:
+          create_host_path: true
+  searxng:
+    container_name: searxng
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      SEARXNG_BASE_URL: http://searxng:8080
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "8080"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: searxng
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/ || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+    image: docker.io/searxng/searxng:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: SearxNG is a privacy-respecting, hackable, open-source metasearch engine.
+      homepage.group: Search
+      homepage.href: https://searxng.$DOMAIN/
+      homepage.icon: searxng.png
+      homepage.name: SearxNG
+      traefik.enable: "true"
+      traefik.http.routers.searxng.middlewares: nginx-auth@file
+      traefik.http.routers.searxng.rule: Host(`searxng.$DOMAIN`)
+      traefik.http.services.searxng.loadbalancer.server.port: "8080"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.90
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/searxng
+        target: /etc/searxng
+        bind:
+          create_host_path: true
+  speedtest:
+    container_name: speedtest
+    environment:
+      ADMIN_EMAIL: boden.crouch@gmail.com
+      ADMIN_NAME: ubuntu
+      ADMIN_PASSWORD: h4L0m4St3R327
+      API_RATE_LIMIT: "60"
+      APP_KEY: base64:OZVnVd3/7lJTtOTtVZ0YqxXJKtle2R48NIrfFv11CkM=
+      APP_NAME: Speedtest Tracker
+      APP_TIMEZONE: America/Chicago
+      APP_URL: ""
+      ASSET_URL: ""
+      CHART_BEGIN_AT_ZERO: "true"
+      CHART_DATETIME_FORMAT: j/m G:i
+      CONTENT_WIDTH: 7xl
+      DATETIME_FORMAT: j M Y, G:i:s
+      DB_CONNECTION: sqlite
+      DISPLAY_TIMEZONE: America/Chicago
+      PGID: "121"
+      PRUNE_RESULTS_OLDER_THAN: "0"
+      PUBLIC_DASHBOARD: "true"
+      PUID: "1001"
+      SPEEDTEST_BLOCKED_SERVERS: ""
+      SPEEDTEST_INTERFACE: ""
+      SPEEDTEST_SCHEDULE: 0 * * * *
+      SPEEDTEST_SERVERS: ""
+      SPEEDTEST_SKIP_IPS: ""
+      THRESHOLD_DOWNLOAD: "900"
+      THRESHOLD_ENABLED: "true"
+      THRESHOLD_PING: "25"
+      THRESHOLD_UPLOAD: "900"
+      TZ: America/Chicago
+      UMASK: "002"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: speedtest
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fs http://127.0.0.1:80 > /dev/null || exit 1
+      timeout: 15s
+      interval: 30s
+      start_period: 20s
+    image: linuxserver/speedtest-tracker
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Regularly tests your internet speed and tracks performance over time, helping you monitor your connection quality.
+      homepage.group: Network Monitoring
+      homepage.href: https://speedtest.$DOMAIN/
+      homepage.icon: speedtest.png
+      homepage.name: Speedtest
+      homepage.widget.fields: '["download", "upload", "ping", "speedtest"]'
+      homepage.widget.type: speedtest
+      homepage.widget.url: http://speedtest-tracker:80
+      traefik.enable: "true"
+      traefik.http.routers.speedtest.rule: Host(`speedtest.$DOMAIN`) || Host(`speedtest.bocloud.org`) || Host(`speedtest.bolabaden.duckdns.org`) || Host(`speedtest.micklethefickle.duckdns.org`)
+      traefik.http.services.speedtest.loadbalancer.server.port: "80"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.86
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/speedtest-tracker/config
+        target: /config
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/speedtest-tracker/keys
+        target: /config/keys
+        bind:
+          create_host_path: true
+  stremio:
+    container_name: stremio
+    depends_on:
+      warp:
+        condition: service_started
+        restart: true
+        required: true
+    environment:
+      CASTING_DISABLED: "1"
+      IPADDRESS: 170.9.225.137
+      NO_CORS: "0"
+      SERVER_URL: https://stremio.$DOMAIN
+      WEBUI_LOCATION: https://stremio-web.$DOMAIN/shell/
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - (curl -fs http://127.0.0.1:11470 > /dev/null 2>&1 || curl -fs https://127.0.0.1:12470 > /dev/null 2>&1) || exit 1
+      timeout: 5s
+      interval: 1m0s
+      retries: 3
+      start_period: 1m30s
+    image: th3w1zard1/stremio-docker:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: A one-stop hub for video content aggregation, allowing you to stream movies, series, and more from various sources.
+      homepage.group: Media Streaming Platforms
+      homepage.href: https://stremio.$DOMAIN/
+      homepage.icon: stremio.png
+      homepage.name: Stremio
+      homepage.widget.password: Hilogirl80!
+      homepage.widget.type: stremio
+      homepage.widget.url: http://stremio:11470
+      homepage.widget.username: bolabaden.duckdns@gmail.com
+    network_mode: service:warp
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/stremio/root/.stremio-server
+        target: /root/.stremio-server
+        bind:
+          create_host_path: true
+  stremthru:
+    container_name: stremthru
+    depends_on:
+      redis:
+        condition: service_healthy
+        required: true
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      STREMTHRU_AUTH_ADMIN: brunner56:h4L0m4St3R327
+      STREMTHRU_CONTENT_PROXY_CONNECTION_LIMIT: "0"
+      STREMTHRU_DATABASE_URI: sqlite://./data/stremthru.db
+      STREMTHRU_FEATURE: '"dmm_hashlist,imdb_title,stremio_sidekick,stremio_store,stremio_wrap,stremio_torz"'
+      STREMTHRU_HTTP_PROXY: http://warp:1080
+      STREMTHRU_LOG_FORMAT: text
+      STREMTHRU_LOG_LEVEL: DEBUG
+      STREMTHRU_PROXY_AUTH: brunner56:h4L0m4St3R327,bolabaden:duckdns
+      STREMTHRU_REDIS_URI: redis://10.76.128.87:6379
+      STREMTHRU_STORE_AUTH: '*:realdebrid:UFZDKT6N4WTXCHIAZH5QRHNTQDAD6LPCBN4IYKLL2JRA5HGPH4YQ,*:realdebrid:TE6M7M2GGBN6H6XT2OZTUQIX42LEPJ4EIZIHTN73HAW2TJUZAFHA,*:premiumize:6i6zgswm35baj3ur,*:torbox:d490b7b1-1f6d-44e8-9cc8-3e735c87874b'
+      STREMTHRU_STORE_CONTENT_PROXY: '*:true'
+      STREMTHRU_STORE_TUNNEL: '*:true'
+      STREMTHRU_TUNNEL: '*:true'
+      TZ: America/Chicago
+      UMASK: "002"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: stremthru
+    image: muniftanjim/stremthru:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: StremThru is tunnel/proxy for debrid services.
+      homepage.group: Stremio Addons
+      homepage.href: https://stremthru.$DOMAIN/
+      homepage.icon: stremthru.png
+      homepage.name: StremThru
+      traefik.enable: "true"
+      traefik.http.routers.stremthru.rule: Host(`stremthru.$DOMAIN`) || Host(`stremthru.bolabaden.duckdns.org`) || Host(`stremthru.bocloud.org`) || Host(`stremthru.bolabaden.duckdns.org`) || Host(`stremthru.micklethefickle.duckdns.org`)
+      traefik.http.routers.stremthru.service: stremthru
+      traefik.http.services.stremthru.loadbalancer.server.port: "8080"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.99
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/stremio/addons/stremthru/app/data
+        target: /app/data
+        bind:
+          create_host_path: true
+  tautulli:
+    container_name: tautulli
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      TAUTULLI_API_KEY: f86827c56ae740e6bff77c386e726ab8
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "8181"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: tautulli
+    image: ghcr.io/tautulli/tautulli:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Tautulli is a web interface for Plex Media Server.
+      homepage.group: Media Maintenance
+      homepage.href: https://tautulli.$DOMAIN/
+      homepage.icon: tautulli.png
+      homepage.name: Tautulli
+      homepage.weight: "6"
+      homepage.widget.key: f86827c56ae740e6bff77c386e726ab8
+      homepage.widget.type: tautulli
+      homepage.widget.url: https://tautulli.$DOMAIN
+      traefik.enable: "true"
+      traefik.http.routers.tautulli.middlewares: nginx-auth@file
+      traefik.http.routers.tautulli.rule: Host(`tautulli.$DOMAIN`) || Host(`tautulli.bocloud.org`) || Host(`tautulli.bolabaden.duckdns.org`) || Host(`tautulli.micklethefickle.duckdns.org`)
+      traefik.http.services.tautulli.loadbalancer.server.port: "8181"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.103
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/tautulli
+        target: /config
+        bind:
+          create_host_path: true
+  tinyauth:
+    container_name: tinyauth
+    environment:
+      APP_TITLE: Bolabaden
+      APP_URL: https://auth.$DOMAIN
+      COOKIE_SECURE: "true"
+      GITHUB_CLIENT_ID: Ov23ct3xtNzKCw4aeqfQ
+      GITHUB_CLIENT_SECRET: 915226982a066972f2dd1e07249737a9c5e28728
+      GOOGLE_CLIENT_ID: 324816055390-dftm6jq2d3ifs37miivj3nj09piv0df9.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: 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
+      LOGIN_MAX_RETRIES: "15"
+      LOGIN_TIMEOUT: "300"
+      OAUTH_AUTO_REDIRECT: none
+      OAUTH_WHITELIST: boden.crouch@gmail.com,halomastar@gmail.com,athenajaguiar@gmail.com,bolabaden.duckdns@gmail.com,dgorsch2@gmail.com,dgorsch4@gmail.com
+      SECRET: b9a4ZxFNBbyR9KdTAf2kSciI5jUCQLzE
+      SESSION_EXPIRY: "604800"
+      USERS: brunner56:$$2y$$05$$CEXtGy1XS4BlkTXEgSG64eSQlrGn.55Xm2HbiSgVSgO./WoVXXLAa,bolabaden.duckdns@gmail.com:$$2y$$05$$BbVWsqh2XkzaxvLGwd.0euD/PkkoaeFNDIhB0tTEBn4tAjGckKRzq
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: auth
+    image: ghcr.io/steveiliop56/tinyauth:v3
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Authentication service for securing your applications
+      homepage.group: Security
+      homepage.href: https://auth.$DOMAIN/
+      homepage.icon: shield-lock.png
+      homepage.name: TinyAuth
+      traefik.enable: "true"
+      traefik.http.middlewares.tinyauth.forwardauth.address: http://auth:3000/api/auth/traefik
+      traefik.http.routers.tinyauth.rule: Host(`auth.$DOMAIN`) || Host(`auth.bocloud.org`) || Host(`auth.bolabaden.duckdns.org`) || Host(`auth.micklethefickle.duckdns.org`)
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.82
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/tinyauth
+        target: /data
+        bind:
+          create_host_path: true
+  traefik:
+    cap_add:
+      - NET_ADMIN
+    command:
+      - --accesslog=true
+      - --api.dashboard=true
+      - --api.debug=true
+      - --api.disableDashboardAd=true
+      - --api.insecure=true
+      - --certificatesresolvers.letsencrypt.acme.caServer=https://acme-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare
+      - --certificatesresolvers.letsencrypt.acme.dnsChallenge.resolvers=1.1.1.1,1.0.0.1
+      - --certificatesresolvers.letsencrypt.acme.dnsChallenge=true
+      - --certificatesresolvers.letsencrypt.acme.email=boden.crouch@gmail.com
+      - --certificatesresolvers.letsencrypt.acme.httpChallenge.entryPoint=web
+      - --certificatesresolvers.letsencrypt.acme.httpChallenge=true
+      - --certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json
+      - --certificatesresolvers.letsencrypt.acme.tlsChallenge=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.forwardedHeaders.trustedIPs=127.0.0.1/32,::1/128,172.17.0.0/12,10.76.0.0/16,100.64.0.0/10
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.forwardedHeaders.trustedIPs=127.0.0.1/32,::1/128,172.17.0.0/12,10.76.0.0/16,100.64.0.0/10
+      - --entrypoints.websecure.http.tls.certResolver=letsencrypt
+      - --entrypoints.websecure.http.tls.domains[0].main=$DOMAIN
+      - --entrypoints.websecure.http.tls.domains[0].sans=*.$DOMAIN
+      - --entrypoints.websecure.http.tls.domains[1].main=bocloud.org
+      - --entrypoints.websecure.http.tls.domains[1].sans=*.bocloud.org
+      - --entrypoints.websecure.http.tls=true
+      - --global.checkNewVersion=true
+      - --global.sendAnonymousUsage=false
+      - --log.level=INFO
+      - --ping.terminatingStatusCode=503
+      - --ping=true
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.network=publicnet
+      - --providers.docker=true
+      - --providers.file.directory=/config
+      - --providers.file.watch=true
+      - --serversTransport.insecureSkipVerify=true
+      - --experimental.plugins.crowdsec-bouncer-traefik-plugin.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+      - --experimental.plugins.crowdsec-bouncer-traefik-plugin.version=v1.4.2
+    container_name: traefik
+    depends_on:
+      crowdsec:
+        condition: service_started
+        required: true
+      nginx-auth:
+        condition: service_started
+        required: true
+    environment:
+      CLOUDFLARE_DNS_API_TOKEN: fp6tjZWb66p1rCyZBM9k0hxrE0n0Y7XctSTwP52I
+      CLOUDFLARE_EMAIL: boden.crouch@gmail.com
+      CLOUDFLARE_ZONE_API_TOKEN: fp6tjZWb66p1rCyZBM9k0hxrE0n0Y7XctSTwP52I
+      DUCKDNS_TOKEN: 2c18769a-2889-4648-a70c-2fe44dd10f20
+      LETS_ENCRYPT_EMAIL: boden.crouch@gmail.com
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "80"
+      - "443"
+      - "8080"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: traefik
+    image: traefik:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Traefik is a modern HTTP reverse proxy and load balancer.
+      homepage.group: Infrastructure
+      homepage.href: https://traefik.$DOMAIN/api
+      homepage.icon: traefik.png
+      homepage.name: Traefik
+      homepage.widget.type: traefik
+      traefik.enable: "true"
+      traefik.http.routers.traefik.middlewares: nginx-auth@file
+      traefik.http.routers.traefik.rule: Host(`traefik.$DOMAIN`) || Host(`traefik.bocloud.org`) || Host(`traefik.bolabaden.duckdns.org`) || Host(`traefik.micklethefickle.duckdns.org`)
+      traefik.http.routers.traefik.service: api@internal
+      traefik.http.services.traefik.loadbalancer.server.port: "8080"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.85
+    ports:
+      - mode: ingress
+        target: 80
+        published: "80"
+        protocol: tcp
+      - mode: ingress
+        target: 443
+        published: "443"
+        protocol: tcp
+    restart: always
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: "1"
+    volumes:
+      - type: bind
+        source: /var/run/tailscale/tailscaled.sock
+        target: /var/run/tailscale/tailscaled.sock
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack
+        target: /certs
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/traefik/config
+        target: /config
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/traefik/plugins-local
+        target: /plugins-local
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        bind:
+          create_host_path: true
+  warp:
+    cap_add:
+      - MKNOD
+      - AUDIT_WRITE
+      - NET_ADMIN
+    container_name: warp
+    device_cgroup_rules:
+      - c 10:200 rwm
+    environment:
+      TUNNEL_TOKEN: ""
+      WARP_LICENSE_KEY: ""
+      WARP_SLEEP: "2"
+    expose:
+      - "1080"
+      - "2020"
+      - "3128"
+      - "443"
+      - "8000"
+      - "8112"
+      - "8888"
+      - "9091"
+      - "9117"
+      - "9696"
+      - "9999"
+      - "8080"
+      - "11470"
+      - "12470"
+    extra_hosts:
+      - aiostreams=10.76.128.200
+      - autoscan=10.76.0.119
+      - beatapostapita=100.99.45.35
+      - bocloud-nextjs=10.76.128.45
+      - boden-iphone=100.97.148.14
+      - byparr=10.76.128.93
+      - code-demo=10.76.128.80
+      - code-server=10.76.128.92
+      - code=10.76.128.96
+      - comet=10.76.128.97
+      - crowdsec=10.76.128.104
+      - dash=10.76.128.23
+      - decluttarr=10.76.128.21
+      - deluge=10.76.128.97
+      - dozzle=10.76.128.89
+      - firecrawl-api=10.76.128.127
+      - firecrawl-playwright=10.76.128.130
+      - firecrawl-worker=10.76.128.128
+      - flaresolverr=10.76.128.93
+      - gatus=10.76.128.105
+      - gluetun-premiumize-nl=10.76.128.119
+      - gpt-researcher=10.76.128.43
+      - gptr=10.76.128.43
+      - homepage=10.76.128.88
+      - homer=10.76.0.106
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - jellyfin=10.76.128.120
+      - jellyseerr=10.76.128.115
+      - lobechat=10.76.128.46
+      - localhost=10.76.128.97
+      - maintainerr=10.76.128.84
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - mongodb=10.76.0.50
+      - nginx-auth=10.76.128.94
+      - open-webui=10.76.128.118
+      - overseerr=10.76.128.116
+      - plex-authentication=10.76.128.112
+      - plex-repair=10.76.0.115
+      - plex-request=10.76.128.113
+      - plex-watchlist=10.76.52.97
+      - plex=10.76.128.95
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - qdrant=10.76.128.44
+      - radarr=10.76.128.121
+      - rclone=10.76.128.111
+      - realdebrid-account-monitor=10.76.128.109
+      - recyclarr=10.76.0.117
+      - redis=10.76.128.87
+      - riven-backend=10.76.128.101
+      - riven-db=10.76.128.102
+      - riven-frontend=10.76.128.100
+      - riven=10.76.128.101
+      - script-runner=10.76.0.116
+      - searxng=10.76.128.90
+      - sonarr-anime=10.76.128.123
+      - sonarr=10.76.128.122
+      - speedtest=10.76.128.86
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - stremthru=10.76.128.99
+      - tautulli=10.76.128.103
+      - tinyauth=10.76.128.82
+      - traefik=10.76.128.85
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - watchtower=10.76.128.83
+      - whisparr=10.76.0.120
+      - whoami=10.76.128.81
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - wizarr=10.76.128.107
+      - zurg=10.76.128.97
+    image: caomingjun/warp:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.enable: "true"
+      traefik.http.routers.comet.rule: Host(`comet.$DOMAIN`) || Host(`comet.bocloud.org`) || Host(`comet.bolabaden.duckdns.org`) || Host(`comet.micklethefickle.duckdns.org`)
+      traefik.http.routers.comet.service: comet
+      traefik.http.routers.deluge.rule: Host(`deluge.$DOMAIN`) || Host(`deluge.bocloud.org`) || Host(`deluge.bolabaden.duckdns.org`) || Host(`deluge.micklethefickle.duckdns.org`)
+      traefik.http.routers.deluge.service: deluge
+      traefik.http.routers.jackett.rule: Host(`jackett.$DOMAIN`) || Host(`jackett.bocloud.org`) || Host(`jackett.bolabaden.duckdns.org`) || Host(`jackett.micklethefickle.duckdns.org`)
+      traefik.http.routers.jackett.service: jackett
+      traefik.http.routers.mediaflow-proxy.rule: Host(`mediaflow-proxy.$DOMAIN`) || Host(`mediaflow-proxy.bocloud.org`) || Host(`mediaflow-proxy.bolabaden.duckdns.org`) || Host(`mediaflow-proxy.micklethefickle.duckdns.org`)
+      traefik.http.routers.mediaflow-proxy.service: mediaflow-proxy
+      traefik.http.routers.mediafusion.rule: Host(`mediafusion.$DOMAIN`) || Host(`mediafusion.bocloud.org`) || Host(`mediafusion.bolabaden.duckdns.org`) || Host(`mediafusion.micklethefickle.duckdns.org`)
+      traefik.http.routers.mediafusion.service: mediafusion
+      traefik.http.routers.prowlarr.rule: Host(`prowlarr.$DOMAIN`) || Host(`prowlarr.bocloud.org`) || Host(`prowlarr.bolabaden.duckdns.org`) || Host(`prowlarr.micklethefickle.duckdns.org`)
+      traefik.http.routers.prowlarr.service: prowlarr
+      traefik.http.routers.stremio-api-http-server.priority: "100"
+      traefik.http.routers.stremio-api-http-server.rule: Host(`stremio-api.$DOMAIN`) || Host(`stremio-api.bocloud.org`) || Host(`stremio-api.bolabaden.duckdns.org`) || Host(`stremio-api.micklethefickle.duckdns.org`)
+      traefik.http.routers.stremio-api-http-server.service: stremio-api-http-server
+      traefik.http.routers.stremio-api-https-server.priority: "100"
+      traefik.http.routers.stremio-api-https-server.rule: Host(`stremio.$DOMAIN`) || Host(`stremio.bocloud.org`) || Host(`stremio.bolabaden.duckdns.org`) || Host(`stremio.micklethefickle.duckdns.org`)
+      traefik.http.routers.stremio-api-https-server.service: stremio-api-https-server
+      traefik.http.routers.stremio-web.priority: "10"
+      traefik.http.routers.stremio-web.rule: Host(`stremio-web.$DOMAIN`) || Host(`stremio-web.bocloud.org`) || Host(`stremio-web.bolabaden.duckdns.org`) || Host(`stremio-web.micklethefickle.duckdns.org`)
+      traefik.http.routers.stremio-web.service: stremio-web
+      traefik.http.routers.warp-proxy.middlewares: nginx-auth@file
+      traefik.http.routers.warp-proxy.rule: Host(`warp-proxy.$DOMAIN`) || Host(`warp-proxy.bocloud.org`) || Host(`warp-proxy.bolabaden.duckdns.org`) || Host(`warp-proxy.micklethefickle.duckdns.org`)
+      traefik.http.routers.warp-proxy.service: warp-proxy
+      traefik.http.routers.zurg.middlewares: nginx-auth@file
+      traefik.http.routers.zurg.rule: Host(`zurg.$DOMAIN`) || Host(`zurg.bocloud.org`) || Host(`zurg.bolabaden.duckdns.org`) || Host(`zurg.micklethefickle.duckdns.org`)
+      traefik.http.routers.zurg.service: zurg
+      traefik.http.services.comet.loadbalancer.server.port: "2020"
+      traefik.http.services.deluge.loadbalancer.server.port: "8112"
+      traefik.http.services.jackett.loadbalancer.server.port: "9117"
+      traefik.http.services.mediaflow-proxy.loadbalancer.server.port: "8888"
+      traefik.http.services.mediafusion.loadbalancer.server.port: "8000"
+      traefik.http.services.prowlarr.loadbalancer.server.port: "9696"
+      traefik.http.services.stremio-api-http-server.loadbalancer.server.port: "11470"
+      traefik.http.services.stremio-api-https-server.loadbalancer.server.port: "12470"
+      traefik.http.services.stremio-api-https-server.loadbalancer.server.scheme: https
+      traefik.http.services.stremio-web.loadbalancer.server.port: "8080"
+      traefik.http.services.stremio-web.loadbalancer.server.scheme: https
+      traefik.http.services.warp-proxy.loadbalancer.server.port: "3128"
+      traefik.http.services.zurg.loadbalancer.server.port: "9999"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.97
+    ports:
+      - mode: ingress
+        target: 1080
+        published: "1080"
+        protocol: tcp
+      - mode: ingress
+        target: 443
+        published: "443"
+        protocol: udp
+      - mode: ingress
+        target: 9999
+        published: "9999"
+        protocol: tcp
+      - mode: ingress
+        target: 11470
+        published: "11470"
+        protocol: tcp
+      - mode: ingress
+        target: 12470
+        published: "12470"
+        protocol: tcp
+    restart: always
+    sysctls:
+      net.ipv4.conf.all.src_valid_mark: "1"
+      net.ipv6.conf.all.disable_ipv6: "1"
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/warp/data
+        target: /var/lib/cloudflare-warp
+        bind:
+          create_host_path: true
+  watchtower:
+    container_name: watchtower
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_DEBUG: "true"
+      WATCHTOWER_LOG_LEVEL: ""
+      WATCHTOWER_NOTIFICATION_REPORT: "true"
+      WATCHTOWER_NOTIFICATION_TEMPLATE: |
+        {{- if .Report -}}
+          {{- with .Report -}}
+            {{- if ( or .Updated .Failed ) -}}
+        {{len .Scanned}} Scanned, {{len .Updated}} Updated, {{len .Failed}} Failed
+              {{- range .Updated}}
+        - {{.Name}} ({{.ImageName}}): {{.CurrentImageID.ShortID}} updated to {{.LatestImageID.ShortID}}
+              {{- end -}}
+              {{- range .Skipped}}
+        - {{.Name}} ({{.ImageName}}): {{.State}}: {{.Error}}
+              {{- end -}}
+              {{- range .Failed}}
+        - {{.Name}} ({{.ImageName}}): {{.State}}: {{.Error}}
+              {{- end -}}
+            {{- end -}}
+          {{- end -}}
+        {{- else -}}
+          {{range .Entries -}}{{.Message}}{{"\n"}}{{- end -}}
+        {{- end -}}
+      WATCHTOWER_NOTIFICATION_URL: ""
+      WATCHTOWER_SCHEDULE: 0 0 6 * * *
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: watchtower
+    image: containrrr/watchtower:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.83
+    restart: always
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        bind:
+          create_host_path: true
+  whoami:
+    container_name: whoami
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: whoami
+    image: traefik/whoami:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Whoami service with multiple auth examples - nginx auth (API key OR IP OR TinyAuth), direct access, and TinyAuth only.
+      homepage.group: Web Services
+      homepage.href: https://whoami-nginx.$DOMAIN
+      homepage.icon: whoami.png
+      homepage.name: Whoami
+      traefik.enable: "true"
+      traefik.http.routers.whoami.rule: Host(`whoami.$DOMAIN`) || Host(`whoami.bocloud.org`) || Host(`whoami.bolabaden.duckdns.org`) || Host(`whoami.micklethefickle.duckdns.org`)
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.81
+    restart: always
+  wizarr:
+    container_name: wizarr
+    environment:
+      APP_URL: http://wizarr:5690
+      DISABLE_BUILTIN_AUTH: "true"
+      PGID: "121"
+      PLEX_TOKEN: 18rS6gM-Wec22uq5Gw-U
+      PLEX_URL: http://plex:32400
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "5690"
+    extra_hosts:
+      - beatapostapita=100.99.45.35
+      - boden-iphone=100.97.148.14
+      - comet=10.76.128.97
+      - deluge=10.76.128.97
+      - gluetun-premiumize-nl=10.76.128.119
+      - host.docker.internal=host-gateway
+      - jackett=10.76.128.97
+      - jackettio=10.76.128.97
+      - localhost=10.76.128.97
+      - mediaflow-proxy=10.76.128.97
+      - mediafusion=10.76.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - prowlarr=10.76.128.97
+      - qbittorrent=10.76.128.119
+      - stremio-fallback=10.76.128.97
+      - stremio-https-server=10.76.128.97
+      - stremio-jackett=10.76.128.97
+      - stremio-web=10.76.128.97
+      - transmission=10.76.128.119
+      - warp=10.76.128.97
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - zurg=10.76.128.97
+    hostname: wizarr
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:5690/static/wizarr-logo.png || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 1m0s
+    image: ghcr.io/wizarrrr/wizarr:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: User invitation and management system for Plex
+      homepage.group: Media Management
+      homepage.href: https://wizarr.$DOMAIN/
+      homepage.icon: http://127.0.0.1:5690/static/wizarr-logo.png
+      homepage.name: Wizarr
+      homepage.weight: "0"
+      homepage.widget.type: wizarr
+      homepage.widget.url: http://wizarr:5690
+      traefik.enable: "true"
+      traefik.http.routers.wizarr.rule: Host(`wizarr.$DOMAIN`) || Host(`wizarr.bocloud.org`) || Host(`wizarr.bolabaden.duckdns.org`) || Host(`wizarr.micklethefickle.duckdns.org`)
+      traefik.http.services.wizarr.loadbalancer.server.port: "5690"
+    networks:
+      publicnet:
+        ipv4_address: 10.76.128.107
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/wizarr/database
+        target: /data/database
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/wizarr/config
+        target: /config
+        bind:
+          create_host_path: true
+  zurg:
+    configs:
+      - source: zurg-config.yml
+        target: /app/config.yml
+        mode: "0775"
+      - source: zurg-cli_debrid_update.sh
+        target: /app/plex_update.sh
+        mode: "0775"
+    container_name: zurg
+    depends_on:
+      rclone-zurg:
+        condition: service_healthy
+        required: true
+      warp:
+        condition: service_started
+        restart: true
+        required: true
+    environment:
+      DOMAIN: $DOMAIN
+      DUCKDNS_SUBDOMAIN: bolabaden
+      ELF_APP_NAME: zurg
+      K8S_APP_NAME: zurg
+      PGID: "121"
+      PUID: "1001"
+      REAL_DEBRID_API_KEY: UFZDKT6N4WTXCHIAZH5QRHNTQDAD6LPCBN4IYKLL2JRA5HGPH4YQ
+      REALDEBRID_API_KEY: MTc0MDcxNDk2MTY5MDRmMDcxYmM1LTI5ODktNGJiMy05NzExLTdhYjYyMWQxMDAyOQ==
+      REALDEBRID_TOKEN: UFZDKT6N4WTXCHIAZH5QRHNTQDAD6LPCBN4IYKLL2JRA5HGPH4YQ
+      SECOND_DOMAIN: bocloud.org
+      TS_HOSTNAME: micklethefickle
+      TZ: America/Chicago
+      UMASK: "002"
+      ZURG_LOG_LEVEL: debug
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:9999/http/version.txt || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 30s
+    image: ghcr.io/debridmediamanager/zurg-testing:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Real-Debrid WebDAV proxy for seamless streaming
+      homepage.group: Download Clients
+      homepage.href: https://zurg.$DOMAIN/
+      homepage.icon: zurg.png
+      homepage.name: Zurg
+      homepage.weight: "2"
+      homepage.widget.type: zurg
+      homepage.widget.url: http://zurg:9999
+    network_mode: service:warp
+    restart: always
+    volumes:
+      - type: bind
+        source: /home/ubuntu/my-media-stack/configs/zurg/app/data
+        target: /app/data
+        bind:
+          create_host_path: true
+networks:
+  publicnet:
+    name: publicnet
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br_publicnet
+    ipam:
+      config:
+        - subnet: 10.76.0.0/16
+          gateway: 10.76.0.1
+          ip_range: 10.76.0.0/16
+    attachable: true
+configs:
+  headscale-config:
+    name: my-media-stack_headscale-config
+    content: |
+      ---
+      # headscale will look for a configuration file named `config.yaml` (or `config.json`) in the following order:
+      #
+      # - `/etc/headscale`
+      # - `~/.headscale`
+      # - current working directory
+      # The url clients will connect to.
+      # Typically this will be a domain like:
+      #
+      # https://headscale.$DOMAIN:443
+      #
+      server_url: https://headscale.$DOMAIN:443
+      # For local development:
+      #server_url: http://127.0.0.1:8080
+      # Address to listen to / bind to on the server
+      #
+      # For production:
+      listen_addr: 0.0.0.0:8080
+      # For local development
+      #listen_addr: 127.0.0.1:8080
+      # Address to listen to /metrics and /debug, you may want
+      # to keep this endpoint private to your internal network
+      metrics_listen_addr: 127.0.0.1:9090
+      # Address to listen for gRPC.
+      # gRPC is used for controlling a headscale server
+      # remotely with the CLI
+      # Note: Remote access _only_ works if you have
+      # valid certificates.
+      #
+      # For production:
+      grpc_listen_addr: 0.0.0.0:50443
+      # For local development
+      #grpc_listen_addr: 127.0.0.1:50443
+      # Allow the gRPC admin interface to run in INSECURE
+      # mode. This is not recommended as the traffic will
+      # be unencrypted. Only enable if you know what you
+      # are doing.
+      grpc_allow_insecure: false
+      # The Noise section includes specific configuration for the
+      # TS2021 Noise protocol
+      noise:
+        # The Noise private key is used to encrypt the traffic between headscale and
+        # Tailscale clients when using the new Noise-based protocol. A missing key
+        # will be automatically generated.
+        private_key_path: /var/lib/headscale/noise_private.key
+      # List of IP prefixes to allocate tailaddresses from.
+      # Each prefix consists of either an IPv4 or IPv6 address,
+      # and the associated prefix length, delimited by a slash.
+      # It must be within IP ranges supported by the Tailscale
+      # client - i.e., subnets of 100.64.0.0/10 and fd7a:115c:a1e0::/48.
+      # See below:
+      # IPv6: https://github.com/tailscale/tailscale/blob/22ebb25e833264f58d7c3f534a8b166894a89536/net/tsaddr/tsaddr.go#LL81C52-L81C71
+      # IPv4: https://github.com/tailscale/tailscale/blob/22ebb25e833264f58d7c3f534a8b166894a89536/net/tsaddr/tsaddr.go#L33
+      # Any other range is NOT supported, and it will cause unexpected issues.
+      prefixes:
+        v4: 100.64.0.0/10
+        v6: fd7a:115c:a1e0::/48
+        # Strategy used for allocation of IPs to nodes, available options:
+        # - sequential (default): assigns the next free IP from the previous given IP.
+        # - random: assigns the next free IP from a pseudo-random IP generator (crypto/rand).
+        allocation: sequential
+      # DERP is a relay system that Tailscale uses when a direct
+      # connection cannot be established.
+      # https://tailscale.com/blog/how-tailscale-works/#encrypted-tcp-relays-derp
+      #
+      # headscale needs a list of DERP servers that can be presented
+      # to the clients.
+      derp:
+        server:
+          # If enabled, runs the embedded DERP server and merges it into the rest of the DERP config
+          # The Headscale server_url defined above MUST be using https, DERP requires TLS to be in place
+          enabled: true
+          # Region ID to use for the embedded DERP server.
+          # The local DERP prevails if the region ID collides with other region ID coming from
+          # the regular DERP config.
+          region_id: 999
+          # Region code and name are displayed in the Tailscale UI to identify a DERP region
+          region_code: "Chicago"
+          region_name: "Oracle Cloud Headscale Embedded DERP"
+          # Listens over UDP at the configured address for STUN connections - to help with NAT traversal.
+          # When the embedded DERP server is enabled stun_listen_addr MUST be defined.
+          #
+          # For more details on how this works, check this great article: https://tailscale.com/blog/how-tailscale-works/
+          stun_listen_addr: "0.0.0.0:3478"
+          # Private key used to encrypt the traffic between headscale DERP and
+          # Tailscale clients. A missing key will be automatically generated.
+          private_key_path: /var/lib/headscale/derp_server_private.key
+          # This flag can be used, so the DERP map entry for the embedded DERP server is not written automatically,
+          # it enables the creation of your very own DERP map entry using a locally available file with the parameter DERP.paths
+          # If you enable the DERP server and set this to false, it is required to add the DERP server to the DERP map using DERP.paths
+          automatically_add_embedded_derp_region: true
+          # For better connection stability (especially when using an Exit-Node and DNS is not working),
+          # it is possible to optionally add the public IPv4 and IPv6 address to the Derp-Map using:
+          #ipv4: 1.2.3.4
+          #ipv6: 2001:db8::1
+        # List of externally available DERP maps encoded in JSON
+        urls:
+          - https://controlplane.tailscale.com/derpmap/default
+        # Locally available DERP map files encoded in YAML
+        #
+        # This option is mostly interesting for people hosting
+        # their own DERP servers:
+        # https://tailscale.com/kb/1118/custom-derp-servers/
+        #
+        # paths:
+        #   - /etc/headscale/derp-example.yaml
+        paths: []
+        # If enabled, a worker will be set up to periodically
+        # refresh the given sources and update the derpmap
+        # will be set up.
+        auto_update_enabled: true
+        # How often should we check for DERP updates?
+        update_frequency: 3h  # default is 24h
+      # Disables the automatic check for headscale updates on startup
+      disable_check_updates: false
+      # Time before an inactive ephemeral node is deleted?
+      ephemeral_node_inactivity_timeout: 30m
+      database:
+        # Database type. Available options: sqlite, postgres
+        # Please note that using Postgres is highly discouraged as it is only supported for legacy reasons.
+        # All new development, testing and optimisations are done with SQLite in mind.
+        type: sqlite
+        # Enable debug mode. This setting requires the log.level to be set to "debug" or "trace".
+        debug: false
+        # GORM configuration settings.
+        gorm:
+          # Enable prepared statements.
+          prepare_stmt: true
+          # Enable parameterized queries.
+          parameterized_queries: true
+          # Skip logging "record not found" errors.
+          skip_err_record_not_found: true
+          # Threshold for slow queries in milliseconds.
+          slow_threshold: 1000
+        # SQLite config
+        sqlite:
+          path: /var/lib/headscale/db.sqlite
+          # Enable WAL mode for SQLite. This is recommended for production environments.
+          # https://www.sqlite.org/wal.html
+          write_ahead_log: true
+          # Maximum number of WAL file frames before the WAL file is automatically checkpointed.
+          # https://www.sqlite.org/c3ref/wal_autocheckpoint.html
+          # Set to 0 to disable automatic checkpointing.
+          wal_autocheckpoint: 1000
+      ### TLS configuration
+      #
+      ## Let's encrypt / ACME
+      #
+      # headscale supports automatically requesting and setting up
+      # TLS for a domain with Let's Encrypt.
+      #
+      # URL to ACME directory
+      acme_url: https://acme-v02.api.letsencrypt.org/directory
+      # Email to register with ACME provider
+      acme_email: "bolabaden.duckdns@gmail.com"
+      # Domain name to request a TLS certificate for:
+      tls_letsencrypt_hostname: "headscale.$DOMAIN"
+      # Path to store certificates and metadata needed by
+      # letsencrypt
+      # For production:
+      tls_letsencrypt_cache_dir: /var/lib/headscale/cache
+      # Type of ACME challenge to use, currently supported types:
+      # HTTP-01 or TLS-ALPN-01
+      # See: docs/ref/tls.md for more information
+      tls_letsencrypt_challenge_type: HTTP-01
+      # When HTTP-01 challenge is chosen, letsencrypt must set up a
+      # verification endpoint, and it will be listening on:
+      # :http = port 80
+      tls_letsencrypt_listen: ":http"
+      ## Use already defined certificates:
+      tls_cert_path: ""
+      tls_key_path: ""
+      log:
+        # Output formatting for logs: text or json
+        format: text
+        level: info
+      ## Policy
+      # headscale supports Tailscale's ACL policies.
+      # Please have a look to their KB to better
+      # understand the concepts: https://tailscale.com/kb/1018/acls/
+      policy:
+        # The mode can be "file" or "database" that defines
+        # where the ACL policies are stored and read from.
+        mode: file
+        # If the mode is set to "file", the path to a
+        # HuJSON file containing ACL policies.
+        path: ""
+      ## DNS
+      #
+      # headscale supports Tailscale's DNS configuration and MagicDNS.
+      # Please have a look to their KB to better understand the concepts:
+      #
+      # - https://tailscale.com/kb/1054/dns/
+      # - https://tailscale.com/kb/1081/magicdns/
+      # - https://tailscale.com/blog/2021-09-private-dns-with-magicdns/
+      #
+      # Please note that for the DNS configuration to have any effect,
+      # clients must have the `--accept-dns=true` option enabled. This is the
+      # default for the Tailscale client. This option is enabled by default
+      # in the Tailscale client.
+      #
+      # Setting _any_ of the configuration and `--accept-dns=true` on the
+      # clients will integrate with the DNS manager on the client or
+      # overwrite /etc/resolv.conf.
+      # https://tailscale.com/kb/1235/resolv-conf
+      #
+      # If you want stop Headscale from managing the DNS configuration
+      # all the fields under `dns` should be set to empty values.
+      dns:
+        # Whether to use [MagicDNS](https://tailscale.com/kb/1081/magicdns/).
+        magic_dns: true
+        # Defines the base domain to create the hostnames for MagicDNS.
+        # This domain _must_ be different from the server_url domain.
+        # `base_domain` must be a FQDN, without the trailing dot.
+        # The FQDN of the hosts will be
+        # `hostname.base_domain` (e.g., _myhost.example.com_).
+        base_domain: $DOMAIN
+        # Whether to use the local DNS settings of a node (default) or override the
+        # local DNS settings and force the use of Headscale's DNS configuration.
+        override_local_dns: true
+        # List of DNS servers to expose to clients.
+        nameservers:
+          global:
+            - 1.1.1.1
+            - 1.0.0.1
+            - 8.8.8.8
+            - 8.8.4.4
+            - 2606:4700:4700::1111
+            - 2606:4700:4700::1001
+            # NextDNS (see https://tailscale.com/kb/1218/nextdns/).
+            # "abc123" is example NextDNS ID, replace with yours.
+            - https://dns.nextdns.io/
+          # Split DNS (see https://tailscale.com/kb/1054/dns/),
+          # a map of domains and which DNS server to use for each.
+          split:
+            {}
+            # foo.bar.com:
+            #   - 1.1.1.1
+            # darp.headscale.net:
+            #   - 1.1.1.1
+            #   - 8.8.8.8
+        # Set custom DNS search domains. With MagicDNS enabled,
+        # your tailnet base_domain is always the first search domain.
+        search_domains: []
+        # Extra DNS records
+        # so far only A and AAAA records are supported (on the tailscale side)
+        # See: docs/ref/dns.md
+        extra_records: []
+        #   - name: "grafana.myvpn.example.com"
+        #     type: "A"
+        #     value: "100.64.0.3"
+        #
+        #   # you can also put it in one line
+        #   - { name: "prometheus.myvpn.example.com", type: "A", value: "100.64.0.3" }
+        #
+        # Alternatively, extra DNS records can be loaded from a JSON file.
+        # Headscale processes this file on each change.
+        # extra_records_path: /var/lib/headscale/extra-records.json
+      # Unix socket used for the CLI to connect without authentication
+      # Note: for production you will want to set this to something like:
+      unix_socket: /var/run/headscale/headscale.sock
+      unix_socket_permission: "0770"
+      #
+      # headscale supports experimental OpenID connect support,
+      # it is still being tested and might have some bugs, please
+      # help us test it.
+      # OpenID Connect
+      # oidc:
+      #   only_start_if_oidc_is_available: true
+      #   issuer: "https://your-oidc.issuer.com/path"
+      #   client_id: "your-oidc-client-id"
+      #   client_secret: "your-oidc-client-secret"
+      #   # Alternatively, set `client_secret_path` to read the secret from the file.
+      #   # It resolves environment variables, making integration to systemd's
+      #   # `LoadCredential` straightforward:
+      #   client_secret_path: "/home/ubuntu/my-media-stack/secrets/oidc_client_secret"
+      #   # client_secret and client_secret_path are mutually exclusive.
+      #
+      #   # The amount of time from a node is authenticated with OpenID until it
+      #   # expires and needs to reauthenticate.
+      #   # Setting the value to "0" will mean no expiry.
+      #   expiry: 180d
+      #
+      #   # Use the expiry from the token received from OpenID when the user logged
+      #   # in, this will typically lead to frequent need to reauthenticate and should
+      #   # only been enabled if you know what you are doing.
+      #   # Note: enabling this will cause `oidc.expiry` to be ignored.
+      #   use_expiry_from_token: false
+      #
+      #   # Customize the scopes used in the OIDC flow, defaults to "openid", "profile" and "email" and add custom query
+      #   # parameters to the Authorize Endpoint request. Scopes default to "openid", "profile" and "email".
+      #
+      #   scope: ["openid", "profile", "email", "custom"]
+      #   extra_params:
+      #     domain_hint: example.com
+      #
+      #   # List allowed principal domains and/or users. If an authenticated user's domain is not in this list, the
+      #   # authentication request will be rejected.
+      #
+      #   allowed_domains:
+      #     - example.com
+      #   # Note: Groups from keycloak have a leading '/'
+      #   allowed_groups:
+      #     - /headscale
+      #   allowed_users:
+      #     - alice@example.com
+      #
+      #   # Optional: PKCE (Proof Key for Code Exchange) configuration
+      #   # PKCE adds an additional layer of security to the OAuth 2.0 authorization code flow
+      #   # by preventing authorization code interception attacks
+      #   # See https://datatracker.ietf.org/doc/html/rfc7636
+      #   pkce:
+      #     # Enable or disable PKCE support (default: false)
+      #     enabled: false
+      #     # PKCE method to use:
+      #     # - plain: Use plain code verifier
+      #     # - S256: Use SHA256 hashed code verifier (default, recommended)
+      #     method: S256
+      #Logtail configuration
+      # Logtail is Tailscales logging and auditing infrastructure, it allows the control panel
+      # to instruct tailscale nodes to log their activity to a remote server.
+      logtail:
+        # Enable logtail for this headscales clients.
+        # As there is currently no support for overriding the log server in headscale, this is
+        # disabled by default. Enabling this will make your clients send logs to Tailscale Inc.
+        enabled: false
+      # Enabling this option makes devices prefer a random port for WireGuard traffic over the
+      # default static port 41641. This option is intended as a workaround for some buggy
+      # firewall devices. See https://tailscale.com/kb/1181/firewalls/ for more information.
+      randomize_client_port: false
+  homer-config.yml:
+    name: my-media-stack_homer-config.yml
+    content: "# Homepage configuration\n# See https://fontawesome.com/icons for icons options\n\n# Optional: Use external configuration file.\n# Using this will ignore remaining config in this file\n# externalConfig: https://$DOMAIN/server-luci/config.yaml\nsubtitle: \"boCLOUD ...\"\ntitle: \"boCLOUD!\"\ndocumentTitle: \"$DOMAIN - micklethefickle\" # Customize the browser tab text\n# Alternatively a fa icon can be provided:\nicon: \"fas fa-wand-magic-sparkles\"\n#logo: https://$DOMAIN/images/logo.png\nheader: true # Set to false to hide the header\nfooter: Version 1.417.0\ncolumns: \"3\" # \"auto\" or number (must be a factor of 12: 1, 2, 3, 4, 6, 12)\nconnectivityCheck: false # whether you want to display a message when the apps are not accessible anymore (VPN disconnected for example)\n# Optional theming\n# theme: default # 'default' or one of the themes available in 'src/assets/themes'.\n# Optional custom stylesheet\n# Will load custom CSS files. Especially useful for custom icon sets.\n#stylesheet:\n#  - \"assets/custom.css\"\n# Here is the exhaustive list of customization parameters\n# However all value are optional and will fallback to default if not set.\n# if you want to change only some of the colors, feel free to remove all unused key.\ncolors:\n  light:\n    highlight-primary: \"#222526\"\n    highlight-secondary: \"#4285F4\"\n    highlight-hover: \"#5A95F5\"\n    background: \"#222526\"\n    card-background: \"#FFFFFF\"\n    text: \"#363636\"\n    text-header: \"#FFFFFF\"\n    text-title: \"#303030\"\n    text-subtitle: \"#424242\"\n    card-shadow: \"rgba(0, 0, 0, 0.1)\"\n    link-hover: \"#363636\"\n    background-image: /assets/backgrounds/background-light.jpg\n  dark:\n    highlight-primary: \"#222526\"\n    highlight-secondary: \"#4285F4\"\n    highlight-hover: \"#5A95F5\"\n    background: \"#222526\"\n    card-background: \"#2B2B2B\"\n    text: \"#EAEAEA\"\n    text-header: \"#FFFFFF\"\n    text-title: \"#FAFAFA\"\n    text-subtitle: \"#F5F5F5\"\n    card-shadow: \"rgba(0, 0, 0, 0.4)\"\n    link-hover: \"#FFDD57\"\n    background-image: /assets/backgrounds/background-dark.jpg\n# Optional message\nmessage:\n  url: \"https://$DOMAIN/assets/message/message.json\"\n  # mapping:\n  #   content: 'message'\n  #   style: 'style'\n  #   title: 'title'\n  refreshInterval: 10000\n  icon: \"fas fa-door-open\"\n# Optional navbar\n# links: [] # Allows for navbar (dark mode, layout, and search) without any links\nlinks:\n  - name: \"Apps\"\n    icon: \"fas fa-couch\"\n    url: \"#config\"\n  - name: \"Health\"\n    icon: \"fas fa-heartbeat\"\n    url: \"https://homer-health.$DOMAIN\"\n    target: \"_blank\" # optional html tag target attribute\n# Services\n# First level array represents a group.\n# Leave only a \"items\" key if not using group (group name, icon & tagstyle are optional, section separation will not be displayed).\nservices:\n  - name: \"Consume Media\"\n    icon: \"fas fa-couch\"\n    # A path to an image can also be provided. Note that icon take precedence if both icon and logo are set.\n    # logo: \"path/to/logo\"\n    items:\n      - name: \"Plex\"\n        logo: \"assets/png/plex.png\"\n        # Alternatively a fa icon can be provided:\n        # icon: \"fab fa-photo-video\"\n        subtitle: \"Watch Movies/TV\"\n        tag: \"public\"\n        tagstyle: \"is-danger\"\n        url: \"https://plex.$DOMAIN\"\n        target: \"_blank\"  # Optional html tag target attribute\n      - name: \"Jellyfin\"\n        logo: \"assets/png/jellyfin.png\"\n        subtitle: \"Watch Movies/TV\"\n        tag: \"public\"\n        tagstyle: \"is-danger\"\n        url: \"https://jellyfin.$DOMAIN\"\n        target: \"_blank\"  # Optional html tag target attribute\n  - name: \"Manage Media\"\n    icon: \"fas fa-photo-video\"\n    items:\n      - name: \"Wizarr\"\n        icon: \"fas fa-hat-wizard\"\n        subtitle: \"Manage Plex / Emby / Jellyfin Accounts / Invites\"\n        tag: \"public\"\n        tagstyle: \"is-danger\"\n        url: \"https://wizarr.$DOMAIN\"\n        target: \"_blank\"  # Optional html tag target attribute\n      - name: \"Riven\"\n        icon: \"fas fa-mountain\"\n        subtitle: \"All-in-one Debrid Media Management\"\n        tag: \"protected\"\n        tagstyle: \"is-success\"\n        url: \"https://riven.$DOMAIN\"\n        target: \"_blank\"  # Optional html tag target attribute\n      - name: \"Riven (backend)\"\n        icon: \"fas fa-mountain\"\n        subtitle: \"Geek out over Riven's backend\"\n        tag: \"protected\"\n        tagstyle: \"is-success\"\n        url: \"https://riven-backend.$DOMAIN\"\n        target: \"_blank\"  # Optional html tag target attribute\n  - name: \"Download Media\"\n    icon: \"fas fa-cloud-arrow-down\"\n    items:\n      - name: \"Zurg\"\n        logo: \"assets/png/real-debrid.png\"\n        subtitle: \"Manage RealDebrid Mount\"\n        tag: \"protected\"\n        tagstyle: \"is-success\"\n        url: \"https://zurg.$DOMAIN/http/\"\n        target: \"_blank\"  # Optional html tag target attribute\n  - name: \"Tools\"\n    icon: \"fas fa-toolbox\"\n    items:\n      - name: \"FileBrowser\"\n        logo: \"assets/png/filebrowser.png\"\n        subtitle: \"Manage Files\"\n        tag: \"protected\"\n        tagstyle: \"is-success\"\n        url: \"https://filebrowser.$DOMAIN\"\n        target: \"_blank\"  # Optional html tag target attribute\n      - name: \"code-server\"\n        icon: \"fas fa-terminal\"\n        subtitle: \"Enter the code-server.. \U0001FA84\"\n        tag: \"protected\"\n        tagstyle: \"is-success\"\n        url: \"https://code-server.$DOMAIN\"\n        target: \"_blank\"  # Optional html tag target attribute\n  - name: \"Rclone\"\n    icon: \"fas fa-truck\"\n    items:\n      - name: \"Rclone Remotes\"\n        logo: \"assets/png/rclone.png\"\n        subtitle: \"Rclone remotes\"\n        tag: \"protected\"\n        tagstyle: \"is-success\"\n        url: \"https://filebrowser.$DOMAIN/files/config/rclone/rclone.conf\"\n        target: \"_blank\"  # Optional html tag target attribute\n      - name: \"Rclone UI\"\n        logo: \"assets/png/rclone.png\"\n        subtitle: \"Rclone UI\"\n        tag: \"protected\"\n        tagstyle: \"is-success\"\n        url: \"https://rclone.$DOMAIN\"\n        target: \"_blank\"  # Optional html tag target attribute\n"
+  premiumize-auth:
+    name: my-media-stack_premiumize-auth
+    content: |
+      117274388
+      6i6zgswm35baj3ur
+  premiumize-ca:
+    name: my-media-stack_premiumize-ca
+    content: |
+      -----BEGIN CERTIFICATE-----
+      MIIFJTCCAw2gAwIBAgIRAPAmbQRNE+PBqvFyFG8GOSIwDQYJKoZIhvcNAQELBQAw
+      LDEYMBYGA1UECgwPU2VjdXJlIFNlcnZpY2VzMRAwDgYDVQQDDAdSb290IFgxMB4X
+      DTIxMDEwNDE1MjEwM1oXDTQwMTIzMDE1MjEwM1owLDEYMBYGA1UECgwPU2VjdXJl
+      IFNlcnZpY2VzMRAwDgYDVQQDDAdSb290IFgxMIICIjANBgkqhkiG9w0BAQEFAAOC
+      Ag8AMIICCgKCAgEAvuhFcbO0Y5SXBr+h/XU1sPXo/OSjN4W32jzVZ3jmkqA2nH5D
+      dI5XYHYB9JkW23K37zOlvOWj9J3HiV6WYk0uqQ3cpqDMnIpi1MJCtSRxiaD7LTNO
+      XrvLpsREq9Vf+lN+zxFxhINv3W4jUyfx5zIjPyjY+vFgH5G56b12EeLKFLYUWwgF
+      9vTicXJvlV1h+TJVF8wZ5DugrgNZhSZ6QZzda0Zdu1dCwZOafd1GGDWPubgZ8enF
+      b9gWPGZmS59ZvlLsLQmtLvCEegELzRR5G/OI1CIntcImcKO9ZDdWP+HmqJ4Ss7Ng
+      0g5xQVx9VgMxwpHw4h/tMV8q1vQQZJXJHdoDRQr5RzVnMjq90FFMd3nfX1B6cheH
+      cBq31J84ifxcO2vIz/eK/6zNyynuj2+99Yz7MsYI+sfGznngglpYo9u3xNkRfRPP
+      TA/tXAzrGRqlHmJmMStfutIfHxea4jJCGOeb5eUETQ1kXf5sMSdf0+Ya64h9Kcxw
+      afMzU8qUAMk4ei+jTEAuUQ25Jq0orFc5D2Pv7RbU9CCzIML2KqqWTThKSSVQbW0x
+      ufQDxcFZKSKL03484zVPBDMQ65enBUC+9Or9YKT0S0F1IdOX4EUGpqzQAocHFF3u
+      G1zYz5cjYq2xHRBZAYs6SQH6f16bPrk66uA2B/vZJm5L9Kzni5q46IGsCUsCAwEA
+      AaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYE
+      FETGtuYkU3IlxCvmtkAzpP5Xuf+DMA0GCSqGSIb3DQEBCwUAA4ICAQBdTlQtxa6a
+      PXaZpzsi5gLGrDUhnoTF5cVvt9vYa6c7IaAuYIUMGN1WiwHUL0g1udxi7iC3oBzM
+      Mc6shYMijEMG9SvC0RJOky1BCPbKdlsRDQbYLgjN5X1fEDDu1cR/vInt/K6vTcLf
+      1ud6VFgDv8uYG1X9GVs6foAqjYTLt1A99cwHtyCZRxrBLyjgE8S2U07FDpakqlMo
+      j4S1lgvw4EuEN54Yo55wLv9J0pZ1w9LEpZ4VdEVzLmwYMPG25Ow7HFZDK7j0TZkA
+      ByvxUvNGWDk5MS71BtWzhrmmPh9kN3HobkfOllqUsE03QaLggg+pe+OYNdIlCBRz
+      9QJeMtGP7afdBZ5UUL8df0fWL0adUzk1N/1kvAmbvccNu7tej/4LLVv9j1aQtI76
+      iEXh0WIWTAOz9IsQyP21PhxG01Y3ScIrbOsP+IX+RL/VK4yfTZ2jICj7js8vm6ut
+      qw3FPyZgeZuBe0gk0cF4vPuFacS23PkEFXbVnt4h40xKwR5ezGshS5I36nXowTdh
+      uJPLnZaLGjsiFpprztwwDZkDLu5uT6YhT/M6Kb0V3s3a2W1N90eNjo5WEe/poCgr
+      1+NVJNJQ71s3kodfghA/t1iivJEl58scVLxxJXyhCK+k5IPAB0syq2cR4AKnr/fe
+      9WFpWZc7lKeI4rwzGej+kMCQ6ujinVPyRA==
+      -----END CERTIFICATE-----
+  rclone-mounts.json:
+    name: my-media-stack_rclone-mounts.json
+    content: |
+      [
+        {
+          "fs": "zurg:",
+          "mountPoint": "/mnt/remote/realdebrid",
+          "mainOpt": {
+            "LogLevel": "DEBUG"
+          },
+          "LogLevel": "DEBUG",
+          "mountOpt": {
+            "GID": 121,
+            "UID": 1001,
+            "AllowNonEmpty": true,
+            "AllowOther": true,
+            "AttrTimeout": "87600h",
+            "DirCacheTime": "60s",
+            "DirPerms": "0777",
+            "FilePerms": "0666",
+            "PollInterval": "30s",
+            "ExtraFlags": [
+              "--config=/config/rclone/rclone.conf",
+              "--log-level=DEBUG",
+              "--log-file=/config/rclone/rclone.log"
+            ]
+          },
+          "vfsOpt": {
+            "BufferSize": "128M",
+            "CacheMaxAge": "2m",
+            "CacheMaxSize": "100G",
+            "CacheMode": "full",
+            "CachePollInterval": "30s",
+            "ChunkSize": "2M",
+            "ChunkSizeLimit": "64M",
+            "DiskSpaceTotalSize": "1T",
+            "FastFingerprint": true,
+            "MinFreeSpace": "1G",
+            "ReadAhead": "128M",
+            "ReadWait": "40ms",
+            "ExtraOptions": [
+              "--vfs-refresh",
+              "--transfers=16",
+              "--checkers=16",
+              "--multi-thread-streams=4",
+              "--cache-dir=/mnt/remote/cache/zurg"
+            ]
+          }
+        }
+      ]
+  rclone-rclone.conf:
+    name: my-media-stack_rclone-rclone.conf
+    content: |
+      [rdhttp]
+      type = http
+      url = https://my.real-debrid.com/{SUDO_PASSWORD}/
+      no_head = false
+      no_slash = false
+
+      [rd-webdav]
+      type = webdav
+      url = https://dav.real-debrid.com/
+      vendor = other
+      user = null
+      pass = null
+
+      [rdhttp2]
+      type = http
+      url = https://my.real-debrid.com/{SUDO_PASSWORD}/
+      no_head = false
+      no_slash = false
+
+      [rd-webdav2]
+      type = webdav
+      url = https://dav.real-debrid.com/
+      vendor = other
+      user = null
+      pass = null
+
+      [zurg]
+      type = webdav
+      url = http://zurg:9999/dav
+      vendor = other
+      pacer_min_sleep = 0
+  riven-settings.json:
+    name: my-media-stack_riven-settings.json
+    content: |
+      {
+          "version": "0.21.21",
+          "api_key": "3e0be750b16ff363727d05d18ba364fd",
+          "debug": false,
+          "debug_database": false,
+          "log": true,
+          "force_refresh": false,
+          "map_metadata": true,
+          "tracemalloc": false,
+          "symlink": {
+              "rclone_path": "/mnt/remote/realdebrid/__all__",
+              "library_path": "/mnt/symlinks",
+              "separate_anime_dirs": true,
+              "repair_symlinks": true,
+              "repair_interval": 6.0
+          },
+          "updaters": {
+              "updater_interval": 120,
+              "plex": {
+                  "enabled": true,
+                  "token": "18rS6gM-Wec22uq5Gw-U",
+                  "url": "http://plex:32400"
+              },
+              "jellyfin": {
+                  "enabled": true,
+                  "api_key": "e0dd06e8809143a69c7c6ba174bbe129",
+                  "url": "http://jellyfin:8096"
+              },
+              "emby": {
+                  "enabled": false,
+                  "api_key": "",
+                  "url": ""
+              }
+          },
+          "downloaders": {
+              "video_extensions": [
+                  "avi",
+                  "mkv",
+                  "mp4"
+              ],
+              "movie_filesize_mb_min": 700,
+              "movie_filesize_mb_max": -1,
+              "episode_filesize_mb_min": 100,
+              "episode_filesize_mb_max": -1,
+              "proxy_url": "http://warp:1080",
+              "real_debrid": {
+                  "enabled": true,
+                  "api_key": "TE6M7M2GGBN6H6XT2OZTUQIX42LEPJ4EIZIHTN73HAW2TJUZAFHA"
+              },
+              "all_debrid": {
+                  "enabled": false,
+                  "api_key": ""
+              }
+          },
+          "content": {
+              "overseerr": {
+                  "update_interval": 30,
+                  "enabled": true,
+                  "url": "http://overseerr:5055",
+                  "api_key": "MTc0MDcxNDk2MTY5MDRmMDcxYmM1LTI5ODktNGJiMy05NzExLTdhYjYyMWQxMDAyOQ==",
+                  "use_webhook": false
+              },
+              "plex_watchlist": {
+                  "update_interval": 60,
+                  "enabled": true,
+                  "rss": []
+              },
+              "mdblist": {
+                  "update_interval": 300,
+                  "enabled": false,
+                  "api_key": "",
+                  "lists": []
+              },
+              "listrr": {
+                  "update_interval": 300,
+                  "enabled": false,
+                  "movie_lists": [],
+                  "show_lists": [],
+                  "api_key": "d962d6e9fd4e4db790711128ed6013b236e86b1bea534c7f9f0c17a3c4c72982"
+              },
+              "trakt": {
+                  "update_interval": 3600,
+                  "enabled": true,
+                  "api_key": "052d735c61c723ed670991aee9d6322822ed6766702d66910be63a1e1a511fd0",
+                  "watchlist": [],
+                  "user_lists": [],
+                  "collection": [],
+                  "fetch_trending": false,
+                  "trending_count": 10,
+                  "fetch_popular": false,
+                  "popular_count": 10,
+                  "fetch_most_watched": false,
+                  "most_watched_period": "weekly",
+                  "most_watched_count": 10,
+                  "oauth": {
+                      "oauth_client_id": "052d735c61c723ed670991aee9d6322822ed6766702d66910be63a1e1a511fd0",
+                      "oauth_client_secret": "1d5701574cae67023c25a3743f07669bb84ee74628fd8f0a3fc0c9cca51535c3",
+                      "oauth_redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
+                      "access_token": "efe0bd386fee5cd93c1cc51579fb37cdb65c0e0b9ebc34c7a8e2c547714f7efc",
+                      "refresh_token": ""
+                  }
+              }
+          },
+          "scraping": {
+              "after_2": 2.0,
+              "after_5": 6.0,
+              "after_10": 24.0,
+              "parse_debug": false,
+              "enable_aliases": true,
+              "bucket_limit": 5,
+              "max_failed_attempts": 0,
+              "dubbed_anime_only": false,
+              "torrentio": {
+                  "enabled": true,
+                  "filter": "sort=qualitysize%7Cqualityfilter=480p,scr,cam,unknown",
+                  "url": "https://torrentio.strem.fun",
+                  "timeout": 30,
+                  "ratelimit": true,
+                  "proxy_url": "http://warp:1080"
+              },
+              "knightcrawler": {
+                  "enabled": false,
+                  "filter": "sort=qualitysize%7Cqualityfilter=480p,scr,cam,unknown",
+                  "url": "https://knightcrawler.elfhosted.com/",
+                  "timeout": 30,
+                  "ratelimit": true
+              },
+              "jackett": {
+                  "enabled": false,
+                  "url": "http://jackett:9117",
+                  "api_key": "nnx0n84pcj7umynyd2pbid2nl1zzuemz",
+                  "timeout": 10,
+                  "ratelimit": false
+              },
+              "prowlarr": {
+                  "enabled": false,
+                  "url": "http://prowlarr:9696",
+                  "api_key": "29440a82740d475cacb35327c62c87a1",
+                  "timeout": 10,
+                  "ratelimit": false,
+                  "limiter_seconds": 60
+              },
+              "orionoid": {
+                  "enabled": false,
+                  "api_key": "LXBVEGR6DBKLBSBNLPARQHQRH8DGD7PT",
+                  "cached_results_only": true,
+                  "parameters": {
+                      "video3d": false,
+                      "videoquality": "sd_hd8k",
+                      "limitcount": 5
+                  },
+                  "timeout": 10,
+                  "ratelimit": true
+              },
+              "mediafusion": {
+                  "enabled": false,
+                  "url": "https://mediafusion.$DOMAIN",
+                  "timeout": 10,
+                  "ratelimit": true
+              },
+              "zilean": {
+                  "enabled": true,
+                  "url": "http://zilean.elfhosted.com",
+                  "timeout": 30,
+                  "ratelimit": false
+              },
+              "comet": {
+                  "enabled": true,
+                  "url": "http://comet:2020",
+                  "timeout": 30,
+                  "ratelimit": false,
+                  "indexers": [
+                      "animetosho",
+                      "anirena",
+                      "eztv",
+                      "limetorrents",
+                      "nyaasi",
+                      "solidtorrents",
+                      "thepiratebay",
+                      "torlock",
+                      "yts"
+                  ]
+              }
+          },
+          "ranking": {
+              "profile": "default",
+              "require": [],
+              "exclude": [],
+              "preferred": [],
+              "resolutions": {
+                  "r2160p": false,
+                  "r1080p": true,
+                  "r720p": true,
+                  "r480p": false,
+                  "r360p": false,
+                  "unknown": true
+              },
+              "options": {
+                  "title_similarity": 0.85,
+                  "remove_all_trash": true,
+                  "remove_ranks_under": -10000,
+                  "remove_unknown_languages": false,
+                  "allow_english_in_languages": true,
+                  "enable_fetch_speed_mode": true,
+                  "remove_adult_content": true
+              },
+              "languages": {
+                  "required": [
+                      "en"
+                  ],
+                  "exclude": [],
+                  "preferred": [
+                      "en"
+                  ]
+              },
+              "custom_ranks": {
+                  "quality": {
+                      "av1": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "avc": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "bluray": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "dvd": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "hdtv": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "hevc": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "mpeg": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "remux": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "vhs": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "web": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "webdl": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "webmux": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "xvid": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      }
+                  },
+                  "rips": {
+                      "bdrip": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "brrip": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "dvdrip": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "hdrip": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "ppvrip": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "satrip": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "tvrip": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "uhdrip": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "vhsrip": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "webdlrip": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "webrip": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      }
+                  },
+                  "hdr": {
+                      "bit10": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "dolby_vision": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "hdr": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "hdr10plus": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "sdr": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      }
+                  },
+                  "audio": {
+                      "aac": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "atmos": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "dolby_digital": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "dolby_digital_plus": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "dts_lossy": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "dts_lossless": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "flac": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "mono": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "mp3": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "stereo": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "surround": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "truehd": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      }
+                  },
+                  "extras": {
+                      "three_d": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "converted": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "documentary": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "dubbed": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "edition": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "hardcoded": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "network": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "proper": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "repack": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "retail": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "site": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "subbed": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "upscaled": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "scene": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "uncensored": {
+                          "fetch": true,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      }
+                  },
+                  "trash": {
+                      "cam": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "clean_audio": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "pdtv": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "r5": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "screener": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "size": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "telecine": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      },
+                      "telesync": {
+                          "fetch": false,
+                          "use_custom_rank": false,
+                          "rank": 0
+                      }
+                  }
+              }
+          },
+          "indexer": {
+              "update_interval": 3600
+          },
+          "database": {
+              "host": "postgresql+psycopg2://postgres:postgres@riven-db:5432/riven"
+          },
+          "notifications": {
+              "enabled": true,
+              "on_item_type": [
+                  "movie",
+                  "show",
+                  "season",
+                  "episode"
+              ],
+              "service_urls": []
+          },
+          "post_processing": {
+              "subliminal": {
+                  "enabled": true,
+                  "languages": [
+                      "eng"
+                  ],
+                  "providers": {
+                      "opensubtitles": {
+                          "enabled": true,
+                          "username": "th3w1zard1",
+                          "password": "h4L0m4St3R327"
+                      },
+                      "opensubtitlescom": {
+                          "enabled": true,
+                          "username": "th3w1zard1",
+                          "password": "c3ll0h3r0327!"
+                      }
+                  }
+              }
+          }
+      }
+  vpn-nl.premiumize.me:
+    name: my-media-stack_vpn-nl.premiumize.me
+    content: |
+      verify-x509-name CN=vpn-nl.premiumize.me
+      auth-user-pass
+      client
+      resolv-retry infinite
+      nobind
+      persist-key
+      persist-tun
+      mute-replay-warnings
+      reneg-sec 0
+      setenv CLIENT_CERT 0
+      ignore-unknown-option block-outside-dns
+      ca /etc/openvpn/premiumize-ca.pem
+      proto udp
+      remote 185.107.94.249 1194
+      dev tun0
+      mute-replay-warnings
+      auth-nocache
+      pull-filter ignore "auth-token"
+      auth-retry nointeract
+      suppress-timestamps
+      verb 1
+      data-ciphers-fallback aes-256-cbc
+      data-ciphers aes-256-cbc
+      pull-filter ignore "route-ipv6"
+      pull-filter ignore "ifconfig-ipv6"
+      user nonrootuser
+      persist-tun
+      persist-key
+  zurg-cli_debrid_update.sh:
+    name: my-media-stack_zurg-cli_debrid_update.sh
+    content: |
+      #!/bin/bash
+      webhook_url="http://cli-debrid:5000/webhook/rclone"  # Replace with your actual webhook URL
+      # First notify our webhook for each file
+      for arg in "$$@"
+      do
+          arg_clean=$$(echo "$$arg" | sed 's/\\//g')
+          echo "Notifying webhook for: $$arg_clean"
+          encoded_webhook_arg=$$(echo -n "$$arg_clean" | python3 -c "import sys, urllib.parse as ul; print(ul.quote(sys.stdin.read()))")
+          curl -s -X GET "$$webhook_url?file=$$encoded_webhook_arg"
+      done
+      echo "Updates completed!"
+  zurg-config.yml:
+    name: my-media-stack_zurg-config.yml
+    content: |
+      # Zurg configuration version
+      zurg: v1
+
+      # Get your token for the next line from https://real-debrid.com/apitoken
+      token: "UFZDKT6N4WTXCHIAZH5QRHNTQDAD6LPCBN4IYKLL2JRA5HGPH4YQ"
+
+      # additional download tokens - uncomment the lines below, and populate this with your additional tokens to auto-overcome bandwidth limitation issues
+      download_tokens:
+        - "TE6M7M2GGBN6H6XT2OZTUQIX42LEPJ4EIZIHTN73HAW2TJUZAFHA"
+
+      # basic functionality
+      host: "[::]" # do not change this if you are running it inside a docker container
+      port: 9999 # do not change this if you are running it inside a docker container
+      concurrent_workers: 32
+      check_for_changes_every_secs: 30
+
+      # misc configs
+      retain_folder_name_extension: true # if true, zurg won't modify the filenames from real-debrid
+      retain_rd_torrent_name: true # if true, it will strictly follow RD API torrent name property w/c should make this more compatible with rdt-client
+      auto_delete_rar_torrents: false # if true, zurg will delete unstreamable rar files (these torrents will always be compressed in a rar archive no matter what files you select)
+      use_download_cache: false # if true, during zurg initialization, it will fetch all downloads to unrestrict links faster
+
+      enable_repair: true
+      repair_every_mins: 60
+
+      ###on_library_update: sh plex_update.sh "$$@"
+      ignore_renames: true
+
+      # do a RD speed test on every start
+      cache_network_test_results: false
+
+      # network configs
+      network_buffer_size: 1048576 # 1 MiB
+      serve_from_rclone: false
+      verify_download_link: true # if true, zurg will check if the link is truly streamable; only relevant if serve_from_rclone is set to true (as it already does this all the time if serve_from_rclone is false)
+      force_ipv6: false # force connect to real-debrid ipv6 addresses
+      rate_limit_sleep_secs: 6 # wait time after getting a 429 from Real-Debrid API
+      realdebrid_timeout_secs: 60 # api timeout
+      retries_until_failed: 5 # api failures until considered failed
+      get_torrents_count: 5000
+
+      rar_action: extract
+
+      addl_playable_extensions:
+      - avi
+      - flac
+      - m4b
+      - mkv
+      - mp3
+      - mp4
+
+      # List of directory definitions and their filtering rules
+      directories:
+        audiobooks:
+          group_order: 5
+          group: media
+          filters:
+            - and:
+              - is_music: true
+              - media_info_duration_gte: 600
+
+        music:
+          group_order: 10
+          group: media
+          filters:
+            - is_music: true
+
+        anime:
+          group_order: 15
+          group: media
+          filters:
+            - regex: /\b[a-fA-F0-9]{8}\b/
+            - any_file_inside_regex: /\b[a-fA-F0-9]{8}\b/
+
+        shows:
+          group_order: 20
+          group: media
+          filters:
+            - has_episodes: true
+
+        movies:
+          group_order: 25
+          group: media
+          only_show_the_biggest_file: true
+          filters:
+            - regex: /.*/
+
+      restrict_repair_to_cached: true
+x-common-env:
+  PGID: "121"
+  PUID: "1001"
+  TZ: America/Chicago
+  UMASK: "002"
+x-common-firecrawl-api:
+  BULL_AUTH_KEY: sk_m6u2KpEW_NgijX00A_GnTJY3btGgGh01tSPO4oOpJ1Zk
+  HOST: 0.0.0.0
+  LOGGING_LEVEL: DEBUG
+  MAX_CPU: 0
+  MAX_RAM: 0
+  NUM_WORKERS_PER_QUEUE: "8"
+  OPENAI_API_KEY: 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
+  PGID: "121"
+  PLAYWRIGHT_MICROSERVICE_URL: http://firecrawl-playwright:3000/html
+  PORT: "3002"
+  PUID: "1001"
+  REDIS_RATE_LIMIT_URL: redis://10.76.128.87:6379
+  REDIS_URL: redis://10.76.128.87:6379
+  SEARXNG_ENDPOINT: http://searxng:8888
+  TZ: America/Chicago
+  UMASK: "002"
+  USE_DB_AUTHENTICATION: "false"
+x-common-hostname-aliases:
+  - host.docker.internal:host-gateway
+  - boden-iphone:100.97.148.14
+  - beatapostapita:100.99.45.35
+  - micklethefickle:100.72.149.123
+  - micklethefickle3:100.72.149.123
+  - wizard:100.119.187.62
+  - wizard-pc:100.119.187.62
+  - warp:10.76.128.97
+  - comet:10.76.128.97
+  - jackett:10.76.128.97
+  - jackettio:10.76.128.97
+  - localhost:10.76.128.97
+  - mediafusion:10.76.128.97
+  - prowlarr:10.76.128.97
+  - stremio-jackett:10.76.128.97
+  - zurg:10.76.128.97
+  - mediaflow-proxy:10.76.128.97
+  - deluge:10.76.128.97
+  - stremio-web:10.76.128.97
+  - stremio-https-server:10.76.128.97
+  - stremio-fallback:10.76.128.97
+  - gluetun-premiumize-nl:10.76.128.119
+  - transmission:10.76.128.119
+  - qbittorrent:10.76.128.119
+x-common-logging:
+  logging:
+    driver: local
+    options:
+      max-file: "5"
+      max-size: 10m
+x-common-uidgid:
+  user: 1001:121
+x-gluetun-hosts-workaround:
+  - host.docker.internal:host-gateway
+  - boden-iphone:100.97.148.14
+  - beatapostapita:100.99.45.35
+  - micklethefickle:100.72.149.123
+  - micklethefickle3:100.72.149.123
+  - wizard:100.119.187.62
+  - wizard-pc:100.119.187.62
+  - warp:10.76.128.97
+  - comet:10.76.128.97
+  - jackett:10.76.128.97
+  - jackettio:10.76.128.97
+  - localhost:10.76.128.97
+  - mediafusion:10.76.128.97
+  - prowlarr:10.76.128.97
+  - stremio-jackett:10.76.128.97
+  - zurg:10.76.128.97
+  - mediaflow-proxy:10.76.128.97
+  - deluge:10.76.128.97
+  - stremio-web:10.76.128.97
+  - stremio-https-server:10.76.128.97
+  - stremio-fallback:10.76.128.97
+  - gluetun-premiumize-nl:10.76.128.119
+  - transmission:10.76.128.119
+  - qbittorrent:10.76.128.119
+  - dash:10.76.128.23
+  - gpt-researcher:10.76.128.43
+  - gptr:10.76.128.43
+  - qdrant:10.76.128.44
+  - bocloud-nextjs:10.76.128.45
+  - lobechat:10.76.128.46
+  - mongodb:10.76.0.50
+  - code-demo:10.76.128.80
+  - whoami:10.76.128.81
+  - tinyauth:10.76.128.82
+  - watchtower:10.76.128.83
+  - maintainerr:10.76.128.84
+  - traefik:10.76.128.85
+  - speedtest:10.76.128.86
+  - redis:10.76.128.87
+  - homepage:10.76.128.88
+  - dozzle:10.76.128.89
+  - searxng:10.76.128.90
+  - code-server:10.76.128.92
+  - byparr:10.76.128.93
+  - flaresolverr:10.76.128.93
+  - nginx-auth:10.76.128.94
+  - plex:10.76.128.95
+  - code:10.76.128.96
+  - stremthru:10.76.128.99
+  - riven-frontend:10.76.128.100
+  - riven:10.76.128.101
+  - riven-backend:10.76.128.101
+  - riven-db:10.76.128.102
+  - tautulli:10.76.128.103
+  - crowdsec:10.76.128.104
+  - gatus:10.76.128.105
+  - homer:10.76.0.106
+  - wizarr:10.76.128.107
+  - plex-watchlist:10.76.52.97
+  - realdebrid-account-monitor:10.76.128.109
+  - rclone:10.76.128.111
+  - plex-authentication:10.76.128.112
+  - plex-request:10.76.128.113
+  - jellyseerr:10.76.128.115
+  - overseerr:10.76.128.116
+  - jellyfin:10.76.128.120
+  - radarr:10.76.128.121
+  - sonarr:10.76.128.122
+  - sonarr-anime:10.76.128.123
+  - firecrawl-api:10.76.128.127
+  - firecrawl-worker:10.76.128.128
+  - firecrawl-playwright:10.76.128.130
+  - decluttarr:10.76.128.21
+  - whisparr:10.76.0.120
+  - aiostreams:10.76.128.200
+  - plex-repair:10.76.0.115
+  - script-runner:10.76.0.116
+  - recyclarr:10.76.0.117
+  - open-webui:10.76.128.118
+  - autoscan:10.76.0.119
+x-resource-limits:
+  labels:
+    autoheal: "true"

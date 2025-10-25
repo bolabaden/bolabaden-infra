@@ -8,7 +8,7 @@ dependencies:
   - deploy.victoriametrics
 
 spec:
-  image: docker.io/grafana/grafana:latest
+  image: docker.io/grafana/grafana
   user: ${var.PUID || "1001"}:${var.PGID || "999"}
   env:
     GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,natel-discrete-panel,flant-statusmap-panel,vonage-status-panel,michaeldmoore-multistat-panel,grafana-polystat-panel,marcusolsson-dynamictext-panel,yesoreyeram-boomtable-panel,redis-datasource,grafana-clock-panel,grafana-simple-json-datasource,btplc-status-dot-panel,camptocamp-prometheus-alertmanager-datasource

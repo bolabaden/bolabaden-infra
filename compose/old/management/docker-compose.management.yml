@@ -93,7 +93,7 @@ services:
     # 🔹🔹 Code Server 🔹🔹
     profiles:
       - ivaros
-    image: linuxserver/code-server:latest
+    image: linuxserver/code-server
     container_name: code-server
     hostname: code-server
     <<: [*common-uidgid, *common-logging, *resource-limits]

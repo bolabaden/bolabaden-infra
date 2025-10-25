@@ -9,7 +9,7 @@ dependencies:
   - deploy.playwright-service
 
 spec:
-  image: docker.io/mhdzumair/mediafusion:latest
+  image: docker.io/mhdzumair/mediafusion
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}

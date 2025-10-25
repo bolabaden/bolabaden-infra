@@ -3,6 +3,143 @@
 
 
 configs:
+  mcpProxy:
+    content: |
+      {
+        "mcpProxy": {
+          "baseURL": "https://mcp.$TS_HOSTNAME.$DOMAIN",
+          "addr": ":${MCP_PROXY_PORT:-9090}",
+          "name": "MCP Proxy",
+          "version": "1.0.0",
+          "type": "streamable-http",
+          "options": {
+            "panicIfInvalid": false,
+            "logEnabled": true,
+            "authTokens": [
+              "${MCP_AUTH_TOKEN:?}"
+            ]
+          }
+        },
+        "mcpServers": {
+          "github": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@modelcontextprotocol/server-github"
+            ],
+            "env": {
+              "GITHUB_PERSONAL_ACCESS_TOKEN": "$GITHUB_PERSONAL_ACCESS_TOKEN"
+            },
+            "options": {
+              "toolFilter": {
+                "mode": "block",
+                "list": [
+                  "create_or_update_file"
+                ]
+              }
+            }
+          },
+          "fetch": {
+            "command": "uvx",
+            "args": [
+              "mcp-server-fetch"
+            ],
+            "options": {
+              "panicIfInvalid": true,
+              "logEnabled": false,
+              "authTokens": [
+                "SpecificTokens"
+              ]
+            }
+          },
+          "coolify": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@masonator/coolify-mcp"
+            ],
+            "env": {
+              "COOLIFY_ACCESS_TOKEN": "$COOLIFY_TOKEN",
+              "COOLIFY_BASE_URL": "https://coolify.$DOMAIN"
+            }
+          },
+          "coolify2": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "coolify-mcp-server"
+            ],
+            "env": {
+              "COOLIFY_BASE_URL": "https://coolify.$DOMAIN",
+              "COOLIFY_TOKEN": "$COOLIFY_TOKEN"
+            }
+          },
+          "curl": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@mcp-get-community/server-curl"
+            ]
+          },
+          "firecrawl": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "firecrawl-mcp"
+            ],
+            "env": {
+              "FIRECRAWL_API_KEY": "$FIRECRAWL_API_KEY",
+              "FIRE_CRAWL_API_KEY": "$FIRECRAWL_API_KEY",
+              "FIRECRAWL_API_URL": "https://firecrawl-api.$DOMAIN",
+              "FIRE_CRAWL_API_URL": "https://firecrawl-api.$DOMAIN"
+            }
+          },
+          "firecrawl2": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "mcp-server-firecrawl"
+            ],
+            "env": {
+              "FIRECRAWL_API_KEY": "$FIRECRAWL_API_KEY",
+              "FIRE_CRAWL_API_KEY": "$FIRECRAWL_API_KEY",
+              "FIRECRAWL_API_URL": "https://firecrawl-api.$DOMAIN",
+              "FIRE_CRAWL_API_URL": "https://firecrawl-api.$DOMAIN"
+            }
+          },
+          "goalStory": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "goalstory-mcp",
+              "https://prod-goalstory-rqc2.encr.app",
+              "$GOAL_STORY_API_KEY"
+            ],
+            "transportType": "stdio"
+          },
+          "tavily": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "tavily-mcp"
+            ],
+            "env": {
+              "TAVILY_API_KEY": "$TAVILY_API_KEY"
+            }
+          },
+          "unified-diff-mcp": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@smithery/cli",
+              "run",
+              "@gorosun/unified-diff-mcp",
+              "--key",
+              "$SMITHERY_API_KEY"
+            ]
+          }
+        }
+      }
   mcp_servers.json:
     content: |
       {
@@ -18,23 +155,33 @@ configs:
             "command": "npx",
             "args": [
               "-y",
-              "firecrawl-mcp@latest"
+              "firecrawl-mcp"
             ],
             "env": {
-              "FIRECRAWL_API_KEY": "$FIRECRAWL_API_KEY",
-              "FIRE_CRAWL_API_KEY": "$FIRECRAWL_API_KEY",
-              "FIRECRAWL_API_URL": "https://firecrawl-api.$DOMAIN",
-              "FIRE_CRAWL_API_URL": "https://firecrawl-api.$DOMAIN"
+              "FIRECRAWL_API_KEY": "fc-e0e316bead3d497fb24d42ea21d5daf6",
+              "FIRE_CRAWL_API_KEY": "fc-e0e316bead3d497fb24d42ea21d5daf6",
+              "FIRECRAWL_API_URL": "https://firecrawl-api.bolabaden.org",
+              "FIRE_CRAWL_API_URL": "https://firecrawl-api.bolabaden.org"
             }
+          },
+          "goalStory": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "goalstory-mcp",
+              "https://prod-goalstory-rqc2.encr.app",
+              "c5e7d1ea44eab701bae258695253914c2579d19c637694e03136e3867e081195"
+            ],
+            "transportType": "stdio"
           },
           "tavily": {
             "command": "npx",
             "args": [
               "-y",
-              "tavily-mcp@latest"
+              "tavily-mcp"
             ],
             "env": {
-              "TAVILY_API_KEY": "$TAVILY_API_KEY"
+              "TAVILY_API_KEY": "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"
             }
           }
         }
@@ -271,25 +418,22 @@ services:
       start_period: 40s
     restart: always
 
-  # Model Updater Service - Runs on-demand to update free_chat_models.json
+  # Model Updater Service - Runs on-demand to update free_chat_models.json<-->litellm_config.yaml
   model-updater:
     profiles:
       - unfinished
     build:
-      context: https://github.com/th3w1zard1/llm_fallbacks.git#main
+      context: https://github.com/th3w1zard1/llm_fallbacks.git
       dockerfile_inline: |
         FROM python:3.13-slim
         WORKDIR /app
-        RUN apt-get update && apt-get install -y \
-            curl \
-            && rm -rf /var/lib/apt/lists/*
+        RUN apt-get update && apt-get install -y curl build-essential && rm -rf /var/lib/apt/lists/*
         COPY . .
         RUN pip install --no-cache-dir -r requirements.txt
         RUN mkdir -p /app/cache
         ENV PYTHONPATH=/app
         ENV PYTHONUNBUFFERED=1
-        RUN useradd --create-home --shell /bin/bash app && \
-            chown -R app:app /app
+        RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
         USER app
         CMD ["python", "src/llm_fallbacks/generate_configs.py"]
     container_name: model-updater
@@ -317,7 +461,7 @@ services:
       - backend
       - publicnet
     expose:
-      - 4000
+      - ${LITELLM_PORT:-4000}
     depends_on:
       litellm-postgres:
         condition: service_healthy
@@ -391,9 +535,9 @@ services:
       kuma.litellm.http.name: litellm.$TS_HOSTNAME.$DOMAIN
       kuma.litellm.http.url: https://litellm.$DOMAIN
       kuma.litellm.http.interval: 60
-    command: --config /app/config/litellm_config.yaml --port 4000 --host 0.0.0.0
+    command: --config /app/config/litellm_config.yaml --port ${LITELLM_PORT:-4000} --host 0.0.0.0
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/health/liveliness"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${LITELLM_PORT:-4000}/health/liveliness"]
       timeout: 15s
       retries: 5
       start_period: 30s
@@ -513,7 +657,7 @@ services:
     # 🔹🔹 Qdrant 🔹🔹
     profiles:
       - extras
-    image: qdrant/qdrant:latest
+    image: qdrant/qdrant
     container_name: qdrant
     hostname: qdrant
     networks:
@@ -536,6 +680,41 @@ services:
       homepage.href: https://qdrant.$DOMAIN
       homepage.description: Qdrant is a vector database for storing and querying vectors.
     restart: always
+  mcp-proxy:
+    profiles:
+      - extras  # can be resource intensive, also is duplicating what mcpo is already providing.
+    pull_policy: always
+    image: ghcr.io/tbxark/mcp-proxy
+    container_name: mcp-proxy
+    hostname: mcp
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - publicnet
+    expose:
+      - ${MCP_PROXY_PORT:-9090}
+    configs:
+      - source: mcpProxy
+        target: /config.json
+        mode: 0777
+    labels:
+      traefik.enable: true
+      traefik.http.routers.mcp-proxy.rule: Host(`mcp.$DOMAIN`) || Host(`mcp.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.mcp-proxy.loadbalancer.server.port: ${MCP_PROXY_PORT:-9090}
+      homepage.group: MCP
+      homepage.name: MCP Proxy
+      homepage.icon: mcp-proxy.png
+      homepage.href: https://mcp.$DOMAIN
+      homepage.description: MCP Proxy is a tool for proxying MCP servers.
+    command: [  # https://github.com/TBXark/mcp-proxy/blob/master/docs/USAGE.md
+      "--config", "config.json",          # Path to config file or a http(s) url (default "config.json")
+      "-expand-env",                      # Expand environment variables in config file (default true)
+    #  "-http-headers" "string_here"      # Custom HTTP headers to be sent to the MCP server (default none)
+    #  "-http-timeout", "10",              # Timeout (seconds) for remote config fetch (default 10)
+    #  "-insecure",                        # Skip TLS verification for remote config fetch (default false)
+    ]
+    restart: always
+
 
 volumes:
   model-updater-cache:

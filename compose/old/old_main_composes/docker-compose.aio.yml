@@ -5429,7 +5429,7 @@ x-common-env: &common-env
 
 services:
   headscale-server:
-    image: docker.io/headscale/headscale:latest
+    image: docker.io/headscale/headscale
     container_name: headscale-server
     hostname: headscale-server
     networks:
@@ -5465,7 +5465,7 @@ services:
   headscale:
     depends_on:
       - headscale-server
-    image: ghcr.io/gurucomputing/headscale-ui:latest
+    image: ghcr.io/gurucomputing/headscale-ui
     container_name: headscale
     hostname: headscale
     extra_hosts: *common-hostname-aliases
@@ -5497,7 +5497,7 @@ services:
   hedgedoc:
     depends_on:
       - hedgedoc-db
-    image: quay.io/hedgedoc/hedgedoc:latest
+    image: quay.io/hedgedoc/hedgedoc
     container_name: hedgedoc
     hostname: hedgedoc
     extra_hosts: *common-hostname-aliases
@@ -5556,7 +5556,7 @@ services:
     restart: always
   mongodb:
     # 🔹🔹 MongoDB 🔹🔹
-    image: mongo:latest
+    image: mongo
     container_name: mongodb
     hostname: ${MONGODB_HOSTNAME:-mongodb}
     extra_hosts: *common-hostname-aliases
@@ -5906,15 +5906,15 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.litellm.rule: Host(`litellm.$DOMAIN`) || Host(`litellm.$TS_HOSTNAME.$DOMAIN`)
-      traefik.http.services.litellm.loadbalancer.server.port: 4000
+      traefik.http.services.litellm.loadbalancer.server.port: ${LITELLM_PORT:-4000}
       homepage.group: AI
       homepage.name: Litellm
       homepage.icon: litellm.png
       homepage.href: https://litellm.$DOMAIN/
       homepage.description: Litellm is a tool for managing and interacting with AI models.
-    command: --config /app/config/litellm_config.yaml --port 4000 --host 0.0.0.0
+    command: --config /app/config/litellm_config.yaml --port ${LITELLM_PORT:-4000} --host 0.0.0.0
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/health/liveliness"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:${LITELLM_PORT:-4000}/health/liveliness"]
       interval: 30s
       timeout: 15s
       retries: 5
@@ -5943,7 +5943,7 @@ services:
   searxng:
     # 🔹🔹 SearxNG 🔹🔹  # https://hub.docker.com/r/searxng/searxng
     # SearxNG is a privacy-respecting, hackable, open-source metasearch engine.
-    image: docker.io/searxng/searxng:latest
+    image: docker.io/searxng/searxng
     container_name: searxng
     hostname: ${SEARXNG_HOSTNAME:-searxng}
     extra_hosts: *common-hostname-aliases
@@ -5973,7 +5973,7 @@ services:
     restart: always
   code-server:
     # 🔹🔹 Code Server 🔹🔹
-    image: docker.io/linuxserver/code-server:latest
+    image: docker.io/linuxserver/code-server
     container_name: code-server
     hostname: code-server
     extra_hosts: *common-hostname-aliases
@@ -6014,7 +6014,7 @@ services:
     restart: always
 
   init_prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus
     container_name: init_prometheus
     hostname: init_prometheus
     extra_hosts: *common-hostname-aliases
@@ -6029,7 +6029,7 @@ services:
   prometheus:
     depends_on:
       - init_prometheus
-    image: prom/prometheus:latest
+    image: prom/prometheus
     container_name: prometheus
     hostname: prometheus
     extra_hosts: *common-hostname-aliases
@@ -6060,7 +6060,7 @@ services:
     build:
       context: ${SRC_PATH:-./projects}/bolabaden-site
       dockerfile: Dockerfile
-    image: th3w1zard1/bolabaden-nextjs:latest
+    image: th3w1zard1/bolabaden-nextjs
     container_name: bolabaden-nextjs
     hostname: bolabaden-nextjs
     extra_hosts: *common-hostname-aliases
@@ -6127,7 +6127,7 @@ services:
 
   whoami:
     # 🔹🔹 Whoami 🔹🔹
-    image: traefik/whoami:latest
+    image: traefik/whoami
     container_name: whoami
     hostname: whoami
     extra_hosts: *common-hostname-aliases
@@ -6182,7 +6182,7 @@ services:
 
   dozzle:
     # 🔹🔹 Dozzle 🔹🔹
-    image: amir20/dozzle:latest
+    image: amir20/dozzle
     container_name: dozzle
     hostname: dozzle
     extra_hosts: *common-hostname-aliases
@@ -6254,7 +6254,7 @@ services:
 
   watchtower:
     # 🔹🔹 Watchtower 🔹🔹
-    image: containrrr/watchtower:latest
+    image: containrrr/watchtower
     container_name: watchtower
     hostname: watchtower
     extra_hosts: *common-hostname-aliases
@@ -6294,8 +6294,8 @@ services:
 
   flaresolverr:
     # 🔹🔹 Flaresolverr 🔹🔹  # https://github.com/flaresolverr/flaresolverr
-    image: ghcr.io/flaresolverr/flaresolverr:latest
-    #image: ghcr.io/thephaseless/byparr:latest
+    image: ghcr.io/flaresolverr/flaresolverr
+    #image: ghcr.io/thephaseless/byparr
     container_name: flaresolverr
     hostname: flaresolverr
     extra_hosts: *common-hostname-aliases
@@ -6349,7 +6349,7 @@ services:
   stremio:
     # 🔹🔹 Stremio 🔹🔹
     # Stream Movies/TV over debrid instantly.
-    image: th3w1zard1/stremio-docker:latest
+    image: th3w1zard1/stremio-docker
     container_name: stremio
     networks:
       publicnet: {}
@@ -6410,7 +6410,7 @@ services:
     restart: always
   aiostreams:
     # 🔹🔹 AIOStreams 🔹🔹
-    image: ghcr.io/viren070/aiostreams:latest
+    image: ghcr.io/viren070/aiostreams
     container_name: aiostreams
     hostname: ${AIOSTREAMS_HOSTNAME:-aiostreams}
     networks:
@@ -6899,7 +6899,7 @@ services:
       start_period: 120s
     restart: always
   comet:
-    image: g0ldyy/comet:latest
+    image: g0ldyy/comet
     container_name: comet
     hostname: comet
     extra_hosts: *common-hostname-aliases
@@ -6967,7 +6967,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    image: mhdzumair/mediafusion:latest
+    image: mhdzumair/mediafusion
     container_name: mediafusion
     hostname: mediafusion
     extra_hosts: *common-hostname-aliases
@@ -7147,7 +7147,7 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    image: muniftanjim/stremthru:latest
+    image: muniftanjim/stremthru
     container_name: stremthru
     hostname: stremthru
     extra_hosts: *common-hostname-aliases
@@ -7219,7 +7219,7 @@ services:
       #context: https://github.com/th3w1zard1/gpt-researcher.git#master  # :/frontend/nextjs
       context: ${SRC_PATH:-./projects}/gpt-researcher
       dockerfile: Dockerfile.fullstack
-    image: th3w1zard1/ai-researchwizard:latest
+    image: th3w1zard1/ai-researchwizard
     container_name: gptr
     hostname: gptr
     extra_hosts: *common-hostname-aliases

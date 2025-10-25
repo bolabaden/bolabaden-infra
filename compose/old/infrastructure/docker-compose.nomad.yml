@@ -2,7 +2,7 @@
 services:
   consul:
     # image: hashicorp/consul:1.19
-    image: hashicorp/consul:latest
+    image: hashicorp/consul
     container_name: consul
     hostname: consul
     extra_hosts:
@@ -92,7 +92,7 @@ services:
 
   nomad:
     # 🔹🔹 Nomad 🔹🔹
-    #image: docker.io/multani/nomad:latest
+    #image: docker.io/multani/nomad
     build: latest
     image: docker.io/hashicorp/nomad:1.10.4
     container_name: nomad

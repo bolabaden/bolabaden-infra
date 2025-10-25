@@ -1,0 +1,2653 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+
+x-common-env:
+  PGID: "${PGID:-121}"
+  PUID: "${PUID:-1001}"
+  TZ: ${TZ:-America/Chicago}
+  UMASK: ${UMASK:-002}
+x-common-logging:
+  logging:
+    driver: local
+    options:
+      max-file: "5"
+      max-size: 10m
+x-common-uidgid:
+  user: ${PUID:-1001}:${PGID:-121}
+x-resource-limits:
+  labels:
+    autoheal: "true"
+
+
+x-common-hostname-aliases:
+  - host.docker.internal:host-gateway
+  - warp:${WARP_IPV4_ADDRESS:-10.67.128.97}
+  - comet:${COMET_IPV4_ADDRESS:-10.67.128.97}
+  - jackett:${JACKETT_IPV4_ADDRESS:-10.67.128.97}
+  - jackettio:${JACKETTIO_IPV4_ADDRESS:-10.67.128.97}
+  - localhost:${LOCALHOST_IPV4_ADDRESS:-10.67.128.97}
+  - mediafusion:${MEDIAFUSION_IPV4_ADDRESS:-10.67.128.97}
+  - prowlarr:${PROWLARR_IPV4_ADDRESS:-10.67.128.97}
+  - stremio-jackett:${STREMIO_JACKETT_IPV4_ADDRESS:-10.67.128.97}
+  - zurg:${ZURG_IPV4_ADDRESS:-10.67.128.97}
+  - mediaflow-proxy:${MEDIAFLOW_PROXY_IPV4_ADDRESS:-10.67.128.97}
+  - deluge:${DELUGE_IPV4_ADDRESS:-10.67.128.97}
+  - stremio-web:${STREMIO_WEB_IPV4_ADDRESS:-10.67.128.97}
+  - stremio-https-server:${STREMIO_HTTPS_SERVER_IPV4_ADDRESS:-10.67.128.97}
+  - stremio-fallback:${STREMIO_FALLBACK_IPV4_ADDRESS:-10.67.128.97}
+  - gluetun-premiumize-nl:${GLUETUN_PREMIUMIZE_NL_IPV4_ADDRESS:-10.67.128.119}
+  - transmission:${TRANSMISSION_IPV4_ADDRESS:-10.67.128.119}
+  - qbittorrent:${QB_IPV4_ADDRESS:-10.67.128.119}
+x-gluetun-hosts-workaround:
+  - host.docker.internal:host-gateway
+  - boden-iphone:${BODEN_IPHONE_IPV4_ADDRESS:-100.97.148.14}
+  - beatapostapita:${BEATAPOSTAPITA_IPV4_ADDRESS:-100.99.45.35}
+  - micklethefickle:${MICKLETHEFICKLE_IPV4_ADDRESS:-100.72.149.123}
+  - micklethefickle3:${MICKLETHEFICKLE3_IPV4_ADDRESS:-100.72.149.123}
+  - wizard:${WIZARD_IPV4_ADDRESS:-100.119.187.62}
+  - wizard-pc:${WIZARD_PC_IPV4_ADDRESS:-100.119.187.62}
+  - warp:${WARP_IPV4_ADDRESS:-10.67.128.97}
+  - comet:${COMET_IPV4_ADDRESS:-10.67.128.97}
+  - jackett:${JACKETT_IPV4_ADDRESS:-10.67.128.97}
+  - jackettio:${JACKETTIO_IPV4_ADDRESS:-10.67.128.97}
+  - localhost:${LOCALHOST_IPV4_ADDRESS:-10.67.128.97}
+  - mediafusion:${MEDIAFUSION_IPV4_ADDRESS:-10.67.128.97}
+  - prowlarr:${PROWLARR_IPV4_ADDRESS:-10.67.128.97}
+  - stremio-jackett:${STREMIO_JACKETT_IPV4_ADDRESS:-10.67.128.97}
+  - zurg:${ZURG_IPV4_ADDRESS:-10.67.128.97}
+  - mediaflow-proxy:${MEDIAFLOW_PROXY_IPV4_ADDRESS:-10.67.128.97}
+  - deluge:${DELUGE_IPV4_ADDRESS:-10.67.128.97}
+  - stremio-web:${STREMIO_WEB_IPV4_ADDRESS:-10.67.128.97}
+  - stremio-https-server:${STREMIO_HTTPS_SERVER_IPV4_ADDRESS:-10.67.128.97}
+  - stremio-fallback:${STREMIO_FALLBACK_IPV4_ADDRESS:-10.67.128.97}
+  - gluetun-premiumize-nl:${GLUETUN_PREMIUMIZE_NL_IPV4_ADDRESS:-10.67.128.119}
+  - transmission:${TRANSMISSION_IPV4_ADDRESS:-10.67.128.119}
+  - qbittorrent:${QB_IPV4_ADDRESS:-10.67.128.119}
+  - dash:${DASH_IPV4_ADDRESS:-10.67.128.23}
+  - gpt-researcher:${GPT_RESEARCHER_IPV4_ADDRESS:-10.67.128.43}
+  - gptr:${GPT_RESEARCHER_IPV4_ADDRESS:-10.67.128.43}
+  - qdrant:${QDRANT_IPV4_ADDRESS:-10.67.128.44}
+  - bocloud-nextjs:${BOCLOUD_NEXTJS_IPV4_ADDRESS:-10.67.128.45}
+  - lobechat:${LOBECHAT_IPV4_ADDRESS:-10.67.128.46}
+  - mongodb:${MONGODB_IPV4_ADDRESS:-10.67.0.50}
+  - code-demo:${CODE_DEMO_IPV4_ADDRESS:-10.67.128.80}
+  - whoami:${WHOAMI_IPV4_ADDRESS:-10.67.128.81}
+  - tinyauth:${TINYAUTH_IPV4_ADDRESS:-10.67.128.82}
+  - watchtower:${WATCHTOWER_IPV4_ADDRESS:-10.67.128.83}
+  - maintainerr:${MAINTAINERR_IPV4_ADDRESS:-10.67.128.84}
+  - traefik:${TRAEFIK_IPV4_ADDRESS:-10.67.128.85}
+  - speedtest:${SPEEDTEST_IPV4_ADDRESS:-10.67.128.86}
+  - redis:${REDIS_IPV4_ADDRESS:-10.67.128.87}
+  - homepage:${HOMEPAGE_IPV4_ADDRESS:-10.67.128.88}
+  - dozzle:${DOZZLE_IPV4_ADDRESS:-10.67.128.89}
+  - searxng:${SEARXNG_IPV4_ADDRESS:-10.67.128.90}
+  - code-server:${CODE_SERVER_IPV4_ADDRESS:-10.67.128.92}
+  - byparr:${FLARESOLVERR_IPV4_ADDRESS:-10.67.128.93}
+  - flaresolverr:${FLARESOLVERR_IPV4_ADDRESS:-10.67.128.93}
+  - nginx-auth:${NGINX_AUTH_IPV4_ADDRESS:-10.67.128.94}
+  - plex:${PLEX_IPV4_ADDRESS:-10.67.128.95}
+  - code:${CODE_DEMO_IPV4_ADDRESS:-10.67.128.96}
+  - stremthru:${STREMTHRU_IPV4_ADDRESS:-10.67.128.99}
+  - riven-frontend:${RIVEN_IPV4_ADDRESS:-10.67.128.100}
+  - riven:${RIVEN_CORE_IPV4_ADDRESS:-10.67.128.101}
+  - riven-backend:${RIVEN_CORE_IPV4_ADDRESS:-10.67.128.101}
+  - riven-db:${RIVEN_DB_IPV4_ADDRESS:-10.67.128.102}
+  - tautulli:${TAUTULLI_IPV4_ADDRESS:-10.67.128.103}
+  - crowdsec:${CROWDSEC_IPV4_ADDRESS:-10.67.128.104}
+  - gatus:${GATUS_IPV4_ADDRESS:-10.67.128.105}
+  - homer:${HOMER_IPV4_ADDRESS:-10.67.0.106}
+  - wizarr:${WIZARR_IPV4_ADDRESS:-10.67.128.107}
+  - plex-watchlist:${PLEX_WATCHLIST_IPV4_ADDRESS:-10.67.52.97}
+  - realdebrid-account-monitor:${REALDEBRID_ACCOUNT_MONITOR_IPV4_ADDRESS:-10.67.128.109}
+  - rclone:${RCLONE_IPV4_ADDRESS:-10.67.128.111}  
+  - plex-authentication:${PLEX_AUTHENTICATION_IPV4_ADDRESS:-10.67.128.112}
+  - plex-request:${PLEX_REQUEST_IPV4_ADDRESS:-10.67.128.113}
+  - jellyseerr:${JELLYSEERR_IPV4_ADDRESS:-10.67.128.115}
+  - overseerr:${OVERSEERR_IPV4_ADDRESS:-10.67.128.116}
+  - jellyfin:${JELLYFIN_IPV4_ADDRESS:-10.67.128.120}
+  - radarr:${RADARR_IPV4_ADDRESS:-10.67.128.121}
+  - sonarr:${SONARR_IPV4_ADDRESS:-10.67.128.122}
+  - sonarr-anime:${SONARR_ANIME_IPV4_ADDRESS:-10.67.128.123}
+  - firecrawl-api:${FIRECRAWL_API_IPV4_ADDRESS:-10.67.128.127}
+  - firecrawl-worker:${FIRECRAWL_WORKER_IPV4_ADDRESS:-10.67.128.128}
+  - firecrawl-playwright:${FIRECRAWL_PLAYWRIGHT_IPV4_ADDRESS:-10.67.128.130}
+  - decluttarr:${DECLUTTARR_IPV4_ADDRESS:-10.67.128.21}
+  - whisparr:${WHISPARR_IPV4_ADDRESS:-10.67.0.120}
+  - aiostreams:${AIOSTREAMS_IPV4_ADDRESS:-10.67.128.200}
+  - plex-repair:${PLEX_REPAIR_IPV4_ADDRESS:-10.67.0.115}
+  - script-runner:${SCRIPT_RUNNER_IPV4_ADDRESS:-10.67.0.116}
+  - recyclarr:${RECYCLARR_IPV4_ADDRESS:-10.67.0.117}
+  - open-webui:${OPEN_WEBUI_IPV4_ADDRESS:-10.67.128.118}
+  - autoscan:${AUTOSCAN_IPV4_ADDRESS:-10.67.0.119}
+
+
+configs:
+  headscale-config:
+    name: my-media-stack_headscale-config
+  homer-config.yml:
+    name: my-media-stack_homer-config.yml
+  premiumize-auth:
+    name: my-media-stack_premiumize-auth
+  premiumize-ca:
+    name: my-media-stack_premiumize-cached
+  rclone-mounts.json:
+    name: my-media-stack_rclone-mounts.json
+  rclone-rclone.conf:
+    name: my-media-stack_rclone-rclone.conf
+  riven-settings.json:
+    name: my-media-stack_riven-settings.json
+  vpn-nl.premiumize.me:
+    name: my-media-stack_vpn-nl.premiumize.me
+  zurg-cli_debrid_update.sh:
+    name: my-media-stack_zurg-cli_debrid_update.sh
+  zurg-config.yml:
+    name: my-media-stack_zurg-config.yml
+
+
+services:
+  aiostreams:
+    build:
+      context: https://github.com/viren070/aiostreams.git#main
+      dockerfile: Dockerfile
+      tags:
+        - th3w1zard1/aiostreams:latest
+    container_name: aiostreams
+    environment:
+      ADDON_CATALOG_CACHE_TTL: "300"
+      ADDON_ID: $DOMAIN
+      ADDON_NAME: BadenAIO
+      ADDON_PASSWORD: sk_4dc059c0399c43fd94c09baaf0b94da119fc526775914bf2b3a3fb6e073e26d9
+      ADDON_PROXY: http://warp:1080
+      ANIME_CATALOGS_URL: https://1fe84bc728af-stremio-anime-catalogs.baby-beamup.club/
+      ANIME_KITSU_URL: https://anime-kitsu.strem.fun/
+      BASE_URL: https://aiostreams.$DOMAIN
+      CATALOG_API_RATE_LIMIT_MAX_REQUESTS: "5"
+      CATALOG_API_RATE_LIMIT_WINDOW: "5"
+      CATALOG_CACHE_TTL: "300"
+      COMET_URL: "2020"
+      CUSTOM_HTML: ""
+      DATABASE_URI: sqlite://./data/db.sqlite
+      DC_UNIVERSE_URL: https://addon-dc-cq85.onrender.com/
+      DEBRIDIO_TMDB_URL: https://tmdb-addon.debridio.com/
+      DEBRIDIO_TV_URL: https://tv-addon.debridio.com/
+      DEBRIDIO_TVDB_URL: https://tvdb-addon.debridio.com/
+      DEBRIDIO_URL: https://addon.debridio.com/
+      DEBRIDIO_WATCHTOWER_URL: https://wt-addon.debridio.com/
+      DEFAULT_ALLDEBRID_API_KEY: ""
+      DEFAULT_DEBRIDLINK_API_KEY: vvppT6-RCIXJVyr1O2j8VYIBAAPy4EmcY_OVgELZWujQOBt5iz_19Rpz6A6xxwwS
+      DEFAULT_EASYDEBRID_API_KEY: ""
+      DEFAULT_EASYNEWS_PASSWORD: ""
+      DEFAULT_EASYNEWS_USERNAME: ""
+      DEFAULT_JACKETTIO_INDEXERS: '["bitsearch", "eztv", "thepiratebay", "therarbg", "yts"]'
+      DEFAULT_JACKETTIO_STREMTHRU_URL: https://stremthru.13377001.xyz
+      DEFAULT_MAX_CACHE_SIZE: "100000"
+      DEFAULT_OFFCLOUD_API_KEY: ""
+      DEFAULT_OFFCLOUD_EMAIL: ""
+      DEFAULT_OFFCLOUD_PASSWORD: ""
+      DEFAULT_PIKPAK_EMAIL: ""
+      DEFAULT_PIKPAK_PASSWORD: ""
+      DEFAULT_PREMIUMIZE_API_KEY: 6i6zgswm35baj3ur
+      DEFAULT_PROXY_CREDENTIALS: bolabaden:duckdns
+      DEFAULT_PROXY_ENABLED: "true"
+      DEFAULT_PROXY_URL: http://stremthru:8080
+      DEFAULT_PUTIO_CLIENT_ID: ""
+      DEFAULT_PUTIO_CLIENT_SECRET: ""
+      DEFAULT_REALDEBRID_API_KEY: MTc0MDcxNDk2MTY5MDRmMDcxYmM1LTI5ODktNGJiMy05NzExLTdhYjYyMWQxMDAyOQ==
+      DEFAULT_SEEDR_ENCODED_TOKEN: ""
+      DEFAULT_TIMEOUT: "15000"
+      DEFAULT_TORBOX_API_KEY: d490b7b1-1f6d-44e8-9cc8-3e735c87874b
+      DISABLE_RATE_LIMITS: "false"
+      DISABLE_SELF_SCRAPING: "false"
+      DOCTOR_WHO_UNIVERSE_URL: https://new-who.onrender.com
+      EASYNEWS_PLUS_PLUS_URL: https://easynews-cloudflare-worker.jqrw92fchz.workers.dev/
+      EASYNEWS_PLUS_URL: https://b89262c192b0-stremio-easynews-addon.baby-beamup.club/
+      EASYNEWS_URL: https://ea627ddf0ee7-easynews.baby-beamup.club/
+      ENCRYPT_MEDIAFLOW_URLS: "true"
+      ENCRYPT_STREMTHRU_URLS: "true"
+      FORCE_COMET_HOSTNAME: comet.$DOMAIN
+      FORCE_COMET_PORT: "443"
+      FORCE_COMET_PROTOCOL: https
+      FORCE_PROXY_ID: stremthru
+      FORCE_PUBLIC_PROXY_HOST: stremthru.$DOMAIN
+      FORCE_PUBLIC_PROXY_PORT: "443"
+      FORCE_PUBLIC_PROXY_PROTOCOL: https
+      FORCE_STREMTHRU_STORE_HOST: stremthru.$DOMAIN
+      FORCE_STREMTHRU_STORE_PORT: "443"
+      FORCE_STREMTHRU_STORE_PROTOCOL: https
+      FORMAT_API_RATE_LIMIT_MAX_REQUESTS: "30"
+      FORMAT_API_RATE_LIMIT_WINDOW: "5"
+      JACKETTIO_URL: https://jackettio.elfhosted.com/
+      LOG_FORMAT: text
+      LOG_LEVEL: verbose
+      LOG_SENSITIVE_INFO: "true"
+      LOG_TIMEZONE: America/Chicago
+      MANIFEST_CACHE_TTL: "300"
+      MARVEL_UNIVERSE_URL: https://addon-marvel.onrender.com/
+      MAX_ADDONS: "100"
+      MAX_CONDITION_FILTERS: "200"
+      MAX_GROUPS: "50"
+      MAX_KEYWORD_FILTERS: "50"
+      MAX_TIMEOUT: "50000"
+      MEDIAFUSION_API_PASSWORD: h4L0m4St3R327
+      MEDIAFUSION_CONFIG_TIMEOUT: "5000"
+      MEDIAFUSION_URL: http://mediafusion:8080
+      META_CACHE_TTL: "300"
+      MIN_TIMEOUT: "1000"
+      NUVIOSTREAMS_URL: https://nuviostreams.hayd.uk/
+      OPENSUBTITLES_URL: https://opensubtitles-v3.strem.io/
+      ORION_STREMIO_ADDON_URL: https://5a0d1888fa64-orion.baby-beamup.club/
+      PEERFLIX_URL: https://peerflix-addon.onrender.com/
+      PGID: "121"
+      PORT: "3005"
+      PROXY_IP_CACHE_TTL: "900"
+      PRUNE_INTERVAL: "86400"
+      PRUNE_MAX_DAYS: "1"
+      PUID: "1001"
+      REGEX_FILTER_ACCESS: trusted
+      RPDB_API_KEY_VALIDITY_CACHE_TTL: "604800"
+      RPDB_CATALOGS_URL: https://1fe84bc728af-rpdb.baby-beamup.club/
+      SECRET_KEY: 207d3e5d2dd7edca578b121814f32ed4d73568b5059fd710637a40d310928cde
+      STAR_WARS_UNIVERSE_URL: https://addon-star-wars-u9e3.onrender.com/
+      STATIC_RATE_LIMIT_MAX_REQUESTS: "75"
+      STATIC_RATE_LIMIT_WINDOW: "5"
+      STREAM_API_RATE_LIMIT_MAX_REQUESTS: "10"
+      STREAM_API_RATE_LIMIT_WINDOW: "5"
+      STREAM_CACHE_TTL: "1"
+      STREAMFUSION_URL: https://stream-fusion.stremiofr.com/
+      STREAMING_CATALOGS_URL: https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club/
+      STREMIO_CATALOG_RATE_LIMIT_MAX_REQUESTS: "30"
+      STREMIO_CATALOG_RATE_LIMIT_WINDOW: "5"
+      STREMIO_MANIFEST_RATE_LIMIT_MAX_REQUESTS: "5"
+      STREMIO_MANIFEST_RATE_LIMIT_WINDOW: "5"
+      STREMIO_META_RATE_LIMIT_MAX_REQUESTS: "15"
+      STREMIO_META_RATE_LIMIT_WINDOW: "5"
+      STREMIO_STREAM_RATE_LIMIT_MAX_REQUESTS: "10"
+      STREMIO_STREAM_RATE_LIMIT_WINDOW: "15"
+      STREMIO_SUBTITLE_RATE_LIMIT_MAX_REQUESTS: "10"
+      STREMIO_SUBTITLE_RATE_LIMIT_WINDOW: "5"
+      STREMTHRU_STORE_URL: http://stremthru:8080/stremio/store
+      STREMTHRU_TORZ_URL: https://stremthru.elfhosted.com/stremio/torz
+      SUBTITLE_CACHE_TTL: "300"
+      TMDB_ACCESS_TOKEN: cec876f852b9c15d2c1b436b1117dff7
+      TMDB_COLLECTIONS_URL: https://61ab9c85a149-tmdb-collections.baby-beamup.club/
+      TORBOX_STREMIO_URL: https://stremio.torbox.app/
+      TORRENT_CATALOGS_URL: https://torrent-catalogs.strem.fun/
+      TORRENTIO_URL: https://torrentio.strem.fun/
+      TRUSTED_UUIDS: ""
+      TZ: America/Chicago
+      UMASK: "002"
+      USER_API_RATE_LIMIT_MAX_REQUESTS: "5"
+      USER_API_RATE_LIMIT_WINDOW: "5"
+      WEBSTREAMR_URL: https://webstreamr.hayd.uk
+    extra_hosts: *common-hostname-aliases
+    hostname: aiostreams
+    image: ghcr.io/viren070/aiostreams
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: AIOStreams is a stremio addon that combines multiple stremio addons into one, providing additional functionality that can be used for all these addons that may not natively otherwise support them.
+      homepage.group: Stremio Addons
+      homepage.href: https://aiostreams.$DOMAIN/
+      homepage.icon: aiostreams.png
+      homepage.name: AIOStreams
+      traefik.enable: "true"
+      traefik.http.routers.aiostreams.rule: Host(`aiostreams.$DOMAIN`) || Host(`aiostreams.bocloud.org`) || Host(`aiostreams.bolabaden.duckdns.org`) || Host(`aiostreams.micklethefickle.duckdns.org`)
+      traefik.http.routers.aiostreams.service: aiostreams
+      traefik.http.services.aiostreams.loadbalancer.server.port: "3005"
+      kuma.aiostreams.http.name: "aiostreams.${TS_HOSTNAME}.${DOMAIN}"
+      kuma.aiostreams.http.url: "https://aiostreams.${DOMAIN}"
+      kuma.aiostreams.http.interval: "60"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.200
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/stremio/addons/aiostreams/data:/app/data
+  bocloud-nextjs:
+    build:
+      context: /home/ubuntu/my-media-stack/src/bocloud-site
+      dockerfile: Dockerfile
+    image: th3w1zard1/bocloud-nextjs:latest
+    container_name: bocloud-nextjs
+    depends_on:
+      - tinyauth
+      - traefik
+    environment:
+      HOSTNAME: 0.0.0.0
+      NODE_ENV: production
+      PGID: "121"
+      PORT: "3000"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "3000"
+    extra_hosts: *common-hostname-aliases
+    hostname: bocloud-nextjs
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 40s
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.enable: "true"
+      traefik.http.middlewares.bocloud-nextjs.errors.query: /api/error/{status}
+      traefik.http.middlewares.bocloud-nextjs.errors.service: bocloud-nextjs
+      traefik.http.middlewares.bocloud-nextjs.errors.status: 400-599
+      traefik.http.routers.404-catchall.middlewares: bocloud-nextjs
+      traefik.http.routers.404-catchall.priority: "1"
+      traefik.http.routers.404-catchall.rule: Host(`*`)
+      traefik.http.routers.404-catchall.service: bocloud-nextjs
+      traefik.http.routers.bocloud-embed.rule: Host(`embed.bocloud.org`)
+      traefik.http.routers.bocloud-embed.service: bocloud-nextjs
+      traefik.http.routers.bocloud-nextjs.rule: Host(`$DOMAIN`) || Host(`bocloud.org`) || Host(`bolabaden.duckdns.org`) || Host(`micklethefickle.duckdns.org`)
+      traefik.http.routers.bocloud-nextjs.service: bocloud-nextjs
+      traefik.http.services.bocloud-nextjs.loadbalancer.server.port: "3000"
+      kuma.bocloud-nextjs.http.name: "${TS_HOSTNAME}.${DOMAIN}"
+      kuma.bocloud-nextjs.http.url: "https://${DOMAIN}"
+      kuma.bocloud-nextjs.http.interval: "30"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.45
+    ports:
+      - mode: ingress
+        target: 3000
+        published: 3000
+        protocol: tcp
+    restart: always
+  code-server:
+    container_name: code-server
+    environment:
+      CODESERVER_DEFAULT_WORKSPACE: /workspace
+      CODESERVER_PASSWORD: h4L0m4St3R327
+      CODESERVER_SUDO_PASSWORD: h4L0m4St3R327
+      DEFAULT_WORKSPACE: /workspace
+      PASSWORD: h4L0m4St3R327
+      PGID: "121"
+      PUID: "1001"
+      SUDO_PASSWORD: h4L0m4St3R327
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "8443"
+    extra_hosts: *common-hostname-aliases
+    hostname: code-server
+    image: docker.io/linuxserver/code-server:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Code Dev is a tool that allows you to develop code in a container.
+      homepage.group: Infrastructure
+      homepage.href: https://code-server.$DOMAIN/
+      homepage.icon: code-server.png
+      homepage.name: Code Dev
+      traefik.enable: "true"
+      traefik.http.routers.code-server.middlewares: allow-iframe-from-domain@file
+      traefik.http.routers.code-server.rule: Host(`code-server.$DOMAIN`) || Host(`code-server.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.code-server.loadbalancer.server.port: "8443"
+      kuma.code-server.http.name: "code-server.${TS_HOSTNAME}.${DOMAIN}"
+      kuma.code-server.http.url: "https://code-server.${DOMAIN}"
+      kuma.code-server.http.interval: "60"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.92
+    restart: always
+    user: 1001:121
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/code-server/dev/config:/config
+      - /home/ubuntu/my-media-stack:/workspace
+  comet:
+    container_name: comet
+    depends_on:
+      - warp
+    environment:
+      ADDON_ID: comet.$DOMAIN
+      ADDON_NAME: Comet | $DOMAIN
+      COMET_URL: https://comet.elfhosted.com
+      DASHBOARD_ADMIN_PASSWORD: h4L0m4St3R327
+      DATABASE_PATH: /data/comet.db
+      DATABASE_TYPE: sqlite
+      DEBRID_CACHE_TTL: "86400"
+      DOWNLOAD_TORRENT_FILES: "true"
+      FASTAPI_HOST: 0.0.0.0
+      FASTAPI_PORT: "2020"
+      FASTAPI_WORKERS: "4"
+      GET_TORRENT_TIMEOUT: "2"
+      INDEXER_MANAGER_API_KEY: 29440a82740d475cacb35327c62c87a1
+      INDEXER_MANAGER_INDEXERS: '["animetosho", "anirena", "bitsearch", "eztv", "nyaasi", "thepiratebay", "therarbg", "yts"]'
+      INDEXER_MANAGER_TIMEOUT: "60"
+      INDEXER_MANAGER_TYPE: prowlarr
+      INDEXER_MANAGER_URL: http://prowlarr:9696
+      MEDIAFUSION_URL: https://mediafusion.elfhosted.com
+      METADATA_CACHE_TTL: "2592000"
+      PGID: "121"
+      PROXY_DEBRID_STREAM: "true"
+      PROXY_DEBRID_STREAM_DEBRID_DEFAULT_APIKEY: 6i6zgswm35baj3ur
+      PROXY_DEBRID_STREAM_DEBRID_DEFAULT_SERVICE: premiumize
+      PROXY_DEBRID_STREAM_MAX_CONNECTIONS: "-1"
+      PROXY_DEBRID_STREAM_PASSWORD: brunner56:h4L0m4St3R327,bolabaden:duckdns
+      PUID: "1001"
+      REMOVE_ADULT_CONTENT: "true"
+      SCRAPE_COMET: "true"
+      SCRAPE_MEDIAFUSION: "true"
+      SCRAPE_TORRENTIO: "true"
+      SCRAPE_ZILEAN: "true"
+      STREMTHRU_URL: https://stremthru.$DOMAIN
+      TORRENT_CACHE_TTL: "1296000"
+      TORRENTIO_URL: https://torrentio.strem.fun
+      TZ: America/Chicago
+      UMASK: "002"
+      USE_GUNICORN: "true"
+      ZILEAN_URL: https://zilean.elfhosted.com
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:2020/health > /dev/null 2>&1 || exit 1
+      timeout: 5s
+      interval: 1m0s
+      retries: 3
+      start_period: 15s
+    image: g0ldyy/comet:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Comet is a Stremio Addon for finding media sources from various sources.
+      homepage.group: Stremio Addons
+      homepage.href: https://comet.$DOMAIN/
+      homepage.icon: comet.png
+      homepage.name: Comet
+      kuma.comet.http.name: "comet.${TS_HOSTNAME}.${DOMAIN}"
+      kuma.comet.http.url: "https://comet.${DOMAIN}"
+      kuma.comet.http.interval: "60"
+    network_mode: service:warp
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/stremio/addons/comet/data:/data
+  crowdsec:
+    container_name: crowdsec
+    environment:
+      AGENT_PASSWORD: ""
+      AGENT_USERNAME: ""
+      AGENTS_ALLOWED_OU: agent-ou
+      APPSEC_CONFIGS: ""
+      APPSEC_RULES: ""
+      BOUNCER_KEY_TRAEFIK: usvi2urbIG5obProVWwcf2ImTrtB93x668jWDvrH
+      BOUNCERS_ALLOWED_OU: bouncer-ou
+      CACERT_FILE: ""
+      CAPI_WHITELISTS_PATH: ""
+      CI_TESTING: "false"
+      CLIENT_CERT_FILE: ""
+      CLIENT_KEY_FILE: ""
+      COLLECTIONS: crowdsecurity/traefik
+      CONFIG_FILE: /etc/crowdsec/config.yaml
+      CONTEXTS: ""
+      CUSTOM_HOSTNAME: localhost
+      DEBUG: "false"
+      DISABLE_AGENT: "false"
+      DISABLE_APPSEC_CONFIGS: ""
+      DISABLE_APPSEC_RULES: ""
+      DISABLE_COLLECTIONS: ""
+      DISABLE_CONTEXTS: ""
+      DISABLE_LOCAL_API: "false"
+      DISABLE_ONLINE_API: "false"
+      DISABLE_PARSERS: ""
+      DISABLE_POSTOVERFLOWS: ""
+      DISABLE_SCENARIOS: ""
+      DSN: ""
+      ENROLL_INSTANCE_NAME: ""
+      ENROLL_KEY: cm91pb2bz0011e35iltz9k6ra
+      ENROLL_TAGS: ${CROWDSEC_ENROLL_TAGS:-}
+      INSECURE_SKIP_VERIFY: ""
+      LAPI_CERT_FILE: ${CROWDSEC_LAPI_CERT_FILE:-}
+      LAPI_KEY_FILE: ${CROWDSEC_LAPI_KEY_FILE:-}
+      LEVEL_DEBUG: ${CROWDSEC_LEVEL_DEBUG:-false}
+      LEVEL_ERROR: ${CROWDSEC_LEVEL_ERROR:-false}
+      LEVEL_FATAL: ${CROWDSEC_LEVEL_FATAL:-false}
+      LEVEL_INFO: ${CROWDSEC_LEVEL_INFO:-false}
+      LEVEL_TRACE: ${CROWDSEC_LEVEL_TRACE:-false}
+      LEVEL_WARN: ${CROWDSEC_LEVEL_WARN:-false}
+      LOCAL_API_URL: ${CROWDSEC_LOCAL_API_URL:-http://0.0.0.0:8080}
+      METRICS_PORT: ${CROWDSEC_METRICS_PORT:-6060}
+      NO_HUB_UPGRADE: ${CROWDSEC_NO_HUB_UPGRADE:-false}
+      PARSERS: ${CROWDSEC_PARSERS:-}
+      PGID: ${PGID:-121}
+      PLUGIN_DIR: ${CROWDSEC_PLUGIN_DIR:-/usr/local/lib/crowdsec/plugins/}
+      POSTOVERFLOWS: ${CROWDSEC_POSTOVERFLOWS:-}
+      PUID: ${PUID:-1001}
+      SCENARIOS: ${CROWDSEC_SCENARIOS:-}
+      TEST_MODE: ${CROWDSEC_TEST_MODE:-false}
+      TYPE: ${CROWDSEC_TYPE:-}
+      TZ: ${TZ:-America/Chicago}
+      UMASK: ${UMASK:-002}
+      USE_TLS: ${CROWDSEC_USE_TLS:-false}
+      USE_WAL: ${CROWDSEC_USE_WAL:-false}
+    expose:
+      - ${CROWDSEC_METRICS_PORT:-6060}
+      - ${CROWDSEC_HTTP_PORT:-8080}
+    extra_hosts: *common-hostname-aliases
+    hostname: crowdsec
+    image: docker.io/crowdsecurity/crowdsec:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: CrowdSec is an open-source, behavioral, intrusion detection system.
+      homepage.group: Security
+      homepage.href: https://crowdsec.$DOMAIN/
+      homepage.icon: crowdsec.png
+      homepage.name: Crowdsec
+      homepage.widget.password: ""
+      homepage.widget.type: crowdsec
+      homepage.widget.url: http://crowdsec:8080
+      homepage.widget.username: ""
+      traefik.enable: "true"
+      traefik.http.routers.crowdsec.middlewares: nginx-auth@file
+      traefik.http.routers.crowdsec.rule: Host(`crowdsec.$DOMAIN`) || Host(`crowdsec.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.crowdsec.loadbalancer.server.port: "8080"
+      kuma.crowdsec.http.name: "crowdsec.${TS_HOSTNAME}.${DOMAIN}"
+      kuma.crowdsec.http.url: "https://crowdsec.${DOMAIN}"
+      kuma.crowdsec.http.interval: "60"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.104
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/crowdsec/data:/var/lib/crowdsec/data
+      - /home/ubuntu/my-media-stack/configs/crowdsec/etc/crowdsec:/etc/crowdsec
+      - /home/ubuntu/my-media-stack/configs/crowdsec/plugins:/usr/local/lib/crowdsec/plugins
+      - /home/ubuntu/my-media-stack/configs/crowdsec/logs:/var/log
+  deunhealth:
+    container_name: deunhealth
+    environment:
+      HEALTH_SERVER_ADDRESS: 127.0.0.1:9999
+      LOG_LEVEL: debug
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    image: qmcgaw/deunhealth
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: DeUnhealth is a tool that automatically restarts unhealthy containers.
+      homepage.group: Infrastructure
+      homepage.href: https://deunhealth.$DOMAIN/
+      homepage.icon: deunhealth.png
+      homepage.name: DeUnhealth
+    network_mode: none
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  dozzle:
+    container_name: dozzle
+    expose:
+      - "8080"
+    extra_hosts: *common-hostname-aliases
+    hostname: dozzle
+    image: amir20/dozzle
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Real-time log viewer for Docker containers, providing an easy way to monitor application logs and troubleshoot issues.
+      homepage.group: System Monitoring
+      homepage.href: https://dozzle.$DOMAIN/
+      homepage.icon: dozzle.png
+      homepage.name: Dozzle
+      traefik.enable: "true"
+      traefik.http.routers.dozzle.middlewares: nginx-auth@file
+      traefik.http.routers.dozzle.rule: Host(`dozzle.$DOMAIN`) || Host(`dozzle.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.dozzle.loadbalancer.server.port: "8080"
+      kuma.dozzle.http.name: "dozzle.${TS_HOSTNAME}.${DOMAIN}"
+      kuma.dozzle.http.url: "https://dozzle.${DOMAIN}"
+      kuma.dozzle.http.interval: "60"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.89
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    hostname: flaresolverr
+    extra_hosts: *common-hostname-aliases
+    expose:
+      - "8191"
+    environment:
+      PGID: "${PGID:-121}"
+      PUID: "${PUID:-1001}"
+      TZ: "${FLARESOLVERR_TZ:-America/Chicago}"
+      BROWSER_TIMEOUT: "${FLARESOLVERR_BROWSER_TIMEOUT:-120000}"
+      CAPTCHA_SOLVER: "${FLARESOLVERR_CAPTCHA_SOLVER:-none}"
+      HEADLESS: "${FLARESOLVERR_HEADLESS:-true}"
+      HOST: "${FLARESOLVERR_HOST:-0.0.0.0}"
+      LOG_HTML: "${FLARESOLVERR_LOG_HTML:-false}"
+      LOG_LEVEL: "${FLARESOLVERR_LOG_LEVEL:-info}"
+      PORT: "${FLARESOLVERR_PORT:-8191}"
+      PROMETHEUS_ENABLED: "${FLARESOLVERR_PROMETHEUS_ENABLED:-false}"
+      PROMETHEUS_PORT: "${FLARESOLVERR_PROMETHEUS_PORT:-9090}"
+      TEST_URL: "${FLARESOLVERR_TEST_URL:-https://www.cloudflare.com}"
+      UMASK: "${FLARESOLVERR_UMASK:-002}"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -f http://127.0.0.1:8191/health > /dev/null 2>&1 || exit 1
+      timeout: 15s
+      interval: 30s
+      retries: 3
+      start_period: 1m0s
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Flaresolverr is a proxy server that can bypass captchas and access cloudflare-captcha-protected websites.
+      homepage.group: Infrastructure
+      homepage.href: https://flaresolverr.$DOMAIN/
+      homepage.icon: flaresolverr.png
+      homepage.name: Flaresolverr
+      traefik.enable: "true"
+      traefik.http.routers.flaresolverr.middlewares: nginx-auth@file
+      traefik.http.routers.flaresolverr.rule: Host(`flaresolverr.$DOMAIN`) || Host(`flaresolverr.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.flaresolverr.loadbalancer.server.port: "8191"
+      kuma.flaresolverr.http.name: "flaresolverr.${TS_HOSTNAME}.${DOMAIN}"
+      kuma.flaresolverr.http.url: "https://flaresolverr.${DOMAIN}"
+      kuma.flaresolverr.http.interval: "60"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.93
+    restart: always
+  gluetun-premiumize-nl:
+    cap_add:
+      - NET_ADMIN
+    configs:
+      - source: premiumize-auth.txt
+        target: "/config/auth.conf"
+        mode: 0600
+      - source: premiumize-ca.cert
+        target: "/etc/openvpn/premiumize-ca.pem"
+        mode: 0600
+      - source: vpn-nl.premiumize.me
+        target: "/etc/openvpn/target.ovpn"
+        mode: 0600
+    container_name: gluetun-premiumize-nl
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      FIREWALL_OUTBOUND_SUBNETS: 10.67.0.0/16,172.16.0.0/16,172.17.0.0/16,100.64.0.0/10
+      OPENVPN_CUSTOM_CONFIG: /etc/openvpn/target.ovpn
+      OPENVPN_FLAGS: --auth-user-pass /config/auth.conf
+      OPENVPN_IPV6: "off"
+      VPN_SERVICE_PROVIDER: custom
+      VPN_TYPE: openvpn
+    expose:
+      - "51413"
+      - "8084"
+      - "6881"
+      - 6881/udp
+    extra_hosts:
+      - aiostreams=10.67.128.200
+      - autoscan=10.67.0.119
+      - beatapostapita=100.99.45.35
+      - bocloud-nextjs=10.67.128.45
+      - boden-iphone=100.97.148.14
+      - byparr=10.67.128.93
+      - code-demo=10.67.128.80
+      - code-server=10.67.128.92
+      - code=10.67.128.96
+      - comet=10.67.128.97
+      - crowdsec=10.67.128.104
+      - dash=10.67.128.23
+      - decluttarr=10.67.128.21
+      - deluge=10.67.128.97
+      - dozzle=10.67.128.89
+      - firecrawl-api=10.67.128.127
+      - firecrawl-playwright=10.67.128.130
+      - firecrawl-worker=10.67.128.128
+      - flaresolverr=10.67.128.93
+      - gatus=10.67.128.105
+      - gluetun-premiumize-nl=10.67.128.119
+      - gpt-researcher=10.67.128.43
+      - gptr=10.67.128.43
+      - homepage=10.67.128.88
+      - homer=10.67.0.106
+      - host.docker.internal=host-gateway
+      - jackett=10.67.128.97
+      - jackettio=10.67.128.97
+      - jellyfin=10.67.128.120
+      - jellyseerr=10.67.128.115
+      - lobechat=10.67.128.46
+      - localhost=10.67.128.97
+      - maintainerr=10.67.128.84
+      - mediaflow-proxy=10.67.128.97
+      - mediafusion=10.67.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - mongodb=10.67.0.50
+      - nginx-auth=10.67.128.94
+      - open-webui=10.67.128.118
+      - overseerr=10.67.128.116
+      - plex-authentication=10.67.128.112
+      - plex-repair=10.67.0.115
+      - plex-request=10.67.128.113
+      - plex-watchlist=10.67.52.97
+      - plex=10.67.128.95
+      - prowlarr=10.67.128.97
+      - qbittorrent=10.67.128.119
+      - qdrant=10.67.128.44
+      - radarr=10.67.128.121
+      - rclone=10.67.128.111
+      - realdebrid-account-monitor=10.67.128.109
+      - recyclarr=10.67.0.117
+      - redis=10.67.128.87
+      - riven-backend=10.67.128.101
+      - riven-db=10.67.128.102
+      - riven-frontend=10.67.128.100
+      - riven=10.67.128.101
+      - script-runner=10.67.0.116
+      - searxng=10.67.128.90
+      - sonarr-anime=10.67.128.123
+      - sonarr=10.67.128.122
+      - speedtest=10.67.128.86
+      - stremio-fallback=10.67.128.97
+      - stremio-https-server=10.67.128.97
+      - stremio-jackett=10.67.128.97
+      - stremio-web=10.67.128.97
+      - stremthru=10.67.128.99
+      - tautulli=10.67.128.103
+      - tinyauth=10.67.128.82
+      - traefik=10.67.128.85
+      - transmission=10.67.128.119
+      - warp=10.67.128.97
+      - watchtower=10.67.128.83
+      - whisparr=10.67.0.120
+      - whoami=10.67.128.81
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - wizarr=10.67.128.107
+      - zurg=10.67.128.97
+    hostname: gluetun-premiumize-nl
+    image: ghcr.io/qdm12/gluetun
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.$DOMAIN`) || Host(`qbittorrent.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.qbittorrent.service: qbittorrent
+      traefik.http.routers.transmission.rule: Host(`transmission.$DOMAIN`) || Host(`transmission.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.transmission.service: transmission
+      traefik.http.services.qbittorrent.loadbalancer.server.port: "8084"
+      traefik.http.services.transmission.loadbalancer.server.port: "9091"
+      kuma.qbittorrent.http.name: "qbittorrent.${TS_HOSTNAME}.${DOMAIN}"
+      kuma.qbittorrent.http.url: "https://qbittorrent.${DOMAIN}"
+      kuma.qbittorrent.http.interval: "60"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.119
+    ports:
+      - mode: ingress
+        target: 8084
+        published: 8084
+        protocol: tcp
+      - mode: ingress
+        target: 6881
+        published: 6881
+        protocol: tcp
+      - mode: ingress
+        target: 6881
+        published: 6881
+        protocol: udp
+    restart: always
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: "1"
+  gptr:
+    build:
+      context: https://github.com/th3w1zard1/gpt-researcher.git#master
+      dockerfile: Dockerfile.fullstack
+    container_name: gptr
+    environment:
+      ANTHROPIC_API_KEY: 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
+      BRAVE_API_KEY: BQYQ53Y34895489548954895489548954895489
+      CHOKIDAR_USEPOLLING: "true"
+      DEEPSEEK_API_KEY: sk-d6c4fe1d5db945ba8547fc348df03833
+      EXA_API_KEY: 4f304bea-22a0-4473-bc38-21114d0f8aaf
+      FIRE_CRAWL_API_KEY: fc-e0e316bead3d497fb24d42ea21d5daf6
+      FIRECRAWL_API_KEY: fc-e0e316bead3d497fb24d42ea21d5daf6
+      GEMINI_API_KEY: AIzaSyB-1aUePBQbb7_rpIDz5kY7AMWxguMq7Y8
+      GLAMA_API_KEY: glama_eyJhcGlLZXkiOiI4YTc1MWRkYi0xNGNjLTQyNTctOTgzMS05OTMyNDQyNGY4NDQifQ
+      GROQ_API_KEY: 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
+      HF_TOKEN: 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
+      HUGGINGFACE_ACCESS_TOKEN: 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
+      HUGGINGFACE_API_TOKEN: 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
+      LANGCHAIN_API_KEY: lsv2_0123456789012345678901234567890123456789
+      LANGSMITH_API_KEY: lsv2_0123456789012345678901234567890123456789
+      LANGSMITH_ENDPOINT: https://api.smith.langchain.com
+      LANGSMITH_TRACING: "true"
+      LOGGING_LEVEL: DEBUG
+      MISTRAL_API_KEY: rNZOe7bauJwpknHvDjOtnXV6iaKHzEt1
+      MISTRALAI_API_KEY: rNZOe7bauJwpknHvDjOtnXV6iaKHzEt1
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: ""
+      NEXT_PUBLIC_GPTR_API_URL: https://gptr.$DOMAIN
+      OPENAI_API_KEY: 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
+      OPENROUTER_API_KEY: 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
+      PERPLEXITY_API_KEY: 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
+      PERPLEXITYAI_API_KEY: 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
+      REPLICATE_API_KEY: r8_8ktlYwwthNrp8pPSLZF1DD7507tku082y7ptd
+      REVID_API_KEY: 9a9884c5-6cb6-4ea9-aadc-91b31de76653
+      SAMBANOVA_API_KEY: f3f47213-2123-4408-8247-816319bc1e84
+      SEARCH1API_KEY: DE721F1D-498C-4DBF-843C-B72A75DAFD14
+      SERPAPI_API_KEY: dfc64bfdf77ccdde0196b0fde7848a8ebc04e520
+      TAVILY_API_KEY: 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
+      TOGETHERAI_API_KEY: 3bf6c62c61e9dbfbe4e947bd7e0ec876188e41916fbd622877018188f84ab2f2
+      UNIFY_API_KEY: XeFNQpisNryyS6NrlnDEAK7D-aE0mAq4JCkwsfeDa90=
+      UPSTAGE_API_KEY: up_uPJNmSkziDbrTi75fQ7fFOkOcCTSC
+      UPSTAGEAI_API_KEY: up_uPJNmSkziDbrTi75fQ7fFOkOcCTSC
+      YOU_API_KEY: cbee3356-84ed-40ea-9d09-ce3d0afcb340<__>1QKC7nETU8N2v5f46hH6l6ax
+    expose:
+      - "3000"
+      - "3001"
+      - "8000"
+    extra_hosts: *common-hostname-aliases
+    hostname: gptr
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - (wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1) && (wget -qO- http://127.0.0.1:8000 > /dev/null 2>&1 || exit 1)
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 2m0s
+    image: th3w1zard1/ai-researchwizard:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: AI Research Wizard is a web scraper and researcher that uses AI to help you find information quickly.
+      homepage.group: AI
+      homepage.href: https://gptr.$DOMAIN/
+      homepage.icon: gptr.png
+      homepage.name: AI Research Wizard
+      traefik.enable: "true"
+      traefik.http.routers.gptr-legacy.rule: Host(`gptr-legacy.$DOMAIN`) || Host(`gptr-legacy.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.gptr-legacy.service: gptr-legacy
+      traefik.http.routers.gptr.rule: Host(`gptr.$DOMAIN`) || Host(`gptr.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.gptr.service: gptr
+      traefik.http.services.gptr-legacy.loadbalancer.server.port: "8000"
+      traefik.http.services.gptr.loadbalancer.server.port: "3000"
+      kuma.gptr.http.name: "gptr.${TS_HOSTNAME}.${DOMAIN}"
+      kuma.gptr.http.url: "https://gptr.${DOMAIN}"
+      kuma.gptr.http.interval: "60"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.43
+    ports:
+      - mode: ingress
+        target: 3001
+        published: 3001
+        protocol: tcp
+      - mode: ingress
+        target: 8000
+        published: 8000
+        protocol: tcp
+    restart: always
+    stdin_open: true
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/gptr/logs:/usr/src/app/logs
+      - /home/ubuntu/my-media-stack/configs/gptr/outputs:/usr/src/app/outputs
+      - /home/ubuntu/my-media-stack/configs/gptr/reports:/usr/src/app/reports
+  headscale:
+    command:
+      - serve
+    configs:
+      - source: headscale-config.yaml
+        target: /etc/headscale/config.yml
+        mode: 0444
+    container_name: headscale
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "3478"
+      - "8080"
+      - "9090"
+      - "50443"
+    extra_hosts: *common-hostname-aliases
+    hostname: headscale
+    image: docker.io/headscale/headscale:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Headscale is a server that manages your Tailscale network.
+      homepage.group: Networking
+      homepage.href: https://headscale.$DOMAIN/
+      homepage.icon: headscale.png
+      homepage.name: Headscale
+      traefik.enable: "true"
+      traefik.http.routers.headscale-admin.rule: Host(`headscale-admin.$DOMAIN`) || Host(`headscale-admin.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.headscale-admin.service: headscale-admin
+      traefik.http.routers.headscale.rule: Host(`headscale.$DOMAIN`) || Host(`headscale.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.headscale.service: headscale
+      traefik.http.services.headscale-admin.loadbalancer.server.port: "9090"
+      traefik.http.services.headscale.loadbalancer.server.port: "8080"
+      kuma.headscale.http.name: "headscale.${TS_HOSTNAME}.${DOMAIN}"
+      kuma.headscale.http.url: "https://headscale.${DOMAIN}"
+      kuma.headscale.http.interval: "60"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.0.106
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/headscale/config:/etc/headscale
+      - /home/ubuntu/my-media-stack/configs/headscale/lib:/var/lib/headscale
+      - /home/ubuntu/my-media-stack/configs/headscale/run:/var/run/headscale
+  homepage:
+    container_name: homepage
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: '*'
+      HOMEPAGE_VAR_HEADER_STYLE: ""
+      HOMEPAGE_VAR_SEARCH_PROVIDER: google
+      HOMEPAGE_VAR_TITLE: Bolabaden
+      HOMEPAGE_VAR_WEATHER_CITY: Chicago
+      HOMEPAGE_VAR_WEATHER_LAT: "41.8781"
+      HOMEPAGE_VAR_WEATHER_LONG: "-87.6298"
+      HOMEPAGE_VAR_WEATHER_UNIT: fahrenheit
+      TZ: America/Chicago
+    extra_hosts: *common-hostname-aliases
+    hostname: homepage
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1
+      timeout: 15s
+      interval: 30s
+      retries: 3
+    image: ghcr.io/gethomepage/homepage
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Homepage is a dashboard that displays all of your services.
+      homepage.group: Dashboards
+      homepage.href: https://homepage.$DOMAIN/
+      homepage.icon: homepage.png
+      homepage.name: Homepage
+      traefik.enable: "true"
+      traefik.http.routers.homepage.middlewares: nginx-auth@file
+      traefik.http.routers.homepage.rule: Host(`homepage.$DOMAIN`) || Host(`homepage.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.homepage.loadbalancer.server.port: "3000"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.88
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/ubuntu/my-media-stack/configs/homepage:/app/config
+  homer:
+    configs:
+      - source: homer-config.yml
+        target: /www/assets/config.yml
+    container_name: homer
+    environment:
+      GID: "121"
+      INIT_ASSETS: "1"
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UID: "1001"
+      UMASK: "002"
+    expose:
+      - "8080"
+    extra_hosts: *common-hostname-aliases
+    hostname: homer
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:8080 || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 30s
+    image: b4bz/homer:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Static homepage dashboard
+      homepage.group: Dashboards
+      homepage.href: https://homer.$DOMAIN/
+      homepage.icon: http://127.0.0.1:8080/assets/icons/pwa-192x192.png
+      homepage.name: Homer
+      homepage.weight: "0"
+      homepage.widget.type: homer
+      homepage.widget.url: http://homer:8080
+      traefik.enable: "true"
+      traefik.http.routers.homer.rule: Host(`homer.$DOMAIN`) || Host(`homer.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.homer.loadbalancer.server.port: "8080"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.106
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/homer/assets:/www/assets
+  jackett:
+    container_name: jackett
+    depends_on:
+      - flaresolverr
+      - warp
+    environment:
+      AUTO_UPDATE: "true"
+      JACKETT_API_KEY: nnx0n84pcj7umynyd2pbid2nl1zzuemz
+      PGID: "121"
+      PUID: "1001"
+      RUN_OPTS: ""
+      TZ: America/Chicago
+      UMASK: "002"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fs http://127.0.0.1:9117/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=nnx0n84pcj7umynyd2pbid2nl1zzuemz || exit 1
+      timeout: 10s
+      interval: 30s
+      start_period: 1m0s
+    image: linuxserver/jackett
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Connects your download applications with various source providers and indexers, making it easier to find and download content through your download clients.
+      homepage.group: Source Aggregator
+      homepage.href: https://jackett.$DOMAIN/
+      homepage.icon: jackett.png
+      homepage.name: Jackett Indexer
+      homepage.weight: "1"
+      homepage.widget.key: nnx0n84pcj7umynyd2pbid2nl1zzuemz
+      homepage.widget.type: jackett
+      homepage.widget.url: "9117"
+    logging:
+      driver: local
+      options:
+        max-file: "5"
+        max-size: 10m
+    network_mode: service:warp
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/jackett/config:/config
+      - /mnt/remote/realdebrid/blackhole:/blackhole
+      - /mnt:/mnt
+  mediaflow-proxy:
+    container_name: mediaflow-proxy
+    depends_on:
+      - warp
+    environment:
+      API_PASSWORD: d468d92139047f1df5ba0fae9d998957c30834a386cd63d0472a7b044d42a96a
+      ENABLE_STREAMING_PROGRESS: "true"
+      PGID: "121"
+      PORT: "8888"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - import socket; s=socket.socket(); s.connect(('127.0.0.1', 8888)); print('Healthcheck passed')
+      timeout: 10s
+      interval: 1m0s
+      retries: 5
+      start_period: 10s
+    image: mhdzumair/mediaflow-proxy
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: MediaFlow Proxy is a M3U/HSTS proxy for Stremio/Kodi.
+      homepage.group: Stremio Addons
+      homepage.href: https://mediaflow-proxy.$DOMAIN/
+      homepage.icon: mediaflow-proxy.png
+      homepage.name: MediaFlow Proxy
+    network_mode: service:warp
+    restart: always
+  mediafusion:
+    container_name: mediafusion
+    depends_on:
+      - mongodb
+      - redis
+      - warp
+    environment:
+      ADDON_NAME: MediaFusion | $DOMAIN
+      ADULT_CONTENT_FILTER_IN_TORRENT_TITLE: "True"
+      ADULT_CONTENT_REGEX_KEYWORDS: \b(porn|xxx|sex|nude|naked|erotic|fetish|bdsm|milf|anal|oral|gangbang|threesome|masturbat|orgasm|cumshot|blowjob|handjob|footjob|creampie|facial|bukkake|hentai|yaoi|yuri|ecchi|doujin|camgirl|webcam|stripper|escort|prostitut|brothel|redlight|peepshow|voyeur|exhibitionist|swinger|orgy|hardcore|softcore|playboy|penthouse|hustler|brazzers|bangbros|realitykings|naughtyamerica|digitalplayground|wickedpictures|evilangel|kink|publicagent|fakehub|teamskeet|mofos|twistys|metart|sexart|x-art|joymii|nubiles|18eighteen|lolita|incest|taboo|kinky|slutty|horny|sexy|sensual|seductive|raw|perverted|depraved)\b
+      API_PASSWORD: h4L0m4St3R327
+      ARAB_TORRENTS_SCHEDULER_CRONTAB: 0 0 * * *
+      BACKGROUND_SEARCH_CRONTAB: '*/5 * * * *'
+      BACKGROUND_SEARCH_INTERVAL_HOURS: "72"
+      BRANDING_DESCRIPTION: Hosted on $DOMAIN
+      BT4G_IMMEDIATE_MAX_PROCESS: "15"
+      BT4G_IMMEDIATE_MAX_PROCESS_TIME: "15"
+      BT4G_SEARCH_INTERVAL_HOUR: "72"
+      BT4G_SEARCH_TIMEOUT: "10"
+      BT4G_URL: https://bt4gprx.com
+      CLEANUP_EXPIRED_CACHE_TASK_CRONTAB: 0 0 * * *
+      CLEANUP_EXPIRED_SCRAPER_TASK_CRONTAB: 0 * * * *
+      CONTACT_EMAIL: $DOMAIN
+      DB_MAX_CONNECTIONS: "50"
+      DESCRIPTION: $DOMAIN
+      DISABLE_ALL_SCHEDULER: "False"
+      DISABLED_PROVIDERS: '[]'
+      DLHD_SCHEDULER_CRONTAB: 25 * * * *
+      ENABLE_FETCHING_TORRENT_METADATA_FROM_P2P: "False"
+      ENABLE_RATE_LIMIT: "True"
+      FLARESOLVERR_URL: http://flaresolverr:8191/v1
+      FORMULA_TGX_SCHEDULER_CRONTAB: '*/30 * * * *'
+      HOST_URL: $DOMAIN
+      IS_PUBLIC_INSTANCE: "False"
+      IS_SCRAP_FROM_BT4G: "True"
+      IS_SCRAP_FROM_JACKETT: "False"
+      IS_SCRAP_FROM_MEDIAFUSION: "True"
+      IS_SCRAP_FROM_PROWLARR: "False"
+      IS_SCRAP_FROM_TORRENTIO: "True"
+      IS_SCRAP_FROM_YTS: "True"
+      IS_SCRAP_FROM_ZILEAN: "True"
+      JACKETT_API_KEY: nnx0n84pcj7umynyd2pbid2nl1zzuemz
+      JACKETT_BACKGROUND_TITLE_SEARCH: "True"
+      JACKETT_FEED_SCRAPE_INTERVAL_HOUR: "3"
+      JACKETT_FEED_SCRAPER_CRONTAB: 0 */3 * * *
+      JACKETT_IMMEDIATE_MAX_PROCESS: "10"
+      JACKETT_IMMEDIATE_MAX_PROCESS_TIME: "15"
+      JACKETT_LIVE_TITLE_SEARCH: "True"
+      JACKETT_SEARCH_INTERVAL_HOUR: "72"
+      JACKETT_SEARCH_QUERY_TIMEOUT: "30"
+      JACKETT_URL: http://jackett:9117
+      LOGGING_LEVEL: INFO
+      LOGO_URL: ""
+      MEDIAFUSION_SEARCH_INTERVAL_DAYS: "3"
+      MEDIAFUSION_URL: https://mediafusion.$DOMAIN
+      META_CACHE_TTL: "1800"
+      METADATA_PRIMARY_SOURCE: tmdb
+      MIN_SCRAPING_VIDEO_SIZE: "26214400"
+      MONGO_URI: mongodb
+      MOTOGP_TGX_SCHEDULER_CRONTAB: 0 5 * * *
+      MOVIES_TV_TGX_SCHEDULER_CRONTAB: 0 * * * *
+      NOWMETV_SCHEDULER_CRONTAB: 0 0 * * *
+      NOWSPORTS_SCHEDULER_CRONTAB: 0 10 * * *
+      PGID: "121"
+      PLAYWRIGHT_CDP_URL: ws://browserless:3000?blockAds=true&stealth=true
+      POSTER_HOST_URL: $DOMAIN
+      PROWLARR_API_KEY: 29440a82740d475cacb35327c62c87a1
+      PROWLARR_BACKGROUND_TITLE_SEARCH: "False"
+      PROWLARR_FEED_SCRAPE_INTERVAL_HOUR: "3"
+      PROWLARR_FEED_SCRAPER_CRONTAB: 0 */3 * * *
+      PROWLARR_IMMEDIATE_MAX_PROCESS: "10"
+      PROWLARR_IMMEDIATE_MAX_PROCESS_TIME: "15"
+      PROWLARR_LIVE_TITLE_SEARCH: "True"
+      PROWLARR_SEARCH_INTERVAL_HOUR: "72"
+      PROWLARR_SEARCH_QUERY_TIMEOUT: "30"
+      PROWLARR_URL: http://prowlarr:9696
+      PUID: "1001"
+      REDIS_MAX_CONNECTIONS: "100"
+      REDIS_URL: 10.67.128.87
+      SCRAPE_WITH_AKA_TITLES: "True"
+      SECRET_KEY: c75ac92df70c4383c8d1bb37f65454f9
+      SPORT_VIDEO_SCHEDULER_CRONTAB: '*/20 * * * *'
+      STORE_STREMTHRU_MAGNET_CACHE: "true"
+      SYNC_DEBRID_CACHE_STREAMS: "False"
+      TAMIL_BLASTERS_SCHEDULER_CRONTAB: 0 */6 * * *
+      TAMILMV_SCHEDULER_CRONTAB: 0 */3 * * *
+      TAMILULTRA_SCHEDULER_CRONTAB: 0 8 * * *
+      TELEGRAM_BOT_TOKEN: ""
+      TELEGRAM_CHAT_ID: ""
+      TMDB_API_KEY: cec876f852b9c15d2c1b436b1117dff7
+      TORRENTIO_SEARCH_INTERVAL_DAYS: "3"
+      TORRENTIO_URL: https://torrentio.strem.fun
+      TZ: America/Chicago
+      UFC_TGX_SCHEDULER_CRONTAB: 30 */3 * * *
+      UMASK: "002"
+      UPDATE_SEEDERS_CRONTAB: 0 0 * * *
+      VALIDATE_M3U8_URLS_LIVENESS: "True"
+      VALIDATE_TV_STREAMS_IN_DB_CRONTAB: 0 */6 * * *
+      VERSION: 1.0.0
+      WORKER_MAX_TASKS_PER_CHILD: "20"
+      WWE_TGX_SCHEDULER_CRONTAB: 10 */3 * * *
+      ZILEAN_SEARCH_INTERVAL_HOUR: "24"
+      ZILEAN_URL: https://zilean.elfhosted.com
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -f http://127.0.0.1:8000/health > /dev/null 2>&1 || exit 1
+      timeout: 10s
+      interval: 1m0s
+      retries: 5
+      start_period: 1m0s
+    image: mhdzumair/mediafusion:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: MediaFusion is a AIO media stream aggregator addon for Stremio/Kodi.
+      homepage.group: Stremio Addons
+      homepage.href: https://mediafusion.$DOMAIN/
+      homepage.icon: mediafusion.png
+      homepage.name: MediaFusion
+    network_mode: service:warp
+    restart: always
+  mongodb:
+    container_name: mongodb
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "27017"
+    extra_hosts: *common-hostname-aliases
+    hostname: mongodb
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand("ping").ok' > /dev/null 2>&1 || exit 1
+      timeout: 10s
+      interval: 10s
+      retries: 5
+      start_period: 40s
+    image: mongo:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: MongoDB is a NoSQL database that uses JSON-like documents with optional schemas.
+      homepage.group: Databases
+      homepage.href: https://mongodb.$DOMAIN/
+      homepage.icon: mongodb.png
+      homepage.name: MongoDB
+      traefik.enable: "true"
+      traefik.http.routers.mongodb.middlewares: nginx-auth@file
+      traefik.http.routers.mongodb.rule: Host(`mongodb.$DOMAIN`) || Host(`mongodb.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.mongodb.loadbalancer.server.port: "27017"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.0.50
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/mongodb/data:/data/db
+  nginx-auth:
+    container_name: nginx-auth
+    environment:
+      NGINX_ACCESS_LOG: /dev/stdout
+      NGINX_ERROR_LOG: /dev/stderr
+      NGINX_LOG_LEVEL: warn
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "80"
+    extra_hosts: *common-hostname-aliases
+    hostname: nginx-auth
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:80/health > /dev/null 2>&1 || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 20s
+    image: nginx:alpine
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.enable: "true"
+      traefik.http.middlewares.nginx-auth.forwardauth.address: http://nginx-auth:80/auth
+      traefik.http.middlewares.nginx-auth.forwardauth.authResponseHeaders: X-Auth-Method,X-Auth-Passed,X-Middleware-Name
+      traefik.http.middlewares.nginx-auth.forwardauth.trustForwardHeader: "true"
+      traefik.http.routers.nginx-auth.rule: Host(`nginx-auth.$DOMAIN`) || Host(`nginx-auth.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.nginx-auth.service: nginx-auth
+      traefik.http.services.nginx-auth.loadbalancer.server.port: "80"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.94
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/nginx-middlewares/nginx.conf:/etc/nginx/nginx.conf
+      - /home/ubuntu/my-media-stack/configs/nginx-middlewares/auth:/etc/nginx/auth
+  overseerr:
+    container_name: overseerr
+    depends_on:
+      - plex
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "5055"
+    extra_hosts: *common-hostname-aliases
+    hostname: overseerr
+    image: docker.io/linuxserver/overseerr
+    labels:
+      homepage.description: Allows users to request movies and TV shows, integrating with your media server for easy content management.
+      homepage.group: Media Requests
+      homepage.href: https://overseerr.$DOMAIN/
+      homepage.icon: overseerr.png
+      homepage.name: Overseerr Requests
+      homepage.weight: "3"
+      homepage.widget.key: MTc0MDcxNDk2MTY5MDRmMDcxYmM1LTI5ODktNGJiMy05NzExLTdhYjYyMWQxMDAyOQ==
+      homepage.widget.type: overseerr
+      homepage.widget.url: https://overseerr.$DOMAIN
+      traefik.enable: "true"
+      traefik.http.routers.overseerr.rule: Host(`overseerr.$DOMAIN`) || Host(`overseerr.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.overseerr.loadbalancer.server.port: "5055"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.116
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/overseerr/config:/config
+  plex:
+    container_name: plex
+    environment:
+      ADVERTISE_IP: $DOMAIN
+      EMAIL_TO: bolabaden.duckdns@gmail.com
+      PLEX_CLAIM: claim-RmAd7Q1DfvybLKDY8zmQ
+      PLEX_TOKEN: 18rS6gM-Wec22uq5Gw-U
+      SMTP_FROM: $DOMAIN
+      SMTP_PORT: "587"
+      WAIT_FOR_MOUNT_PATHS: /mnt/remote/realdebrid
+      WAIT_FOR_URLS: http://zurg:9999/http/version.txt
+    extra_hosts: *common-hostname-aliases
+    hostname: plex
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl --connect-timeout 15 --silent --show-error --fail http://localhost:32400/identity
+      timeout: 15s
+      interval: 1m0s
+      retries: 3
+      start_period: 1m0s
+    image: plexinc/pms-docker
+    labels:
+      homepage.description: Stream your movies, TV shows, music, and photos to any device, providing a centralized media hub for all your content.
+      homepage.group: Media Streaming
+      homepage.href: https://plex.$DOMAIN/
+      homepage.icon: plex.png
+      homepage.name: Plex Media Server
+      homepage.weight: "4"
+      homepage.widget.key: 18rS6gM-Wec22uq5Gw-U
+      homepage.widget.type: plex
+      homepage.widget.url: https://plex.$DOMAIN
+      traefik.enable: "true"
+      traefik.http.routers.plex.rule: Host(`plex.$DOMAIN`) || Host(`plex.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.plex.loadbalancer.server.port: "32400"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.95
+    ports:
+      - mode: ingress
+        target: 1900
+        published: 1902
+        protocol: udp
+      - mode: ingress
+        target: 32400
+        published: 32400
+        protocol: tcp
+      - mode: ingress
+        target: 32410
+        published: 32410
+        protocol: udp
+      - mode: ingress
+        target: 8324
+        published: 8324
+        protocol: tcp
+      - mode: ingress
+        target: 32412
+        published: 32412
+        protocol: udp
+      - mode: ingress
+        target: 32413
+        published: 32413
+        protocol: udp
+      - mode: ingress
+        target: 32414
+        published: 32414
+        protocol: udp
+      - mode: ingress
+        target: 32469
+        published: 32469
+        protocol: tcp
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/plex/config:/config
+      - /home/ubuntu/my-media-stack/configs/plex/config/osx-config:/config/Library/Application Support/Plex Media Server
+      - /dev/shm:/dev/shm
+      - /mnt/local/transcodes/plex:/transcode
+      - /mnt/symlinks:/storage/symlinks
+      - /mnt/remote/realdebrid:/mnt/remote/realdebrid:rshared
+  prowlarr:
+    container_name: prowlarr
+    depends_on:
+      - warp
+    environment:
+      PGID: "121"
+      PROWLARR_API_KEY: 29440a82740d475cacb35327c62c87a1
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'curl -fs -H "Authorization: Bearer 29440a82740d475cacb35327c62c87a1" http://127.0.0.1:9696/api/v1/system/status || exit 1'
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 2m0s
+    image: linuxserver/prowlarr
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: An indexer manager/proxy for your Usenet and Torrent downloaders, integrating with PVR apps like Sonarr and Radarr.
+      homepage.group: Indexers
+      homepage.href: https://prowlarr.$DOMAIN/
+      homepage.icon: prowlarr.png
+      homepage.name: Prowlarr
+      homepage.weight: "1"
+      homepage.widget.key: 29440a82740d475cacb35327c62c87a1
+      homepage.widget.type: prowlarr
+      homepage.widget.url: http://prowlarr:9696
+    network_mode: service:warp
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/prowlarr/config:/config
+      - /mnt:/mnt
+  rclone:
+    cap_add:
+      - SYS_ADMIN
+    command:
+      - rcd
+      - --rc-web-gui
+      - --rc-web-gui-no-open-browser
+      - --rc-addr=:5572
+      - --log-level=DEBUG
+      - --rc-user=brunner56
+      - --rc-pass=h4L0m4St3R327
+      - --config=/config/rclone/rclone.conf
+      - --cache-dir=/.cache/rclone
+    configs:
+      - source: rclone-rclone.conf
+        target: "/config/rclone/rclone.conf"
+        mode: 0777
+    container_name: rclone
+    devices:
+      - '/dev/fuse:/dev/fuse'
+    expose:
+      - "5572"
+      - "5575"
+    extra_hosts: *common-hostname-aliases
+    hostname: rclone
+    image: rclone/rclone:latest
+    labels:
+      homepage.description: A web interface for Rclone.
+      homepage.group: Media Management
+      homepage.href: https://rclone.$DOMAIN/
+      homepage.icon: rclone.png
+      homepage.name: Rclone
+      homepage.weight: "0"
+      traefik.enable: "true"
+      traefik.http.routers.rclone.rule: Host(`rclone.$DOMAIN`) || Host(`rclone.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.rclone.service: rclone
+      traefik.http.services.rclone.loadbalancer.server.port: "5572"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.111
+    restart: always
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - /:/hostfs:rshared
+      - /etc/fuse.conf:/etc/fuse.conf:ro
+      - /etc/group:/etc/group:ro
+      - /etc/passwd:/etc/passwd:ro
+      - /mnt/remote/realdebrid:/mnt/remote/realdebrid:rshared
+      - /mnt/symlinks:/mnt/symlinks
+      - /home/ubuntu/my-media-stack/configs/rclone/.cache:/.cache
+      - /home/ubuntu/my-media-stack/configs/rclone/config/rclone:/config/rclone
+      - /home/ubuntu/my-media-stack/configs/rclonefm/js:/var/lib/rclonefm/js
+  rclone-zurg:
+    cap_add:
+      - SYS_ADMIN
+    configs:
+      - source: rclone-mounts.json
+        target: "/app/mounts.json"
+        mode: 0777
+    container_name: rclone-zurg
+    depends_on:
+      - rclone
+    devices:
+      - "/dev/fuse:/dev/fuse"
+    environment:
+      RCLONE_CONFIG_PATH: /config/rclone/rclone.conf
+      RCLONE_PASSWORD: h4L0m4St3R327
+      RCLONE_PORT: "5572"
+      RCLONE_USERNAME: brunner56
+    extra_hosts: *common-hostname-aliases
+    hostname: rclone-zurg
+    healthcheck:
+      test:
+        - CMD
+        - mountpoint
+        - -q
+        - /mnt/remote/realdebrid
+      timeout: 3s
+      interval: 5s
+      retries: 2
+      start_period: 10s
+    image: ghcr.io/coanghel/rclone-docker-automount/rclone-init:latest
+    networks:
+      swarmnet: null
+    privileged: true
+    restart: always
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - /mnt/remote/realdebrid:/mnt/remote/realdebrid:rshared
+  redis:
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --save
+      - "60"
+      - "1"
+      - --bind
+      - 0.0.0.0
+    container_name: redis
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      REDIS_DATABASE: "0"
+      REDIS_HOST: redis
+      REDIS_PASSWORD: redis
+      REDIS_PORT: "6379"
+      REDIS_USERNAME: default
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "6379"
+    extra_hosts: *common-hostname-aliases
+    hostname: redis
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - redis-cli ping > /dev/null 2>&1 || exit 1
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    image: redis:alpine
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Redis is an in-memory data structure store, used as a database, cache, and message broker.
+      homepage.group: Databases
+      homepage.href: https://redis.$DOMAIN/
+      homepage.icon: redis.png
+      homepage.name: Redis
+      traefik.enable: "true"
+      traefik.http.routers.redis.middlewares: nginx-auth@file
+      traefik.http.routers.redis.rule: Host(`redis.$DOMAIN`) || Host(`redis.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.redis.loadbalancer.server.port: "6379"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.87
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/redis:/data
+  riven:
+    configs:
+      - source: riven-settings.json
+        target: /riven/data/settings.json
+        mode: 0777
+    container_name: riven
+    depends_on:
+      - riven-db
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1073741824"
+        reservations:
+          cpus: "0.5"
+          memory: "20971520"
+    environment:
+      API_KEY: 3e0be750b16ff363727d05d18ba364fd
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@riven-db:5432/riven
+      DIALECT: postgres
+      HARD_RESET: "false"
+      PGID: "121"
+      PUID: "1001"
+      REPAIR_SYMLINKS: "false"
+      RIVEN_CONTENT_LISTRR_API_KEY: d962d6e9fd4e4db790711128ed6013b236e86b1bea534c7f9f0c17a3c4c72982
+      RIVEN_CONTENT_LISTRR_ENABLED: "false"
+      RIVEN_CONTENT_LISTRR_MOVIE_LISTS: '[]'
+      RIVEN_CONTENT_LISTRR_SHOW_LISTS: '[]'
+      RIVEN_CONTENT_LISTRR_UPDATE_INTERVAL: "300"
+      RIVEN_CONTENT_MDBLIST_API_KEY: so5wnihfjtqhacaa310gzmrq6
+      RIVEN_CONTENT_MDBLIST_ENABLED: "false"
+      RIVEN_CONTENT_MDBLIST_LISTS: '[]'
+      RIVEN_CONTENT_MDBLIST_UPDATE_INTERVAL: "300"
+      RIVEN_CONTENT_OVERSEERR_API_KEY: MTc0MDcxNDk2MTY5MDRmMDcxYmM1LTI5ODktNGJiMy05NzExLTdhYjYyMWQxMDAyOQ==
+      RIVEN_CONTENT_OVERSEERR_ENABLED: "true"
+      RIVEN_CONTENT_OVERSEERR_UPDATE_INTERVAL: "30"
+      RIVEN_CONTENT_OVERSEERR_URL: http://overseerr:5055
+      RIVEN_CONTENT_OVERSEERR_USE_WEBHOOK: "false"
+      RIVEN_CONTENT_PLEX_WATCHLIST_ENABLED: "true"
+      RIVEN_CONTENT_PLEX_WATCHLIST_RSS: '[]'
+      RIVEN_CONTENT_PLEX_WATCHLIST_UPDATE_INTERVAL: "60"
+      RIVEN_CONTENT_TRAKT_API_KEY: 052d735c61c723ed670991aee9d6322822ed6766702d66910be63a1e1a511fd0
+      RIVEN_CONTENT_TRAKT_ENABLED: "true"
+      RIVEN_CONTENT_TRAKT_UPDATE_INTERVAL: "3600"
+      RIVEN_DATABASE_URL: postgresql+psycopg2://postgres:postgres@riven-db:5432/riven
+      RIVEN_DEBUG: "false"
+      RIVEN_DOWNLOADERS_ALL_DEBRID_API_KEY: ""
+      RIVEN_DOWNLOADERS_ALL_DEBRID_ENABLED: "false"
+      RIVEN_DOWNLOADERS_PROXY_URL: http://warp:1080
+      RIVEN_DOWNLOADERS_REAL_DEBRID_API_KEY: UFZDKT6N4WTXCHIAZH5QRHNTQDAD6LPCBN4IYKLL2JRA5HGPH4YQ
+      RIVEN_DOWNLOADERS_REAL_DEBRID_ENABLED: "true"
+      RIVEN_DOWNLOADERS_TORBOX_API_KEY: d490b7b1-1f6d-44e8-9cc8-3e735c87874b
+      RIVEN_DOWNLOADERS_TORBOX_ENABLED: "false"
+      RIVEN_DOWNLOADERS_VIDEO_EXTENSIONS: '["avi","mkv","mp4"]'
+      RIVEN_EMBY_API_KEY: e0dd06e8809143a69c7c6ba174bbe129
+      RIVEN_EMBY_ENABLED: "false"
+      RIVEN_EMBY_URL: http://emby:8096
+      RIVEN_FORCE_ENV: "false"
+      RIVEN_FORCE_REFRESH: "false"
+      RIVEN_JELLYFIN_API_KEY: e0dd06e8809143a69c7c6ba174bbe129
+      RIVEN_JELLYFIN_ENABLED: "true"
+      RIVEN_JELLYFIN_URL: http://jellyfin:8096
+      RIVEN_LOG: "true"
+      RIVEN_MAP_METADATA: "true"
+      RIVEN_PLEX_ENABLED: "true"
+      RIVEN_PLEX_TOKEN: 18rS6gM-Wec22uq5Gw-U
+      RIVEN_PLEX_URL: http://plex:32400
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_AAC_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_AAC_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_AAC_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_AC3_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_AC3_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_AC3_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_ATMOS_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_ATMOS_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_ATMOS_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DOLBY_DIGITAL_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DOLBY_DIGITAL_PLUS_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DOLBY_DIGITAL_PLUS_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DOLBY_DIGITAL_PLUS_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DOLBY_DIGITAL_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DOLBY_DIGITAL_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DTS_LOSSLESS_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DTS_LOSSLESS_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DTS_LOSSLESS_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DTS_LOSSY_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DTS_LOSSY_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_DTS_LOSSY_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_EAC3_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_EAC3_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_EAC3_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_FLAC_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_FLAC_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_FLAC_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_MONO_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_MONO_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_MONO_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_MP3_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_MP3_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_MP3_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_STEREO_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_STEREO_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_STEREO_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_SURROUND_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_SURROUND_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_SURROUND_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_TRUEHD_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_TRUEHD_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_AUDIO_TRUEHD_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_10BIT_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_10BIT_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_10BIT_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_DOLBY_VISION_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_DOLBY_VISION_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_DOLBY_VISION_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_HDR_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_HDR_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_HDR_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_HDR10PLUS_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_HDR10PLUS_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_HDR10PLUS_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_SDR_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_SDR_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_HDR_SDR_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_AV1_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_AV1_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_AV1_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_AVC_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_AVC_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_AVC_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_BLURAY_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_BLURAY_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_BLURAY_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_DVD_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_DVD_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_DVD_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_HDTV_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_HDTV_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_HDTV_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_HEVC_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_HEVC_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_HEVC_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_MPEG_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_MPEG_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_MPEG_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_REMUX_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_REMUX_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_REMUX_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_VHS_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_VHS_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_VHS_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEB_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEB_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEB_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEBDL_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEBDL_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEBDL_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEBMUX_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEBMUX_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_WEBMUX_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_XVID_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_XVID_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_QUALITY_XVID_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_BDRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_BDRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_BDRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_BRRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_BRRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_BRRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_DVDRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_DVDRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_DVDRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_HDRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_HDRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_HDRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_PPVRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_PPVRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_PPVRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_SATRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_SATRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_SATRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_TVRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_TVRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_TVRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_UHDRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_UHDRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_UHDRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_VHSRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_VHSRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_VHSRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_WEBDLRIP_FETCH: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_WEBDLRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_WEBDLRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_WEBRIP_FETCH: "true"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_WEBRIP_RANK: "0"
+      RIVEN_RANKING_CUSTOM_RANKS_RIPS_WEBRIP_USE_CUSTOM_RANK: "false"
+      RIVEN_RANKING_EXCLUDE: '[]'
+      RIVEN_RANKING_LANGUAGES_EXCLUDE: '[]'
+      RIVEN_RANKING_LANGUAGES_PREFERRED: '["en"]'
+      RIVEN_RANKING_LANGUAGES_REQUIRED: '["en"]'
+      RIVEN_RANKING_OPTIONS_ALLOW_ENGLISH_IN_LANGUAGES: "true"
+      RIVEN_RANKING_OPTIONS_REMOVE_ALL_TRASH: "true"
+      RIVEN_RANKING_OPTIONS_REMOVE_RANKS_UNDER: "-10000"
+      RIVEN_RANKING_OPTIONS_REMOVE_UNKNOWN_LANGUAGES: "false"
+      RIVEN_RANKING_OPTIONS_TITLE_SIMILARITY: "0.85"
+      RIVEN_RANKING_PREFERRED: '[]'
+      RIVEN_RANKING_PROFILE: default
+      RIVEN_RANKING_REQUIRE: '[]'
+      RIVEN_RANKING_RESOLUTIONS_360P: "false"
+      RIVEN_RANKING_RESOLUTIONS_480P: "false"
+      RIVEN_RANKING_RESOLUTIONS_720P: "true"
+      RIVEN_RANKING_RESOLUTIONS_1080P: "true"
+      RIVEN_RANKING_RESOLUTIONS_2160P: "false"
+      RIVEN_RANKING_RESOLUTIONS_UNKNOWN: "true"
+      RIVEN_SCRAPING_AFTER_2: "2"
+      RIVEN_SCRAPING_AFTER_5: "6"
+      RIVEN_SCRAPING_AFTER_10: "24"
+      RIVEN_SCRAPING_COMET_ENABLED: "true"
+      RIVEN_SCRAPING_COMET_INDEXERS: animetosho,anirena,eztv,limetorrents,nyaasi,solidtorrents,thepiratebay,torlock,yts
+      RIVEN_SCRAPING_COMET_RATELIMIT: "false"
+      RIVEN_SCRAPING_COMET_TIMEOUT: "30"
+      RIVEN_SCRAPING_COMET_URL: http://comet:2020
+      RIVEN_SCRAPING_ENABLE_ALIASES: "true"
+      RIVEN_SCRAPING_JACKETT_API_KEY: nnx0n84pcj7umynyd2pbid2nl1zzuemz
+      RIVEN_SCRAPING_JACKETT_ENABLED: "true"
+      RIVEN_SCRAPING_JACKETT_RATELIMIT: "false"
+      RIVEN_SCRAPING_JACKETT_TIMEOUT: "10"
+      RIVEN_SCRAPING_JACKETT_URL: http://jackett:9117
+      RIVEN_SCRAPING_KNIGHTCRAWLER_ENABLED: "false"
+      RIVEN_SCRAPING_KNIGHTCRAWLER_FILTER: sort=qualitysize%7Cqualityfilter=480p,scr,cam,unknown
+      RIVEN_SCRAPING_KNIGHTCRAWLER_RATELIMIT: "true"
+      RIVEN_SCRAPING_KNIGHTCRAWLER_TIMEOUT: "30"
+      RIVEN_SCRAPING_KNIGHTCRAWLER_URL: https://knightcrawler.elfhosted.com
+      RIVEN_SCRAPING_MEDIAFUSION_CATALOGS: prowlarr_streams,torrentio_streams
+      RIVEN_SCRAPING_MEDIAFUSION_ENABLED: "true"
+      RIVEN_SCRAPING_MEDIAFUSION_RATELIMIT: "false"
+      RIVEN_SCRAPING_MEDIAFUSION_TIMEOUT: "10"
+      RIVEN_SCRAPING_MEDIAFUSION_URL: http://mediafusion:8080
+      RIVEN_SCRAPING_ORIONOID_API_KEY: LXBVEGR6DBKLBSBNLPARQHQRH8DGD7PT
+      RIVEN_SCRAPING_ORIONOID_CACHED_RESULTS_ONLY: "true"
+      RIVEN_SCRAPING_ORIONOID_ENABLED: "false"
+      RIVEN_SCRAPING_ORIONOID_PARAMETERS_LIMITCOUNT: "5"
+      RIVEN_SCRAPING_ORIONOID_PARAMETERS_VIDEO3D: "false"
+      RIVEN_SCRAPING_ORIONOID_PARAMETERS_VIDEOQUALITY: sd_hd8k
+      RIVEN_SCRAPING_ORIONOID_RATELIMIT: "true"
+      RIVEN_SCRAPING_ORIONOID_TIMEOUT: "10"
+      RIVEN_SCRAPING_PARSE_DEBUG: "false"
+      RIVEN_SCRAPING_PROWLARR_API_KEY: 29440a82740d475cacb35327c62c87a1
+      RIVEN_SCRAPING_PROWLARR_ENABLED: "false"
+      RIVEN_SCRAPING_PROWLARR_LIMITER_SECONDS: "60"
+      RIVEN_SCRAPING_PROWLARR_RATELIMIT: "false"
+      RIVEN_SCRAPING_PROWLARR_TIMEOUT: "10"
+      RIVEN_SCRAPING_PROWLARR_URL: http://prowlarr:9696
+      RIVEN_SCRAPING_TORRENTIO_ENABLED: "true"
+      RIVEN_SCRAPING_TORRENTIO_FILTER: sort=qualitysize%7Cqualityfilter=480p,scr,cam,unknown
+      RIVEN_SCRAPING_TORRENTIO_PROXY_URL: http://warp:1080
+      RIVEN_SCRAPING_TORRENTIO_RATELIMIT: "true"
+      RIVEN_SCRAPING_TORRENTIO_TIMEOUT: "30"
+      RIVEN_SCRAPING_TORRENTIO_URL: https://torrentio.strem.fun
+      RIVEN_SCRAPING_ZILEAN_ENABLED: "true"
+      RIVEN_SCRAPING_ZILEAN_RATELIMIT: "false"
+      RIVEN_SCRAPING_ZILEAN_TIMEOUT: "30"
+      RIVEN_SCRAPING_ZILEAN_URL: http://zilean.elfhosted.com
+      RIVEN_SYMLINK_LIBRARY_PATH: /mnt/symlinks
+      RIVEN_SYMLINK_RCLONE_PATH: /mnt/remote/realdebrid
+      RIVEN_SYMLINK_REPAIR_INTERVAL: "6.0"
+      RIVEN_SYMLINK_REPAIR_SYMLINKS: "true"
+      RIVEN_SYMLINK_SEPARATE_ANIME_DIRS: "true"
+      RIVEN_TRACEMALLOC: "false"
+      RIVEN_UPDATER_INTERVAL: "120"
+      RIVEN_VERSION: 0.21.21
+      SETTINGS_FILENAME: settings.json
+      SKIP_TRAKT_CACHE: "false"
+      SYMLINK_MAX_WORKERS: "4"
+      TRAKT_API_CLIENT_ID: ""
+      TZ: America/Chicago
+      UMASK: "002"
+    extra_hosts: *common-hostname-aliases
+    hostname: riven
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -s http://127.0.0.1:8080 >/dev/null || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 10
+    image: docker.io/spoked/riven:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.enable: "true"
+      traefik.http.routers.riven.rule: Host(`riven-backend.$DOMAIN`) || Host(`riven-backend.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.riven.loadbalancer.server.port: "8080"
+      kuma.riven.http.name: "riven-backend.${TS_HOSTNAME}.${DOMAIN}"
+      kuma.riven.http.url: "https://riven-backend.${DOMAIN}"
+      kuma.riven.http.interval: "30"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.101
+    restart: always
+    tty: true
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/riven/data:/riven/data
+      - /mnt/remote/realdebrid:/mnt/remote/realdebrid:rshared
+      - /mnt/symlinks:/mnt/symlinks
+  riven-db:
+    container_name: riven-db
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      PGID: "121"
+      POSTGRES_DB: riven
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    extra_hosts: *common-hostname-aliases
+    hostname: riven-db
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    image: postgres:16.3-alpine3.20
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.riven-db.middlewares: nginx-auth@file
+      traefik.http.routers.riven-db.rule: Host(`riven-db.$DOMAIN`) || Host(`riven-db.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.riven-db.loadbalancer.server.port: "5432"
+      kuma.riven.http.name: "riven-db.${TS_HOSTNAME}.${DOMAIN}"
+      kuma.riven.http.url: "https://riven-db.${DOMAIN}"
+      kuma.riven.http.interval: "10"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.102
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/riven/pgdata:/var/lib/postgresql/data/pgdata
+  riven-frontend:
+    container_name: riven-frontend
+    depends_on:
+      - riven
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    extra_hosts: *common-hostname-aliases
+    hostname: riven-frontend
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:3000 || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+    image: spoked/riven-frontend:latest
+    labels:
+      homepage.description: Modern frontend for Plex Debrid
+      homepage.group: Media Management
+      homepage.href: https://riven.$DOMAIN/
+      homepage.icon: riven.png
+      homepage.name: Riven
+      traefik.enable: "true"
+      traefik.http.routers.riven-frontend.middlewares: nginx-auth@file
+      traefik.http.routers.riven-frontend.rule: Host(`riven.$DOMAIN`) || Host(`riven.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.riven-frontend.service: riven-frontend
+      traefik.http.services.riven-frontend.loadbalancer.server.port: "3000"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.100
+    restart: always
+    tty: true
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/riven/config:/riven/config
+      - /home/ubuntu/my-media-stack/configs/riven/tmp:/tmp
+  searxng:
+    container_name: searxng
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      SEARXNG_BASE_URL: searxng
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "8080"
+    extra_hosts: *common-hostname-aliases
+    hostname: searxng
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/ || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+    image: docker.io/searxng/searxng:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: SearxNG is a privacy-respecting, hackable, open-source metasearch engine.
+      homepage.group: Search
+      homepage.href: https://searxng.$DOMAIN/
+      homepage.icon: searxng.png
+      homepage.name: SearxNG
+      traefik.enable: "true"
+      traefik.http.routers.searxng.middlewares: nginx-auth@file
+      traefik.http.routers.searxng.rule: Host(`searxng.$DOMAIN`) || Host(`searxng.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.searxng.loadbalancer.server.port: "8080"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.90
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/searxng:/etc/searxng
+  speedtest:
+    container_name: speedtest
+    environment:
+      ADMIN_EMAIL: boden.crouch@gmail.com
+      ADMIN_NAME: ubuntu
+      ADMIN_PASSWORD: h4L0m4St3R327
+      API_RATE_LIMIT: "60"
+      APP_KEY: base64:OZVnVd3/7lJTtOTtVZ0YqxXJKtle2R48NIrfFv11CkM=
+      APP_NAME: Speedtest Tracker
+      APP_TIMEZONE: America/Chicago
+      APP_URL: ""
+      ASSET_URL: ""
+      CHART_BEGIN_AT_ZERO: "true"
+      CHART_DATETIME_FORMAT: j/m G:i
+      CONTENT_WIDTH: 7xl
+      DATETIME_FORMAT: j M Y, G:i:s
+      DB_CONNECTION: sqlite
+      DISPLAY_TIMEZONE: America/Chicago
+      PGID: "121"
+      PRUNE_RESULTS_OLDER_THAN: "0"
+      PUBLIC_DASHBOARD: "true"
+      PUID: "1001"
+      SPEEDTEST_BLOCKED_SERVERS: ""
+      SPEEDTEST_INTERFACE: ""
+      SPEEDTEST_SCHEDULE: 0 * * * *
+      SPEEDTEST_SERVERS: ""
+      SPEEDTEST_SKIP_IPS: ""
+      THRESHOLD_DOWNLOAD: "900"
+      THRESHOLD_ENABLED: "true"
+      THRESHOLD_PING: "25"
+      THRESHOLD_UPLOAD: "900"
+      TZ: America/Chicago
+      UMASK: "002"
+    extra_hosts: *common-hostname-aliases
+    hostname: speedtest
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fs http://127.0.0.1:80 > /dev/null || exit 1
+      timeout: 15s
+      interval: 30s
+      start_period: 20s
+    image: docker.io/linuxserver/speedtest-tracker
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Regularly tests your internet speed and tracks performance over time, helping you monitor your connection quality.
+      homepage.group: Network Monitoring
+      homepage.href: https://speedtest.$DOMAIN/
+      homepage.icon: speedtest.png
+      homepage.name: Speedtest
+      homepage.widget.fields: '["download", "upload", "ping", "speedtest"]'
+      homepage.widget.type: speedtest
+      homepage.widget.url: http://speedtest-tracker:80
+      traefik.enable: "true"
+      traefik.http.routers.speedtest.rule: Host(`speedtest.$DOMAIN`) || Host(`speedtest.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.speedtest.loadbalancer.server.port: "80"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.86
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/speedtest-tracker/config:/config
+      - /home/ubuntu/my-media-stack/speedtest-tracker/keys:/config/keys
+  stremio:
+    container_name: stremio
+    depends_on:
+      - warp
+    environment:
+      CASTING_DISABLED: "1"
+      IPADDRESS: 170.9.225.137
+      NO_CORS: "0"
+      SERVER_URL: $DOMAIN
+      WEBUI_LOCATION: https://stremio-web.$DOMAIN/shell/
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - (curl -fs http://127.0.0.1:11470 > /dev/null 2>&1 || curl -fs https://127.0.0.1:12470 > /dev/null 2>&1) || exit 1
+      timeout: 5s
+      interval: 1m0s
+      retries: 3
+      start_period: 1m30s
+    image: th3w1zard1/stremio-docker:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: A one-stop hub for video content aggregation, allowing you to stream movies, series, and more from various sources.
+      homepage.group: Media Streaming Platforms
+      homepage.href: https://stremio.$DOMAIN/
+      homepage.icon: stremio.png
+      homepage.name: Stremio
+      homepage.widget.password: Hilogirl80!
+      homepage.widget.type: stremio
+      homepage.widget.url: http://stremio:11470
+      homepage.widget.username: bolabaden.duckdns@gmail.com
+    network_mode: service:warp
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/stremio/root/.stremio-server:/root/.stremio-server
+  stremthru:
+    container_name: stremthru
+    depends_on:
+      - redis
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      STREMTHRU_AUTH_ADMIN: brunner56:h4L0m4St3R327
+      STREMTHRU_CONTENT_PROXY_CONNECTION_LIMIT: "0"
+      STREMTHRU_DATABASE_URI: sqlite://./data/stremthru.db
+      STREMTHRU_FEATURE: '"dmm_hashlist,imdb_title,stremio_sidekick,stremio_store,stremio_wrap,stremio_torz"'
+      STREMTHRU_HTTP_PROXY: http://warp:1080
+      STREMTHRU_LOG_FORMAT: text
+      STREMTHRU_LOG_LEVEL: DEBUG
+      STREMTHRU_PROXY_AUTH: brunner56:h4L0m4St3R327,bolabaden:duckdns
+      STREMTHRU_REDIS_URI: redis://10.67.128.87:6379
+      STREMTHRU_STORE_AUTH: '*:realdebrid:UFZDKT6N4WTXCHIAZH5QRHNTQDAD6LPCBN4IYKLL2JRA5HGPH4YQ,*:realdebrid:TE6M7M2GGBN6H6XT2OZTUQIX42LEPJ4EIZIHTN73HAW2TJUZAFHA,*:premiumize:6i6zgswm35baj3ur,*:torbox:d490b7b1-1f6d-44e8-9cc8-3e735c87874b'
+      STREMTHRU_STORE_CONTENT_PROXY: '*:true'
+      STREMTHRU_STORE_TUNNEL: '*:true'
+      STREMTHRU_TUNNEL: '*:true'
+      TZ: America/Chicago
+      UMASK: "002"
+    extra_hosts: *common-hostname-aliases
+    hostname: stremthru
+    image: muniftanjim/stremthru:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: StremThru is tunnel/proxy for debrid services.
+      homepage.group: Stremio Addons
+      homepage.href: https://stremthru.$DOMAIN/
+      homepage.icon: stremthru.png
+      homepage.name: StremThru
+      traefik.enable: "true"
+      traefik.http.routers.stremthru.rule: Host(`stremthru.$DOMAIN`) || Host(`stremthru.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.stremthru.service: stremthru
+      traefik.http.services.stremthru.loadbalancer.server.port: "8080"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.99
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/stremio/addons/stremthru/app/data:/app/data
+  tautulli:
+    container_name: tautulli
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      TAUTULLI_API_KEY: f86827c56ae740e6bff77c386e726ab8
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "8181"
+    extra_hosts: *common-hostname-aliases
+    hostname: tautulli
+    image: ghcr.io/tautulli/tautulli:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Tautulli is a web interface for Plex Media Server.
+      homepage.group: Media Maintenance
+      homepage.href: https://tautulli.$DOMAIN/
+      homepage.icon: tautulli.png
+      homepage.name: Tautulli
+      homepage.weight: "6"
+      homepage.widget.key: f86827c56ae740e6bff77c386e726ab8
+      homepage.widget.type: tautulli
+      homepage.widget.url: https://tautulli.$DOMAIN
+      traefik.enable: "true"
+      traefik.http.routers.tautulli.middlewares: nginx-auth@file
+      traefik.http.routers.tautulli.rule: Host(`tautulli.$DOMAIN`) || Host(`tautulli.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.tautulli.loadbalancer.server.port: "8181"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.103
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/tautulli:/config
+  tinyauth:
+    container_name: tinyauth
+    environment:
+      APP_TITLE: Bolabaden
+      APP_URL: $DOMAIN
+      COOKIE_SECURE: "true"
+      GITHUB_CLIENT_ID: Ov23ct3xtNzKCw4aeqfQ
+      GITHUB_CLIENT_SECRET: 915226982a066972f2dd1e07249737a9c5e28728
+      GOOGLE_CLIENT_ID: 324816055390-dftm6jq2d3ifs37miivj3nj09piv0df9.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: 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
+      LOGIN_MAX_RETRIES: "15"
+      LOGIN_TIMEOUT: "300"
+      OAUTH_AUTO_REDIRECT: none
+      OAUTH_WHITELIST: boden.crouch@gmail.com,halomastar@gmail.com,athenajaguiar@gmail.com,bolabaden.duckdns@gmail.com,dgorsch2@gmail.com,dgorsch4@gmail.com
+      SECRET: b9a4ZxFNBbyR9KdTAf2kSciI5jUCQLzE
+      SESSION_EXPIRY: "604800"
+      USERS: brunner56:$$2y$$05$$CEXtGy1XS4BlkTXEgSG64eSQlrGn.55Xm2HbiSgVSgO./WoVXXLAa,bolabaden.duckdns@gmail.com:$$2y$$05$$BbVWsqh2XkzaxvLGwd.0euD/PkkoaeFNDIhB0tTEBn4tAjGckKRzq
+    extra_hosts: *common-hostname-aliases
+    hostname: auth
+    image: ghcr.io/steveiliop56/tinyauth:v3
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Authentication service for securing your applications
+      homepage.group: Security
+      homepage.href: https://auth.$DOMAIN/
+      homepage.icon: shield-lock.png
+      homepage.name: TinyAuth
+      traefik.enable: "true"
+      traefik.http.middlewares.tinyauth.forwardauth.address: http://auth:3000/api/auth/traefik
+      traefik.http.routers.tinyauth.rule: Host(`auth.$DOMAIN`) || Host(`auth.${TS_HOSTNAME}.${DOMAIN}`)
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.82
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/tinyauth:/data
+  traefik:
+    cap_add:
+      - NET_ADMIN
+    command:
+      - --accesslog=true
+      - --api.dashboard=true
+      - --api.debug=true
+      - --api.disableDashboardAd=true
+      - --api.insecure=true
+      - --certificatesresolvers.letsencrypt.acme.caServer=https://acme-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare
+      - --certificatesresolvers.letsencrypt.acme.dnsChallenge.resolvers=1.1.1.1,1.0.0.1
+      - --certificatesresolvers.letsencrypt.acme.dnsChallenge=true
+      - --certificatesresolvers.letsencrypt.acme.email=boden.crouch@gmail.com
+      - --certificatesresolvers.letsencrypt.acme.httpChallenge.entryPoint=web
+      - --certificatesresolvers.letsencrypt.acme.httpChallenge=true
+      - --certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json
+      - --certificatesresolvers.letsencrypt.acme.tlsChallenge=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.forwardedHeaders.trustedIPs=127.0.0.1/32,::1/128,172.17.0.0/12,10.67.0.0/16,100.64.0.0/10
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.forwardedHeaders.trustedIPs=127.0.0.1/32,::1/128,172.17.0.0/12,10.67.0.0/16,100.64.0.0/10
+      - --entrypoints.websecure.http.tls.certResolver=letsencrypt
+      - --entrypoints.websecure.http.tls.domains[0].main=$DOMAIN
+      - --entrypoints.websecure.http.tls.domains[0].sans=*.$DOMAIN,*.${TS_HOSTNAME}.${DOMAIN}
+      - --entrypoints.websecure.http.tls=true
+      - --global.checkNewVersion=true
+      - --global.sendAnonymousUsage=false
+      - --log.level=INFO
+      - --ping.terminatingStatusCode=503
+      - --ping=true
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.network=swarmnet
+      - --providers.docker=true
+      - --providers.file.directory=/config
+      - --providers.file.watch=true
+      - --serversTransport.insecureSkipVerify=true
+      - --experimental.plugins.crowdsec-bouncer-traefik-plugin.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+      - --experimental.plugins.crowdsec-bouncer-traefik-plugin.version=v1.4.2
+    container_name: traefik
+    depends_on:
+      - crowdsec
+      - nginx-auth
+    environment:
+      CLOUDFLARE_DNS_API_TOKEN: fp6tjZWb66p1rCyZBM9k0hxrE0n0Y7XctSTwP52I
+      CLOUDFLARE_EMAIL: boden.crouch@gmail.com
+      CLOUDFLARE_ZONE_API_TOKEN: fp6tjZWb66p1rCyZBM9k0hxrE0n0Y7XctSTwP52I
+      DUCKDNS_TOKEN: 2c18769a-2889-4648-a70c-2fe44dd10f20
+      LETS_ENCRYPT_EMAIL: boden.crouch@gmail.com
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "80"
+      - "443"
+      - "8080"
+    extra_hosts: *common-hostname-aliases
+    hostname: traefik
+    image: traefik:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Traefik is a modern HTTP reverse proxy and load balancer.
+      homepage.group: Infrastructure
+      homepage.href: https://traefik.$DOMAIN/api
+      homepage.icon: traefik.png
+      homepage.name: Traefik
+      homepage.widget.type: traefik
+      traefik.enable: "true"
+      traefik.http.routers.traefik.middlewares: nginx-auth@file
+      traefik.http.routers.traefik.rule: Host(`traefik.$DOMAIN`) || Host(`traefik.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.traefik.service: api@internal
+      traefik.http.services.traefik.loadbalancer.server.port: "8080"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.85
+    ports:
+      - mode: ingress
+        target: 80
+        published: 80
+        protocol: tcp
+      - mode: ingress
+        target: 443
+        published: 443
+        protocol: tcp
+      - mode: ingress
+        target: 443
+        published: 443
+        protocol: udp
+    restart: always
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: "1"
+    volumes:
+      - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
+      - /home/ubuntu/my-media-stack:/certs
+      - /home/ubuntu/my-media-stack/configs/traefik/config:/config
+      - /home/ubuntu/my-media-stack/configs/traefik/plugins-local:/plugins-local
+      - /var/run/docker.sock:/var/run/docker.sock
+  warp:
+    cap_add:
+      - MKNOD
+      - AUDIT_WRITE
+      - NET_ADMIN
+    container_name: warp
+    # add removed rule back (https://github.com/opencontainers/runc/pull/3468)
+    #device_cgroup_rules:
+    #  - 'c 10:200 rwm'
+    privileged: true
+    environment:
+      TUNNEL_TOKEN: ""
+      WARP_LICENSE_KEY: ""
+      WARP_SLEEP: "2"
+    expose:
+      - "1080"
+      - "2020"
+      - "3128"
+      - "443"
+      - "8000"
+      - "8112"
+      - "8888"
+      - "9091"
+      - "9117"
+      - "9696"
+      - "9999"
+      - "8080"
+      - "11470"
+      - "12470"
+    extra_hosts:
+      - aiostreams=10.67.128.200
+      - autoscan=10.67.0.119
+      - beatapostapita=100.99.45.35
+      - bocloud-nextjs=10.67.128.45
+      - boden-iphone=100.97.148.14
+      - byparr=10.67.128.93
+      - code-demo=10.67.128.80
+      - code-server=10.67.128.92
+      - code=10.67.128.96
+      - comet=10.67.128.97
+      - crowdsec=10.67.128.104
+      - dash=10.67.128.23
+      - decluttarr=10.67.128.21
+      - deluge=10.67.128.97
+      - dozzle=10.67.128.89
+      - firecrawl-api=10.67.128.127
+      - firecrawl-playwright=10.67.128.130
+      - firecrawl-worker=10.67.128.128
+      - flaresolverr=10.67.128.93
+      - gatus=10.67.128.105
+      - gluetun-premiumize-nl=10.67.128.119
+      - gpt-researcher=10.67.128.43
+      - gptr=10.67.128.43
+      - homepage=10.67.128.88
+      - homer=10.67.0.106
+      - host.docker.internal=host-gateway
+      - jackett=10.67.128.97
+      - jackettio=10.67.128.97
+      - jellyfin=10.67.128.120
+      - jellyseerr=10.67.128.115
+      - lobechat=10.67.128.46
+      - localhost=10.67.128.97
+      - maintainerr=10.67.128.84
+      - mediaflow-proxy=10.67.128.97
+      - mediafusion=10.67.128.97
+      - micklethefickle3=100.72.149.123
+      - micklethefickle=100.72.149.123
+      - mongodb=10.67.0.50
+      - nginx-auth=10.67.128.94
+      - open-webui=10.67.128.118
+      - overseerr=10.67.128.116
+      - plex-authentication=10.67.128.112
+      - plex-repair=10.67.0.115
+      - plex-request=10.67.128.113
+      - plex-watchlist=10.67.52.97
+      - plex=10.67.128.95
+      - prowlarr=10.67.128.97
+      - qbittorrent=10.67.128.119
+      - qdrant=10.67.128.44
+      - radarr=10.67.128.121
+      - rclone=10.67.128.111
+      - realdebrid-account-monitor=10.67.128.109
+      - recyclarr=10.67.0.117
+      - redis=10.67.128.87
+      - riven-backend=10.67.128.101
+      - riven-db=10.67.128.102
+      - riven-frontend=10.67.128.100
+      - riven=10.67.128.101
+      - script-runner=10.67.0.116
+      - searxng=10.67.128.90
+      - sonarr-anime=10.67.128.123
+      - sonarr=10.67.128.122
+      - speedtest=10.67.128.86
+      - stremio-fallback=10.67.128.97
+      - stremio-https-server=10.67.128.97
+      - stremio-jackett=10.67.128.97
+      - stremio-web=10.67.128.97
+      - stremthru=10.67.128.99
+      - tautulli=10.67.128.103
+      - tinyauth=10.67.128.82
+      - traefik=10.67.128.85
+      - transmission=10.67.128.119
+      - warp=10.67.128.97
+      - watchtower=10.67.128.83
+      - whisparr=10.67.0.120
+      - whoami=10.67.128.81
+      - wizard-pc=100.119.187.62
+      - wizard=100.119.187.62
+      - wizarr=10.67.128.107
+      - zurg=10.67.128.97
+    image: caomingjun/warp:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      traefik.enable: "true"
+      traefik.http.routers.comet.rule: Host(`comet.$DOMAIN`) || Host(`comet.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.comet.service: comet
+      traefik.http.routers.deluge.rule: Host(`deluge.$DOMAIN`) || Host(`deluge.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.deluge.service: deluge
+      traefik.http.routers.jackett.rule: Host(`jackett.$DOMAIN`) || Host(`jackett.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.jackett.service: jackett
+      traefik.http.routers.mediaflow-proxy.rule: Host(`mediaflow-proxy.$DOMAIN`) || Host(`mediaflow-proxy.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.mediaflow-proxy.service: mediaflow-proxy
+      traefik.http.routers.mediafusion.rule: Host(`mediafusion.$DOMAIN`) || Host(`mediafusion.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.mediafusion.service: mediafusion
+      traefik.http.routers.prowlarr.rule: Host(`prowlarr.$DOMAIN`) || Host(`prowlarr.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.prowlarr.service: prowlarr
+      traefik.http.routers.stremio-api-http-server.priority: "100"
+      traefik.http.routers.stremio-api-http-server.rule: Host(`stremio-api.$DOMAIN`) || Host(`stremio-api.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.stremio-api-http-server.service: stremio-api-http-server
+      traefik.http.routers.stremio-api-https-server.priority: "100"
+      traefik.http.routers.stremio-api-https-server.rule: Host(`stremio.$DOMAIN`) || Host(`stremio.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.stremio-api-https-server.service: stremio-api-https-server
+      traefik.http.routers.stremio-web.priority: "10"
+      traefik.http.routers.stremio-web.rule: Host(`stremio-web.$DOMAIN`) || Host(`stremio-web.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.stremio-web.service: stremio-web
+      traefik.http.routers.warp-proxy.middlewares: nginx-auth@file
+      traefik.http.routers.warp-proxy.rule: Host(`warp-proxy.$DOMAIN`) || Host(`warp-proxy.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.warp-proxy.service: warp-proxy
+      traefik.http.routers.zurg.middlewares: nginx-auth@file
+      traefik.http.routers.zurg.rule: Host(`zurg.$DOMAIN`) || Host(`zurg.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.routers.zurg.service: zurg
+      traefik.http.services.comet.loadbalancer.server.port: "2020"
+      traefik.http.services.deluge.loadbalancer.server.port: "8112"
+      traefik.http.services.jackett.loadbalancer.server.port: "9117"
+      traefik.http.services.mediaflow-proxy.loadbalancer.server.port: "8888"
+      traefik.http.services.mediafusion.loadbalancer.server.port: "8000"
+      traefik.http.services.prowlarr.loadbalancer.server.port: "9696"
+      traefik.http.services.stremio-api-http-server.loadbalancer.server.port: "11470"
+      traefik.http.services.stremio-api-https-server.loadbalancer.server.port: "12470"
+      traefik.http.services.stremio-api-https-server.loadbalancer.server.scheme: https
+      traefik.http.services.stremio-web.loadbalancer.server.port: "8080"
+      traefik.http.services.stremio-web.loadbalancer.server.scheme: https
+      traefik.http.services.warp-proxy.loadbalancer.server.port: "3128"
+      traefik.http.services.zurg.loadbalancer.server.port: "9999"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.97
+    ports:
+      - mode: ingress
+        target: 1080
+        published: 1080
+        protocol: tcp
+      - mode: ingress
+        target: 443
+        published: 443
+        protocol: udp
+      - mode: ingress
+        target: 9999
+        published: 9999
+        protocol: tcp
+      - mode: ingress
+        target: 11470
+        published: 11470
+        protocol: tcp
+      - mode: ingress
+        target: 12470
+        published: 12470
+        protocol: tcp
+    restart: always
+    sysctls:
+      net.ipv4.conf.all.src_valid_mark: "1"
+      net.ipv6.conf.all.disable_ipv6: "1"
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/warp/data:/var/lib/cloudflare-warp
+  watchtower:
+    container_name: watchtower
+    environment:
+      PGID: "121"
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_DEBUG: "true"
+      WATCHTOWER_LOG_LEVEL: ""
+      WATCHTOWER_NOTIFICATION_REPORT: "true"
+      WATCHTOWER_NOTIFICATION_TEMPLATE: |
+        {{- if .Report -}}
+          {{- with .Report -}}
+            {{- if ( or .Updated .Failed ) -}}
+        {{len .Scanned}} Scanned, {{len .Updated}} Updated, {{len .Failed}} Failed
+              {{- range .Updated}}
+        - {{.Name}} ({{.ImageName}}): {{.CurrentImageID.ShortID}} updated to {{.LatestImageID.ShortID}}
+              {{- end -}}
+              {{- range .Skipped}}
+        - {{.Name}} ({{.ImageName}}): {{.State}}: {{.Error}}
+              {{- end -}}
+              {{- range .Failed}}
+        - {{.Name}} ({{.ImageName}}): {{.State}}: {{.Error}}
+              {{- end -}}
+            {{- end -}}
+          {{- end -}}
+        {{- else -}}
+          {{range .Entries -}}{{.Message}}{{"\n"}}{{- end -}}
+        {{- end -}}
+      WATCHTOWER_NOTIFICATION_URL: ""
+      WATCHTOWER_SCHEDULE: 0 0 6 * * *
+    extra_hosts: *common-hostname-aliases
+    hostname: watchtower
+    image: containrrr/watchtower:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.83
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  whoami:
+    container_name: whoami
+    extra_hosts: *common-hostname-aliases
+    hostname: whoami
+    image: traefik/whoami:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Whoami service with multiple auth examples - nginx auth (API key OR IP OR TinyAuth), direct access, and TinyAuth only.
+      homepage.group: Web Services
+      homepage.href: https://whoami-nginx.$DOMAIN
+      homepage.icon: whoami.png
+      homepage.name: Whoami
+      traefik.enable: "true"
+      traefik.http.routers.whoami.rule: Host(`whoami.$DOMAIN`) || Host(`whoami.${TS_HOSTNAME}.${DOMAIN}`)
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.81
+    restart: always
+  wizarr:
+    container_name: wizarr
+    environment:
+      APP_URL: http://wizarr:5690
+      DISABLE_BUILTIN_AUTH: "true"
+      PGID: "121"
+      PLEX_TOKEN: 18rS6gM-Wec22uq5Gw-U
+      PLEX_URL: http://plex:32400
+      PUID: "1001"
+      TZ: America/Chicago
+      UMASK: "002"
+    expose:
+      - "5690"
+    extra_hosts: *common-hostname-aliases
+    hostname: wizarr
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:5690/static/wizarr-logo.png || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 1m0s
+    image: ghcr.io/wizarrrr/wizarr:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: User invitation and management system for Plex
+      homepage.group: Media Management
+      homepage.href: https://wizarr.$DOMAIN/
+      homepage.icon: http://127.0.0.1:5690/static/wizarr-logo.png
+      homepage.name: Wizarr
+      homepage.weight: "0"
+      homepage.widget.type: wizarr
+      homepage.widget.url: http://wizarr:5690
+      traefik.enable: "true"
+      traefik.http.routers.wizarr.rule: Host(`wizarr.$DOMAIN`) || Host(`wizarr.${TS_HOSTNAME}.${DOMAIN}`)
+      traefik.http.services.wizarr.loadbalancer.server.port: "5690"
+    networks:
+      swarmnet:
+        ipv4_address: 10.67.128.107
+    restart: always
+    volumes:
+      - /home/ubuntu/my-media-stack/configs/wizarr/database:/data/database
+      - /home/ubuntu/my-media-stack/configs/wizarr/config:/config
+  zurg:
+    configs:
+      - source: zurg-config.yml
+        target: /app/config.yml
+        mode: 0775
+      - source: zurg-cli_debrid_update.sh
+        target: /app/plex_update.sh
+        mode: 0775
+    container_name: zurg
+    depends_on:
+      - rclone-zurg
+      - warp
+    environment:
+      DOMAIN: $DOMAIN
+      DUCKDNS_SUBDOMAIN: $DUCKDNS_SUBDOMAIN
+      ELF_APP_NAME: zurg
+      K8S_APP_NAME: zurg
+      PGID: ${PGID:-121}
+      PUID: ${PUID:-1001}
+      REAL_DEBRID_API_KEY: $REAL_DEBRID_API_KEY
+      REALDEBRID_API_KEY: $REALDEBRID_API_KEY
+      REALDEBRID_TOKEN: $REALDEBRID_TOKEN
+      TS_HOSTNAME: $TS_HOSTNAME
+      TZ: ${TZ:-America/Chicago}
+      UMASK: ${UMASK:-002}
+      ZURG_LOG_LEVEL: ${ZURG_LOG_LEVEL:-debug}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:9999/http/version.txt || exit 1
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 30s
+    image: ghcr.io/debridmediamanager/zurg-testing:latest
+    labels:
+      deunhealth.restart.on.unhealthy: "true"
+      homepage.description: Real-Debrid WebDAV proxy for seamless streaming
+      homepage.group: Download Clients
+      homepage.href: https://zurg.$DOMAIN/
+      homepage.icon: zurg.png
+      homepage.name: Zurg
+      homepage.weight: "2"
+      homepage.widget.type: zurg
+      homepage.widget.url: ${ZURG_INTERNAL_URL:-http://zurg:9999}
+    network_mode: service:warp
+    restart: always
+    volumes:
+      - ${CONFIG_PATH:-./configs}/zurg/app/data:/app/data
+networks:
+  swarmnet:
+    name: swarmnet
+    driver: overlay
+    driver_opts:
+      com.docker.network.bridge.name: br_swarmnet
+    ipam:
+      config:
+        - subnet: 10.67.0.0/16
+    external: true
+    attachable: true

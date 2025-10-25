@@ -347,7 +347,7 @@ services:
     depends_on:
       - headscale-server
     #pull_policy: always
-    image: ghcr.io/gurucomputing/headscale-ui:latest
+    image: ghcr.io/gurucomputing/headscale-ui
     container_name: headscale
     hostname: headscale
     extra_hosts:

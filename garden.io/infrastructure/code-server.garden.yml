@@ -5,7 +5,7 @@ description: VS Code server for browser-based development
 type: container
 
 spec:
-  image: lscr.io/linuxserver/code-server:latest
+  image: lscr.io/linuxserver/code-server
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}

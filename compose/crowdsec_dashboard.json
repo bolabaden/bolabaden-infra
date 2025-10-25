@@ -1,0 +1,1889 @@
+{
+  "__elements": {},
+  "__inputs": [
+    {
+      "description": "Prometheus interface of VictoriaMetrics",
+      "label": "VictoriaMetrics",
+      "name": "DS_PROMETHEUS",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus",
+      "type": "datasource"
+    }
+  ],
+  "__requires": [
+    {
+      "id": "geomap",
+      "name": "Geomap",
+      "type": "panel",
+      "version": ""
+    },
+    {
+      "id": "grafana",
+      "name": "Grafana",
+      "type": "grafana",
+      "version": "10.4.2"
+    },
+    {
+      "id": "piechart",
+      "name": "Pie chart",
+      "type": "panel",
+      "version": ""
+    },
+    {
+      "id": "prometheus",
+      "name": "Prometheus",
+      "type": "datasource",
+      "version": "1.0.0"
+    },
+    {
+      "id": "table",
+      "name": "Table",
+      "type": "panel",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Cyber threat insights with Crowdsec, VictoriaMetrics and Grafana",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "doc",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": false,
+      "title": "How to make this dashboard work",
+      "tooltip": "",
+      "type": "link",
+      "url": "https://freefd.github.io/articles/8_cyber_threat_insights_with_crowdsec_victoriametrics_and_grafana/"
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": true
+          },
+          "mappings": [
+            {
+              "options": {
+                "AD": {
+                  "index": 0,
+                  "text": "🇦🇩 Andorra"
+                },
+                "AE": {
+                  "index": 1,
+                  "text": "🇦🇪 United Arab Emirates"
+                },
+                "AF": {
+                  "index": 2,
+                  "text": "🇦🇫 Afghanistan"
+                },
+                "AG": {
+                  "index": 3,
+                  "text": "🇦🇬 Antigua and Barbuda"
+                },
+                "AI": {
+                  "index": 4,
+                  "text": "🇦🇮 Anguilla"
+                },
+                "AL": {
+                  "index": 5,
+                  "text": "🇦🇱 Albania"
+                },
+                "AM": {
+                  "index": 6,
+                  "text": "🇦🇲 Armenia"
+                },
+                "AN": {
+                  "index": 7,
+                  "text": "🇳🇱 Netherlands Antilles"
+                },
+                "AO": {
+                  "index": 8,
+                  "text": "🇦🇴 Angola"
+                },
+                "AQ": {
+                  "index": 9,
+                  "text": "🇦🇶 Antarctica"
+                },
+                "AR": {
+                  "index": 10,
+                  "text": "🇦🇷 Argentina"
+                },
+                "AS": {
+                  "index": 11,
+                  "text": "🇦🇸 American Samoa"
+                },
+                "AT": {
+                  "index": 12,
+                  "text": "🇦🇹 Austria"
+                },
+                "AU": {
+                  "index": 13,
+                  "text": "🇦🇺 Australia"
+                },
+                "AW": {
+                  "index": 14,
+                  "text": "🇦🇼 Aruba"
+                },
+                "AX": {
+                  "index": 15,
+                  "text": "🇦🇽 Åland Islands"
+                },
+                "AZ": {
+                  "index": 16,
+                  "text": "🇦🇿 Azerbaijan"
+                },
+                "BA": {
+                  "index": 17,
+                  "text": "🇧🇦 Bosnia and Herzegovina"
+                },
+                "BB": {
+                  "index": 18,
+                  "text": "🇧🇧 Barbados"
+                },
+                "BD": {
+                  "index": 19,
+                  "text": "🇧🇩 Bangladesh"
+                },
+                "BE": {
+                  "index": 20,
+                  "text": "🇧🇪 Belgium"
+                },
+                "BF": {
+                  "index": 21,
+                  "text": "🇧🇫 Burkina Faso"
+                },
+                "BG": {
+                  "index": 22,
+                  "text": "🇧🇬 Bulgaria"
+                },
+                "BH": {
+                  "index": 23,
+                  "text": "🇧🇭 Bahrain"
+                },
+                "BI": {
+                  "index": 24,
+                  "text": "🇧🇮 Burundi"
+                },
+                "BJ": {
+                  "index": 25,
+                  "text": "🇧🇯 Benin"
+                },
+                "BL": {
+                  "index": 26,
+                  "text": "🇧🇱 Saint Barthélemy"
+                },
+                "BM": {
+                  "index": 27,
+                  "text": "🇧🇲 Bermuda"
+                },
+                "BN": {
+                  "index": 28,
+                  "text": "🇧🇳 Brunei Darussalam"
+                },
+                "BO": {
+                  "index": 29,
+                  "text": "🇧🇴 Bolivia"
+                },
+                "BQ": {
+                  "index": 30,
+                  "text": "🇧🇶 Bonaire, Sint Eustatius and Saba"
+                },
+                "BR": {
+                  "index": 31,
+                  "text": "🇧🇷 Brazil"
+                },
+                "BS": {
+                  "index": 32,
+                  "text": "🇧🇸 Bahamas"
+                },
+                "BT": {
+                  "index": 33,
+                  "text": "🇧🇹 Bhutan"
+                },
+                "BV": {
+                  "index": 34,
+                  "text": "🇧🇻 Bouvet Island"
+                },
+                "BW": {
+                  "index": 35,
+                  "text": "🇧🇼 Botswana"
+                },
+                "BY": {
+                  "index": 36,
+                  "text": "🇧🇾 Belarus"
+                },
+                "BZ": {
+                  "index": 37,
+                  "text": "🇧🇿 Belize"
+                },
+                "CA": {
+                  "index": 38,
+                  "text": "🇨🇦 Canada"
+                },
+                "CC": {
+                  "index": 39,
+                  "text": "🇨🇨 Cocos (Keeling) Islands"
+                },
+                "CD": {
+                  "index": 40,
+                  "text": "🇨🇩 Congo, Democratic Republic of the"
+                },
+                "CF": {
+                  "index": 41,
+                  "text": "🇨🇫 Central African Republic"
+                },
+                "CG": {
+                  "index": 42,
+                  "text": "🇨🇬 Congo"
+                },
+                "CH": {
+                  "index": 43,
+                  "text": "🇨🇭 Switzerland"
+                },
+                "CI": {
+                  "index": 44,
+                  "text": "🇨🇮 Côte d'Ivoire"
+                },
+                "CK": {
+                  "index": 45,
+                  "text": "🇨🇰 Cook Islands"
+                },
+                "CL": {
+                  "index": 46,
+                  "text": "🇨🇱 Chile"
+                },
+                "CM": {
+                  "index": 47,
+                  "text": "🇨🇲 Cameroon"
+                },
+                "CN": {
+                  "index": 48,
+                  "text": "🇨🇳 China"
+                },
+                "CO": {
+                  "index": 49,
+                  "text": "🇨🇴 Colombia"
+                },
+                "CR": {
+                  "index": 50,
+                  "text": "🇨🇷 Costa Rica"
+                },
+                "CS": {
+                  "index": 51,
+                  "text": "🇨🇿 Czechoslovakia"
+                },
+                "CU": {
+                  "index": 52,
+                  "text": "🇨🇺 Cuba"
+                },
+                "CV": {
+                  "index": 53,
+                  "text": "🇨🇻 Cabo Verde"
+                },
+                "CW": {
+                  "index": 54,
+                  "text": "🇨🇼 Curaçao"
+                },
+                "CX": {
+                  "index": 55,
+                  "text": "🇨🇽 Christmas Island"
+                },
+                "CY": {
+                  "index": 56,
+                  "text": "🇨🇾 Cyprus"
+                },
+                "CZ": {
+                  "index": 57,
+                  "text": "🇨🇿 Czechia"
+                },
+                "DE": {
+                  "index": 58,
+                  "text": "🇩🇪 Germany"
+                },
+                "DJ": {
+                  "index": 59,
+                  "text": "🇩🇯 Djibouti"
+                },
+                "DK": {
+                  "index": 60,
+                  "text": "🇩🇰 Denmark"
+                },
+                "DM": {
+                  "index": 61,
+                  "text": "🇩🇲 Dominica"
+                },
+                "DO": {
+                  "index": 62,
+                  "text": "🇩🇴 Dominican Republic"
+                },
+                "DZ": {
+                  "index": 63,
+                  "text": "🇩🇿 Algeria"
+                },
+                "EC": {
+                  "index": 64,
+                  "text": "🇪🇨 Ecuador"
+                },
+                "EE": {
+                  "index": 65,
+                  "text": "🇪🇪 Estonia"
+                },
+                "EG": {
+                  "index": 66,
+                  "text": "🇪🇬 Egypt"
+                },
+                "EH": {
+                  "index": 67,
+                  "text": "🇪🇭 Western Sahara"
+                },
+                "ER": {
+                  "index": 68,
+                  "text": "🇪🇷 Eritrea"
+                },
+                "ES": {
+                  "index": 69,
+                  "text": "🇪🇸 Spain"
+                },
+                "ET": {
+                  "index": 70,
+                  "text": "🇪🇹 Ethiopia"
+                },
+                "FI": {
+                  "index": 71,
+                  "text": "🇫🇮 Finland"
+                },
+                "FJ": {
+                  "index": 72,
+                  "text": "🇫🇯 Fiji"
+                },
+                "FK": {
+                  "index": 73,
+                  "text": "🇫🇰 Falkland Islands (Malvinas)"
+                },
+                "FM": {
+                  "index": 74,
+                  "text": "🇫🇲 Micronesia, Federated States of"
+                },
+                "FO": {
+                  "index": 75,
+                  "text": "🇫🇴 Faroe Islands"
+                },
+                "FR": {
+                  "index": 76,
+                  "text": "🇫🇷 France"
+                },
+                "GA": {
+                  "index": 77,
+                  "text": "🇬🇦 Gabon"
+                },
+                "GB": {
+                  "index": 78,
+                  "text": "🇬🇧 United Kingdom of Great Britain and Northern Ireland"
+                },
+                "GD": {
+                  "index": 79,
+                  "text": "🇬🇩 Grenada"
+                },
+                "GE": {
+                  "index": 80,
+                  "text": "🇬🇪 Georgia"
+                },
+                "GF": {
+                  "index": 81,
+                  "text": "🇬🇫 French Guiana"
+                },
+                "GG": {
+                  "index": 82,
+                  "text": "🇬🇬 Guernsey"
+                },
+                "GH": {
+                  "index": 83,
+                  "text": "🇬🇭 Ghana"
+                },
+                "GI": {
+                  "index": 84,
+                  "text": "🇬🇮 Gibraltar"
+                },
+                "GL": {
+                  "index": 85,
+                  "text": "🇬🇱 Greenland"
+                },
+                "GM": {
+                  "index": 86,
+                  "text": "🇬🇲 Gambia"
+                },
+                "GN": {
+                  "index": 87,
+                  "text": "🇬🇳 Guinea"
+                },
+                "GP": {
+                  "index": 88,
+                  "text": "🇬🇵 Guadeloupe"
+                },
+                "GQ": {
+                  "index": 89,
+                  "text": "🇬🇶 Equatorial Guinea"
+                },
+                "GR": {
+                  "index": 90,
+                  "text": "🇬🇷 Greece"
+                },
+                "GS": {
+                  "index": 91,
+                  "text": "🇬🇸 South Georgia and the South Sandwich Islands"
+                },
+                "GT": {
+                  "index": 92,
+                  "text": "🇬🇹 Guatemala"
+                },
+                "GU": {
+                  "index": 93,
+                  "text": "🇬🇺 Guam"
+                },
+                "GW": {
+                  "index": 94,
+                  "text": "🇬🇼 Guinea-Bissau"
+                },
+                "GY": {
+                  "index": 95,
+                  "text": "🇬🇾 Guyana"
+                },
+                "HK": {
+                  "index": 96,
+                  "text": "🇭🇰 Hong Kong"
+                },
+                "HM": {
+                  "index": 97,
+                  "text": "🇭🇲 Heard Island and McDonald Islands"
+                },
+                "HN": {
+                  "index": 98,
+                  "text": "🇭🇳 Honduras"
+                },
+                "HR": {
+                  "index": 99,
+                  "text": "🇭🇷 Croatia"
+                },
+                "HT": {
+                  "index": 100,
+                  "text": "🇭🇹 Haiti"
+                },
+                "HU": {
+                  "index": 101,
+                  "text": "🇭🇺 Hungary"
+                },
+                "ID": {
+                  "index": 102,
+                  "text": "🇮🇩 Indonesia"
+                },
+                "IE": {
+                  "index": 103,
+                  "text": "🇮🇪 Ireland"
+                },
+                "IL": {
+                  "index": 104,
+                  "text": "🇮🇱 Israel"
+                },
+                "IM": {
+                  "index": 105,
+                  "text": "🇮🇲 Isle of Man"
+                },
+                "IN": {
+                  "index": 106,
+                  "text": "🇮🇳 India"
+                },
+                "IO": {
+                  "index": 107,
+                  "text": "🇮🇴 British Indian Ocean Territory"
+                },
+                "IQ": {
+                  "index": 108,
+                  "text": "🇮🇶 Iraq"
+                },
+                "IR": {
+                  "index": 109,
+                  "text": "🇮🇷 Iran, Islamic Republic of"
+                },
+                "IS": {
+                  "index": 110,
+                  "text": "🇮🇸 Iceland"
+                },
+                "IT": {
+                  "index": 111,
+                  "text": "🇮🇹 Italy"
+                },
+                "JE": {
+                  "index": 112,
+                  "text": "🇯🇪 Jersey"
+                },
+                "JM": {
+                  "index": 113,
+                  "text": "🇯🇲 Jamaica"
+                },
+                "JO": {
+                  "index": 114,
+                  "text": "🇯🇴 Jordan"
+                },
+                "JP": {
+                  "index": 115,
+                  "text": "🇯🇵 Japan"
+                },
+                "KE": {
+                  "index": 116,
+                  "text": "🇰🇪 Kenya"
+                },
+                "KG": {
+                  "index": 117,
+                  "text": "🇰🇬 Kyrgyzstan"
+                },
+                "KH": {
+                  "index": 118,
+                  "text": "🇰🇭 Cambodia"
+                },
+                "KI": {
+                  "index": 119,
+                  "text": "🇰🇮 Kiribati"
+                },
+                "KM": {
+                  "index": 120,
+                  "text": "🇰🇲 Comoros"
+                },
+                "KN": {
+                  "index": 121,
+                  "text": "🇰🇳 Saint Kitts and Nevis"
+                },
+                "KP": {
+                  "index": 122,
+                  "text": "🇰🇵 Korea, Democratic People's Republic of"
+                },
+                "KR": {
+                  "index": 123,
+                  "text": "🇰🇷 Korea, Republic of"
+                },
+                "KW": {
+                  "index": 124,
+                  "text": "🇰🇼 Kuwait"
+                },
+                "KY": {
+                  "index": 125,
+                  "text": "🇰🇾 Cayman Islands"
+                },
+                "KZ": {
+                  "index": 126,
+                  "text": "🇰🇿 Kazakhstan"
+                },
+                "LA": {
+                  "index": 127,
+                  "text": "🇱🇦 Lao People's Democratic Republic"
+                },
+                "LB": {
+                  "index": 128,
+                  "text": "🇱🇧 Lebanon"
+                },
+                "LC": {
+                  "index": 129,
+                  "text": "🇱🇨 Saint Lucia"
+                },
+                "LI": {
+                  "index": 130,
+                  "text": "🇱🇮 Liechtenstein"
+                },
+                "LK": {
+                  "index": 131,
+                  "text": "🇱🇰 Sri Lanka"
+                },
+                "LR": {
+                  "index": 132,
+                  "text": "🇱🇷 Liberia"
+                },
+                "LS": {
+                  "index": 133,
+                  "text": "🇱🇸 Lesotho"
+                },
+                "LT": {
+                  "index": 134,
+                  "text": "🇱🇹 Lithuania"
+                },
+                "LU": {
+                  "index": 135,
+                  "text": "🇱🇺 Luxembourg"
+                },
+                "LV": {
+                  "index": 136,
+                  "text": "🇱🇻 Latvia"
+                },
+                "LY": {
+                  "index": 137,
+                  "text": "🇱🇾 Libya"
+                },
+                "MA": {
+                  "index": 138,
+                  "text": "🇲🇦 Morocco"
+                },
+                "MC": {
+                  "index": 139,
+                  "text": "🇲🇨 Monaco"
+                },
+                "MD": {
+                  "index": 140,
+                  "text": "🇲🇩 Moldova, Republic of"
+                },
+                "ME": {
+                  "index": 141,
+                  "text": "🇲🇪 Montenegro"
+                },
+                "MF": {
+                  "index": 142,
+                  "text": "🇲🇫 Saint Martin (French part)"
+                },
+                "MG": {
+                  "index": 143,
+                  "text": "🇲🇬 Madagascar"
+                },
+                "MH": {
+                  "index": 144,
+                  "text": "🇲🇭 Marshall Islands"
+                },
+                "MK": {
+                  "index": 145,
+                  "text": "🇲🇰 North Macedonia"
+                },
+                "ML": {
+                  "index": 146,
+                  "text": "🇲🇱 Mali"
+                },
+                "MM": {
+                  "index": 147,
+                  "text": "🇲🇲 Myanmar"
+                },
+                "MN": {
+                  "index": 148,
+                  "text": "🇲🇳 Mongolia"
+                },
+                "MO": {
+                  "index": 149,
+                  "text": "🇲🇴 Macao"
+                },
+                "MP": {
+                  "index": 150,
+                  "text": "🇲🇵 Northern Mariana Islands"
+                },
+                "MQ": {
+                  "index": 151,
+                  "text": "🇲🇶 Martinique"
+                },
+                "MR": {
+                  "index": 152,
+                  "text": "🇲🇷 Mauritania"
+                },
+                "MS": {
+                  "index": 153,
+                  "text": "🇲🇸 Montserrat"
+                },
+                "MT": {
+                  "index": 154,
+                  "text": "🇲🇹 Malta"
+                },
+                "MU": {
+                  "index": 155,
+                  "text": "🇲🇺 Mauritius"
+                },
+                "MV": {
+                  "index": 156,
+                  "text": "🇲🇻 Maldives"
+                },
+                "MW": {
+                  "index": 157,
+                  "text": "🇲🇼 Malawi"
+                },
+                "MX": {
+                  "index": 158,
+                  "text": "🇲🇽 Mexico"
+                },
+                "MY": {
+                  "index": 159,
+                  "text": "🇲🇾 Malaysia"
+                },
+                "MZ": {
+                  "index": 160,
+                  "text": "🇲🇿 Mozambique"
+                },
+                "NA": {
+                  "index": 161,
+                  "text": "🇳🇦 Namibia"
+                },
+                "NC": {
+                  "index": 162,
+                  "text": "🇳🇨 New Caledonia"
+                },
+                "NE": {
+                  "index": 163,
+                  "text": "🇳🇪 Niger"
+                },
+                "NF": {
+                  "index": 164,
+                  "text": "🇳🇫 Norfolk Island"
+                },
+                "NG": {
+                  "index": 165,
+                  "text": "🇳🇬 Nigeria"
+                },
+                "NI": {
+                  "index": 166,
+                  "text": "🇳🇮 Nicaragua"
+                },
+                "NL": {
+                  "index": 167,
+                  "text": "🇳🇱 Netherlands"
+                },
+                "NO": {
+                  "index": 168,
+                  "text": "🇳🇴 Norway"
+                },
+                "NP": {
+                  "index": 169,
+                  "text": "🇳🇵 Nepal"
+                },
+                "NR": {
+                  "index": 170,
+                  "text": "🇳🇷 Nauru"
+                },
+                "NU": {
+                  "index": 171,
+                  "text": "🇳🇺 Niue"
+                },
+                "NZ": {
+                  "index": 172,
+                  "text": "🇳🇿 New Zealand"
+                },
+                "OM": {
+                  "index": 173,
+                  "text": "🇴🇲 Oman"
+                },
+                "PA": {
+                  "index": 174,
+                  "text": "🇵🇦 Panama"
+                },
+                "PE": {
+                  "index": 175,
+                  "text": "🇵🇪 Peru"
+                },
+                "PF": {
+                  "index": 176,
+                  "text": "🇵🇫 French Polynesia"
+                },
+                "PG": {
+                  "index": 177,
+                  "text": "🇵🇬 Papua New Guinea"
+                },
+                "PH": {
+                  "index": 178,
+                  "text": "🇵🇭 Philippines"
+                },
+                "PK": {
+                  "index": 179,
+                  "text": "🇵🇰 Pakistan"
+                },
+                "PL": {
+                  "index": 180,
+                  "text": "🇵🇱 Poland"
+                },
+                "PM": {
+                  "index": 181,
+                  "text": "🇵🇲 Saint Pierre and Miquelon"
+                },
+                "PN": {
+                  "index": 182,
+                  "text": "🇵🇳 Pitcairn"
+                },
+                "PR": {
+                  "index": 183,
+                  "text": "🇵🇷 Puerto Rico"
+                },
+                "PS": {
+                  "index": 184,
+                  "text": "🇵🇸 Palestine, State of"
+                },
+                "PT": {
+                  "index": 185,
+                  "text": "🇵🇹 Portugal"
+                },
+                "PW": {
+                  "index": 186,
+                  "text": "🇵🇼 Palau"
+                },
+                "PY": {
+                  "index": 187,
+                  "text": "🇵🇾 Paraguay"
+                },
+                "QA": {
+                  "index": 188,
+                  "text": "🇶🇦 Qatar"
+                },
+                "RE": {
+                  "index": 189,
+                  "text": "🇷🇪 Réunion"
+                },
+                "RO": {
+                  "index": 190,
+                  "text": "🇷🇴 Romania"
+                },
+                "RS": {
+                  "index": 191,
+                  "text": "🇷🇸 Serbia"
+                },
+                "RU": {
+                  "index": 192,
+                  "text": "🇷🇺 Russian Federation"
+                },
+                "RW": {
+                  "index": 193,
+                  "text": "🇷🇼 Rwanda"
+                },
+                "SA": {
+                  "index": 194,
+                  "text": "🇸🇦 Saudi Arabia"
+                },
+                "SB": {
+                  "index": 195,
+                  "text": "🇸🇧 Solomon Islands"
+                },
+                "SC": {
+                  "index": 196,
+                  "text": "🇸🇨 Seychelles"
+                },
+                "SD": {
+                  "index": 197,
+                  "text": "🇸🇩 Sudan"
+                },
+                "SE": {
+                  "index": 198,
+                  "text": "🇸🇪 Sweden"
+                },
+                "SG": {
+                  "index": 199,
+                  "text": "🇸🇬 Singapore"
+                },
+                "SH": {
+                  "index": 200,
+                  "text": "🇸🇭 Saint Helena, Ascension and Tristan da Cunha"
+                },
+                "SI": {
+                  "index": 201,
+                  "text": "🇸🇮 Slovenia"
+                },
+                "SJ": {
+                  "index": 202,
+                  "text": "🇸🇯 Svalbard and Jan Mayen"
+                },
+                "SK": {
+                  "index": 203,
+                  "text": "🇸🇰 Slovakia"
+                },
+                "SL": {
+                  "index": 204,
+                  "text": "🇸🇱 Sierra Leone"
+                },
+                "SM": {
+                  "index": 205,
+                  "text": "🇸🇲 San Marino"
+                },
+                "SN": {
+                  "index": 206,
+                  "text": "🇸🇳 Senegal"
+                },
+                "SO": {
+                  "index": 207,
+                  "text": "🇸🇴 Somalia"
+                },
+                "SR": {
+                  "index": 208,
+                  "text": "🇸🇷 Suriname"
+                },
+                "SS": {
+                  "index": 209,
+                  "text": "🇸🇸 South Sudan"
+                },
+                "ST": {
+                  "index": 210,
+                  "text": "🇸🇹 Sao Tome and Principe"
+                },
+                "SV": {
+                  "index": 211,
+                  "text": "🇸🇻 El Salvador"
+                },
+                "SX": {
+                  "index": 212,
+                  "text": "🇸🇽 Sint Maarten (Dutch part)"
+                },
+                "SY": {
+                  "index": 213,
+                  "text": "🇸🇾 Syrian Arab Republic"
+                },
+                "SZ": {
+                  "index": 214,
+                  "text": "🇸🇿 Eswatini"
+                },
+                "TC": {
+                  "index": 215,
+                  "text": "🇹🇨 Turks and Caicos Islands"
+                },
+                "TD": {
+                  "index": 216,
+                  "text": "🇹🇩 Chad"
+                },
+                "TF": {
+                  "index": 217,
+                  "text": "🇹🇫 French Southern Territories"
+                },
+                "TG": {
+                  "index": 218,
+                  "text": "🇹🇬 Togo"
+                },
+                "TH": {
+                  "index": 219,
+                  "text": "🇹🇭 Thailand"
+                },
+                "TJ": {
+                  "index": 220,
+                  "text": "🇹🇯 Tajikistan"
+                },
+                "TK": {
+                  "index": 221,
+                  "text": "🇹🇰 Tokelau"
+                },
+                "TL": {
+                  "index": 222,
+                  "text": "🇹🇱 Timor-Leste"
+                },
+                "TM": {
+                  "index": 223,
+                  "text": "🇹🇲 Turkmenistan"
+                },
+                "TN": {
+                  "index": 224,
+                  "text": "🇹🇳 Tunisia"
+                },
+                "TO": {
+                  "index": 225,
+                  "text": "🇹🇴 Tonga"
+                },
+                "TR": {
+                  "index": 226,
+                  "text": "🇹🇷 Türkiye"
+                },
+                "TT": {
+                  "index": 227,
+                  "text": "🇹🇹 Trinidad and Tobago"
+                },
+                "TV": {
+                  "index": 228,
+                  "text": "🇹🇻 Tuvalu"
+                },
+                "TW": {
+                  "index": 229,
+                  "text": "🇹🇼 Taiwan, Province of China"
+                },
+                "TZ": {
+                  "index": 230,
+                  "text": "🇹🇿 Tanzania, United Republic of"
+                },
+                "UA": {
+                  "index": 231,
+                  "text": "🇺🇦 Ukraine"
+                },
+                "UG": {
+                  "index": 232,
+                  "text": "🇺🇬 Uganda"
+                },
+                "UM": {
+                  "index": 233,
+                  "text": "🇺🇲 United States Minor Outlying Islands"
+                },
+                "US": {
+                  "index": 234,
+                  "text": "🇺🇸 United States of America"
+                },
+                "UY": {
+                  "index": 235,
+                  "text": "🇺🇾 Uruguay"
+                },
+                "UZ": {
+                  "index": 236,
+                  "text": "🇺🇿 Uzbekistan"
+                },
+                "VA": {
+                  "index": 237,
+                  "text": "🇻🇦 Holy See"
+                },
+                "VC": {
+                  "index": 238,
+                  "text": "🇻🇨 Saint Vincent and the Grenadines"
+                },
+                "VE": {
+                  "index": 239,
+                  "text": "🇻🇪 Venezuela, Bolivarian Republic of"
+                },
+                "VG": {
+                  "index": 240,
+                  "text": "🇻🇬 Virgin Islands (British)"
+                },
+                "VI": {
+                  "index": 241,
+                  "text": "🇻🇮 Virgin Islands (U.S.)"
+                },
+                "VN": {
+                  "index": 242,
+                  "text": "🇻🇳 Viet Nam"
+                },
+                "VU": {
+                  "index": 243,
+                  "text": "🇻🇺 Vanuatu"
+                },
+                "WF": {
+                  "index": 244,
+                  "text": "🇼🇫 Wallis and Futuna"
+                },
+                "WS": {
+                  "index": 245,
+                  "text": "🇼🇸 Samoa"
+                },
+                "YE": {
+                  "index": 246,
+                  "text": "🇾🇪 Yemen"
+                },
+                "YT": {
+                  "index": 247,
+                  "text": "🇾🇹 Mayotte"
+                },
+                "ZA": {
+                  "index": 248,
+                  "text": "🇿🇦 South Africa"
+                },
+                "ZM": {
+                  "index": 249,
+                  "text": "🇿🇲 Zambia"
+                },
+                "ZW": {
+                  "index": 250,
+                  "text": "🇿🇼 Zimbabwe"
+                }
+              },
+              "type": "special",
+              "value": "country"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "country"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "count"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "asname"
+            },
+            "properties": {
+              "id": "custom.width",
+              "value": 200
+            }
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "scenario"
+            },
+            "properties": {
+              "id": "custom.width",
+              "value": 200
+            }
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "type"
+            },
+            "properties": {
+              "id": "custom.width",
+              "value": 100
+            }
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "duration"
+            },
+            "properties": {
+              "id": "custom.width",
+              "value": 100
+            }
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "scope"
+            },
+            "properties": {
+              "id": "custom.width",
+              "value": 100
+            }
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ip"
+            },
+            "properties": {
+              "id": "custom.width",
+              "value": 150
+            }
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "traefik_routers"
+            },
+            "properties": {
+              "id": "custom.width",
+              "value": 200
+            }
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "latitude"
+            },
+            "properties": {
+              "id": "custom.hidden",
+              "value": true
+            }
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "longitude"
+            },
+            "properties": {
+              "id": "custom.hidden",
+              "value": true
+            }
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "iprange"
+            },
+            "properties": {
+              "id": "custom.hidden",
+              "value": true
+            }
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "asnumber"
+            },
+            "properties": {
+              "id": "custom.hidden",
+              "value": true
+            }
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "instance"
+            },
+            "properties": {
+              "id": "custom.hidden",
+              "value": true
+            }
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "count"
+          }
+        ]
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (country, asname, scenario, type, duration, scope, ip, traefik_routers, latitude, longitude, iprange, asnumber, instance) (cs_lapi_decision{instance=~\"$instance\"})",
+          "format": "table",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Decisions",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "Value": "count"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "calc": "mean",
+        "colorMode": "palette-classic",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (country) (cs_lapi_decision{instance=~\"$instance\"})",
+          "format": "time_series",
+          "legendFormat": "{{country}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Decisions by Country",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "calc": "mean",
+        "colorMode": "palette-classic",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (asname) (cs_lapi_decision{instance=~\"$instance\"})",
+          "format": "time_series",
+          "legendFormat": "{{asname}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Decisions by AS Name",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 8
+      },
+      "id": 5,
+      "options": {
+        "calc": "mean",
+        "colorMode": "palette-classic",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (scenario) (cs_lapi_decision{instance=~\"$instance\"})",
+          "format": "time_series",
+          "legendFormat": "{{scenario}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Decisions by Scenario",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 16
+      },
+      "id": 6,
+      "options": {
+        "calc": "mean",
+        "colorMode": "palette-classic",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (type) (cs_lapi_decision{instance=~\"$instance\"})",
+          "format": "time_series",
+          "legendFormat": "{{type}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Decisions by Type",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 16
+      },
+      "id": 7,
+      "options": {
+        "calc": "mean",
+        "colorMode": "palette-classic",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (duration) (cs_lapi_decision{instance=~\"$instance\"})",
+          "format": "time_series",
+          "legendFormat": "{{duration}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Decisions by Duration",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 16
+      },
+      "id": 8,
+      "options": {
+        "calc": "mean",
+        "colorMode": "palette-classic",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (scope) (cs_lapi_decision{instance=~\"$instance\"})",
+          "format": "time_series",
+          "legendFormat": "{{scope}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Decisions by Scope",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "latitude"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "longitude"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 9,
+      "options": {
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "default"
+        },
+        "controls": {
+          "mouseWheelZoom": false,
+          "showAttribution": true,
+          "showDebug": false,
+          "showMeasure": false,
+          "showScale": true,
+          "showZoom": true
+        },
+        "layers": [
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "opacity": 0.4,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": 0,
+                  "mode": "mod"
+                },
+                "size": {
+                  "fixed": 5,
+                  "max": 15,
+                  "min": 5
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.png",
+                  "mode": "fixed"
+                },
+                "text": {
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            },
+            "location": {
+              "gazetteer": "https://nominatim.openstreetmap.org/search?format=json&q={query}",
+              "latitude": "latitude",
+              "longitude": "longitude",
+              "mode": "coords"
+            },
+            "name": "Layer 1",
+            "tooltip": true,
+            "type": "markers"
+          }
+        ],
+        "view": {
+          "id": "zero",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 1
+        }
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (latitude, longitude) (cs_lapi_decision{instance=~\"$instance\"})",
+          "format": "table",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Decisions by Location",
+      "type": "geomap"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "crowdsec",
+    "victoriametrics",
+    "grafana",
+    "cyber-threats"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(cs_lapi_decision, instance)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Instance",
+        "multi": false,
+        "name": "instance",
+        "options": [],
+        "query": {
+          "query": "label_values(cs_lapi_decision, instance)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Crowdsec Cyber Threat Insights",
+  "uid": "crowdsec-cyber-threat-insights",
+  "version": 1,
+  "weekStart": ""
+}

@@ -329,7 +329,7 @@ configs:
 
       # Configurable via env
       DOCKER_CMD="$${DOCKER_CMD:-docker -H $${DOCKER_HOST:-unix:///var/run/docker.sock}}"
-      CHECK_IMAGE="$${CHECK_IMAGE:-curlimages/curl:latest}"   # image that includes curl
+      CHECK_IMAGE="$${CHECK_IMAGE:-curlimages/curl}"   # image that includes curl
       NETWORK="$${NETWORK:-warp-nat-net}"
       SLEEP_INTERVAL="$${SLEEP_INTERVAL:-5}"                  # seconds between checks
 
@@ -376,7 +376,7 @@ configs:
 services:
   warp-nat-gateway:
     # 🔹🔹 WARP in Docker (with NAT)🔹
-    image: docker.io/caomingjun/warp:latest
+    image: docker.io/caomingjun/warp
     container_name: warp-nat-gateway
     hostname: warp-nat-gateway
     extra_hosts:
@@ -441,7 +441,7 @@ services:
         condition: service_healthy
     build:
       dockerfile_inline: |
-        FROM alpine:latest
+        FROM alpine
         RUN apk update && apk add \
             bash bc docker-cli ipcalc iproute2 iptables jq util-linux && \
             rm -rf /var/cache/apk/*
@@ -482,7 +482,7 @@ services:
     # 🔹🔹 IP Checker WARP 🔹🔹
     # This is a service that checks the IP address of the container.
     # It uses the WARP network interface.
-    image: docker.io/alpine:latest
+    image: docker.io/alpine
     container_name: ip-checker-warp
     networks:
       - warp-nat-net

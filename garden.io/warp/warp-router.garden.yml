@@ -6,7 +6,7 @@ type: container
 
 spec:
   dockerfile: |
-    FROM alpine:latest
+    FROM alpine
     RUN apk update && apk add \
         bash bc docker-cli ipcalc iproute2 iptables jq util-linux && \
         rm -rf /var/cache/apk/*

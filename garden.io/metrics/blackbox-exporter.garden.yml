@@ -5,7 +5,7 @@ description: Blackbox Exporter for endpoint monitoring
 type: container
 
 spec:
-  image: docker.io/prom/blackbox-exporter:latest
+  image: docker.io/prom/blackbox-exporter
   ports:
     - name: http
       containerPort: 9115

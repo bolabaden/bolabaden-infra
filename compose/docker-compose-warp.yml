@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # Warp container - provides VPN connectivity
   warp:
-    image: caomingjun/warp:latest
+    image: caomingjun/warp
     container_name: warp
     networks:
       - warp-bridge

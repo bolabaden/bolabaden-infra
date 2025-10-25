@@ -5,7 +5,7 @@ description: SearxNG privacy-focused metasearch engine
 type: container
 
 spec:
-  image: docker.io/searxng/searxng:latest
+  image: docker.io/searxng/searxng
   env:
     TZ: ${var.tz}
     SEARXNG_BASE_URL: http://searxng:${var.SEARXNG_PORT || "8080"}

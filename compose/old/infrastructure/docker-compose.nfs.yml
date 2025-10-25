@@ -37,7 +37,7 @@ x-swarm-constraints-manager-only: &swarm-constraints-manager-only
 
 services:
   nfs-server:
-    image: erichough/nfs-server:latest # Use a pre-built NFS server image for simplicity and reliability.
+    image: erichough/nfs-server # Use a pre-built NFS server image for simplicity and reliability.
     container_name: nfs-server
     hostname: nfs-server
     <<: [*common-uidgid, *common-logging, *resource-limits]

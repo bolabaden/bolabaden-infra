@@ -5,7 +5,7 @@ description: Prometheus storage initialization
 type: container
 
 spec:
-  image: docker.io/prom/prometheus:latest
+  image: docker.io/prom/prometheus
   command: ["/bin/sh", "-c", "chown -R 65534:65534 /prometheus"]
   volumes:
     - name: data

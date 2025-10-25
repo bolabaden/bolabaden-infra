@@ -5,7 +5,7 @@ description: Whoami test service
 type: container
 
 spec:
-  image: docker.io/traefik/whoami:latest
+  image: docker.io/traefik/whoami
   ports:
     - name: http
       containerPort: 80

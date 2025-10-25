@@ -7,7 +7,7 @@ dependencies:
   - deploy.redis
 
 spec:
-  image: docker.io/muniftanjim/stremthru:latest
+  image: docker.io/muniftanjim/stremthru
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}

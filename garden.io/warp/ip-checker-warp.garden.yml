@@ -5,7 +5,7 @@ description: IP checker service using WARP network
 type: container
 
 spec:
-  image: docker.io/alpine:latest
+  image: docker.io/alpine
   env:
     TZ: ${var.tz}
   command:

@@ -5,7 +5,7 @@ description: CrowdSec security engine
 type: container
 
 spec:
-  image: docker.io/crowdsecurity/crowdsec:latest
+  image: docker.io/crowdsecurity/crowdsec
   env:
     UID: ${var.PUID || "1001"}
     GID: ${var.PGID || "999"}

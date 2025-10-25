@@ -93,7 +93,7 @@ services:
       context: ${ROOT_DIR:-.}/src/glauth-ui
       dockerfile: Dockerfile
     profiles: [opt]
-    image: glauthui:latest
+    image: glauthui
     container_name: glauthui
     hostname: glauthui
     extra_hosts:

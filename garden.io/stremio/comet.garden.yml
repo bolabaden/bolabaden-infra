@@ -5,7 +5,7 @@ description: Comet Stremio addon for torrent indexing
 type: container
 
 spec:
-  image: docker.io/g0ldyy/comet:latest
+  image: docker.io/g0ldyy/comet
   env:
     TZ: ${var.tz}
     UMASK: ${var.UMASK || "002"}

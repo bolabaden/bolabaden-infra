@@ -5,7 +5,7 @@ description: Session manager for HoloScript development
 type: container
 
 spec:
-  image: alpine:latest
+  image: alpine
   env:
     TZ: ${var.tz}
     DOMAIN: ${var.domain}

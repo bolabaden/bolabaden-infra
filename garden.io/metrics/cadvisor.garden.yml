@@ -5,7 +5,7 @@ description: cAdvisor for container metrics
 type: container
 
 spec:
-  image: gcr.io/cadvisor/cadvisor:latest
+  image: gcr.io/cadvisor/cadvisor
   privileged: true
   ports:
     - name: http

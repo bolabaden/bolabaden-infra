@@ -2,7 +2,7 @@
 services:
   ttrss:
     # 🔹🔹 Tiny Tiny RSS 🔹🔹
-    image: wangqiru/ttrss:latest
+    image: wangqiru/ttrss
     container_name: ttrss
     hostname: ttrss
     ports:
@@ -28,7 +28,7 @@ services:
     restart: always
 
   tinyrss_mercury: # set Mercury Parser API endpoint to `service.mercury:3000` on TTRSS plugin setting page
-    image: wangqiru/mercury-parser-api:latest
+    image: wangqiru/mercury-parser-api
     container_name: tinyrss_mercury
     hostname: tinyrss_mercury
     networks:
@@ -37,7 +37,7 @@ services:
     restart: always
 
   tinyrss_opencc: # set OpenCC API endpoint to `service.opencc:3000` on TTRSS plugin setting page
-    image: wangqiru/opencc-api-server:latest
+    image: wangqiru/opencc-api-server
     container_name: tinyrss_opencc
     hostname: tinyrss_opencc
     networks:

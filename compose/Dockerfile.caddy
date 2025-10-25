@@ -1,0 +1,28 @@
+FROM caddy:builder AS builder
+
+# Set GOPROXY to bypass the default proxy and fetch directly
+ENV GOPROXY=direct
+
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    xcaddy build \
+    --with github.com/caddy-dns/cloudflare \
+    --with github.com/lucaslorentz/caddy-docker-proxy/v2 \
+    --with github.com/hslatman/caddy-crowdsec-bouncer/http \
+    --with github.com/hslatman/caddy-crowdsec-bouncer/layer4 \
+    --with github.com/greenpau/caddy-security \
+    --with github.com/RussellLuo/caddy-ext/ratelimit \
+    --with github.com/abiosoft/caddy-git \
+    --with github.com/tailscale/caddy-tailscale \
+    --with github.com/WingLim/caddy-webhook \
+    --with github.com/porech/caddy-maxmind-geolocation
+
+FROM caddy:alpine
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy
+
+ARG TRAEFIK_ACME_PATH
+ENV TRAEFIK_ACME_PATH=${TRAEFIK_ACME_PATH}
+ARG EXTRACTED_CERT_DIR
+ENV EXTRACTED_CERT_DIR=${EXTRACTED_CERT_DIR}
+RUN 'sh -c "if [ -f ${TRAEFIK_ACME_PATH} ]; then echo \"Extracting certificates from ${TRAEFIK_ACME_PATH} to ${EXTRACTED_CERT_DIR}\" && /usr/local/bin/acme_extract_cert.sh ${TRAEFIK_ACME_PATH} ${EXTRACTED_CERT_DIR}; else echo \"${TRAEFIK_ACME_PATH} does not exist\"; fi"'
+
+CMD ["caddy", "docker-proxy"]
