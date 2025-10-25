@@ -1,0 +1,1 @@
+{"schemaVersion":2,"manifests":[{"mediaType":"application/vnd.oci.image.manifest.v1+json","digest":"sha256:625c84fc32daa690ee541df0f3a57c0135193097d2e63ff8a4f931eeaf0e247a","size":1618,"annotations":{"org.opencontainers.image.ref.name":"zurg-testing"}}]}

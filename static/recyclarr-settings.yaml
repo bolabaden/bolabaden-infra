@@ -1,0 +1,21 @@
+# yaml-language-server: $$schema=https://raw.githubusercontent.com/recyclarr/recyclarr/master/schemas/settings-schema.json
+
+# Edit this file to customize the behavior of Recyclarr beyond its defaults
+# For the settings file reference guide, visit the link to the wiki below:
+# https://recyclarr.dev/wiki/yaml/settings-reference/
+
+notifications:
+  verbosity: normal # Options: normal, detailed, minimal
+  apprise:
+    mode: stateless
+    base_url: ${APPRISE_BASE_URL:-http://apprise:8000}
+    urls:
+      - ${APPRISE_URL:-https://discord.com/api/webhooks/secret}
+
+repositories:
+  config_templates:
+      clone_url: ${CONFIG_TEMPLATES_REPO:-https://github.com/recyclarr/config-templates.git}
+      branch: ${CONFIG_TEMPLATES_BRANCH:-master}
+  trash_guides:
+      clone_url: ${TRASH_GUIDES_REPO:-https://github.com/TRaSH-/Guides.git}
+      branch: ${TRASH_GUIDES_BRANCH:-master}

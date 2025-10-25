@@ -1,0 +1,39 @@
+
+Elf file type is EXEC (Executable file)
+Entry point 0x844e0
+There are 9 program headers, starting at offset 64
+
+Program Headers:
+  Type           Offset             VirtAddr           PhysAddr
+                 FileSiz            MemSiz              Flags  Align
+  PHDR           0x0000000000000040 0x0000000000010040 0x0000000000010040
+                 0x00000000000001f8 0x00000000000001f8  R      0x10000
+  INTERP         0x0000000000000fe6 0x0000000000010fe6 0x0000000000010fe6
+                 0x000000000000001a 0x000000000000001a  R      0x1
+      [Requesting program interpreter: /lib/ld-musl-aarch64.so.1]
+  NOTE           0x0000000000000f80 0x0000000000010f80 0x0000000000010f80
+                 0x0000000000000064 0x0000000000000064  R      0x4
+  LOAD           0x0000000000000000 0x0000000000010000 0x0000000000010000
+                 0x000000000047f900 0x000000000047f900  R E    0x10000
+  LOAD           0x0000000000480000 0x0000000000490000 0x0000000000490000
+                 0x000000000051ab18 0x000000000051ab18  R      0x10000
+  LOAD           0x00000000009a0000 0x00000000009b0000 0x00000000009b0000
+                 0x0000000000045f20 0x00000000000bca70  RW     0x10000
+  DYNAMIC        0x00000000009a0860 0x00000000009b0860 0x00000000009b0860
+                 0x00000000000000f0 0x00000000000000f0  RW     0x8
+  TLS            0x0000000000000000 0x0000000000000000 0x0000000000000000
+                 0x0000000000000000 0x0000000000000010  R      0x8
+  GNU_STACK      0x0000000000000000 0x0000000000000000 0x0000000000000000
+                 0x0000000000000000 0x0000000000000000  RW     0x8
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     
+   01     .interp 
+   02     .note.go.buildid 
+   03     .text .plt .interp .note.go.buildid 
+   04     .rodata .gnu.version_r .gnu.version .rela .rela.plt .hash .dynstr .dynsym .typelink .itablink .gosymtab .gopclntab 
+   05     .go.buildinfo .dynamic .got.plt .got .noptrdata .data .bss .noptrbss 
+   06     .dynamic 
+   07     .tbss 
+   08     

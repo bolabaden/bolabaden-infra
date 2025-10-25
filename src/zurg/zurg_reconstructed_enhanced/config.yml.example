@@ -1,0 +1,117 @@
+# Zurg Configuration
+# Based on reverse-engineered v0.9.3-final
+
+# Real-Debrid API token (required)
+token: "YOUR_REAL_DEBRID_API_TOKEN"
+
+# Server settings
+host: "0.0.0.0"
+port: 9999
+
+# Authentication (optional)
+username: ""
+password: ""
+
+# Proxy settings (optional)
+proxy: ""
+
+# Worker and timing settings
+num_of_workers: 10
+refresh_every_secs: 120
+repair_every_mins: 30
+downloads_every_mins: 5
+
+# Feature toggles
+enable_repair: true
+enable_download_mount: false
+enable_retain_folder_name_extension: false
+enable_retain_rd_torrent_name: false
+should_ignore_renames: false
+should_serve_from_rclone: false
+should_force_ipv6: false
+should_delete_rar_files: false
+
+# Timeout and rate limiting
+api_timeout_secs: 30
+download_timeout_secs: 300
+rate_limit_sleep_secs: 5
+retries_until_failed: 3
+
+# Network settings
+network_buffer_size: 1048576  # 1MB
+
+# Content filtering
+playable_extensions:
+  - ".mp4"
+  - ".mkv"
+  - ".avi"
+  - ".mov"
+  - ".wmv"
+  - ".flv"
+  - ".webm"
+  - ".m4v"
+  - ".3gp"
+  - ".ts"
+  - ".m2ts"
+  - ".mts"
+  - ".m2v"
+  - ".mpg"
+  - ".mpeg"
+  - ".mp2"
+  - ".mpe"
+  - ".vob"
+  - ".asf"
+  - ".rm"
+  - ".rmvb"
+  - ".divx"
+  - ".xvid"
+
+# API limits
+torrents_count: 2500
+api_rate_limit_per_minute: 60
+torrents_rate_limit_per_minute: 1
+
+# Library update hook (shell script path)
+on_library_update: ""
+
+# Directory mappings and filters
+directories:
+  # Example movie directory
+  movies:
+    group: "movies"
+    filters:
+      - regex: ".*\\.(mp4|mkv|avi|mov|wmv|flv|webm|m4v)$"
+        min_size: "100MB"
+      - name_contains: ["1080p", "720p", "4K", "2160p"]
+    
+  # Example TV show directory  
+  tv:
+    group: "tv"
+    filters:
+      - regex: ".*S\\d+E\\d+.*\\.(mp4|mkv|avi)$"
+      - name_contains: ["S01", "S02", "Season"]
+    
+  # Example anime directory
+  anime:
+    group: "anime"
+    filters:
+      - regex: ".*\\[(\\w+)\\].*\\.(mp4|mkv)$"
+      - name_contains: ["anime", "dubbed", "subbed"]
+
+# Advanced settings (based on decompiled analysis)
+advanced:
+  # Checksum verification
+  enable_checksum_verification: true
+  
+  # Concurrent download limits
+  max_concurrent_downloads: 5
+  
+  # File serving options
+  enable_range_requests: true
+  enable_gzip_compression: true
+  
+  # Logging
+  log_level: "info"  # debug, info, warn, error
+  log_to_file: true
+  max_log_size_mb: 100
+  max_log_files: 5

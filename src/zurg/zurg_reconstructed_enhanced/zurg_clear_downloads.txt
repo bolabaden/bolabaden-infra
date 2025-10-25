@@ -1,0 +1,225 @@
+TEXT github.com/debridmediamanager/zurg/internal/clear.ClearDownloads(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/internal/clear/downloads.go
+  downloads.go:12	0x3eef40		f9400b90		MOVD 16(R28), R16									
+  downloads.go:12	0x3eef44		d10503f1		SUB $320, RSP, R17									
+  downloads.go:12	0x3eef48		eb10023f		CMP R16, R17										
+  downloads.go:12	0x3eef4c		54001a89		BLS 212(PC)										
+  downloads.go:12	0x3eef50		d10703f4		SUB $448, RSP, R20									
+  downloads.go:12	0x3eef54		a93ffa9d		STP (R29, R30), -8(R20)									
+  downloads.go:12	0x3eef58		9100029f		MOVD R20, RSP										
+  downloads.go:12	0x3eef5c		d10023fd		SUB $8, RSP, R29									
+  downloads.go:13	0x3eef60		f900efe2		MOVD R2, 472(RSP)									
+  downloads.go:13	0x3eef64		f900ebe1		MOVD R1, 464(RSP)									
+  downloads.go:13	0x3eef68		f900e7e0		MOVD R0, 456(RSP)									
+  downloads.go:13	0x3eef6c		a9187fff		STP (ZR, ZR), 384(RSP)									
+  downloads.go:13	0x3eef70		f0000225		ADRP 290816(PC), R5									
+  downloads.go:13	0x3eef74		910c00a5		ADD $768, R5, R5									
+  downloads.go:13	0x3eef78		f900c3e5		MOVD R5, 384(RSP)									
+  downloads.go:13	0x3eef7c		d0000d86		ADRP 1777664(PC), R6									
+  downloads.go:13	0x3eef80		912900c6		ADD $2624, R6, R6									
+  downloads.go:13	0x3eef84		f900c7e6		MOVD R6, 392(RSP)									
+  print.go:314		0x3eef88		f000253b		ADRP 4878336(PC), R27									
+  print.go:314		0x3eef8c		f9434f66		MOVD 1688(R27), R6									
+  print.go:314		0x3eef90		b24003e3		ORR $1, ZR, R3										
+  print.go:314		0x3eef94		aa0303e4		MOVD R3, R4										
+  print.go:314		0x3eef98		f0000d80		ADRP 1781760(PC), R0									
+  print.go:314		0x3eef9c		91268000		ADD $2464, R0, R0									
+  print.go:314		0x3eefa0		aa0603e1		MOVD R6, R1										
+  print.go:314		0x3eefa4		910603e2		ADD $384, RSP, R2									
+  print.go:314		0x3eefa8		97f45d3a		CALL fmt.Fprintln(SB)									
+  print.go:314		0x3eefac		b24003e0		ORR $1, ZR, R0										
+  print.go:314		0x3eefb0		aa1f03e1		MOVD ZR, R1										
+  downloads.go:13	0x3eefb4		14000003		JMP 3(PC)										
+  downloads.go:19	0x3eefb8		aa0503e0		MOVD R5, R0										
+  downloads.go:35	0x3eefbc		aa0203e1		MOVD R2, R1										
+  downloads.go:35	0x3eefc0		f90027e1		MOVD R1, 72(RSP)									
+  downloads.go:19	0x3eefc4		f9002be0		MOVD R0, 80(RSP)									
+  downloads.go:19	0x3eefc8		f940ebe2		MOVD 464(RSP), R2									
+  downloads.go:19	0x3eefcc		aa1f03e3		MOVD ZR, R3										
+  downloads.go:19	0x3eefd0		aa0003e4		MOVD R0, R4										
+  downloads.go:19	0x3eefd4		f940efe0		MOVD 472(RSP), R0									
+  downloads.go:19	0x3eefd8		f940e7e1		MOVD 456(RSP), R1									
+  downloads.go:19	0x3eefdc		97ffe62d		CALL github.com/debridmediamanager/zurg/pkg/realdebrid.(*RealDebrid).GetDownloads(SB)	
+  downloads.go:20	0x3eefe0		b5000523		CBNZ R3, 41(PC)										
+  downloads.go:24	0x3eefe4		b40004c1		CBZ R1, 38(PC)										
+  downloads.go:19	0x3eefe8		f90033e1		MOVD R1, 96(RSP)									
+  downloads.go:19	0x3eefec		f90043e0		MOVD R0, 128(RSP)									
+  downloads.go:28	0x3eeff0		a9167fff		STP (ZR, ZR), 352(RSP)									
+  downloads.go:28	0x3eeff4		a9177fff		STP (ZR, ZR), 368(RSP)									
+  downloads.go:28	0x3eeff8		f9402be0		MOVD 80(RSP), R0									
+  downloads.go:28	0x3eeffc		97f0bff1		CALL runtime.convT64(SB)								
+  downloads.go:28	0x3ef000		d0000221		ADRP 286720(PC), R1									
+  downloads.go:28	0x3ef004		91150021		ADD $1344, R1, R1									
+  downloads.go:28	0x3ef008		f900b3e1		MOVD R1, 352(RSP)									
+  downloads.go:28	0x3ef00c		f900b7e0		MOVD R0, 360(RSP)									
+  downloads.go:28	0x3ef010		f94033e0		MOVD 96(RSP), R0									
+  downloads.go:28	0x3ef014		97f0bfeb		CALL runtime.convT64(SB)								
+  downloads.go:28	0x3ef018		d0000221		ADRP 286720(PC), R1									
+  downloads.go:28	0x3ef01c		91150021		ADD $1344, R1, R1									
+  downloads.go:28	0x3ef020		f900bbe1		MOVD R1, 368(RSP)									
+  downloads.go:28	0x3ef024		f900bfe0		MOVD R0, 376(RSP)									
+  print.go:233		0x3ef028		d000253b		ADRP 4874240(PC), R27									
+  print.go:233		0x3ef02c		f9434f62		MOVD 1688(R27), R2									
+  print.go:233		0x3ef030		d0000d80		ADRP 1777664(PC), R0									
+  print.go:233		0x3ef034		91268000		ADD $2464, R0, R0									
+  print.go:233		0x3ef038		d2800503		MOVD $40, R3										
+  print.go:233		0x3ef03c		910583e4		ADD $352, RSP, R4									
+  print.go:233		0x3ef040		b27f03e5		ORR $2, ZR, R5										
+  print.go:233		0x3ef044		aa0503e6		MOVD R5, R6										
+  print.go:233		0x3ef048		aa0203e1		MOVD R2, R1										
+  print.go:233		0x3ef04c		d00007e2		ADRP 1040384(PC), R2									
+  print.go:233		0x3ef050		91136442		ADD $1241, R2, R2									
+  print.go:233		0x3ef054		97f45ba7		CALL fmt.Fprintf(SB)									
+  downloads.go:30	0x3ef058		f94043e1		MOVD 128(RSP), R1									
+  downloads.go:30	0x3ef05c		f94033e0		MOVD 96(RSP), R0									
+  downloads.go:35	0x3ef060		f94027e2		MOVD 72(RSP), R2									
+  downloads.go:30	0x3ef064		14000089		JMP 137(PC)										
+  downloads.go:38	0x3ef068		f9402be5		MOVD 80(RSP), R5									
+  downloads.go:38	0x3ef06c		910004a5		ADD $1, R5, R5										
+  downloads.go:41	0x3ef070		f10190bf		CMP $100, R5										
+  downloads.go:41	0x3ef074		54fffa2d		BLE -47(PC)										
+  downloads.go:41	0x3ef078		14000087		JMP 135(PC)										
+  downloads.go:46	0x3ef07c		f94027e0		MOVD 72(RSP), R0									
+  downloads.go:25	0x3ef080		1400001d		JMP 29(PC)										
+  downloads.go:19	0x3ef084		f9003fe4		MOVD R4, 120(RSP)									
+  downloads.go:19	0x3ef088		f9002fe3		MOVD R3, 88(RSP)									
+  downloads.go:21	0x3ef08c		a9197fff		STP (ZR, ZR), 400(RSP)									
+  downloads.go:21	0x3ef090		a91a7fff		STP (ZR, ZR), 416(RSP)									
+  downloads.go:21	0x3ef094		f9402be0		MOVD 80(RSP), R0									
+  downloads.go:21	0x3ef098		97f0bfca		CALL runtime.convT64(SB)								
+  downloads.go:21	0x3ef09c		d0000221		ADRP 286720(PC), R1									
+  downloads.go:21	0x3ef0a0		91150021		ADD $1344, R1, R1									
+  downloads.go:21	0x3ef0a4		f900cbe1		MOVD R1, 400(RSP)									
+  downloads.go:21	0x3ef0a8		f900cfe0		MOVD R0, 408(RSP)									
+  downloads.go:21	0x3ef0ac		f9402fe0		MOVD 88(RSP), R0									
+  downloads.go:21	0x3ef0b0		b4000060		CBZ R0, 3(PC)										
+  downloads.go:21	0x3ef0b4		f9400403		MOVD 8(R0), R3										
+  downloads.go:21	0x3ef0b8		14000002		JMP 2(PC)										
+  downloads.go:21	0x3ef0bc		aa0003e3		MOVD R0, R3										
+  downloads.go:21	0x3ef0c0		f900d3e3		MOVD R3, 416(RSP)									
+  downloads.go:21	0x3ef0c4		f9403fe5		MOVD 120(RSP), R5									
+  downloads.go:21	0x3ef0c8		f900d7e5		MOVD R5, 424(RSP)									
+  downloads.go:21	0x3ef0cc		f00007c0		ADRP 1028096(PC), R0									
+  downloads.go:21	0x3ef0d0		912c6800		ADD $2842, R0, R0									
+  downloads.go:21	0x3ef0d4		d2800481		MOVD $36, R1										
+  downloads.go:21	0x3ef0d8		910643e2		ADD $400, RSP, R2									
+  downloads.go:21	0x3ef0dc		b27f03e3		ORR $2, ZR, R3										
+  downloads.go:21	0x3ef0e0		aa0303e4		MOVD R3, R4										
+  downloads.go:21	0x3ef0e4		97f450a7		CALL fmt.Errorf(SB)									
+  downloads.go:21	0x3ef0e8		a97ffbfd		LDP -8(RSP), (R29, R30)									
+  downloads.go:21	0x3ef0ec		910703ff		ADD $448, RSP, RSP									
+  downloads.go:21	0x3ef0f0		d65f03c0		RET											
+  downloads.go:46	0x3ef0f4		a9137fff		STP (ZR, ZR), 304(RSP)									
+  downloads.go:46	0x3ef0f8		97f0bfb2		CALL runtime.convT64(SB)								
+  downloads.go:46	0x3ef0fc		d0000221		ADRP 286720(PC), R1									
+  downloads.go:46	0x3ef100		91150021		ADD $1344, R1, R1									
+  downloads.go:46	0x3ef104		f9009be1		MOVD R1, 304(RSP)									
+  downloads.go:46	0x3ef108		f9009fe0		MOVD R0, 312(RSP)									
+  print.go:233		0x3ef10c		d000253b		ADRP 4874240(PC), R27									
+  print.go:233		0x3ef110		f9434f61		MOVD 1688(R27), R1									
+  print.go:233		0x3ef114		d0000d80		ADRP 1777664(PC), R0									
+  print.go:233		0x3ef118		91268000		ADD $2464, R0, R0									
+  print.go:233		0x3ef11c		900007e2		ADRP 1032192(PC), R2									
+  print.go:233		0x3ef120		913cd442		ADD $3893, R2, R2									
+  print.go:233		0x3ef124		d28004c3		MOVD $38, R3										
+  print.go:233		0x3ef128		9104c3e4		ADD $304, RSP, R4									
+  print.go:233		0x3ef12c		b24003e5		ORR $1, ZR, R5										
+  print.go:233		0x3ef130		aa0503e6		MOVD R5, R6										
+  print.go:233		0x3ef134		97f45b6f		CALL fmt.Fprintf(SB)									
+  downloads.go:47	0x3ef138		a9127fff		STP (ZR, ZR), 288(RSP)									
+  downloads.go:47	0x3ef13c		d0000221		ADRP 286720(PC), R1									
+  downloads.go:47	0x3ef140		910c0021		ADD $768, R1, R1									
+  downloads.go:47	0x3ef144		f90093e1		MOVD R1, 288(RSP)									
+  downloads.go:47	0x3ef148		b0000d82		ADRP 1773568(PC), R2									
+  downloads.go:47	0x3ef14c		91294042		ADD $2640, R2, R2									
+  downloads.go:47	0x3ef150		f90097e2		MOVD R2, 296(RSP)									
+  print.go:314		0x3ef154		d000253b		ADRP 4874240(PC), R27									
+  print.go:314		0x3ef158		f9434f62		MOVD 1688(R27), R2									
+  print.go:314		0x3ef15c		d0000d80		ADRP 1777664(PC), R0									
+  print.go:314		0x3ef160		91268000		ADD $2464, R0, R0									
+  print.go:314		0x3ef164		b24003e3		ORR $1, ZR, R3										
+  print.go:314		0x3ef168		aa0303e4		MOVD R3, R4										
+  print.go:314		0x3ef16c		aa0203e1		MOVD R2, R1										
+  print.go:314		0x3ef170		910483e2		ADD $288, RSP, R2									
+  print.go:314		0x3ef174		97f45cc7		CALL fmt.Fprintln(SB)									
+  downloads.go:48	0x3ef178		a9117fff		STP (ZR, ZR), 272(RSP)									
+  downloads.go:48	0x3ef17c		d0000221		ADRP 286720(PC), R1									
+  downloads.go:48	0x3ef180		910c0021		ADD $768, R1, R1									
+  downloads.go:48	0x3ef184		f9008be1		MOVD R1, 272(RSP)									
+  downloads.go:48	0x3ef188		b0000d81		ADRP 1773568(PC), R1									
+  downloads.go:48	0x3ef18c		91298021		ADD $2656, R1, R1									
+  downloads.go:48	0x3ef190		f9008fe1		MOVD R1, 280(RSP)									
+  print.go:314		0x3ef194		d000253b		ADRP 4874240(PC), R27									
+  print.go:314		0x3ef198		f9434f61		MOVD 1688(R27), R1									
+  print.go:314		0x3ef19c		d0000d80		ADRP 1777664(PC), R0									
+  print.go:314		0x3ef1a0		91268000		ADD $2464, R0, R0									
+  print.go:314		0x3ef1a4		910443e2		ADD $272, RSP, R2									
+  print.go:314		0x3ef1a8		b24003e3		ORR $1, ZR, R3										
+  print.go:314		0x3ef1ac		aa0303e4		MOVD R3, R4										
+  print.go:314		0x3ef1b0		97f45cb8		CALL fmt.Fprintln(SB)									
+  downloads.go:50	0x3ef1b4		aa1f03e0		MOVD ZR, R0										
+  downloads.go:50	0x3ef1b8		aa1f03e1		MOVD ZR, R1										
+  downloads.go:50	0x3ef1bc		a97ffbfd		LDP -8(RSP), (R29, R30)									
+  downloads.go:50	0x3ef1c0		910703ff		ADD $448, RSP, RSP									
+  downloads.go:50	0x3ef1c4		d65f03c0		RET											
+  downloads.go:30	0x3ef1c8		f9003be0		MOVD R0, 112(RSP)									
+  downloads.go:35	0x3ef1cc		f90037e2		MOVD R2, 104(RSP)									
+  downloads.go:30	0x3ef1d0		f900dbe1		MOVD R1, 432(RSP)									
+  downloads.go:30	0x3ef1d4		910223f5		ADD $136, RSP, R21									
+  downloads.go:30	0x3ef1d8		aa0103f4		MOVD R1, R20										
+  downloads.go:30	0x3ef1dc		1000009b		ADR 16(PC), R27										
+  downloads.go:30	0x3ef1e0		a93eeffd		STP (R29, R27), -24(RSP)								
+  downloads.go:30	0x3ef1e4		d10063fd		SUB $24, RSP, R29									
+  downloads.go:30	0x3ef1e8		97f26d1a		CALL -889574(PC)									
+  downloads.go:30	0x3ef1ec		d10023fd		SUB $8, RSP, R29									
+  downloads.go:30	0x3ef1f0		f9404022		MOVD 128(R1), R2									
+  downloads.go:30	0x3ef1f4		f90087e2		MOVD R2, 264(RSP)									
+  downloads.go:34	0x3ef1f8		a9147fff		STP (ZR, ZR), 320(RSP)									
+  downloads.go:34	0x3ef1fc		a9157fff		STP (ZR, ZR), 336(RSP)									
+  downloads.go:34	0x3ef200		f9404fe0		MOVD 152(RSP), R0									
+  downloads.go:34	0x3ef204		f94053e2		MOVD 160(RSP), R2									
+  downloads.go:34	0x3ef208		aa0203e1		MOVD R2, R1										
+  downloads.go:34	0x3ef20c		97f0bf8d		CALL runtime.convTstring(SB)								
+  downloads.go:34	0x3ef210		d0000222		ADRP 286720(PC), R2									
+  downloads.go:34	0x3ef214		910c0042		ADD $768, R2, R2									
+  downloads.go:34	0x3ef218		f900a3e2		MOVD R2, 320(RSP)									
+  downloads.go:34	0x3ef21c		f900a7e0		MOVD R0, 328(RSP)									
+  downloads.go:34	0x3ef220		f94047e0		MOVD 136(RSP), R0									
+  downloads.go:34	0x3ef224		f9404be1		MOVD 144(RSP), R1									
+  downloads.go:34	0x3ef228		97f0bf86		CALL runtime.convTstring(SB)								
+  downloads.go:34	0x3ef22c		d0000222		ADRP 286720(PC), R2									
+  downloads.go:34	0x3ef230		910c0042		ADD $768, R2, R2									
+  downloads.go:34	0x3ef234		f900abe2		MOVD R2, 336(RSP)									
+  downloads.go:34	0x3ef238		f900afe0		MOVD R0, 344(RSP)									
+  print.go:233		0x3ef23c		d000253b		ADRP 4874240(PC), R27									
+  print.go:233		0x3ef240		f9434f61		MOVD 1688(R27), R1									
+  downloads.go:30	0x3ef244		f9403be3		MOVD 112(RSP), R3									
+  downloads.go:30	0x3ef248		d1000463		SUB $1, R3, R3										
+  downloads.go:30	0x3ef24c		f9003be3		MOVD R3, 112(RSP)									
+  print.go:233		0x3ef250		d0000d80		ADRP 1777664(PC), R0									
+  print.go:233		0x3ef254		91268000		ADD $2464, R0, R0									
+  print.go:233		0x3ef258		910503e4		ADD $320, RSP, R4									
+  print.go:233		0x3ef25c		b27f03e5		ORR $2, ZR, R5										
+  print.go:233		0x3ef260		aa0503e6		MOVD R5, R6										
+  print.go:233		0x3ef264		d00007c2		ADRP 1024000(PC), R2									
+  print.go:233		0x3ef268		91367442		ADD $3485, R2, R2									
+  print.go:233		0x3ef26c		d2800463		MOVD $35, R3										
+  print.go:233		0x3ef270		97f45b20		CALL fmt.Fprintf(SB)									
+  downloads.go:30	0x3ef274		f940dbe2		MOVD 432(RSP), R2									
+  downloads.go:30	0x3ef278		91022041		ADD $136, R2, R1									
+  downloads.go:35	0x3ef27c		f94037e2		MOVD 104(RSP), R2									
+  downloads.go:35	0x3ef280		91000442		ADD $1, R2, R2										
+  downloads.go:30	0x3ef284		f9403be0		MOVD 112(RSP), R0									
+  downloads.go:30	0x3ef288		f100001f		CMP $0, R0										
+  downloads.go:30	0x3ef28c		54fff9ec		BGT -49(PC)										
+  downloads.go:30	0x3ef290		17ffff76		JMP -138(PC)										
+  downloads.go:46	0x3ef294		aa0203e0		MOVD R2, R0										
+  downloads.go:42	0x3ef298		17ffff97		JMP -105(PC)										
+  downloads.go:12	0x3ef29c		f90007e0		MOVD R0, 8(RSP)										
+  downloads.go:12	0x3ef2a0		f9000be1		MOVD R1, 16(RSP)									
+  downloads.go:12	0x3ef2a4		f9000fe2		MOVD R2, 24(RSP)									
+  downloads.go:12	0x3ef2a8		aa1e03e3		MOVD R30, R3										
+  downloads.go:12	0x3ef2ac		97f26259		CALL runtime.morestack_noctxt.abi0(SB)							
+  downloads.go:12	0x3ef2b0		f94007e0		MOVD 8(RSP), R0										
+  downloads.go:12	0x3ef2b4		f9400be1		MOVD 16(RSP), R1									
+  downloads.go:12	0x3ef2b8		f9400fe2		MOVD 24(RSP), R2									
+  downloads.go:12	0x3ef2bc		17ffff21		JMP github.com/debridmediamanager/zurg/internal/clear.ClearDownloads(SB)		

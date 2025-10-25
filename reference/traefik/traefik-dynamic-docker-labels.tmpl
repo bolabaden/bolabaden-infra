@@ -1,0 +1,566 @@
+# yaml-language-server: $$schema=https://www.schemastore.org/traefik-v3-file-provider.json
+
+# =============================================================================
+# Comprehensive Traefik Dynamic Configuration Template
+# Supports ALL Traefik Docker label syntax including:
+# - HTTP Routers, Services, Middlewares
+# - TCP Routers, Services, Middlewares  
+# - UDP Routers, Services
+# - TLS Configuration
+# - Advanced LoadBalancer options
+# - Health checks, Sticky sessions, etc.
+# =============================================================================
+
+http:
+  # =============================================================================
+  # HTTP ROUTERS SECTION
+  # =============================================================================
+  routers:
+    {{- range $c := . }}
+      {{- $name := trimPrefix "/" $c.Name }}
+      
+      # =============================================================================
+      # Failover Router Configuration for {{ $name }}
+      # =============================================================================
+      {{ printf "%s-with-failover:" $name }}
+        service: {{ printf "%s-with-failover@file" $name }}
+        rule: Host(`{{ $name }}.bolabaden.org`)
+        {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.entrypoints" $name) }}
+        entrypoints:
+          {{- range split (index $c.Labels (printf "traefik.http.routers.%s.entrypoints" $name)) "," }}
+          - {{ trim . }}
+          {{- end }}
+        {{- end }}
+        {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.priority" $name) }}
+        priority: {{ index $c.Labels (printf "traefik.http.routers.%s.priority" $name) }}
+        {{- end }}
+        {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.middlewares" $name) }}
+        middlewares:
+          {{- range split (index $c.Labels (printf "traefik.http.routers.%s.middlewares" $name)) "," }}
+          - {{ trim . }}
+          {{- end }}
+        {{- end }}
+        {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.tls" $name) }}
+        tls:
+          {{- if eq (index $c.Labels (printf "traefik.http.routers.%s.tls" $name)) "true" }}
+          true
+          {{- else }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.tls.certresolver" $name) }}
+          certresolver: {{ index $c.Labels (printf "traefik.http.routers.%s.tls.certresolver" $name) }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.tls.options" $name) }}
+          options: {{ index $c.Labels (printf "traefik.http.routers.%s.tls.options" $name) }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.tls.domains" $name) }}
+          domains:
+            {{- $domains := parseDomains (index $c.Labels (printf "traefik.http.routers.%s.tls.domains" $name)) }}
+            {{- range $i, $domain := $domains }}
+            - main: {{ $domain.main }}
+              {{- if $domain.sans }}
+              sans:
+                {{- range $domain.sans }}
+                - {{ . }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.observability.accesslogs" $name) }}
+        observability:
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.observability.accesslogs" $name) }}
+          accesslogs: {{ index $c.Labels (printf "traefik.http.routers.%s.observability.accesslogs" $name) }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.observability.metrics" $name) }}
+          metrics: {{ index $c.Labels (printf "traefik.http.routers.%s.observability.metrics" $name) }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.observability.tracing" $name) }}
+          tracing: {{ index $c.Labels (printf "traefik.http.routers.%s.observability.tracing" $name) }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.observability.traceverbosity" $name) }}
+          traceverbosity: {{ index $c.Labels (printf "traefik.http.routers.%s.observability.traceverbosity" $name) }}
+          {{- end }}
+        {{- end }}
+      
+      # =============================================================================
+      # Direct Router Configuration for {{ $name }}
+      # =============================================================================
+      {{ printf "%s-direct:" $name }}
+        service: {{ printf "%s-direct@file" $name }}
+        rule: Host(`{{ $name }}.micklethefickle.bolabaden.org`)
+        {{- if hasKey $c.Labels (printf "traefik.http.routers.%s-direct.entrypoints" $name) }}
+        entrypoints:
+          {{- range split (index $c.Labels (printf "traefik.http.routers.%s-direct.entrypoints" $name)) "," }}
+          - {{ trim . }}
+          {{- end }}
+        {{- end }}
+        {{- if hasKey $c.Labels (printf "traefik.http.routers.%s-direct.priority" $name) }}
+        priority: {{ index $c.Labels (printf "traefik.http.routers.%s-direct.priority" $name) }}
+        {{- end }}
+        {{- if hasKey $c.Labels (printf "traefik.http.routers.%s-direct.middlewares" $name) }}
+        middlewares:
+          {{- range split (index $c.Labels (printf "traefik.http.routers.%s-direct.middlewares" $name)) "," }}
+          - {{ trim . }}
+          {{- end }}
+        {{- end }}
+        {{- if hasKey $c.Labels (printf "traefik.http.routers.%s-direct.tls" $name) }}
+        tls:
+          {{- if eq (index $c.Labels (printf "traefik.http.routers.%s-direct.tls" $name)) "true" }}
+          true
+          {{- else }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s-direct.tls.certresolver" $name) }}
+          certresolver: {{ index $c.Labels (printf "traefik.http.routers.%s-direct.tls.certresolver" $name) }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s-direct.tls.options" $name) }}
+          options: {{ index $c.Labels (printf "traefik.http.routers.%s-direct.tls.options" $name) }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s-direct.tls.domains" $name) }}
+          domains:
+            {{- $domains := parseDomains (index $c.Labels (printf "traefik.http.routers.%s-direct.tls.domains" $name)) }}
+            {{- range $i, $domain := $domains }}
+            - main: {{ $domain.main }}
+              {{- if $domain.sans }}
+              sans:
+                {{- range $domain.sans }}
+                - {{ . }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- end }}
+        {{- end }}
+      
+      # =============================================================================
+      # Custom Router Configurations from Labels
+      # =============================================================================
+      {{- range $key, $value := $c.Labels }}
+        {{- if and (hasPrefix $key "traefik.http.routers.") (not (hasPrefix $key (printf "traefik.http.routers.%s." $name))) (not (hasPrefix $key (printf "traefik.http.routers.%s-direct." $name))) }}
+        {{- $routerName := trimPrefix "traefik.http.routers." $key }}
+        {{- $routerName = trimSuffix (printf ".%s" (last (split $routerName "."))) $routerName }}
+        {{- if ne $routerName $name }}
+        {{ printf "%s:" $routerName }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.rule" $routerName) }}
+          rule: {{ index $c.Labels (printf "traefik.http.routers.%s.rule" $routerName) }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.service" $routerName) }}
+          service: {{ index $c.Labels (printf "traefik.http.routers.%s.service" $routerName) }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.entrypoints" $routerName) }}
+          entrypoints:
+            {{- range split (index $c.Labels (printf "traefik.http.routers.%s.entrypoints" $routerName)) "," }}
+            - {{ trim . }}
+            {{- end }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.priority" $routerName) }}
+          priority: {{ index $c.Labels (printf "traefik.http.routers.%s.priority" $routerName) }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.middlewares" $routerName) }}
+          middlewares:
+            {{- range split (index $c.Labels (printf "traefik.http.routers.%s.middlewares" $routerName)) "," }}
+            - {{ trim . }}
+            {{- end }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.tls" $routerName) }}
+          tls:
+            {{- if eq (index $c.Labels (printf "traefik.http.routers.%s.tls" $routerName)) "true" }}
+            true
+            {{- else }}
+            {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.tls.certresolver" $routerName) }}
+            certresolver: {{ index $c.Labels (printf "traefik.http.routers.%s.tls.certresolver" $routerName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.tls.options" $routerName) }}
+            options: {{ index $c.Labels (printf "traefik.http.routers.%s.tls.options" $routerName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.tls.domains" $routerName) }}
+            domains:
+              {{- $domains := parseDomains (index $c.Labels (printf "traefik.http.routers.%s.tls.domains" $routerName)) }}
+              {{- range $i, $domain := $domains }}
+              - main: {{ $domain.main }}
+                {{- if $domain.sans }}
+                sans:
+                  {{- range $domain.sans }}
+                  - {{ . }}
+                  {{- end }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.observability.accesslogs" $routerName) }}
+          observability:
+            {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.observability.accesslogs" $routerName) }}
+            accesslogs: {{ index $c.Labels (printf "traefik.http.routers.%s.observability.accesslogs" $routerName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.observability.metrics" $routerName) }}
+            metrics: {{ index $c.Labels (printf "traefik.http.routers.%s.observability.metrics" $routerName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.observability.tracing" $routerName) }}
+            tracing: {{ index $c.Labels (printf "traefik.http.routers.%s.observability.tracing" $routerName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.routers.%s.observability.traceverbosity" $routerName) }}
+            traceverbosity: {{ index $c.Labels (printf "traefik.http.routers.%s.observability.traceverbosity" $routerName) }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  
+  # =============================================================================
+  # HTTP SERVICES SECTION
+  # =============================================================================
+  services:
+    {{- range $c := . }}
+      {{- if eq (index $c.Labels "traefik.enable") "true" }}
+        {{- $name := trimPrefix "/" $c.Name }}
+        
+        # =============================================================================
+        # Failover Service Configuration for {{ $name }}
+        # =============================================================================
+        {{ printf "%s-with-failover:" $name }}
+          failover:
+            service: {{ printf "%s-direct@file" $name }}
+            fallback: {{ printf "%s-servers@file" $name }}
+        
+        # =============================================================================
+        # Direct Service Configuration for {{ $name }}
+        # =============================================================================
+        {{ printf "%s-direct:" $name }}
+          loadBalancer:
+            {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.strategy" $name) }}
+            strategy: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.strategy" $name) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.passhostheader" $name) }}
+            passHostHeader: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.passhostheader" $name) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.responseforwarding.flushinterval" $name) }}
+            responseForwarding:
+              flushInterval: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.responseforwarding.flushinterval" $name) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.serverstransport" $name) }}
+            serversTransport: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.serverstransport" $name) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky" $name) }}
+            sticky:
+              {{- if eq (index $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky" $name)) "true" }}
+              cookie:
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.name" $name) }}
+                name: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.name" $name) }}
+                {{- end }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.secure" $name) }}
+                secure: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.secure" $name) }}
+                {{- end }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.httponly" $name) }}
+                httpOnly: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.httponly" $name) }}
+                {{- end }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.samesite" $name) }}
+                sameSite: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.samesite" $name) }}
+                {{- end }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.domain" $name) }}
+                domain: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.domain" $name) }}
+                {{- end }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.path" $name) }}
+                path: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.path" $name) }}
+                {{- end }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.maxage" $name) }}
+                maxAge: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.sticky.cookie.maxage" $name) }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+            servers:
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.url" $name) }}
+              - url: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.url" $name) }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.weight" $name) }}
+                weight: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.weight" $name) }}
+                {{- end }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.preservepath" $name) }}
+                preservePath: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.preservepath" $name) }}
+                {{- end }}
+              {{- else }}
+              - url: http://{{ $name }}:{{ if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.port" $name) }}{{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.port" $name) }}{{ else }}{{ if $c.Addresses }}{{ (index $c.Addresses 0).Port }}{{ else }}80{{ end }}{{ end }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.scheme" $name) }}
+                scheme: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.scheme" $name) }}
+                {{- end }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.weight" $name) }}
+                weight: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.weight" $name) }}
+                {{- end }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.preservepath" $name) }}
+                preservePath: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.preservepath" $name) }}
+                {{- end }}
+              {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck" $name) }}
+            healthCheck:
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.path" $name) }}
+              path: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.path" $name) }}
+              {{- else }}
+              path: "/"
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.interval" $name) }}
+              interval: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.interval" $name) }}
+              {{- else }}
+              interval: "15s"
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.timeout" $name) }}
+              timeout: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.timeout" $name) }}
+              {{- else }}
+              timeout: "5s"
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.hostname" $name) }}
+              hostname: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.hostname" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.method" $name) }}
+              method: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.method" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.scheme" $name) }}
+              scheme: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.scheme" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.port" $name) }}
+              port: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.port" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.followredirects" $name) }}
+              followRedirects: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.followredirects" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.headers" $name) }}
+              headers:
+                {{- $headers := parseHeaders (index $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.headers" $name)) }}
+                {{- range $headerName, $headerValue := $headers }}
+                {{ $headerName }}: {{ $headerValue }}
+                {{- end }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.status" $name) }}
+              status: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.status" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.unhealthyinterval" $name) }}
+              unhealthyInterval: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.healthcheck.unhealthyinterval" $name) }}
+              {{- end }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.passivehealthcheck" $name) }}
+            passiveHealthCheck:
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.passivehealthcheck.failurewindow" $name) }}
+              failureWindow: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.passivehealthcheck.failurewindow" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.passivehealthcheck.maxfailedattempts" $name) }}
+              maxFailedAttempts: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.passivehealthcheck.maxfailedattempts" $name) }}
+              {{- end }}
+            {{- end }}
+        
+        # =============================================================================
+        # Fallback Servers Service Configuration for {{ $name }}
+        # =============================================================================
+        {{ printf "%s-servers:" $name }}
+          loadBalancer:
+            {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.strategy" $name) }}
+            strategy: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.strategy" $name) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.passhostheader" $name) }}
+            passHostHeader: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.passhostheader" $name) }}
+            {{- end }}
+            servers:
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.servers" $name) }}
+                {{- $servers := parseServers (index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.servers" $name)) }}
+                {{- range $server := $servers }}
+              - url: {{ $server.url }}
+                  {{- if $server.weight }}
+                  weight: {{ $server.weight }}
+                  {{- end }}
+                  {{- if $server.scheme }}
+                  scheme: {{ $server.scheme }}
+                  {{- end }}
+                  {{- if $server.preservePath }}
+                  preservePath: {{ $server.preservePath }}
+                  {{- end }}
+                {{- end }}
+              {{- else }}
+              - url: https://{{ $name }}.micklethefickle.bolabaden.org
+              - url: https://{{ $name }}.beatapostapita.bolabaden.org
+              - url: https://{{ $name }}.vractormania.bolabaden.org
+              - url: https://{{ $name }}.arnialtrashlid.bolabaden.org
+              - url: https://{{ $name }}.cloudserver1.bolabaden.org
+              - url: https://{{ $name }}.cloudserver2.bolabaden.org
+              - url: https://{{ $name }}.cloudserver3.bolabaden.org
+              {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck" $name) }}
+            healthCheck:
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.path" $name) }}
+              path: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.path" $name) }}
+              {{- else }}
+              path: "/"
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.interval" $name) }}
+              interval: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.interval" $name) }}
+              {{- else }}
+              interval: "15s"
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.timeout" $name) }}
+              timeout: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.timeout" $name) }}
+              {{- else }}
+              timeout: "5s"
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.hostname" $name) }}
+              hostname: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.hostname" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.method" $name) }}
+              method: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.method" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.scheme" $name) }}
+              scheme: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.scheme" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.port" $name) }}
+              port: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.port" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.followredirects" $name) }}
+              followRedirects: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.followredirects" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.headers" $name) }}
+              headers:
+                {{- $headers := parseHeaders (index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.headers" $name)) }}
+                {{- range $headerName, $headerValue := $headers }}
+                {{ $headerName }}: {{ $headerValue }}
+                {{- end }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.status" $name) }}
+              status: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.status" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.unhealthyinterval" $name) }}
+              unhealthyInterval: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.healthcheck.unhealthyinterval" $name) }}
+              {{- end }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.passivehealthcheck" $name) }}
+            passiveHealthCheck:
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.passivehealthcheck.failurewindow" $name) }}
+              failureWindow: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.passivehealthcheck.failurewindow" $name) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.passivehealthcheck.maxfailedattempts" $name) }}
+              maxFailedAttempts: {{ index $c.Labels (printf "traefik.http.services.%s-servers.loadbalancer.passivehealthcheck.maxfailedattempts" $name) }}
+              {{- end }}
+            {{- end }}
+        
+        # =============================================================================
+        # Custom Service Configurations from Labels
+        # =============================================================================
+        {{- range $key, $value := $c.Labels }}
+          {{- if and (hasPrefix $key "traefik.http.services.") (not (hasPrefix $key (printf "traefik.http.services.%s." $name))) (not (hasPrefix $key (printf "traefik.http.services.%s-direct." $name))) (not (hasPrefix $key (printf "traefik.http.services.%s-servers." $name))) }}
+          {{- $serviceName := trimPrefix "traefik.http.services." $key }}
+          {{- $serviceName = trimSuffix (printf ".%s" (last (split $serviceName "."))) $serviceName }}
+          {{- if ne $serviceName $name }}
+          {{ printf "%s:" $serviceName }}
+            {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.strategy" $serviceName) }}
+            loadBalancer:
+              strategy: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.strategy" $serviceName) }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.passhostheader" $serviceName) }}
+              passHostHeader: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.passhostheader" $serviceName) }}
+              {{- end }}
+              {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.port" $serviceName) }}
+              servers:
+              - url: http://{{ $serviceName }}:{{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.port" $serviceName) }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.scheme" $serviceName) }}
+                scheme: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.scheme" $serviceName) }}
+                {{- end }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.weight" $serviceName) }}
+                weight: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.weight" $serviceName) }}
+                {{- end }}
+                {{- if hasKey $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.preservepath" $serviceName) }}
+                preservePath: {{ index $c.Labels (printf "traefik.http.services.%s.loadbalancer.server.preservepath" $serviceName) }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  
+  # =============================================================================
+  # HTTP MIDDLEWARES SECTION
+  # =============================================================================
+  middlewares:
+    {{- range $c := . }}
+      {{- $name := trimPrefix "/" $c.Name }}
+      
+      # =============================================================================
+      # Middleware Configurations from Labels for {{ $name }}
+      # =============================================================================
+      {{- range $key, $value := $c.Labels }}
+        {{- if hasPrefix $key "traefik.http.middlewares." }}
+        {{- $middlewareName := trimPrefix "traefik.http.middlewares." $key }}
+        {{- $middlewareName = trimSuffix (printf ".%s" (last (split $middlewareName "."))) $middlewareName }}
+        {{- if ne $middlewareName $name }}
+        {{ printf "%s:" $middlewareName }}
+          {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.addprefix.prefix" $middlewareName) }}
+          addPrefix:
+            prefix: {{ index $c.Labels (printf "traefik.http.middlewares.%s.addprefix.prefix" $middlewareName) }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.basicauth.users" $middlewareName) }}
+          basicAuth:
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.basicauth.users" $middlewareName) }}
+            users:
+              {{- range split (index $c.Labels (printf "traefik.http.middlewares.%s.basicauth.users" $middlewareName)) "," }}
+              - {{ trim . }}
+              {{- end }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.basicauth.usersfile" $middlewareName) }}
+            usersFile: {{ index $c.Labels (printf "traefik.http.middlewares.%s.basicauth.usersfile" $middlewareName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.basicauth.headerfield" $middlewareName) }}
+            headerField: {{ index $c.Labels (printf "traefik.http.middlewares.%s.basicauth.headerfield" $middlewareName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.basicauth.realm" $middlewareName) }}
+            realm: {{ index $c.Labels (printf "traefik.http.middlewares.%s.basicauth.realm" $middlewareName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.basicauth.removeheader" $middlewareName) }}
+            removeHeader: {{ index $c.Labels (printf "traefik.http.middlewares.%s.basicauth.removeheader" $middlewareName) }}
+            {{- end }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.buffering.maxrequestbodybytes" $middlewareName) }}
+          buffering:
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.buffering.maxrequestbodybytes" $middlewareName) }}
+            maxRequestBodyBytes: {{ index $c.Labels (printf "traefik.http.middlewares.%s.buffering.maxrequestbodybytes" $middlewareName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.buffering.maxresponsebodybytes" $middlewareName) }}
+            maxResponseBodyBytes: {{ index $c.Labels (printf "traefik.http.middlewares.%s.buffering.maxresponsebodybytes" $middlewareName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.buffering.memrequestbodybytes" $middlewareName) }}
+            memRequestBodyBytes: {{ index $c.Labels (printf "traefik.http.middlewares.%s.buffering.memrequestbodybytes" $middlewareName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.buffering.memresponsebodybytes" $middlewareName) }}
+            memResponseBodyBytes: {{ index $c.Labels (printf "traefik.http.middlewares.%s.buffering.memresponsebodybytes" $middlewareName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.buffering.retryexpression" $middlewareName) }}
+            retryExpression: {{ index $c.Labels (printf "traefik.http.middlewares.%s.buffering.retryexpression" $middlewareName) }}
+            {{- end }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.chain.middlewares" $middlewareName) }}
+          chain:
+            middlewares:
+              {{- range split (index $c.Labels (printf "traefik.http.middlewares.%s.chain.middlewares" $middlewareName)) "," }}
+              - {{ trim . }}
+              {{- end }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.circuitbreaker.expression" $middlewareName) }}
+          circuitBreaker:
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.circuitbreaker.expression" $middlewareName) }}
+            expression: {{ index $c.Labels (printf "traefik.http.middlewares.%s.circuitbreaker.expression" $middlewareName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.circuitbreaker.checkperiod" $middlewareName) }}
+            checkPeriod: {{ index $c.Labels (printf "traefik.http.middlewares.%s.circuitbreaker.checkperiod" $middlewareName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.circuitbreaker.fallbackduration" $middlewareName) }}
+            fallbackDuration: {{ index $c.Labels (printf "traefik.http.middlewares.%s.circuitbreaker.fallbackduration" $middlewareName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.circuitbreaker.recoveryduration" $middlewareName) }}
+            recoveryDuration: {{ index $c.Labels (printf "traefik.http.middlewares.%s.circuitbreaker.recoveryduration" $middlewareName) }}
+            {{- end }}
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.circuitbreaker.responsecode" $middlewareName) }}
+            responseCode: {{ index $c.Labels (printf "traefik.http.middlewares.%s.circuitbreaker.responsecode" $middlewareName) }}
+            {{- end }}
+          {{- end }}
+          {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.compress" $middlewareName) }}
+          compress:
+            {{- if eq (index $c.Labels (printf "traefik.http.middlewares.%s.compress" $middlewareName)) "true" }}
+            true
+            {{- else }}
+            {{- if hasKey $c.Labels (printf "traefik.http.middlewares.%s.compress.encodings" $middlewareName) }}
+            encodings:
+              {{- range split (index $c.Labels (printf "traefik.http.middlewares.%s.compress.encodings" $middlewareName)) "," }}
+              - {{ trim . }}
+              {{- end 

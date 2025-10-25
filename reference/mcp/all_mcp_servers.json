@@ -1,0 +1,838 @@
+{
+  "mcpServers": {
+    "@21st-dev/magic": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@21st-dev/magic@latest",
+        "API_KEY=\"61f320a199a820fd64d7a75be5875959840d9b24400c53107e3651a91598f9f8\"",
+        "run"
+      ]
+    },
+    "blender": {
+      "command": "uvx",
+      "args": [
+        "blender-mcp"
+      ]
+    },
+    "browser-tools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@agentdeskai/browser-tools-mcp"
+      ]
+    },
+    "shadcn-ui": {
+      "command": "npx",
+      "args": [
+        "@jpisnice/shadcn-ui-mcp-server",
+        "--github-api-key",
+        "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"
+      ]
+    },
+    "cloudflare-observability": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://observability.mcp.cloudflare.com/sse"
+      ]
+    },
+    "cloudflare-bindings": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://bindings.mcp.cloudflare.com/sse"
+      ]
+    },
+    "coolify": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@masonator/coolify-mcp"
+      ],
+      "env": {
+        "COOLIFY_ACCESS_TOKEN": "4|IQOak7OTwMDUnJrnDC8px6gt0idMRVuydCMomtD1848695ed",
+        "COOLIFY_BASE_URL": "https://coolify.bolabaden.org"
+      }
+    },
+    "context7": {
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "@mcp-get-community/server-curl": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mcp-get-community/server-curl"
+      ],
+      "runtime": "node"
+    },
+    "cyberchitta": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "llm-context",
+        "lc-mcp"
+      ],
+      "autoApprove": [],
+      "disabled": false
+    },
+    "dappier": {
+      "command": "uvx",
+      "args": [
+        "dappier-mcp"
+      ],
+      "env": {
+        "DAPPIER_API_KEY": "ak_01jt4m2ev2ej3s6k6rvbrxb7bk"
+      }
+    },
+    "dataset-viewer": {
+      "command": "uvx",
+      "args": [
+        "https://github.com/privetin/dataset-viewer.git"
+      ],
+      "autoApprove": [],
+      "disabled": false,
+      "env": {
+        "HUGGINGFACE_TOKEN": "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"
+      }
+    },
+    "exa": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.exa.ai/mcp?exaApiKey=4f304bea-22a0-4473-bc38-21114d0f8aaf"
+      ]
+    },
+    "fetch-local": {
+      "command": "node",
+      "args": [
+        "/opt/repos/fetch-mcp/dist/index.js"
+      ]
+    },
+    "fetch": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "fetch-mcp"
+      ]
+    },
+    "firecrawl": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "firecrawl-mcp"
+      ],
+      "env": {
+        "FIRECRAWL_API_KEY": "fc-e0e316bead3d497fb24d42ea21d5daf6",
+        "FIRECRAWL_RETRY_MAX_ATTEMPTS": "3",
+        "FIRECRAWL_RETRY_INITIAL_DELAY": "1000",
+        "FIRECRAWL_RETRY_MAX_DELAY": "10000",
+        "FIRECRAWL_RETRY_BACKOFF_FACTOR": "2",
+        "FIRECRAWL_CREDIT_WARNING_THRESHOLD": "1000",
+        "FIRECRAWL_CREDIT_CRITICAL_THRESHOLD": "100",
+        "FIRECRAWL_API_URL": "https://firecrawl-api.beatapostapita.bolabaden.org"
+      }
+    },
+    "firecrawl-cloud": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "firecrawl-mcp"
+      ],
+      "env": {
+        "FIRECRAWL_API_KEY": "e09yzpAgQ6qNlDlKAqd8uxzkecoLk3weigRRSv7k88",
+        "FIRECRAWL_RETRY_MAX_ATTEMPTS": "3",
+        "FIRECRAWL_RETRY_INITIAL_DELAY": "1000",
+        "FIRECRAWL_RETRY_MAX_DELAY": "10000",
+        "FIRECRAWL_RETRY_BACKOFF_FACTOR": "2",
+        "FIRECRAWL_CREDIT_WARNING_THRESHOLD": "1000",
+        "FIRECRAWL_CREDIT_CRITICAL_THRESHOLD": "100"
+      }
+    },
+    "firecrawl2": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-server-firecrawl"
+      ],
+      "env": {
+        "FIRE_CRAWL_API_KEY": "fc-e0e316bead3d497fb24d42ea21d5daf6",
+        "FIRECRAWL_RETRY_MAX_ATTEMPTS": "3",
+        "FIRECRAWL_RETRY_INITIAL_DELAY": "1000",
+        "FIRECRAWL_RETRY_MAX_DELAY": "10000",
+        "FIRECRAWL_RETRY_BACKOFF_FACTOR": "2",
+        "FIRECRAWL_CREDIT_WARNING_THRESHOLD": "1000",
+        "FIRECRAWL_CREDIT_CRITICAL_THRESHOLD": "100",
+        "FIRECRAWL_API_URL": "https://firecrawl-api.beatapostapita.bolabaden.org"
+      }
+    },
+    "firecrawl2-cloud": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-server-firecrawl"
+      ],
+      "env": {
+        "FIRECRAWL_API_KEY": "e09yzpAgQ6qNlDlKAqd8uxzkecoLk3weigRRSv7k88",
+        "FIRECRAWL_RETRY_MAX_ATTEMPTS": "5",
+        "FIRECRAWL_RETRY_INITIAL_DELAY": "2000",
+        "FIRECRAWL_RETRY_MAX_DELAY": "30000",
+        "FIRECRAWL_RETRY_BACKOFF_FACTOR": "3",
+        "FIRECRAWL_CREDIT_WARNING_THRESHOLD": "2000",
+        "FIRECRAWL_CREDIT_CRITICAL_THRESHOLD": "500"
+      }
+    },
+    "installer": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anaisbetts/mcp-installer"
+      ],
+      "autoApprove": [],
+      "disabled": false
+    },
+    "markdownify-src": {
+      "command": "node",
+      "args": [
+        "/home/ubuntu/my-media-stack/src/markdownify-mcp/dist/index.js"
+      ]
+    },
+    "markdownify": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "markdownify-mcp"
+      ]
+    },
+    "meilisearch": {
+      "command": "uvx",
+      "args": [
+        "meilisearch-mcp"
+      ],
+      "autoApprove": [],
+      "disabled": false,
+      "env": {
+        "MEILISEARCH_API_KEY": "OSBNwZWDKQXHLmzEZ8eppMNrpORitmOuihGsqAXYMkQ",
+        "MEILISEARCH_HOST": "https://meilisearch.bolabaden.org"
+      }
+    },
+    "notes": {
+      "command": "uvx",
+      "args": [
+        "https://github.com/truaxki/mcp-notes.git"
+      ],
+      "autoApprove": [],
+      "disabled": false
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "playwright-mcp-server"
+      ]
+    },
+    "qdrant": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-qdrant"
+      ],
+      "env": {
+        "COLLECTION_NAME": "code-snippets",
+        "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2",
+        "QDRANT_LOCAL_PATH": "/opt/mcp/mcp-store/qdrant",
+        "QDRANT_URL": "http://localhost:6333",
+        "TOOL_FIND_DESCRIPTION": "Search for relevant code snippets based on natural language descriptions. The 'query' parameter should describe what you're looking for, and the tool will return the most relevant code snippets. Use this when you need to find existing code snippets for reuse or reference.",
+        "TOOL_STORE_DESCRIPTION": "Store reusable code snippets for later retrieval. The 'information' parameter should contain a natural language description of what the code does, while the actual code should be included in the 'metadata' parameter as a 'code' property. The value of 'metadata' is a Python dictionary with strings as keys. Use this whenever you generate some code snippet."
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "supermemory-ai": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "supergateway",
+        "--sse",
+        "https://mcp.supermemory.ai/O0o4ercEK1mpwuJZP7dR8/sse"
+      ]
+    },
+    "taskmanager": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@kazuph/mcp-taskmanager"
+      ]
+    },
+    "taskmaster-ai": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "task-master-ai"
+      ],
+      "env": {
+        "ANTHROPIC_API_KEY": "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",
+        "AZURE_OPENAI_API_KEY": "sk-or-v1-1234567890abcdefghijklmnopqrstuvwxyz",
+        "GOOGLE_API_KEY": "AIzaSyD-PbwLW-kTPQ_PqUnv3uH5TEy1evHHUKs",
+        "MISTRAL_API_KEY": "rNZOe7bauJwpknHvDjOtnXV6iaKHzEt1",
+        "OLLAMA_API_KEY": "ollama-1234567890",
+        "OPENAI_API_KEY": "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",
+        "OPENROUTER_API_KEY": "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",
+        "PERPLEXITY_API_KEY": "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",
+        "XAI_API_KEY": "xai-xLH43A8d9pnp5eSKlLxe8or7UhjsdG9EXtdyTpaNwejPlua6VTD9BKiAJCYB67cCAAVidPeHJswgsD8V"
+      }
+    },
+    "tavily1": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "tavily-mcp@0.2.4"
+      ],
+      "env": {
+        "TAVILY_API_KEY": "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"
+      }
+    },
+    "tavily2": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "tavily-mcp@0.2.4"
+      ],
+      "env": {
+        "TAVILY_API_KEY": "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"
+      }
+    },
+    "video-editor": {
+      "args": [
+        "uv",
+        "--directory",
+        "G:/GitHub/Video_Editor_MCP",
+        "run",
+        "video_editor"
+      ]
+    },
+    "webresearch-src": {
+      "args": [
+        "node",
+        "G:/GitHub/mcp-webresearch/dist/index.js"
+      ]
+    },
+    "webresearch": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mzxrai/mcp-webresearch@latest"
+      ]
+    },
+    "excel": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "excel-mcp-server"
+      ]
+    },
+    "mindmap": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mindmap-mcp-server"
+      ]
+    },
+    "tavily-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "tavily-mcp@0.1.4"
+      ],
+      "env": {
+        "TAVILY_API_KEY": "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"
+      }
+    },
+    "ai-humanizer": {
+      "command": "node",
+      "args": [
+        "/opt/mcp/ai-humanizer-mcp-server/build/index.js"
+      ],
+      "env": {}
+    },
+    "alchemy-mcp": {
+      "command": "uvx",
+      "args": [
+        "--with",
+        "pymssql",
+        "--with",
+        "cx_oracle",
+        "mcp-alchemy"
+      ],
+      "env": {
+        "DB_URL": "mssql+pymssql://sa:123456@localhost:1433/test"
+      }
+    },
+    "apple-shortcuts": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "https://github.com/recursechat/mcp-server-apple-shortcuts.git"
+      ]
+    },
+    "azure-data-explorer-mcp": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/opt/mcp/adx-mcp-server",
+        "run",
+        "src/adx_mcp_server/main.py"
+      ],
+      "env": {
+        "ADX_CLUSTER_URL": "https://bolabaden.kusto.windows.net",
+        "ADX_DATABASE": "bolabaden"
+      }
+    },
+    "branch-thinking": {
+      "command": "node",
+      "args": [
+        "/opt/mcp/branch-thinking/dist/index.js"
+      ]
+    },
+    "browser-automation": {
+      "command": "node",
+      "args": [
+        "/opt/mcp/mcp-browser-automation/dist/index.js"
+      ]
+    },
+    "browserbase": {
+      "command": "node",
+      "args": [
+        "/opt/mcp/mcp-server-browserbase/browserbase/dist/index.js"
+      ],
+      "env": {
+        "BROWSERBASE_API_KEY": "bb_live_V5a1GHAW8JlmM0l9ww0CgLBzvJ8",
+        "BROWSERBASE_PROJECT_ID": "ab754625-4043-428a-9ba6-b30a1fcf1495"
+      }
+    },
+    "code-research": {
+      "command": "node",
+      "args": [
+        "/opt/mcp/code-research-mcp-server/build/index.js"
+      ],
+      "env": {
+        "GITHUB_TOKEN": "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"
+      }
+    },
+    "code-search": {
+      "command": "node",
+      "args": [
+        "/opt/mcp/code-search-server/build/index.js"
+      ],
+      "env": {}
+    },
+    "document_operations": {
+      "command": "uv",
+      "args": [
+        "run",
+        "/opt/mcp/document-edit-mcp/claude_document_mcp/server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/opt/mcp/document-edit-mcp;/opt/mcp/document-edit-mcp/.venv/Lib/site-packages",
+        "PYTHONUNBUFFERED": "1"
+      }
+    },
+    "everart": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-everart"
+      ],
+      "env": {
+        "EVERART_API_KEY": "everart-H0b1-Cg-LIRg6dQf6nNANwtnybsyfOnf-qa9hm0YtEg"
+      },
+      "transportType": "stdio"
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mcp/filesystem"
+      ]
+    },
+    "git": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/opt/mcp/git-mcp-server/src",
+        "run",
+        "mcp_server_git"
+      ]
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "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"
+      }
+    },
+    "goalStory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "goalstory-mcp",
+        "https://prod-goalstory-rqc2.encr.app",
+        "your-api-key"
+      ],
+      "transportType": "stdio"
+    },
+    "google-maps": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-google-maps"
+      ],
+      "env": {
+        "GOOGLE_MAPS_API_KEY": "<YOUR_API_KEY>"
+      }
+    },
+    "google-sheets-mcp": {
+      "command": "uvx",
+      "args": [
+        "mcp-google-sheets"
+      ],
+      "env": {
+        "CREDENTIALS_PATH": "C:/Users/boden/AppData/Roaming/gcloud/application_default_credentials.json",
+        "TOKEN_PATH": "C:/Users/boden/AppData/Roaming/gcloud/token.json"
+      }
+    },
+    "gsc": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-server-gsc"
+      ],
+      "env": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "C:/Users/boden/AppData/Roaming/gcloud/application_default_credentials.json"
+      }
+    },
+    "gtasks-local": {
+      "command": "node",
+      "args": [
+        "/opt/mcp/gtasks-mcp/dist/index.js"
+      ],
+      "env": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "C:/Users/boden/AppData/Roaming/gcloud/application_default_credentials.json"
+      }
+    },
+    "hfspace-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@th3w1zard1/mcp-hfspace",
+        "--work-dir=/opt/mcp/mcp-store",
+        "--HF_TOKEN=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",
+        "black-forest-labs/FLUX.1-schnell",
+        "DawnC/PawMatchAI",
+        "DawnC/PawMatchAI/on_find_match_click",
+        "diyism/Datou1111-shou_xin",
+        "fantaxy/Sound-AI-SFX",
+        "haoheliu/audioldm2-text2audio-text2music",
+        "hf-audio/whisper-large-v3-turbo",
+        "Inspyrenet-Rembg",
+        "merve/paligemma-doc",
+        "merve/paligemma2-vqav2",
+        "microsoft/OmniParser",
+        "parler-tts/parler_tts",
+        "prithivMLmods/Mistral-7B-Instruct-v0.3",
+        "Qwen/Qwen2.5-72B-Instruct",
+        "shuttleai/shuttle-3.1-aesthetic",
+        "yanze/PuLID-FLUX"
+      ]
+    },
+    "knowledge-graph": {
+      "command": "node",
+      "args": [
+        "/opt/mcp/mcp-knowledge-graph/dist/index.js"
+      ],
+      "env": {}
+    },
+    "mcp-server-weaviate": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@weaviate/mcp-server-weaviate",
+        "--config",
+        "\"{\\\"weaviateUrl\\\":\\\"\\\",\\\"cohereApiKey\\\":\\\"UMiApt1sGnODnVZ7lF3Hdx6KPyDM4OvqcD6j9YJF\\\",\\\"openaiApiKey\\\":\\\"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\\\",\\\"weaviateApiKey\\\":\\\"\\\",\\\"storeCollectionName\\\":\\\"my-new-collection\\\",\\\"searchCollectionName\\\":\\\"my-new-search-collection\\\"}\""
+      ]
+    },
+    "meilisearch-local": {
+      "command": "uvx",
+      "args": [
+        "meilisearch-mcp"
+      ],
+      "env": {
+        "MEILISEARCH_API_KEY": "OSBNwZWDKQXHLmzEZ8eppMNrpORitmOuihGsqAXYMkQ",
+        "MEILISEARCH_HOST": "http://localhost:7700"
+      }
+    },
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ]
+    },
+    "mongodb-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mongo-mcp",
+        "mongodb://brunner56:h4L0m4St3R327@bolabaden.org:27017/bolabaden?authSource=admin"
+      ],
+      "env": {
+        "MONGO_URI": "mongodb://brunner56:h4L0m4St3R327@bolabaden.org:27017/bolabaden?authSource=admin"
+      }
+    },
+    "mpc-memgraph": {
+      "command": "/Users/katelatte/.local/bin/uv",
+      "args": [
+        "--directory",
+        "/Users/katelatte/projects/mcp-memgraph",
+        "run",
+        "server.py"
+      ],
+      "transportType": "stdio"
+    },
+    "neon": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "neon",
+        "--config",
+        "\"{\\\"neonApiKey\\\":\\\"napi_qdtsm5hm6lm6jv80yquizic0by5jnlfdqduajpxx88ceh3qo23x7ej744et664o0\\\"}\""
+      ]
+    },
+    "nile-database": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@niledatabase/nile-mcp-server"
+      ],
+      "env": {
+        "NILE_API_KEY": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3RoZW5pbGUuZGV2IiwiYXVkIjpbIm5pbGUiLCJ3b3Jrc3BhY2U6MDE5NWZmMTItZDAyMi03ZGFiLThhZjAtODdkZWI5Mzg2NDYwIl0sImlhdCI6MTc0Mzc0MTI3MywiZXhwIjoyMDU5MTcxMTk5LCJzdWIiOiIwMTk1ZmYxNC00NDFlLTcwNjMtYWE2OS02MWFhYTlhNzFkODMiLCJqdGkiOiIwYjhlMTU1Zi03YWVjLTQzMTktYThhMC1hNTgyZmNiMjg1MDkiLCJzY29wZSI6ImFwaSIsImF1dGhvcml6ZWRfc2NvcGVzIjoiYWxsIn0.hZvxQ7uowOobsXTmdCY3qQ-rEhNDWOJsuiPTMwdlbImazdjZ80AQwCcSCwUmEQabHng34wkQETLEYwcNsnoM0jtxG21KU0AMliy-Lp2yGfGUgNecC5k23rdzRbqskgT30ZVnYolAZxKmd3jfMAigRoTXCQ8VYWS6vaWh4Odx6URNgWO2NJUyWkwzTCZLDzGA0df5kxBwqFsnW0ljdpSdn6s0BQZNVm7Wzc5uprcM3FkNxRclr6FKryIb1BdDFObjPyu3ceVnbDKqwWd32bHND2T_odyRthgcpm21YF-PKlrTzeUdigEBYFlaFukuEoW2mgGyM5jLt2JtWKCapUtaWA",
+        "NILE_WORKSPACE_SLUG": "bolabaden"
+      }
+    },
+    "panda3d-docs": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "git+https://github.com/th3w1zard1/mcp-panda3d.git"
+      ]
+    },
+    "pandoc": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-pandoc"
+      ]
+    },
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://localhost/mydb"
+      ]
+    },
+    "prometheus": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "<full path to prometheus-mcp-server directory>",
+        "run",
+        "src/prometheus_mcp_server/main.py"
+      ],
+      "env": {
+        "PROMETHEUS_PASSWORD": "h4L0m4St3R327",
+        "PROMETHEUS_URL": "http://bolabaden.org:9090",
+        "PROMETHEUS_USERNAME": "brunner56"
+      }
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "env": {
+        "PUPPETEER_LAUNCH_OPTIONS": "{ \"headless\": false, \"executablePath\": \"C:/Program Files/Google/Chrome/Application/chrome.exe\", \"args\": [] }",
+        "ALLOW_DANGEROUS": "true"
+      }
+    },
+    "rag-web-browser": {
+      "command": "node",
+      "args": ["/opt/mcp/mcp-server-rag-web-browser/build/index.js"],
+      "env": {
+        "APIFY-API-TOKEN": "apify_api_caQfKkFnMaLn3649k0ohRimlTKbHUt3jAbbW"
+      }
+    },
+    "reasoner": {
+      "command": "node",
+      "args": ["/opt/mcp/mcp-reasoner/dist/index.js"],
+      "env": {}
+    },
+    "redis": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-redis",
+        "redis://localhost:6379"
+      ]
+    },
+    "simple-arxiv": {
+      "command": "uvx",
+      "args": [
+        "https://github.com/andybrandt/mcp-simple-arxiv.git",
+        "--directory",
+        "mcp-simple-arxiv",
+        "run",
+        "mcp_simple_arxiv",
+        "--python",
+        "3.12"
+      ]
+    },
+    "sqlite": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/opt/mcp/mcp-server-sqlite",
+        "run",
+        "mcp-server-sqlite",
+        "--db-path",
+        "/opt/mcp/mcp-store/test.db"
+      ],
+      "transportType": "stdio"
+    },
+    "stagehand": {
+      "command": "node",
+      "args": [
+        "/opt/mcp/mcp-server-browserbase/stagehand/dist/index.js"
+      ],
+      "env": {
+        "BROWSERBASE_API_KEY": "bb_live_V5a1GHAW8JlmM0l9ww0CgLBzvJ8",
+        "BROWSERBASE_PROJECT_ID": "ab754625-4043-428a-9ba6-b30a1fcf1495",
+        "OPENAI_API_KEY": "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"
+      }
+    },
+    "time": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-time",
+        "--local-timezone=America/Chicago"
+      ]
+    },
+    "tmdb": {
+      "command": "node",
+      "args": [
+        "/opt/mcp/mcp-server-tmdb/dist/index.js"
+      ],
+      "env": {
+        "TMDB_API_KEY": "cec876f852b9c15d2c1b436b1117dff7"
+      }
+    },
+    "todoist": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "todoist-mcp-server"
+      ],
+      "env": {
+        "TODOIST_API_TOKEN": "d9f0ebcdff604bd11c0944f52360758f7587f907"
+      }
+    },
+    "todoist-src": {
+      "command": "node",
+      "args": [
+        "/opt/mcp/todoist-mcp-server/dist/index.js"
+      ],
+      "env": {
+        "TODOIST_API_TOKEN": "d9f0ebcdff604bd11c0944f52360758f7587f907"
+      }
+    },
+    "video-editor-mcp-smithery": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "video-editor-mcp",
+        "--config",
+        "\"{\\\"apiKey\\\":\\\"vj_yNEW1rvwwXw_J3Vl2m9R7g\\\"}\""
+      ]
+    },
+    "video-editor-mcp": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "G:/GitHub/video-editing-mcp",
+        "run",
+        "video-editor-mcp",
+        "vj_yNEW1rvwwXw_J3Vl2m9R7g"
+      ]
+    },
+    "web-search": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "https://github.com/pskill9/web-search.git"
+      ]
+    },
+    "youtube-transcript": {
+      "command": "node",
+      "args": [
+        "/opt/mcp/mcp-server-youtube-transcript/dist/index.js"
+      ],
+      "env": {}
+    },
+    "mcp-docker": {
+      "command": "docker",
+      "args": [
+        "mcp",
+        "gateway",
+        "run"
+      ]
+    },
+    "mcp-docker-extension": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "alpine/socat",
+        "STDIO",
+        "TCP:152.117.108.32:8811"
+      ]
+    },
+    "web-eval-agent": {
+      "command": "uvx",
+      "args": [
+        "--refresh-package",
+        "webEvalAgent",
+        "--from",
+        "git+https://github.com/Operative-Sh/web-eval-agent.git",
+        "webEvalAgent"
+      ],
+      "env": {
+        "OPERATIVE_API_KEY": "op-VR8Pt0ItKlP7vW9PorXWhCXU3FuyyrRcz5lbcxU4aNg"
+      }
+    }
+  }
+}

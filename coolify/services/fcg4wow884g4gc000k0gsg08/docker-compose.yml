@@ -1,0 +1,257 @@
+services:
+  playwright-service:
+    build:
+      context: 'https://github.com/mendableai/firecrawl.git#main:/apps/playwright-service-ts'
+      dockerfile: Dockerfile
+    environment:
+      PORT: 3000
+      PROXY_SERVER: '${PROXY_SERVER}'
+      PROXY_USERNAME: '${PROXY_USERNAME}'
+      PROXY_PASSWORD: '${PROXY_PASSWORD}'
+      BLOCK_MEDIA: '${BLOCK_MEDIA}'
+      COOLIFY_RESOURCE_UUID: fcg4wow884g4gc000k0gsg08
+      COOLIFY_CONTAINER_NAME: playwright-service-fcg4wow884g4gc000k0gsg08
+      COOLIFY_URL: 'https://firecrawl-playwright.vractormania.$DOMAIN'
+      COOLIFY_FQDN: firecrawl-playwright.vractormania.$DOMAIN
+    networks:
+      backend: null
+      fcg4wow884g4gc000k0gsg08: null
+    image: ''
+    container_name: playwright-service-fcg4wow884g4gc000k0gsg08
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.420.6
+      - coolify.serviceId=39
+      - coolify.type=service
+      - coolify.name=playwright-service-fcg4wow884g4gc000k0gsg08
+      - coolify.resourceName=firecrawl-vractormania
+      - coolify.projectName=bolabaden
+      - coolify.serviceName=playwright-service
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=123
+      - coolify.service.subType=application
+      - coolify.service.subName=playwright-service
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-fcg4wow884g4gc000k0gsg08-playwright-service.entryPoints=http
+      - traefik.http.routers.http-0-fcg4wow884g4gc000k0gsg08-playwright-service.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-fcg4wow884g4gc000k0gsg08-playwright-service.rule=Host(`firecrawl-playwright.vractormania.$DOMAIN`) && PathPrefix(`/`)'
+      - traefik.http.routers.http-0-fcg4wow884g4gc000k0gsg08-playwright-service.service=http-0-fcg4wow884g4gc000k0gsg08-playwright-service
+      - traefik.http.routers.https-0-fcg4wow884g4gc000k0gsg08-playwright-service.entryPoints=https
+      - traefik.http.routers.https-0-fcg4wow884g4gc000k0gsg08-playwright-service.middlewares=gzip
+      - 'traefik.http.routers.https-0-fcg4wow884g4gc000k0gsg08-playwright-service.rule=Host(`firecrawl-playwright.vractormania.$DOMAIN`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-fcg4wow884g4gc000k0gsg08-playwright-service.service=https-0-fcg4wow884g4gc000k0gsg08-playwright-service
+      - traefik.http.routers.https-0-fcg4wow884g4gc000k0gsg08-playwright-service.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-fcg4wow884g4gc000k0gsg08-playwright-service.tls=true
+      - traefik.http.services.http-0-fcg4wow884g4gc000k0gsg08-playwright-service.loadbalancer.server.port=3000
+      - traefik.http.services.https-0-fcg4wow884g4gc000k0gsg08-playwright-service.loadbalancer.server.port=3000
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 3000}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://firecrawl-playwright.vractormania.$DOMAIN'
+      - caddy_ingress_network=fcg4wow884g4gc000k0gsg08
+  api:
+    build:
+      context: 'https://github.com/mendableai/firecrawl.git#main:/apps/api'
+      dockerfile: Dockerfile
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:
+      backend: null
+      fcg4wow884g4gc000k0gsg08: null
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    environment:
+      BULL_AUTH_KEY: '${BULL_AUTH_KEY}'
+      ENV: local
+      FLY_PROCESS_GROUP: app
+      HOST: 0.0.0.0
+      LOGGING_LEVEL: '${LOGGING_LEVEL}'
+      MODEL_EMBEDDING_NAME: '${MODEL_EMBEDDING_NAME}'
+      MODEL_NAME: '${MODEL_NAME}'
+      OLLAMA_BASE_URL: '${OLLAMA_BASE_URL}'
+      OPENAI_API_KEY: '${OPENAI_API_KEY}'
+      OPENAI_BASE_URL: '${OPENAI_BASE_URL}'
+      PLAYWRIGHT_MICROSERVICE_URL: '${PLAYWRIGHT_MICROSERVICE_URL:-http://playwright-service:3000/scrape}'
+      PORT: '${INTERNAL_PORT:-3002}'
+      POSTHOG_API_KEY: '${POSTHOG_API_KEY}'
+      POSTHOG_HOST: '${POSTHOG_HOST}'
+      PROXY_PASSWORD: '${PROXY_PASSWORD}'
+      PROXY_SERVER: '${PROXY_SERVER}'
+      PROXY_USERNAME: '${PROXY_USERNAME}'
+      REDIS_RATE_LIMIT_URL: '${REDIS_INTERNAL_URL:-redis://redis:6379}'
+      REDIS_URL: '${REDIS_INTERNAL_URL:-redis://redis:6379}'
+      SEARCHAPI_API_KEY: '${SEARCHAPI_API_KEY}'
+      SEARXNG_CATEGORIES: '${SEARXNG_CATEGORIES}'
+      SEARXNG_ENDPOINT: '${SEARXNG_ENDPOINT}'
+      SEARXNG_ENGINES: '${SEARXNG_ENGINES}'
+      SELF_HOSTED_WEBHOOK_URL: '${SELF_HOSTED_WEBHOOK_URL}'
+      SERPER_API_KEY: '${SERPER_API_KEY}'
+      SLACK_WEBHOOK_URL: '${SLACK_WEBHOOK_URL}'
+      SUPABASE_ANON_TOKEN: '${SUPABASE_ANON_TOKEN}'
+      SUPABASE_SERVICE_TOKEN: '${SUPABASE_SERVICE_TOKEN}'
+      SUPABASE_URL: '${SUPABASE_URL}'
+      TEST_API_KEY: '${TEST_API_KEY}'
+      USE_DB_AUTHENTICATION: '${USE_DB_AUTHENTICATION}'
+      COOLIFY_RESOURCE_UUID: fcg4wow884g4gc000k0gsg08
+      COOLIFY_CONTAINER_NAME: api-fcg4wow884g4gc000k0gsg08
+      COOLIFY_URL: 'https://firecrawl-api.vractormania.$DOMAIN'
+      COOLIFY_FQDN: firecrawl-api.vractormania.$DOMAIN
+    depends_on:
+      - redis
+      - playwright-service
+    ports:
+      - '${PORT:-3002}:${INTERNAL_PORT:-3002}'
+    command:
+      - pnpm
+      - run
+      - 'start:production'
+    image: ''
+    container_name: api-fcg4wow884g4gc000k0gsg08
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.420.6
+      - coolify.serviceId=39
+      - coolify.type=service
+      - coolify.name=api-fcg4wow884g4gc000k0gsg08
+      - coolify.resourceName=firecrawl-vractormania
+      - coolify.projectName=bolabaden
+      - coolify.serviceName=firecrawl-api
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=124
+      - coolify.service.subType=application
+      - coolify.service.subName=firecrawl-api
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-fcg4wow884g4gc000k0gsg08-api.entryPoints=http
+      - traefik.http.routers.http-0-fcg4wow884g4gc000k0gsg08-api.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-fcg4wow884g4gc000k0gsg08-api.rule=Host(`firecrawl-api.vractormania.$DOMAIN`) && PathPrefix(`/`)'
+      - traefik.http.routers.http-0-fcg4wow884g4gc000k0gsg08-api.service=http-0-fcg4wow884g4gc000k0gsg08-api
+      - traefik.http.routers.https-0-fcg4wow884g4gc000k0gsg08-api.entryPoints=https
+      - traefik.http.routers.https-0-fcg4wow884g4gc000k0gsg08-api.middlewares=gzip
+      - 'traefik.http.routers.https-0-fcg4wow884g4gc000k0gsg08-api.rule=Host(`firecrawl-api.vractormania.$DOMAIN`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-fcg4wow884g4gc000k0gsg08-api.service=https-0-fcg4wow884g4gc000k0gsg08-api
+      - traefik.http.routers.https-0-fcg4wow884g4gc000k0gsg08-api.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-fcg4wow884g4gc000k0gsg08-api.tls=true
+      - traefik.http.services.http-0-fcg4wow884g4gc000k0gsg08-api.loadbalancer.server.port=3002
+      - traefik.http.services.https-0-fcg4wow884g4gc000k0gsg08-api.loadbalancer.server.port=3002
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 3002}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://firecrawl-api.vractormania.$DOMAIN'
+      - caddy_ingress_network=fcg4wow884g4gc000k0gsg08
+  worker:
+    build:
+      context: 'https://github.com/mendableai/firecrawl.git#main:/apps/api'
+      dockerfile: Dockerfile
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:
+      backend: null
+      fcg4wow884g4gc000k0gsg08: null
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    environment:
+      BULL_AUTH_KEY: '${BULL_AUTH_KEY}'
+      ENV: local
+      FLY_PROCESS_GROUP: worker
+      LOGGING_LEVEL: '${LOGGING_LEVEL}'
+      MODEL_EMBEDDING_NAME: '${MODEL_EMBEDDING_NAME}'
+      MODEL_NAME: '${MODEL_NAME}'
+      OLLAMA_BASE_URL: '${OLLAMA_BASE_URL}'
+      OPENAI_API_KEY: '${OPENAI_API_KEY}'
+      OPENAI_BASE_URL: '${OPENAI_BASE_URL}'
+      PLAYWRIGHT_MICROSERVICE_URL: '${PLAYWRIGHT_MICROSERVICE_URL:-http://playwright-service:3000/scrape}'
+      POSTHOG_API_KEY: '${POSTHOG_API_KEY}'
+      POSTHOG_HOST: '${POSTHOG_HOST}'
+      PROXY_PASSWORD: '${PROXY_PASSWORD}'
+      PROXY_SERVER: '${PROXY_SERVER}'
+      PROXY_USERNAME: '${PROXY_USERNAME}'
+      REDIS_RATE_LIMIT_URL: '${REDIS_INTERNAL_URL:-redis://redis:6379}'
+      REDIS_URL: '${REDIS_INTERNAL_URL:-redis://redis:6379}'
+      SEARCHAPI_API_KEY: '${SEARCHAPI_API_KEY}'
+      SEARXNG_CATEGORIES: '${SEARXNG_CATEGORIES}'
+      SEARXNG_ENDPOINT: '${SEARXNG_ENDPOINT}'
+      SEARXNG_ENGINES: '${SEARXNG_ENGINES}'
+      SELF_HOSTED_WEBHOOK_URL: '${SELF_HOSTED_WEBHOOK_URL}'
+      SERPER_API_KEY: '${SERPER_API_KEY}'
+      SLACK_WEBHOOK_URL: '${SLACK_WEBHOOK_URL}'
+      SUPABASE_ANON_TOKEN: '${SUPABASE_ANON_TOKEN}'
+      SUPABASE_SERVICE_TOKEN: '${SUPABASE_SERVICE_TOKEN}'
+      SUPABASE_URL: '${SUPABASE_URL}'
+      TEST_API_KEY: '${TEST_API_KEY}'
+      USE_DB_AUTHENTICATION: '${USE_DB_AUTHENTICATION}'
+      COOLIFY_RESOURCE_UUID: fcg4wow884g4gc000k0gsg08
+      COOLIFY_CONTAINER_NAME: worker-fcg4wow884g4gc000k0gsg08
+    depends_on:
+      - redis
+      - playwright-service
+      - api
+    command:
+      - pnpm
+      - run
+      - workers
+    container_name: worker-fcg4wow884g4gc000k0gsg08
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.420.6
+      - coolify.serviceId=39
+      - coolify.type=service
+      - coolify.name=worker-fcg4wow884g4gc000k0gsg08
+      - coolify.resourceName=firecrawl-vractormania
+      - coolify.projectName=bolabaden
+      - coolify.serviceName=worker
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=125
+      - coolify.service.subType=application
+      - coolify.service.subName=worker
+  redis:
+    image: 'redis:alpine'
+    networks:
+      backend: null
+      fcg4wow884g4gc000k0gsg08: null
+    command: 'redis-server --bind 0.0.0.0'
+    container_name: redis-fcg4wow884g4gc000k0gsg08
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.420.6
+      - coolify.serviceId=39
+      - coolify.type=service
+      - coolify.name=redis-fcg4wow884g4gc000k0gsg08
+      - coolify.resourceName=firecrawl-vractormania
+      - coolify.projectName=bolabaden
+      - coolify.serviceName=redis
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=31
+      - coolify.service.subType=database
+      - coolify.service.subName=redis
+    environment:
+      COOLIFY_RESOURCE_UUID: fcg4wow884g4gc000k0gsg08
+      COOLIFY_CONTAINER_NAME: redis-fcg4wow884g4gc000k0gsg08
+volumes: {  }
+networks:
+  backend:
+    driver: bridge
+  fcg4wow884g4gc000k0gsg08:
+    name: fcg4wow884g4gc000k0gsg08
+    external: true
+configs: {  }
+secrets: {  }

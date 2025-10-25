@@ -1,0 +1,77 @@
+apiVersion: {{ include "aiostreams.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ include "aiostreams.fullname" . }}
+  labels:
+    {{- include "aiostreams.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "aiostreams.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "aiostreams.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "aiostreams.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.containerName | default .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- $envFilePath := .Values.envFilePath | default "" -}}
+          {{- if and $envFilePath (.Files.Exists $envFilePath) }}
+          envFrom:
+            - secretRef:
+                # References the secret created from the envFilePath
+                name: {{ include "aiostreams.fullname" . }}-env
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          {{- if .Values.healthcheck.enabled }}
+          livenessProbe:
+            exec:
+              command:
+                {{- toYaml .Values.healthcheck.command | nindent 16 }}
+            initialDelaySeconds: {{ .Values.healthcheck.startPeriodSeconds }}
+            periodSeconds: {{ .Values.healthcheck.intervalSeconds }}
+            timeoutSeconds: {{ .Values.healthcheck.timeoutSeconds }}
+            failureThreshold: {{ .Values.healthcheck.retries }}
+          readinessProbe:
+            exec:
+              command:
+                {{- toYaml .Values.healthcheck.command | nindent 16 }}
+            initialDelaySeconds: {{ .Values.healthcheck.startPeriodSeconds }}
+            periodSeconds: {{ .Values.healthcheck.intervalSeconds }}
+            timeoutSeconds: {{ .Values.healthcheck.timeoutSeconds }}
+            failureThreshold: {{ .Values.healthcheck.retries }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      restartPolicy: {{ .Values.restartPolicy }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }} 

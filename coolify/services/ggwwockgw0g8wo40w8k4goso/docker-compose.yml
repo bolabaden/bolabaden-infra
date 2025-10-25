@@ -1,0 +1,293 @@
+services:
+  playwright-service:
+    build:
+      context: 'https://github.com/mendableai/firecrawl.git#main:/apps/playwright-service-ts'
+      dockerfile: Dockerfile
+    environment:
+      PORT: 3000
+      PROXY_SERVER: '${PROXY_SERVER}'
+      PROXY_USERNAME: '${PROXY_USERNAME}'
+      PROXY_PASSWORD: '${PROXY_PASSWORD}'
+      BLOCK_MEDIA: '${BLOCK_MEDIA}'
+      COOLIFY_RESOURCE_UUID: ggwwockgw0g8wo40w8k4goso
+      COOLIFY_CONTAINER_NAME: playwright-service-ggwwockgw0g8wo40w8k4goso
+      COOLIFY_URL: 'https://firecrawl-playwright.$DOMAIN,https://firecrawl-playwright.beatapostapita.$DOMAIN'
+      COOLIFY_FQDN: 'firecrawl-playwright.$DOMAIN,firecrawl-playwright.beatapostapita.$DOMAIN'
+    networks:
+      backend: null
+      ggwwockgw0g8wo40w8k4goso: null
+    image: ''
+    container_name: playwright-service-ggwwockgw0g8wo40w8k4goso
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.420.6
+      - coolify.serviceId=37
+      - coolify.type=service
+      - coolify.name=playwright-service-ggwwockgw0g8wo40w8k4goso
+      - coolify.resourceName=firecrawl-beatapostapita
+      - coolify.projectName=bolabaden
+      - coolify.serviceName=playwright-service
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=119
+      - coolify.service.subType=application
+      - coolify.service.subName=playwright-service
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-ggwwockgw0g8wo40w8k4goso-playwright-service.entryPoints=http
+      - traefik.http.routers.http-0-ggwwockgw0g8wo40w8k4goso-playwright-service.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-ggwwockgw0g8wo40w8k4goso-playwright-service.rule=Host(`firecrawl-playwright.$DOMAIN`) && PathPrefix(`/`)'
+      - traefik.http.routers.http-0-ggwwockgw0g8wo40w8k4goso-playwright-service.service=http-0-ggwwockgw0g8wo40w8k4goso-playwright-service
+      - traefik.http.routers.http-1-ggwwockgw0g8wo40w8k4goso-playwright-service.entryPoints=http
+      - traefik.http.routers.http-1-ggwwockgw0g8wo40w8k4goso-playwright-service.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-1-ggwwockgw0g8wo40w8k4goso-playwright-service.rule=Host(`firecrawl-playwright.beatapostapita.$DOMAIN`) && PathPrefix(`/`)'
+      - traefik.http.routers.http-1-ggwwockgw0g8wo40w8k4goso-playwright-service.service=http-1-ggwwockgw0g8wo40w8k4goso-playwright-service
+      - traefik.http.routers.https-0-ggwwockgw0g8wo40w8k4goso-playwright-service.entryPoints=https
+      - traefik.http.routers.https-0-ggwwockgw0g8wo40w8k4goso-playwright-service.middlewares=gzip
+      - 'traefik.http.routers.https-0-ggwwockgw0g8wo40w8k4goso-playwright-service.rule=Host(`firecrawl-playwright.$DOMAIN`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-ggwwockgw0g8wo40w8k4goso-playwright-service.service=https-0-ggwwockgw0g8wo40w8k4goso-playwright-service
+      - traefik.http.routers.https-0-ggwwockgw0g8wo40w8k4goso-playwright-service.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-ggwwockgw0g8wo40w8k4goso-playwright-service.tls=true
+      - traefik.http.routers.https-1-ggwwockgw0g8wo40w8k4goso-playwright-service.entryPoints=https
+      - traefik.http.routers.https-1-ggwwockgw0g8wo40w8k4goso-playwright-service.middlewares=gzip
+      - 'traefik.http.routers.https-1-ggwwockgw0g8wo40w8k4goso-playwright-service.rule=Host(`firecrawl-playwright.beatapostapita.$DOMAIN`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-1-ggwwockgw0g8wo40w8k4goso-playwright-service.service=https-1-ggwwockgw0g8wo40w8k4goso-playwright-service
+      - traefik.http.routers.https-1-ggwwockgw0g8wo40w8k4goso-playwright-service.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-1-ggwwockgw0g8wo40w8k4goso-playwright-service.tls=true
+      - traefik.http.services.http-0-ggwwockgw0g8wo40w8k4goso-playwright-service.loadbalancer.server.port=3000
+      - traefik.http.services.http-1-ggwwockgw0g8wo40w8k4goso-playwright-service.loadbalancer.server.port=3000
+      - traefik.http.services.https-0-ggwwockgw0g8wo40w8k4goso-playwright-service.loadbalancer.server.port=3000
+      - traefik.http.services.https-1-ggwwockgw0g8wo40w8k4goso-playwright-service.loadbalancer.server.port=3000
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 3000}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://firecrawl-playwright.$DOMAIN'
+      - 'caddy_1.encode=zstd gzip'
+      - 'caddy_1.handle_path.1_reverse_proxy={{upstreams 3000}}'
+      - 'caddy_1.handle_path=/*'
+      - caddy_1.header=-Server
+      - 'caddy_1.try_files={path} /index.html /index.php'
+      - 'caddy_1=https://firecrawl-playwright.beatapostapita.$DOMAIN'
+      - caddy_ingress_network=ggwwockgw0g8wo40w8k4goso
+  api:
+    build:
+      context: 'https://github.com/mendableai/firecrawl.git#main:/apps/api'
+      dockerfile: Dockerfile
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:
+      backend: null
+      ggwwockgw0g8wo40w8k4goso: null
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    environment:
+      REDIS_URL: '${REDIS_INTERNAL_URL:-redis://redis:6379}'
+      REDIS_RATE_LIMIT_URL: '${REDIS_INTERNAL_URL:-redis://redis:6379}'
+      PLAYWRIGHT_MICROSERVICE_URL: '${PLAYWRIGHT_MICROSERVICE_URL:-http://playwright-service:3000/scrape}'
+      USE_DB_AUTHENTICATION: '${USE_DB_AUTHENTICATION}'
+      OPENAI_API_KEY: '${OPENAI_API_KEY}'
+      OPENAI_BASE_URL: '${OPENAI_BASE_URL}'
+      MODEL_NAME: '${MODEL_NAME}'
+      MODEL_EMBEDDING_NAME: '${MODEL_EMBEDDING_NAME}'
+      OLLAMA_BASE_URL: '${OLLAMA_BASE_URL}'
+      SLACK_WEBHOOK_URL: '${SLACK_WEBHOOK_URL}'
+      BULL_AUTH_KEY: '${BULL_AUTH_KEY}'
+      TEST_API_KEY: '${TEST_API_KEY}'
+      POSTHOG_API_KEY: '${POSTHOG_API_KEY}'
+      POSTHOG_HOST: '${POSTHOG_HOST}'
+      SUPABASE_ANON_TOKEN: '${SUPABASE_ANON_TOKEN}'
+      SUPABASE_URL: '${SUPABASE_URL}'
+      SUPABASE_SERVICE_TOKEN: '${SUPABASE_SERVICE_TOKEN}'
+      SELF_HOSTED_WEBHOOK_URL: '${SELF_HOSTED_WEBHOOK_URL}'
+      SERPER_API_KEY: '${SERPER_API_KEY}'
+      SEARCHAPI_API_KEY: '${SEARCHAPI_API_KEY}'
+      LOGGING_LEVEL: '${LOGGING_LEVEL}'
+      PROXY_SERVER: '${PROXY_SERVER}'
+      PROXY_USERNAME: '${PROXY_USERNAME}'
+      PROXY_PASSWORD: '${PROXY_PASSWORD}'
+      SEARXNG_ENDPOINT: '${SEARXNG_ENDPOINT}'
+      SEARXNG_ENGINES: '${SEARXNG_ENGINES}'
+      SEARXNG_CATEGORIES: '${SEARXNG_CATEGORIES}'
+      HOST: 0.0.0.0
+      PORT: '${INTERNAL_PORT:-3002}'
+      FLY_PROCESS_GROUP: app
+      ENV: local
+      COOLIFY_RESOURCE_UUID: ggwwockgw0g8wo40w8k4goso
+      COOLIFY_CONTAINER_NAME: api-ggwwockgw0g8wo40w8k4goso
+      COOLIFY_URL: 'https://firecrawl-api.$DOMAIN,https://firecrawl-api.beatapostapita.$DOMAIN'
+      COOLIFY_FQDN: 'firecrawl-api.$DOMAIN,firecrawl-api.beatapostapita.$DOMAIN'
+    depends_on:
+      - redis
+      - playwright-service
+    ports:
+      - '${PORT:-3002}:${INTERNAL_PORT:-3002}'
+    command:
+      - pnpm
+      - run
+      - 'start:production'
+    image: ''
+    container_name: api-ggwwockgw0g8wo40w8k4goso
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.420.6
+      - coolify.serviceId=37
+      - coolify.type=service
+      - coolify.name=api-ggwwockgw0g8wo40w8k4goso
+      - coolify.resourceName=firecrawl-beatapostapita
+      - coolify.projectName=bolabaden
+      - coolify.serviceName=api
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=120
+      - coolify.service.subType=application
+      - coolify.service.subName=api
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-ggwwockgw0g8wo40w8k4goso-api.entryPoints=http
+      - traefik.http.routers.http-0-ggwwockgw0g8wo40w8k4goso-api.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-0-ggwwockgw0g8wo40w8k4goso-api.rule=Host(`firecrawl-api.$DOMAIN`) && PathPrefix(`/`)'
+      - traefik.http.routers.http-0-ggwwockgw0g8wo40w8k4goso-api.service=http-0-ggwwockgw0g8wo40w8k4goso-api
+      - traefik.http.routers.http-1-ggwwockgw0g8wo40w8k4goso-api.entryPoints=http
+      - traefik.http.routers.http-1-ggwwockgw0g8wo40w8k4goso-api.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-1-ggwwockgw0g8wo40w8k4goso-api.rule=Host(`firecrawl-api.beatapostapita.$DOMAIN`) && PathPrefix(`/`)'
+      - traefik.http.routers.http-1-ggwwockgw0g8wo40w8k4goso-api.service=http-1-ggwwockgw0g8wo40w8k4goso-api
+      - traefik.http.routers.https-0-ggwwockgw0g8wo40w8k4goso-api.entryPoints=https
+      - traefik.http.routers.https-0-ggwwockgw0g8wo40w8k4goso-api.middlewares=gzip
+      - 'traefik.http.routers.https-0-ggwwockgw0g8wo40w8k4goso-api.rule=Host(`firecrawl-api.$DOMAIN`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-0-ggwwockgw0g8wo40w8k4goso-api.service=https-0-ggwwockgw0g8wo40w8k4goso-api
+      - traefik.http.routers.https-0-ggwwockgw0g8wo40w8k4goso-api.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-ggwwockgw0g8wo40w8k4goso-api.tls=true
+      - traefik.http.routers.https-1-ggwwockgw0g8wo40w8k4goso-api.entryPoints=https
+      - traefik.http.routers.https-1-ggwwockgw0g8wo40w8k4goso-api.middlewares=gzip
+      - 'traefik.http.routers.https-1-ggwwockgw0g8wo40w8k4goso-api.rule=Host(`firecrawl-api.beatapostapita.$DOMAIN`) && PathPrefix(`/`)'
+      - traefik.http.routers.https-1-ggwwockgw0g8wo40w8k4goso-api.service=https-1-ggwwockgw0g8wo40w8k4goso-api
+      - traefik.http.routers.https-1-ggwwockgw0g8wo40w8k4goso-api.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-1-ggwwockgw0g8wo40w8k4goso-api.tls=true
+      - traefik.http.services.http-0-ggwwockgw0g8wo40w8k4goso-api.loadbalancer.server.port=3002
+      - traefik.http.services.http-1-ggwwockgw0g8wo40w8k4goso-api.loadbalancer.server.port=3002
+      - traefik.http.services.https-0-ggwwockgw0g8wo40w8k4goso-api.loadbalancer.server.port=3002
+      - traefik.http.services.https-1-ggwwockgw0g8wo40w8k4goso-api.loadbalancer.server.port=3002
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 3002}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=https://firecrawl-api.$DOMAIN'
+      - 'caddy_1.encode=zstd gzip'
+      - 'caddy_1.handle_path.1_reverse_proxy={{upstreams 3002}}'
+      - 'caddy_1.handle_path=/*'
+      - caddy_1.header=-Server
+      - 'caddy_1.try_files={path} /index.html /index.php'
+      - 'caddy_1=https://firecrawl-api.beatapostapita.$DOMAIN'
+      - caddy_ingress_network=ggwwockgw0g8wo40w8k4goso
+  worker:
+    build:
+      context: 'https://github.com/mendableai/firecrawl.git#main:/apps/api'
+      dockerfile: Dockerfile
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:
+      backend: null
+      ggwwockgw0g8wo40w8k4goso: null
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    environment:
+      REDIS_URL: '${REDIS_INTERNAL_URL:-redis://redis:6379}'
+      REDIS_RATE_LIMIT_URL: '${REDIS_INTERNAL_URL:-redis://redis:6379}'
+      PLAYWRIGHT_MICROSERVICE_URL: '${PLAYWRIGHT_MICROSERVICE_URL:-http://playwright-service:3000/scrape}'
+      USE_DB_AUTHENTICATION: '${USE_DB_AUTHENTICATION}'
+      OPENAI_API_KEY: '${OPENAI_API_KEY}'
+      OPENAI_BASE_URL: '${OPENAI_BASE_URL}'
+      MODEL_NAME: '${MODEL_NAME}'
+      MODEL_EMBEDDING_NAME: '${MODEL_EMBEDDING_NAME}'
+      OLLAMA_BASE_URL: '${OLLAMA_BASE_URL}'
+      SLACK_WEBHOOK_URL: '${SLACK_WEBHOOK_URL}'
+      BULL_AUTH_KEY: '${BULL_AUTH_KEY}'
+      TEST_API_KEY: '${TEST_API_KEY}'
+      POSTHOG_API_KEY: '${POSTHOG_API_KEY}'
+      POSTHOG_HOST: '${POSTHOG_HOST}'
+      SUPABASE_ANON_TOKEN: '${SUPABASE_ANON_TOKEN}'
+      SUPABASE_URL: '${SUPABASE_URL}'
+      SUPABASE_SERVICE_TOKEN: '${SUPABASE_SERVICE_TOKEN}'
+      SELF_HOSTED_WEBHOOK_URL: '${SELF_HOSTED_WEBHOOK_URL}'
+      SERPER_API_KEY: '${SERPER_API_KEY}'
+      SEARCHAPI_API_KEY: '${SEARCHAPI_API_KEY}'
+      LOGGING_LEVEL: '${LOGGING_LEVEL}'
+      PROXY_SERVER: '${PROXY_SERVER}'
+      PROXY_USERNAME: '${PROXY_USERNAME}'
+      PROXY_PASSWORD: '${PROXY_PASSWORD}'
+      SEARXNG_ENDPOINT: '${SEARXNG_ENDPOINT}'
+      SEARXNG_ENGINES: '${SEARXNG_ENGINES}'
+      SEARXNG_CATEGORIES: '${SEARXNG_CATEGORIES}'
+      FLY_PROCESS_GROUP: worker
+      ENV: local
+      COOLIFY_RESOURCE_UUID: ggwwockgw0g8wo40w8k4goso
+      COOLIFY_CONTAINER_NAME: worker-ggwwockgw0g8wo40w8k4goso
+    depends_on:
+      - redis
+      - playwright-service
+      - api
+    command:
+      - pnpm
+      - run
+      - workers
+    container_name: worker-ggwwockgw0g8wo40w8k4goso
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.420.6
+      - coolify.serviceId=37
+      - coolify.type=service
+      - coolify.name=worker-ggwwockgw0g8wo40w8k4goso
+      - coolify.resourceName=firecrawl-beatapostapita
+      - coolify.projectName=bolabaden
+      - coolify.serviceName=worker
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=121
+      - coolify.service.subType=application
+      - coolify.service.subName=worker
+  redis:
+    image: 'redis:alpine'
+    networks:
+      backend: null
+      ggwwockgw0g8wo40w8k4goso: null
+    command: 'redis-server --bind 0.0.0.0'
+    container_name: redis-ggwwockgw0g8wo40w8k4goso
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.420.6
+      - coolify.serviceId=37
+      - coolify.type=service
+      - coolify.name=redis-ggwwockgw0g8wo40w8k4goso
+      - coolify.resourceName=firecrawl-beatapostapita
+      - coolify.projectName=bolabaden
+      - coolify.serviceName=redis
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=30
+      - coolify.service.subType=database
+      - coolify.service.subName=redis
+    environment:
+      COOLIFY_RESOURCE_UUID: ggwwockgw0g8wo40w8k4goso
+      COOLIFY_CONTAINER_NAME: redis-ggwwockgw0g8wo40w8k4goso
+volumes: {  }
+networks:
+  backend:
+    driver: bridge
+  ggwwockgw0g8wo40w8k4goso:
+    name: ggwwockgw0g8wo40w8k4goso
+    external: true
+configs: {  }
+secrets: {  }

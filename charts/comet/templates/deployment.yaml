@@ -1,0 +1,76 @@
+apiVersion: {{ include "comet.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ include "comet.fullname" . }}
+  labels:
+    {{- include "comet.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "comet.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "comet.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "comet.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.containerName | default .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- $envFilePath := .Values.envFilePath | default "" -}}
+          {{- if and $envFilePath (.Files.Exists $envFilePath) }}
+          envFrom:
+            - secretRef:
+                # References the secret created from the envFilePath
+                name: {{ include "comet.fullname" . }}-env
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          # No healthcheck defined in docker-compose for comet
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.persistence.enabled }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.volumeMountPath }}
+              # subPath: {{ .Values.volumeMountSubPath }} # Not used in docker-compose
+          {{- end }}
+      {{- if .Values.persistence.enabled }}
+      volumes:
+        - name: data
+          hostPath:
+            # Path constructed from configPath and cometDataSubPath values
+            path: "{{ .Values.configPath }}/{{ .Values.cometDataSubPath }}"
+            type: DirectoryOrCreate
+          # persistentVolumeClaim:
+          #   claimName: {{ include "comet.fullname" . }}-data
+      {{- end }}
+      restartPolicy: {{ .Values.restartPolicy }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }} 

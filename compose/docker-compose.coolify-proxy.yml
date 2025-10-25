@@ -15,6 +15,26 @@ networks:
 
 
 
+secrets:
+  cloudflare-api-token:
+    file: ${SECRETS_PATH:?}/cf-api-token.txt
+  cloudflare-api-key:
+    file: ${SECRETS_PATH:?}/cf-api-key.txt
+  nginx-auth-api-key:
+    file: ${SECRETS_PATH:?}/nginx-auth-api-key.txt
+  tinyauth-secret:
+    file: ${SECRETS_PATH:?}/tinyauth-secret.txt
+  tinyauth-google-client-secret:
+    file: ${SECRETS_PATH:?}/tinyauth-google-client-secret.txt
+  tinyauth-github-client-secret:
+    file: ${SECRETS_PATH:?}/tinyauth-github-client-secret.txt
+  crowdsec-lapi-key:
+    file: ${SECRETS_PATH:?}/crowdsec-lapi-key.txt
+  sudo-password:
+    file: ${SECRETS_PATH:?}/sudo-password.txt
+
+
+
 # reminder: everything in docker-compose.yml's `configs:` section must have dollar signs ($) escaped with another dollar sign ($$).
 # Single dollar sign specifies that we're expecting docker to resolve the variable itself at deploy time (e.g. when `docker compose up` is ran).
 # Double dollar sign specifies a literal dollar sign in the configuration content.
@@ -751,11 +771,13 @@ services:
     read_only: true  # Make the container filesystem read-only (optional but recommended)
     cap_drop: [all]  # Drop all Linux capabilities (optional but recommended)
     security_opt: [no-new-privileges:true]  # Another protection to restrict superuser privileges (optional but recommended)
+    secrets:
+      - cloudflare-api-token
     environment:
       TZ: ${TZ:-America/Chicago}
       # The value of CLOUDFLARE_API_TOKEN should be an API token (not an API key), which can be obtained from the API Tokens page.
       # Use the Edit zone DNS template to create a token. The less secure API key authentication is deliberately not supported.
-      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:?}  # Your Cloudflare API token
+      CLOUDFLARE_API_TOKEN_FILE: /run/secrets/cloudflare-api-token
 
       # There is an optional feature (available since version 1.14.0) that lets you maintain a WAF list of detected IP addresses.
       # To use this feature, edit the token and grant it the Account - Account Filter Lists - Edit permission.
@@ -863,20 +885,24 @@ services:
     networks:
       - backend
       - publicnet
+    secrets:
+      - tinyauth-secret
+      - tinyauth-google-client-secret
+      - tinyauth-github-client-secret
     expose:
       - 3000
     volumes:
       - ${CONFIG_PATH:-./volumes}/traefik/tinyauth:/data
     environment:
-      SECRET: ${TINYAUTH_SECRET:?}
+      SECRET_FILE: /run/secrets/tinyauth-secret
       APP_URL: ${TINYAUTH_APP_URL:-https://auth.$DOMAIN}
       USERS: $TINYAUTH_USERS
       # Google OAuth Configuration
       GOOGLE_CLIENT_ID: ${TINYAUTH_GOOGLE_CLIENT_ID:?}
-      GOOGLE_CLIENT_SECRET: ${TINYAUTH_GOOGLE_CLIENT_SECRET:?}
+      GOOGLE_CLIENT_SECRET_FILE: /run/secrets/tinyauth-google-client-secret
       # GitHub OAuth Configuration
       GITHUB_CLIENT_ID: ${TINYAUTH_GITHUB_CLIENT_ID:?}
-      GITHUB_CLIENT_SECRET: ${TINYAUTH_GITHUB_CLIENT_SECRET:?}
+      GITHUB_CLIENT_SECRET_FILE: /run/secrets/tinyauth-github-client-secret
       # Additional recommended settings
       SESSION_EXPIRY: ${TINYAUTH_SESSION_EXPIRY:-604800} # 2 weeks session expiry
       COOKIE_SECURE: ${TINYAUTH_COOKIE_SECURE:-true} # Send cookie only with HTTPS
@@ -990,6 +1016,8 @@ services:
       - default
       - nginx_net
       - publicnet
+    secrets:
+      - cloudflare-api-key
     expose:
       - 8080          # Dashboard API
     ports:
@@ -1015,7 +1043,7 @@ services:
       DOCKER_HOST: tcp://dockerproxy-ro:2375
       LETS_ENCRYPT_EMAIL: ${ACME_RESOLVER_EMAIL:?}
       CLOUDFLARE_EMAIL: ${CLOUDFLARE_EMAIL:?}
-      CLOUDFLARE_API_KEY: ${CLOUDFLARE_API_KEY:?}
+      CLOUDFLARE_API_KEY_FILE: /run/secrets/cloudflare-api-key
       CLOUDFLARE_ZONE_ID: ${CLOUDFLARE_ZONE_ID:?}
     command:
       - '--accessLog=true'
@@ -1198,7 +1226,7 @@ services:
       # --- Uptime Kuma connection settings ---
       AUTOKUMA__KUMA__URL: https://uptimekuma.$DOMAIN  # kuma.url: The URL AutoKuma should use to connect to Uptime Kuma
       AUTOKUMA__KUMA__USERNAME: ${AUTOKUMA__KUMA__USERNAME:-admin}  # kuma.username: The username for logging into Uptime Kuma (required unless auth is disabled)
-      AUTOKUMA__KUMA__PASSWORD: ${AUTOKUMA__KUMA__PASSWORD:-password}  # kuma.password: The password for logging into Uptime Kuma (required unless auth is disabled)
+      AUTOKUMA__KUMA__PASSWORD: ${AUTOKUMA__KUMA__PASSWORD:?}  # kuma.password: The password for logging into Uptime Kuma (required unless auth is disabled)
       AUTOKUMA__KUMA__CALL_TIMEOUT: ${AUTOKUMA__KUMA__CALL_TIMEOUT:-5}  # kuma.call_timeout: The timeout for executing calls to the Uptime Kuma server
       AUTOKUMA__KUMA__CONNECT_TIMEOUT: ${AUTOKUMA__KUMA__CONNECT_TIMEOUT:-5}  # kuma.connect_timeout: The timeout for the initial connection to Uptime Kuma
     restart: always

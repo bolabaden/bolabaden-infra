@@ -2,6 +2,73 @@
 
 
 
+secrets:
+  # AI/LLM API Keys
+  anthropic-api-key:
+    file: ${SECRETS_PATH:?}/anthropic-api-key.txt
+  openai-api-key:
+    file: ${SECRETS_PATH:?}/openai-api-key.txt
+  openrouter-api-key:
+    file: ${SECRETS_PATH:?}/openrouter-api-key.txt
+  groq-api-key:
+    file: ${SECRETS_PATH:?}/groq-api-key.txt
+  deepseek-api-key:
+    file: ${SECRETS_PATH:?}/deepseek-api-key.txt
+  gemini-api-key:
+    file: ${SECRETS_PATH:?}/gemini-api-key.txt
+  mistral-api-key:
+    file: ${SECRETS_PATH:?}/mistral-api-key.txt
+  perplexity-api-key:
+    file: ${SECRETS_PATH:?}/perplexity-api-key.txt
+  replicate-api-key:
+    file: ${SECRETS_PATH:?}/replicate-api-key.txt
+  sambanova-api-key:
+    file: ${SECRETS_PATH:?}/sambanova-api-key.txt
+  togetherai-api-key:
+    file: ${SECRETS_PATH:?}/togetherai-api-key.txt
+  hf-token:
+    file: ${SECRETS_PATH:?}/hf-token.txt
+  tavily-api-key:
+    file: ${SECRETS_PATH:?}/tavily-api-key.txt
+  firecrawl-api-key:
+    file: ${SECRETS_PATH:?}/firecrawl-api-key.txt
+  github-token:
+    file: ${SECRETS_PATH:?}/github-token.txt
+  coolify-token:
+    file: ${SECRETS_PATH:?}/coolify-token.txt
+  goal-story-api-key:
+    file: ${SECRETS_PATH:?}/goal-story-api-key.txt
+  smithery-api-key:
+    file: ${SECRETS_PATH:?}/smithery-api-key.txt
+  # Application Secrets
+  # NOTE: mcpo-api-key not used - MCPO CLI doesn't support --api-key-file, requires env var
+  open-webui-secret-key:
+    file: ${SECRETS_PATH:?}/open-webui-secret-key.txt
+  litellm-master-key:
+    file: ${SECRETS_PATH:?}/litellm-master-key.txt
+  # Other optional API keys
+  brave-api-key:
+    file: ${SECRETS_PATH:?}/brave-api-key.txt
+  exa-api-key:
+    file: ${SECRETS_PATH:?}/exa-api-key.txt
+  glama-api-key:
+    file: ${SECRETS_PATH:?}/glama-api-key.txt
+  jina-api-key:
+    file: ${SECRETS_PATH:?}/jina-api-key.txt
+  kagi-api-key:
+    file: ${SECRETS_PATH:?}/kagi-api-key.txt
+  langchain-api-key:
+    file: ${SECRETS_PATH:?}/langchain-api-key.txt
+  serpapi-api-key:
+    file: ${SECRETS_PATH:?}/serpapi-api-key.txt
+  search1api-key:
+    file: ${SECRETS_PATH:?}/search1api-key.txt
+  upstage-api-key:
+    file: ${SECRETS_PATH:?}/upstage-api-key.txt
+  revid-api-key:
+    file: ${SECRETS_PATH:?}/revid-api-key.txt
+
+
 configs:
   mcpProxy:
     content: |
@@ -207,6 +274,8 @@ services:
     networks:
       - backend
       - publicnet
+    secrets:
+      - open-webui-secret-key
     expose:
       - ${OPEN_WEBUI_PORT:-8080}
     volumes:
@@ -289,7 +358,7 @@ services:
       WEBUI_AUTH: ${WEBUI_AUTH:-True}
 
       # Overrides the randomly generated string used for JSON Web Token
-      WEBUI_SECRET_KEY: ${OPEN_WEBUI_SECRET_KEY:?}
+      WEBUI_SECRET_KEY_FILE: /run/secrets/open-webui-secret-key
 
       # When enabled, makes automatic update checks and notifies about version updates
       ENABLE_VERSION_UPDATE_CHECK: True
@@ -460,6 +529,27 @@ services:
     networks:
       - backend
       - publicnet
+    secrets:
+      - litellm-master-key
+      - anthropic-api-key
+      - openai-api-key
+      - openrouter-api-key
+      - groq-api-key
+      - deepseek-api-key
+      - gemini-api-key
+      - mistral-api-key
+      - perplexity-api-key
+      - replicate-api-key
+      - sambanova-api-key
+      - togetherai-api-key
+      - hf-token
+      - langchain-api-key
+      - serpapi-api-key
+      - search1api-key
+      - upstage-api-key
+      - jina-api-key
+      - kagi-api-key
+      - glama-api-key
     expose:
       - ${LITELLM_PORT:-4000}
     depends_on:
@@ -475,56 +565,36 @@ services:
         mode: 0440
     environment:
       LITELLM_LOG: ${LITELLM_LOG:-INFO}
-      LITELLM_MASTER_KEY: $LITELLM_MASTER_KEY
+      LITELLM_MASTER_KEY_FILE: /run/secrets/litellm-master-key
       LITELLM_MODE: ${LITELLM_MODE:-PRODUCTION}
       UI_USERNAME: ${LITELLM_UI_USERNAME:-admin}
-      UI_PASSWORD: $LITELLM_MASTER_KEY
+      UI_PASSWORD_FILE: /run/secrets/litellm-master-key
       DATABASE_URL: postgresql://${LITELLM_POSTGRES_USER:-litellm}:${LITELLM_POSTGRES_PASSWORD:-litellm}@${LITELLM_POSTGRES_HOSTNAME:-litellm-postgres}:5432/${LITELLM_POSTGRES_DB:-litellm}
       REDIS_HOST: ${REDIS_HOSTNAME:-redis}
       REDIS_PORT: ${REDIS_PORT:-6379}
       POSTGRES_USER: ${LITELLM_POSTGRES_USER:-litellm}
       POSTGRES_PASSWORD: ${LITELLM_POSTGRES_PASSWORD:-litellm}
       POSTGRES_DB: ${LITELLM_POSTGRES_DB:-litellm}
-      AI21_API_KEY: $AI21_API_KEY
-      ANTHROPIC_API_KEY: $ANTHROPIC_API_KEY
-      APIFY_API_TOKEN: $APIFY_API_TOKEN
-      APIPIE_API_KEY: $APIPIE_API_KEY
-      ARLIAI_API_KEY: $ARLIAI_API_KEY
-      AWANLLM_API_KEY: $AWANLLM_API_KEY
-      BASETEN_API_KEY: $BASETEN_API_KEY
-      BITO_ACCESS_KEY: $BITO_ACCESS_KEY
-      CEREBRIUMAI_API_KEY: $CEREBRIUMAI_API_KEY
-      DEEPINFRA_API_KEY: $DEEPINFRA_API_KEY
-      DEEPGRAM_API_KEY: $DEEPGRAM_API_KEY
-      DEEPSEEK_API_KEY: $DEEPSEEK_API_KEY
-      FOREFRONTAI_API_KEY: $FOREFRONTAI_API_KEY
-      GEMINI_API_KEY: $GEMINI_API_KEY
-      GLAMA_API_KEY: $GLAMA_API_KEY
-      GROK_API_KEY: $GROK_API_KEY
-      GROQ_API_KEY: $GROQ_API_KEY
-      HF_TOKEN: $HF_TOKEN
-      HUGGINGFACE_ACCESS_TOKEN: $HUGGINGFACE_ACCESS_TOKEN
-      HUGGINGFACE_API_TOKEN: $HUGGINGFACE_API_TOKEN
-      JINA_API_KEY: $JINA_API_KEY
-      KAGI_API_KEY: $KAGI_API_KEY
-      KLUSTER_API_KEY: $KLUSTER_API_KEY
-      LANGCHAIN_API_KEY: $LANGCHAIN_API_KEY
-      LANGSMITH_API_KEY: $LANGSMITH_API_KEY
-      MISTRAL_API_KEY: $MISTRAL_API_KEY
-      OPENAI_API_KEY: $OPENAI_API_KEY
-      OPENROUTER_API_KEY: $OPENROUTER_API_KEY
-      PERPLEXITY_API_KEY: $PERPLEXITY_API_KEY
-      REPLICATE_API_KEY: $REPLICATE_API_KEY
-      SAMBANOVA_API_KEY: $SAMBANOVA_API_KEY
-      SEARCH1API_KEY: $SEARCH1API_KEY
-      SERPAPI_API_KEY: $SERPAPI_API_KEY
-      TANDOOR_SECRET_KEY: $TANDOOR_SECRET_KEY
-      TOGETHERAI_API_KEY: $TOGETHERAI_API_KEY
-      UNIFY_API_KEY: $UNIFY_API_KEY
-      UPSTAGE_API_KEY: $UPSTAGE_API_KEY
-      VOYAGE_API_KEY: $VOYAGE_API_KEY
-      YANDEX_API_KEY: $YANDEX_API_KEY
-      YOU_API_KEY: $YOU_API_KEY
+      # API keys loaded from secrets
+      ANTHROPIC_API_KEY_FILE: /run/secrets/anthropic-api-key
+      OPENAI_API_KEY_FILE: /run/secrets/openai-api-key
+      OPENROUTER_API_KEY_FILE: /run/secrets/openrouter-api-key
+      GROQ_API_KEY_FILE: /run/secrets/groq-api-key
+      DEEPSEEK_API_KEY_FILE: /run/secrets/deepseek-api-key
+      GEMINI_API_KEY_FILE: /run/secrets/gemini-api-key
+      MISTRAL_API_KEY_FILE: /run/secrets/mistral-api-key
+      PERPLEXITY_API_KEY_FILE: /run/secrets/perplexity-api-key
+      REPLICATE_API_KEY_FILE: /run/secrets/replicate-api-key
+      SAMBANOVA_API_KEY_FILE: /run/secrets/sambanova-api-key
+      TOGETHERAI_API_KEY_FILE: /run/secrets/togetherai-api-key
+      HF_TOKEN_FILE: /run/secrets/hf-token
+      LANGCHAIN_API_KEY_FILE: /run/secrets/langchain-api-key
+      SERPAPI_API_KEY_FILE: /run/secrets/serpapi-api-key
+      SEARCH1API_KEY_FILE: /run/secrets/search1api-key
+      UPSTAGE_API_KEY_FILE: /run/secrets/upstage-api-key
+      JINA_API_KEY_FILE: /run/secrets/jina-api-key
+      KAGI_API_KEY_FILE: /run/secrets/kagi-api-key
+      GLAMA_API_KEY_FILE: /run/secrets/glama-api-key
     labels:
       traefik.enable: true
       homepage.group: AI
@@ -577,6 +647,29 @@ services:
     networks:
       - backend
       - publicnet
+    secrets:
+      - anthropic-api-key
+      - brave-api-key
+      - deepseek-api-key
+      - exa-api-key
+      - firecrawl-api-key
+      - gemini-api-key
+      - glama-api-key
+      - groq-api-key
+      - hf-token
+      - langchain-api-key
+      - mistral-api-key
+      - openai-api-key
+      - openrouter-api-key
+      - perplexity-api-key
+      - replicate-api-key
+      - revid-api-key
+      - sambanova-api-key
+      - search1api-key
+      - serpapi-api-key
+      - tavily-api-key
+      - togetherai-api-key
+      - upstage-api-key
     expose:
       - 3000  # Nginx-proxied access to GPTR.
       - 3001  # Internal NextJS GPTR site
@@ -588,43 +681,41 @@ services:
       - ${CONFIG_PATH:-./volumes}/gptr/reports:/usr/src/app/reports
     stdin_open: true
     environment:
-      ANTHROPIC_API_KEY: $ANTHROPIC_API_KEY
-      BRAVE_API_KEY: $BRAVE_API_KEY
-      DEEPSEEK_API_KEY: $DEEPSEEK_API_KEY
-      EXA_API_KEY: $EXA_API_KEY
-      FIRECRAWL_API_KEY: $FIRECRAWL_API_KEY
-      FIRE_CRAWL_API_KEY: $FIRE_CRAWL_API_KEY
-      GEMINI_API_KEY: $GEMINI_API_KEY
-      GLAMA_API_KEY: $GLAMA_API_KEY
-      GROQ_API_KEY: $GROQ_API_KEY
-      HF_TOKEN: $HF_TOKEN
-      HUGGINGFACE_ACCESS_TOKEN: $HUGGINGFACE_ACCESS_TOKEN
-      HUGGINGFACE_API_TOKEN: $HUGGINGFACE_API_TOKEN
-      LANGCHAIN_API_KEY: $LANGCHAIN_API_KEY
-      MISTRAL_API_KEY: $MISTRAL_API_KEY
-      MISTRALAI_API_KEY: $MISTRALAI_API_KEY
-      OPENAI_API_KEY: $OPENAI_API_KEY
-      OPENROUTER_API_KEY: $OPENROUTER_API_KEY
-      PERPLEXITY_API_KEY: $PERPLEXITY_API_KEY
-      PERPLEXITYAI_API_KEY: $PERPLEXITYAI_API_KEY
-      REPLICATE_API_KEY: $REPLICATE_API_KEY
-      REVID_API_KEY: $REVID_API_KEY
-      SAMBANOVA_API_KEY: $SAMBANOVA_API_KEY
-      SEARCH1API_KEY: $SEARCH1API_KEY
-      SERPAPI_API_KEY: $SERPAPI_API_KEY
-      TAVILY_API_KEY: $TAVILY_API_KEY
-      TOGETHERAI_API_KEY: $TOGETHERAI_API_KEY
-      UNIFY_API_KEY: $UNIFY_API_KEY
-      UPSTAGE_API_KEY: $UPSTAGE_API_KEY
-      UPSTAGEAI_API_KEY: $UPSTAGEAI_API_KEY
-      YOU_API_KEY: $YOU_API_KEY
+      ANTHROPIC_API_KEY_FILE: /run/secrets/anthropic-api-key
+      BRAVE_API_KEY_FILE: /run/secrets/brave-api-key
+      DEEPSEEK_API_KEY_FILE: /run/secrets/deepseek-api-key
+      EXA_API_KEY_FILE: /run/secrets/exa-api-key
+      FIRECRAWL_API_KEY_FILE: /run/secrets/firecrawl-api-key
+      FIRE_CRAWL_API_KEY_FILE: /run/secrets/firecrawl-api-key
+      GEMINI_API_KEY_FILE: /run/secrets/gemini-api-key
+      GLAMA_API_KEY_FILE: /run/secrets/glama-api-key
+      GROQ_API_KEY_FILE: /run/secrets/groq-api-key
+      HF_TOKEN_FILE: /run/secrets/hf-token
+      HUGGINGFACE_ACCESS_TOKEN_FILE: /run/secrets/hf-token
+      HUGGINGFACE_API_TOKEN_FILE: /run/secrets/hf-token
+      LANGCHAIN_API_KEY_FILE: /run/secrets/langchain-api-key
+      MISTRAL_API_KEY_FILE: /run/secrets/mistral-api-key
+      MISTRALAI_API_KEY_FILE: /run/secrets/mistral-api-key
+      OPENAI_API_KEY_FILE: /run/secrets/openai-api-key
+      OPENROUTER_API_KEY_FILE: /run/secrets/openrouter-api-key
+      PERPLEXITY_API_KEY_FILE: /run/secrets/perplexity-api-key
+      PERPLEXITYAI_API_KEY_FILE: /run/secrets/perplexity-api-key
+      REPLICATE_API_KEY_FILE: /run/secrets/replicate-api-key
+      REVID_API_KEY_FILE: /run/secrets/revid-api-key
+      SAMBANOVA_API_KEY_FILE: /run/secrets/sambanova-api-key
+      SEARCH1API_KEY_FILE: /run/secrets/search1api-key
+      SERPAPI_API_KEY_FILE: /run/secrets/serpapi-api-key
+      TAVILY_API_KEY_FILE: /run/secrets/tavily-api-key
+      TOGETHERAI_API_KEY_FILE: /run/secrets/togetherai-api-key
+      UPSTAGE_API_KEY_FILE: /run/secrets/upstage-api-key
+      UPSTAGEAI_API_KEY_FILE: /run/secrets/upstage-api-key
       CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING:-true}
       LOGGING_LEVEL: ${GPTR_LOGGING_LEVEL:-DEBUG}
       NEXT_PUBLIC_GA_MEASUREMENT_ID: $NEXT_PUBLIC_GA_MEASUREMENT_ID
       NEXT_PUBLIC_GPTR_API_URL: https://gptr.$DOMAIN
       LANGSMITH_TRACING: ${LANGSMITH_TRACING:-true}
       LANGSMITH_ENDPOINT: ${LANGSMITH_ENDPOINT:-https://api.smith.langchain.com}
-      LANGSMITH_API_KEY: $LANGSMITH_API_KEY
+      LANGSMITH_API_KEY_FILE: /run/secrets/langchain-api-key
     labels:
       traefik.enable: true
       traefik.http.routers.gptr-nextjs.service: gptr-nextjs@docker

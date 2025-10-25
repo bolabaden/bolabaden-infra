@@ -1,0 +1,3 @@
+flag provided but not defined: -file
+usage: go tool buildid [-w] file
+  -w	write build ID

@@ -1,0 +1,180 @@
+{{/* 
+  HTTP Routers section
+  Source: pkg/provider/docker/config.go:98 - BuildRouterConfiguration is called
+  Source: pkg/provider/provider.go - BuildRouterConfiguration function builds router config from labels
+*/}}
+{{ $allRouterNames := dict }}
+{{ range $c := $enabledContainers }}
+  {{ $containerName := trimPrefix "/" $c.Name }}
+  {{ $labels := $c.Labels }}
+  
+  {{/* 
+    Collect router names from this container
+    Source: pkg/config/label/label.go:18-19 - DecodeConfiguration parses traefik.http labels
+  */}}
+  {{ range $key, $value := $labels }}
+    {{ if hasPrefix $key "traefik.http.routers." }}
+      {{ $withoutPrefix := trimPrefix "traefik.http.routers." $key }}
+      {{ $routerName := index (split $withoutPrefix ".") 0 }}
+      {{ if $routerName }}
+        {{ $_ := set $allRouterNames $routerName $c }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  
+  {{/* 
+    If no explicit routers but traefik.enable=true, create default router
+    Source: pkg/provider/provider.go - BuildRouterConfiguration creates default router if none exists
+  */}}
+  {{ $hasRouterLabels := false }}
+  {{ range $key, $value := $labels }}
+    {{ if hasPrefix $key "traefik.http.routers." }}
+      {{ $hasRouterLabels = true }}
+    {{ end }}
+  {{ end }}
+  {{ if not $hasRouterLabels }}
+    {{ $_ := set $allRouterNames $containerName $c }}
+  {{ end }}
+{{ end }}
+
+{{ if $allRouterNames }}
+routers:
+  {{ range $routerName, $container := $allRouterNames }}
+    {{ $containerName := trimPrefix "/" $container.Name }}
+    {{ $labels := $container.Labels }}
+    {{ $routerPrefix := printf "traefik.http.routers.%s." $routerName }}
+    
+    {{/* 
+      Check if this is an explicit router or default
+      Source: pkg/provider/provider.go - BuildRouterConfiguration checks for explicit router config
+    */}}
+    {{ $isExplicitRouter := false }}
+    {{ range $key, $value := $labels }}
+      {{ if hasPrefix $key $routerPrefix }}
+        {{ $isExplicitRouter = true }}
+      {{ end }}
+    {{ end }}
+    
+  {{ $routerName }}:
+    {{ if $isExplicitRouter }}
+      {{/* 
+        Explicit router configuration
+        Source: pkg/provider/provider.go - BuildRouterConfiguration sets router properties from labels
+      */}}
+      {{ if hasKey $labels (printf "%srule" $routerPrefix) }}
+        {{ $rule := index $labels (printf "%srule" $routerPrefix) }}
+    rule: {{ $rule }}
+      {{ end }}
+      
+      {{ if hasKey $labels (printf "%sservice" $routerPrefix) }}
+        {{ $service := index $labels (printf "%sservice" $routerPrefix) }}
+    service: {{ $service }}
+      {{ else }}
+    service: {{ $containerName }}
+      {{ end }}
+      
+      {{ if hasKey $labels (printf "%sentrypoints" $routerPrefix) }}
+        {{ $entrypoints := index $labels (printf "%sentrypoints" $routerPrefix) }}
+    entryPoints:
+        {{ $eps := split $entrypoints "," }}
+        {{ range $entrypoint := $eps }}
+      - {{ trim $entrypoint " " }}
+        {{ end }}
+      {{ end }}
+      
+      {{ if hasKey $labels (printf "%smiddlewares" $routerPrefix) }}
+        {{ $middlewares := index $labels (printf "%smiddlewares" $routerPrefix) }}
+    middlewares:
+        {{ $mws := split $middlewares "," }}
+        {{ range $middleware := $mws }}
+      - {{ trim $middleware " " }}
+        {{ end }}
+      {{ end }}
+      
+      {{ if hasKey $labels (printf "%spriority" $routerPrefix) }}
+        {{ $priority := index $labels (printf "%spriority" $routerPrefix) }}
+    priority: {{ $priority }}
+      {{ end }}
+      
+      {{/* 
+        TLS Configuration
+        Source: pkg/provider/provider.go - BuildRouterConfiguration handles TLS config
+      */}}
+      {{ $tlsEnabled := index $labels (printf "%stls" $routerPrefix) }}
+      {{ $certResolver := index $labels (printf "%stls.certresolver" $routerPrefix) }}
+      {{ $tlsOptions := index $labels (printf "%stls.options" $routerPrefix) }}
+      {{ $passthrough := index $labels (printf "%stls.passthrough" $routerPrefix) }}
+      
+      {{/* 
+        Parse domains
+        Source: pkg/provider/provider.go - BuildRouterConfiguration parses domain labels with array indices
+      */}}
+      {{ $domains := slice }}
+      {{ $domainIndices := dict }}
+      {{ range $key, $value := $labels }}
+        {{ if hasPrefix $key (printf "%stls.domains" $routerPrefix) }}
+          {{ $withoutPrefix := trimPrefix (printf "%stls.domains" $routerPrefix) $key }}
+          {{ if regexMatch "^\\[([0-9]+)\\]\\.main$" $withoutPrefix }}
+            {{ $index := regexReplaceAll "^\\[([0-9]+)\\]\\.main$" $withoutPrefix "$1" }}
+            {{ $_ := set $domainIndices $index true }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+      
+      {{ range $index, $_ := $domainIndices }}
+        {{ $domain := dict }}
+        {{ $mainKey := printf "%stls.domains[%s].main" $routerPrefix $index }}
+        {{ $sansKey := printf "%stls.domains[%s].sans" $routerPrefix $index }}
+        
+        {{ if hasKey $labels $mainKey }}
+          {{ $_ := set $domain "main" (index $labels $mainKey) }}
+        {{ end }}
+        
+        {{ if hasKey $labels $sansKey }}
+          {{ $sansValue := index $labels $sansKey }}
+          {{ $sans := split $sansValue "," }}
+          {{ $_ := set $domain "sans" $sans }}
+        {{ end }}
+        
+        {{ $domains = append $domains $domain }}
+      {{ end }}
+      
+      {{ if or (eq $tlsEnabled "true") $certResolver $domains $tlsOptions (eq $passthrough "true") }}
+    tls:
+        {{ if eq $tlsEnabled "true" }}
+      {}
+        {{ end }}
+        {{ if $certResolver }}
+      certResolver: {{ $certResolver }}
+        {{ end }}
+        {{ if $domains }}
+      domains:
+          {{ range $domain := $domains }}
+        - main: {{ $domain.main }}
+            {{ if $domain.sans }}
+          sans:
+              {{ range $san := $domain.sans }}
+            - {{ trim $san " " }}
+              {{ end }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+        {{ if $tlsOptions }}
+      options: {{ $tlsOptions }}
+        {{ end }}
+        {{ if eq $passthrough "true" }}
+      passthrough: true
+        {{ end }}
+      {{ end }}
+    {{ else }}
+      {{/* 
+        Default router configuration
+        Source: pkg/provider/docker/shared.go:24 - DefaultTemplateRule defines default Host rule
+      */}}
+    rule: Host(`{{ $containerName }}.${DOMAIN}`)
+    service: {{ $containerName }}
+    entryPoints:
+      - websecure
+    {{ end }}
+  {{ end }}
+{{ end }}

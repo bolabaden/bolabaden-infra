@@ -1,0 +1,17 @@
+TEXT main.main.func4(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/cmd/zurg/main.go
+  main.go:61		0x3f1580		f9400b90		MOVD 16(R28), R16							
+  main.go:61		0x3f1584		eb3063ff		CMP R16, RSP								
+  main.go:61		0x3f1588		54000169		BLS 11(PC)								
+  main.go:61		0x3f158c		f81e0ffe		MOVD.W R30, -32(RSP)							
+  main.go:61		0x3f1590		f81f83fd		MOVD R29, -8(RSP)							
+  main.go:61		0x3f1594		d10023fd		SUB $8, RSP, R29							
+  main.go:61		0x3f1598		f9400742		MOVD 8(R26), R2								
+  main.go:62		0x3f159c		f9400040		MOVD (R2), R0								
+  main.go:62		0x3f15a0		f9400441		MOVD 8(R2), R1								
+  main.go:62		0x3f15a4		97fffd8f		CALL github.com/debridmediamanager/zurg/internal.ClearDownloads(SB)	
+  main.go:63		0x3f15a8		a97ffbfd		LDP -8(RSP), (R29, R30)							
+  main.go:63		0x3f15ac		910083ff		ADD $32, RSP, RSP							
+  main.go:63		0x3f15b0		d65f03c0		RET									
+  main.go:61		0x3f15b4		aa1e03e3		MOVD R30, R3								
+  main.go:61		0x3f15b8		97f25976		CALL runtime.morestack.abi0(SB)						
+  main.go:61		0x3f15bc		17fffff1		JMP main.main.func4(SB)							

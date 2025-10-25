@@ -1,0 +1,37 @@
+TEXT main.main.func1(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/cmd/zurg/main.go
+  main.go:22		0x3f1630		f9400b90		MOVD 16(R28), R16		
+  main.go:22		0x3f1634		eb3063ff		CMP R16, RSP			
+  main.go:22		0x3f1638		540003c9		BLS 30(PC)			
+  main.go:22		0x3f163c		f81b0ffe		MOVD.W R30, -80(RSP)		
+  main.go:22		0x3f1640		f81f83fd		MOVD R29, -8(RSP)		
+  main.go:22		0x3f1644		d10023fd		SUB $8, RSP, R29		
+  main.go:22		0x3f1648		f9400b42		MOVD 16(R26), R2		
+  main.go:22		0x3f164c		f9001be2		MOVD R2, 48(RSP)		
+  main.go:22		0x3f1650		f9400740		MOVD 8(R26), R0			
+  main.go:23		0x3f1654		aa1f03e1		MOVD ZR, R1			
+  main.go:23		0x3f1658		97f0a3de		CALL runtime.chanrecv1(SB)	
+  main.go:24		0x3f165c		a903ffff		STP (ZR, ZR), 56(RSP)		
+  main.go:24		0x3f1660		90000222		ADRP 278528(PC), R2		
+  main.go:24		0x3f1664		910c0042		ADD $768, R2, R2		
+  main.go:24		0x3f1668		f9001fe2		MOVD R2, 56(RSP)		
+  main.go:24		0x3f166c		d0000d62		ADRP 1761280(PC), R2		
+  main.go:24		0x3f1670		911e8042		ADD $1952, R2, R2		
+  main.go:24		0x3f1674		f90023e2		MOVD R2, 64(RSP)		
+  print.go:314		0x3f1678		9000253b		ADRP 4866048(PC), R27		
+  print.go:314		0x3f167c		f9434f61		MOVD 1688(R27), R1		
+  print.go:314		0x3f1680		90000d80		ADRP 1769472(PC), R0		
+  print.go:314		0x3f1684		91268000		ADD $2464, R0, R0		
+  print.go:314		0x3f1688		9100e3e2		ADD $56, RSP, R2		
+  print.go:314		0x3f168c		b24003e3		ORR $1, ZR, R3			
+  print.go:314		0x3f1690		aa0303e4		MOVD R3, R4			
+  print.go:314		0x3f1694		97f4537f		CALL fmt.Fprintln(SB)		
+  main.go:25		0x3f1698		f9401bfa		MOVD 48(RSP), R26		
+  main.go:25		0x3f169c		f9400342		MOVD (R26), R2			
+  main.go:25		0x3f16a0		d63f0040		CALL (R2)			
+  main.go:26		0x3f16a4		a97ffbfd		LDP -8(RSP), (R29, R30)		
+  main.go:26		0x3f16a8		910143ff		ADD $80, RSP, RSP		
+  main.go:26		0x3f16ac		d65f03c0		RET				
+  main.go:22		0x3f16b0		aa1e03e3		MOVD R30, R3			
+  main.go:22		0x3f16b4		97f25937		CALL runtime.morestack.abi0(SB)	
+  main.go:22		0x3f16b8		17ffffde		JMP main.main.func1(SB)		
+  main.go:22		0x3f16bc		00000000		?				

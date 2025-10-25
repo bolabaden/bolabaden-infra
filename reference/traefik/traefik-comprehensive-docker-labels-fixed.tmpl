@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://www.schemastore.org/traefik-v3-file-provider.json
+# Comprehensive Traefik Docker Labels to File Provider YAML Template
+# This template provides 1:1 conversion from Docker labels to Traefik file provider configuration
+
+{{/* 
+  This section collects all containers with traefik.enable=true
+  Source: pkg/provider/docker/shared_labels.go:36-37 - extractDockerLabels() checks for traefik.enable
+  Source: pkg/provider/docker/config.go:40-42 - keepContainer() checks container.ExtraConf.Enable
+*/}}
+{{ $enabledContainers := slice }}
+{{ range $c := . }}
+  {{ if eq (index $c.Labels "traefik.enable") "true" }}
+    {{ $enabledContainers = append $enabledContainers $c }}
+  {{ end }}
+{{ end }}
+
+{{ if $enabledContainers }}
+
+{{/* 
+  Check if we have any HTTP configuration
+  Source: pkg/provider/docker/config.go:51-58 - Checking for HTTP configuration
+*/}}
+{{ $hasHTTPConfig := false }}
+{{ range $c := $enabledContainers }}
+  {{ range $key, $value := $c.Labels }}
+    {{ if or (hasPrefix $key "traefik.http.routers.") (hasPrefix $key "traefik.http.services.") (hasPrefix $key "traefik.http.middlewares.") }}
+      {{ $hasHTTPConfig = true }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ if $hasHTTPConfig }}
+http:
+  {{/* Include HTTP Routers section */}}
+  {{ template "01-http-routers.tmpl" . }}
+  
+  {{/* Include HTTP Services section */}}
+  {{ template "02-http-services.tmpl" . }}
+  
+  {{/* Include HTTP Middlewares section */}}
+  {{ template "03-http-middlewares.tmpl" . }}
+{{ end }}
+
+{{/* Include TCP configuration section */}}
+{{ template "04-tcp-config.tmpl" . }}
+
+{{/* Include UDP configuration section */}}
+{{ template "05-udp-config.tmpl" . }}
+
+{{/* Include TLS configuration section */}}
+{{ template "06-tls-config.tmpl" . }}
+
+{{ end }}

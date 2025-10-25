@@ -1,0 +1,940 @@
+{
+  "http": {
+    "middlewares": {
+      "crowdsec": {
+        "plugin": {
+          "crowdsec-bouncer-traefik-plugin": {
+            "crowdsecAppsecEnabled": "true",
+            "crowdsecAppsecHost": "crowdsec:7422",
+            "crowdsecLapiKey": "usvi2urbIG5obProVWwcf2ImTrtB93x668jWDvrH",
+            "enabled": "true"
+          }
+        }
+      },
+      "error-mw": {
+        "errors": {
+          "query": "/api/error/{status}.html",
+          "service": "error-service",
+          "status": [
+            "400-599"
+          ]
+        }
+      },
+      "nginx-auth": {
+        "forwardAuth": {
+          "address": "http://nginx-auth:80/auth",
+          "authResponseHeaders": [
+            "X-Auth-Method",
+            "X-Auth-Passed",
+            "X-Middleware-Name"
+          ],
+          "maxBodySize": -1,
+          "trustForwardHeader": true
+        }
+      },
+      "openwebui-redirect": {
+        "redirectRegex": {
+          "permanent": true,
+          "regex": "^https://([^.]+)\\.openwebui\\.bolabaden.org/(.*)",
+          "replacement": "https://${1}.open-webui.bolabaden.org/${2}"
+        }
+      },
+      "tinyauth": {
+        "forwardAuth": {
+          "address": "http://auth:3000/api/auth/traefik",
+          "maxBodySize": -1
+        }
+      }
+    },
+    "routers": {
+      "aiostreams": {
+        "rule": "HostRegexp(`^(www\\.)?aiostreams\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?aiostreams\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "aiostreams"
+      },
+      "bolabaden-embed": {
+        "rule": "HostRegexp(`^(www\\.)?embed\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?embed\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "bolabaden-nextjs"
+      },
+      "bolabaden-nextjs": {
+        "middlewares": [
+          "error-mw@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?bolabaden.org$`) || HostRegexp(`^(www\\.)?micklethefickle\\.bolabaden.org$`)",
+        "service": "bolabaden-nextjs"
+      },
+      "code-server": {
+        "rule": "HostRegexp(`^(www\\.)?code-server\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?code-server\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "code-server"
+      },
+      "comet": {
+        "rule": "HostRegexp(`^(www\\.)?comet\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?comet\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "comet"
+      },
+      "crowdsec": {
+        "middlewares": [
+          "nginx-auth@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?crowdsec\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?crowdsec\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "crowdsec"
+      },
+      "deluge": {
+        "rule": "HostRegexp(`^(www\\.)?deluge\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?deluge\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "deluge"
+      },
+      "dozzle": {
+        "middlewares": [
+          "nginx-auth@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?dozzle\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?dozzle\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "dozzle"
+      },
+      "error-router": {
+        "middlewares": [
+          "error-mw@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?errors\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?errors\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "error-service"
+      },
+      "flaresolverr": {
+        "middlewares": [
+          "nginx-auth@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?flaresolverr\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?flaresolverr\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "flaresolverr"
+      },
+      "headscale-server": {
+        "rule": "HostRegexp(`^(www\\.)?headscale-server\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?headscale-server\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "headscale-server"
+      },
+      "headscale-ui": {
+        "rule": "HostRegexp(`^(www\\.)?headscale\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?headscale\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "headscale-ui"
+      },
+      "homepage": {
+        "middlewares": [
+          "nginx-auth@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?homepage\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?homepage\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "homepage"
+      },
+      "homer": {
+        "rule": "HostRegexp(`^(www\\.)?homer\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?homer\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "homer"
+      },
+      "jackett": {
+        "rule": "HostRegexp(`^(www\\.)?jackett\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?jackett\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "jackett"
+      },
+      "litellm": {
+        "rule": "HostRegexp(`^(www\\.)?litellm\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?litellm\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "litellm"
+      },
+      "mcpo": {
+        "rule": "HostRegexp(`^(www\\.)?mcpo\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?mcpo\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "mcpo"
+      },
+      "mediaflow-proxy": {
+        "rule": "HostRegexp(`^(www\\.)?mediaflow-proxy\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?mediaflow-proxy\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "mediaflow-proxy"
+      },
+      "mediafusion": {
+        "rule": "HostRegexp(`^(www\\.)?mediafusion\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?mediafusion\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "mediafusion"
+      },
+      "mongodb": {
+        "middlewares": [
+          "nginx-auth@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?mongodb\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?mongodb\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "mongodb"
+      },
+      "nginx-auth": {
+        "rule": "HostRegexp(`^(www\\.)?nginx-auth\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?nginx-auth\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "nginx-auth"
+      },
+      "notifiarr": {
+        "rule": "HostRegexp(`^(www\\.)?notifiarr\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?notifiarr\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "notifiarr"
+      },
+      "open-webui": {
+        "middlewares": [
+          "openwebui-redirect@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?openwebui\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?openwebui\\.micklethefickle\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?open-webui\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?open-webui\\.micklethefickle\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?chat\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?chat\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "open-webui"
+      },
+      "overseerr": {
+        "rule": "HostRegexp(`^(www\\.)?overseerr\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?overseerr\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "overseerr"
+      },
+      "plex": {
+        "rule": "HostRegexp(`^(www\\.)?plex\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?plex\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "plex"
+      },
+      "prometheus": {
+        "rule": "HostRegexp(`^(www\\.)?prometheus\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?prometheus\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "prometheus"
+      },
+      "prowlarr": {
+        "rule": "HostRegexp(`^(www\\.)?prowlarr\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?prowlarr\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "prowlarr"
+      },
+      "qbittorrent": {
+        "rule": "HostRegexp(`^(www\\.)?qbittorrent\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?qbittorrent\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "qbittorrent"
+      },
+      "rclone": {
+        "rule": "HostRegexp(`^(www\\.)?rclone\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?rclone\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "rclone"
+      },
+      "redis": {
+        "middlewares": [
+          "nginx-auth@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?redis\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?redis\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "redis"
+      },
+      "riven": {
+        "middlewares": [
+          "nginx-auth@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?riven-backend\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?riven-backend\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "riven"
+      },
+      "riven-db": {
+        "middlewares": [
+          "nginx-auth@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?riven-db\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?riven-db\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "riven-db"
+      },
+      "riven-frontend": {
+        "middlewares": [
+          "nginx-auth@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?riven\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?riven\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "riven-frontend"
+      },
+      "searxng": {
+        "middlewares": [
+          "nginx-auth@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?searxng\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?searxng\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "searxng"
+      },
+      "speedtest": {
+        "rule": "HostRegexp(`^(www\\.)?speedtest\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?speedtest\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "speedtest"
+      },
+      "stremio-api-http-server": {
+        "priority": 100,
+        "rule": "HostRegexp(`^(www\\.)?stremio-api\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?stremio-api\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "stremio-api-http-server"
+      },
+      "stremio-api-https-server": {
+        "priority": 100,
+        "rule": "HostRegexp(`^(www\\.)?stremio\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?stremio\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "stremio-api-https-server"
+      },
+      "stremio-web": {
+        "priority": 10,
+        "rule": "HostRegexp(`^(www\\.)?stremio-web\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?stremio-web\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "stremio-web"
+      },
+      "stremthru": {
+        "rule": "HostRegexp(`^(www\\.)?stremthru\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?stremthru\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "stremthru"
+      },
+      "tautulli": {
+        "middlewares": [
+          "nginx-auth@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?tautulli\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?tautulli\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "tautulli"
+      },
+      "tinyauth": {
+        "rule": "HostRegexp(`^(www\\.)?auth\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?auth\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "tinyauth-my-media-stack"
+      },
+      "traefik": {
+        "rule": "HostRegexp(`^(www\\.)?traefik\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?traefik\\.micklethefickle\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?traefik\\.bolabaden\\.duckdns\\.org$`) || HostRegexp(`^(www\\.)?traefik\\.micklethefickle\\.bolabaden\\.duckdns\\.org$`) || HostRegexp(`^(www\\.)?traefik\\.micklethefickle\\.duckdns\\.org$`)",
+        "service": "api@internal"
+      },
+      "transmission": {
+        "rule": "HostRegexp(`^(www\\.)?transmission\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?transmission\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "transmission"
+      },
+      "warp-proxy": {
+        "middlewares": [
+          "nginx-auth@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?warp-proxy\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?warp-proxy\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "warp-proxy"
+      },
+      "whoami-my-media-stack": {
+        "rule": "HostRegexp(`^(www\\.)?whoami\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?whoami\\.micklethefickle\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?whoami\\.bolabaden\\.duckdns\\.org$`) || HostRegexp(`^(www\\.)?whoami\\.micklethefickle\\.bolabaden\\.duckdns\\.org$`) || HostRegexp(`^(www\\.)?whoami\\.micklethefickle\\.duckdns\\.org$`)",
+        "service": "whoami-my-media-stack"
+      },
+      "wizarr": {
+        "rule": "HostRegexp(`^(www\\.)?wizarr\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?wizarr\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "wizarr"
+      },
+      "zurg": {
+        "middlewares": [
+          "nginx-auth@docker"
+        ],
+        "rule": "HostRegexp(`^(www\\.)?zurg\\.bolabaden.org$`) || HostRegexp(`^(www\\.)?zurg\\.micklethefickle\\.bolabaden.org$`)",
+        "service": "zurg"
+      }
+    },
+    "services": {
+      "aiostreams": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.0.2:3005"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "bolabaden-nextjs": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.45:3000"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "code-server": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.92:8443"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "comet": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.97:2020"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "crowdsec": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.104:8080"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "deluge": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.97:8112"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "dozzle": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.89:8080"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "error-service": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.45:3000"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "flaresolverr": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.93:8191"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "headscale-server": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.0.106:8080"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "headscale-ui": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.0.106:80"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "homepage": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.88:3000"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "homer": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.106:8080"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "jackett": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.97:9117"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "litellm": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.126.90:4000"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "mcpo": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.127.3:8000"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "mediaflow-proxy": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.97:8888"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "mediafusion": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.97:8000"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "mongodb": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.0.50:27017"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "nginx-auth": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.94:80"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "notifiarr": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.117:8080"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "open-webui": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.118:8080"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "overseerr": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.116:5055"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "plex": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.95:32400"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "prometheus": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.127.80:9090"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "prowlarr": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.97:9696"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "qbittorrent": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.119:8084"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "rclone": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.111:5572"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "redis": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.87:6379"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "riven": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.101:8080"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "riven-db": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.102:5432"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "riven-frontend": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.100:3000"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "searxng": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.90:8080"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "speedtest": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.86:80"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "stremio-api-http-server": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.97:11470"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "stremio-api-https-server": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "https://10.76.128.97:12470"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "stremio-web": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "https://10.76.128.97:8080"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "stremthru": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.99:8080"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "tautulli": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.103:8181"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "tinyauth-my-media-stack": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.82:3000"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "traefik": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.0.2.2:8080"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "transmission": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.119:9091"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "warp-proxy": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.97:3128"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "whoami-my-media-stack": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.81:80"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "wizarr": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.107:5690"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      },
+      "zurg": {
+        "loadBalancer": {
+          "passHostHeader": true,
+          "responseForwarding": {
+            "flushInterval": "100ms"
+          },
+          "servers": [
+            {
+              "url": "http://10.76.128.97:9999"
+            }
+          ],
+          "strategy": "wrr"
+        }
+      }
+    }
+  },
+  "tcp": {},
+  "tls": {},
+  "udp": {}
+}

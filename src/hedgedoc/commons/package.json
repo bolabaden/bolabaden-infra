@@ -1,0 +1,71 @@
+{
+  "name": "@hedgedoc/commons",
+  "private": true,
+  "version": "0.4.0",
+  "description": "Common code between frontend and backend",
+  "author": "The HedgeDoc Authors",
+  "license": "AGPL-3.0",
+  "scripts": {
+    "build": "./build.sh",
+    "test": "jest",
+    "test:ci": "jest --ci",
+    "prepublish": "rm -rf dist && yarn lint && yarn build && yarn test",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint --fix --ext .ts src"
+  },
+  "type": "module",
+  "source": "src/index.ts",
+  "main": "dist/cjs/index.js",
+  "types": "dist/cjs/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "exports": {
+    "import": {
+      "types": "./dist/esm/index.d.ts",
+      "default": "./dist/esm/index.js"
+    },
+    "require": {
+      "types": "./dist/cjs/index.d.ts",
+      "default": "./dist/cjs/index.js"
+    }
+  },
+  "files": [
+    "LICENSES/*",
+    "package.json",
+    "README.md",
+    "dist/**"
+  ],
+  "browserslist": [
+    "node> 12"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hedgedoc/hedgedoc.git"
+  },
+  "dependencies": {
+    "domhandler": "5.0.3",
+    "eventemitter2": "6.4.9",
+    "joi": "17.13.3",
+    "js-yaml": "4.1.0",
+    "reveal.js": "5.1.0",
+    "ws": "8.18.0",
+    "yjs": "13.6.23",
+    "zod": "3.24.2"
+  },
+  "devDependencies": {
+    "@jest/types": "29.6.3",
+    "@mrdrogdrog/optional": "1.2.1",
+    "@types/js-yaml": "4.0.9",
+    "@types/ws": "8.5.12",
+    "@typescript-eslint/eslint-plugin": "8.14.0",
+    "@typescript-eslint/parser": "8.14.0",
+    "eslint": "8.57.1",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-jest": "28.9.0",
+    "eslint-plugin-prettier": "5.2.3",
+    "jest": "29.7.0",
+    "prettier": "3.3.3",
+    "ts-jest": "29.2.5",
+    "typescript": "5.6.3"
+  },
+  "packageManager": "yarn@4.5.3"
+}

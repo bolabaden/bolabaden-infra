@@ -3,6 +3,7 @@
 .cursor/
 .DS_Store
 .env
+.secrets
 .gitattributes
 .history/
 .idea
@@ -23,6 +24,10 @@
 .roo/
 .taskmaster/
 /arbitrary-scripts/bootstrap/premiumize_openvpn_install.sh
+.llm-context/
+.roo/
+.taskmaster/
+/arbitrary-scripts/bootstrap/premiumize_openvpn_install.sh
 /compose/docker-compose.coolify-proxy_env.yml
 /compose/docker-compose.coolify-proxy-env.yml
 /compose/docker-compose.coolify-proxy.micklethefickle.yml
@@ -35,7 +40,12 @@
 /configs/
 /docker
 arbitrary-scripts/bootstrap/dont-run-directly.sh
+arbitrary-scripts/bootstrap/dont-run-directly.sh
 arbitrary-scripts/bootstrap/various_pvt_logins.sh
+arbitrary-scripts/various_pvt_logins.sh
+certs/
+kube.yaml
+kubernetes.yaml
 arbitrary-scripts/various_pvt_logins.sh
 certs/
 kube.yaml
@@ -46,6 +56,8 @@ node_modules/
 npm-debug.log*
 opt/
 projects/
+opt/
+projects/
 vendor/docker/openvpn/client/auth.conf
 volumes/
 yarn-debug.log*
@@ -53,6 +65,7 @@ yarn-error.log*
 
 # Additional security-sensitive patterns
 secrets/
+!secrets/README.md
 *.key
 *.pem
 *.crt

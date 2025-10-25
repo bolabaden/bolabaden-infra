@@ -2,6 +2,13 @@
 
 
 
+secrets:
+  openai-api-key:
+    file: ${SECRETS_PATH:?}/openai-api-key.txt
+  firecrawl-api-key:
+    file: ${SECRETS_PATH:?}/firecrawl-api-key.txt
+
+
 services:
   playwright-service:
     # NOTE: If you don't want to build the service locally,
@@ -37,6 +44,9 @@ services:
     networks:
       - backend
       - publicnet
+    secrets:
+      - openai-api-key
+      - firecrawl-api-key
     extra_hosts:
       - host.docker.internal:host-gateway
     ulimits:
@@ -56,7 +66,7 @@ services:
       # To turn on DB authentication, you need to set up Supabase.
       USE_DB_AUTHENTICATION: ${FIRECRAWL_USE_DB_AUTHENTICATION:-}  # supabase is required
       # Provide your OpenAI API key here to enable AI features
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_API_KEY_FILE: /run/secrets/openai-api-key
       OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}  # e.g. http://localhost:11434/api
       MODEL_NAME: ${FIRECRAWL_MODEL_NAME:-}  # e.g. deepseek-r1:7b
       MODEL_EMBEDDING_NAME: ${FIRECRAWL_MODEL_EMBEDDING_NAME:-}  # e.g. nomic-embed-text
@@ -64,9 +74,9 @@ services:
       OLLAMA_BASE_URL: ${FIRECRAWL_OLLAMA_BASE_URL:-}  # e.g. https://example.com/v1
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
       # This key lets you access the queue admin panel. Change this if your deployment is publicly accessible.
-      BULL_AUTH_KEY: ${FIRECRAWL_BULL_AUTH_KEY:?}
+      BULL_AUTH_KEY_FILE: /run/secrets/firecrawl-api-key
       # Use if you've set up authentication and want to test with a real API key
-      TEST_API_KEY: ${FIRECRAWL_TEST_API_KEY:?}
+      TEST_API_KEY_FILE: /run/secrets/firecrawl-api-key
       POSTHOG_API_KEY: ${POSTHOG_API_KEY:-}
       POSTHOG_HOST: ${POSTHOG_HOST:-}
       # Supabase Setup (used to support DB authentication, advanced logging, etc.)

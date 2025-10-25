@@ -1,0 +1,14 @@
+verify-x509-name CN=vpn-sg.premiumize.me
+client
+resolv-retry infinite
+nobind
+reneg-sec 0
+setenv CLIENT_CERT 0
+ignore-unknown-option block-outside-dns
+ca /etc/openvpn/premiumize-ca.pem
+proto udp
+pull-filter ignore "route-ipv6"
+pull-filter ignore "ifconfig-ipv6"
+remote 45.77.28.135 1194
+persist-tun
+persist-key

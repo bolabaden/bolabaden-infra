@@ -1,0 +1,87 @@
+{{/* 
+  Check if we have any TLS configuration
+  Source: pkg/config/label/label.go:18-19 - DecodeConfiguration parses traefik.tls labels
+*/}}
+{{ $hasTLSConfig := false }}
+{{ range $c := $enabledContainers }}
+  {{ range $key, $value := $c.Labels }}
+    {{ if hasPrefix $key "traefik.tls.stores." }}
+      {{ $hasTLSConfig = true }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ if $hasTLSConfig }}
+tls:
+  {{/* 
+    TLS Stores section
+    Source: pkg/config/label/label.go:18-19 - DecodeConfiguration parses traefik.tls.stores labels
+  */}}
+  {{ $allTLSStoreNames := dict }}
+  {{ range $c := $enabledContainers }}
+    {{ $labels := $c.Labels }}
+    
+    {{/* 
+      Collect store names from this container
+      Source: pkg/config/label/label.go:18-19 - DecodeConfiguration parses traefik.tls.stores labels
+    */}}
+    {{ range $key, $value := $labels }}
+      {{ if hasPrefix $key "traefik.tls.stores." }}
+        {{ $withoutPrefix := trimPrefix "traefik.tls.stores." $key }}
+        {{ $storeName := index (split $withoutPrefix ".") 0 }}
+        {{ if $storeName }}
+          {{ $_ := set $allTLSStoreNames $storeName $c }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  
+  {{ if $allTLSStoreNames }}
+  stores:
+    {{ range $storeName, $container := $allTLSStoreNames }}
+      {{ $labels := $container.Labels }}
+      {{ $storePrefix := printf "traefik.tls.stores.%s." $storeName }}
+      
+    {{ $storeName }}:
+      {{/* Source: docs/content/reference/dynamic-configuration/docker-labels.yml:272-277 */}}
+      {{/* Default Generated Certificate */}}
+      {{ $hasDGC := false }}
+      {{ range $key, $value := $labels }}
+        {{ if hasPrefix $key (printf "%sdefaultgeneratedcert." $storePrefix) }}
+          {{ $hasDGC = true }}
+        {{ end }}
+      {{ end }}
+      {{ if $hasDGC }}
+      defaultGeneratedCert:
+        {{ if hasKey $labels (printf "%sdefaultgeneratedcert.resolver" $storePrefix) }}
+          {{ $resolver := index $labels (printf "%sdefaultgeneratedcert.resolver" $storePrefix) }}
+        resolver: {{ $resolver }}
+        {{ end }}
+        
+        {{/* Domain */}}
+        {{ $hasDomain := false }}
+        {{ range $key, $value := $labels }}
+          {{ if hasPrefix $key (printf "%sdefaultgeneratedcert.domain." $storePrefix) }}
+            {{ $hasDomain = true }}
+          {{ end }}
+        {{ end }}
+        {{ if $hasDomain }}
+        domain:
+          {{ if hasKey $labels (printf "%sdefaultgeneratedcert.domain.main" $storePrefix) }}
+            {{ $main := index $labels (printf "%sdefaultgeneratedcert.domain.main" $storePrefix) }}
+          main: {{ $main }}
+          {{ end }}
+          
+          {{ if hasKey $labels (printf "%sdefaultgeneratedcert.domain.sans" $storePrefix) }}
+            {{ $sans := index $labels (printf "%sdefaultgeneratedcert.domain.sans" $storePrefix) }}
+          sans:
+            {{ $sansList := split $sans "," }}
+            {{ range $san := $sansList }}
+            - {{ trim $san " " }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}

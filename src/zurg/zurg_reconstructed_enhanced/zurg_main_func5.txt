@@ -1,0 +1,17 @@
+TEXT main.main.func5(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/cmd/zurg/main.go
+  main.go:70		0x3f1540		f9400b90		MOVD 16(R28), R16							
+  main.go:70		0x3f1544		eb3063ff		CMP R16, RSP								
+  main.go:70		0x3f1548		54000169		BLS 11(PC)								
+  main.go:70		0x3f154c		f81e0ffe		MOVD.W R30, -32(RSP)							
+  main.go:70		0x3f1550		f81f83fd		MOVD R29, -8(RSP)							
+  main.go:70		0x3f1554		d10023fd		SUB $8, RSP, R29							
+  main.go:70		0x3f1558		f9400742		MOVD 8(R26), R2								
+  main.go:71		0x3f155c		f9400040		MOVD (R2), R0								
+  main.go:71		0x3f1560		f9400441		MOVD 8(R2), R1								
+  main.go:71		0x3f1564		97fffe2b		CALL github.com/debridmediamanager/zurg/internal.ClearTorrents(SB)	
+  main.go:72		0x3f1568		a97ffbfd		LDP -8(RSP), (R29, R30)							
+  main.go:72		0x3f156c		910083ff		ADD $32, RSP, RSP							
+  main.go:72		0x3f1570		d65f03c0		RET									
+  main.go:70		0x3f1574		aa1e03e3		MOVD R30, R3								
+  main.go:70		0x3f1578		97f25986		CALL runtime.morestack.abi0(SB)						
+  main.go:70		0x3f157c		17fffff1		JMP main.main.func5(SB)							

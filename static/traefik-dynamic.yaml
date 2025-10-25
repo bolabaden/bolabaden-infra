@@ -1,0 +1,83 @@
+# yaml-language-server: $$schema=https://www.schemastore.org/traefik-v3-file-provider.json
+
+http:
+  middlewares:
+    crowdsec:
+      plugin:
+        bouncer:
+          enabled: true
+          logLevel: DEBUG
+          LogFilePath: "/dev/null"
+          updateIntervalSeconds: 60
+          updateMaxFailure: 0
+          defaultDecisionSeconds: 60
+          httpTimeoutSeconds: 10
+          crowdsecMode: live
+          crowdsecAppsecEnabled: false
+          crowdsecAppsecHost: crowdsec:7422
+          crowdsecAppsecPath: "/"
+          crowdsecAppsecFailureBlock: true
+          crowdsecAppsecUnreachableBlock: true
+          crowdsecAppsecBodyLimit: 10485760
+          crowdsecLapiKey: ${CROWDSEC_LAPI_KEY:-40796d93c2958f9e58345514e67740e5}
+          crowdsecLapiKeyFile: /etc/traefik/cs-privateKey-foo
+          crowdsecLapiScheme: ${CROWDSEC_LAPI_SCHEME:-https}
+          crowdsecLapiHost: ${CROWDSEC_LAPI_HOST:-crowdsec.bocloud.org}
+          crowdsecLapiPath: "/"
+          crowdsecLapiTLSInsecureVerify: false
+          crowdsecCapiMachineId: ${CROWDSEC_CAPI_MACHINE_ID:-login}
+          crowdsecCapiPassword: ${CROWDSEC_CAPI_PASSWORD:-password}
+          crowdsecCapiScenarios:
+            - crowdsecurity/http-path-traversal-probing
+            - crowdsecurity/http-xss-probing
+            - crowdsecurity/http-generic-bf
+          forwardedHeadersTrustedIPs:
+            # RFC 1918 Private Networks (IPv4)
+            - "10.0.0.0/8"
+            - "172.16.0.0/12"
+            - "192.168.0.0/16"
+            # RFC 3927 Link-Local (IPv4)
+            - "169.254.0.0/16"
+            # RFC 5735 Loopback (IPv4)
+            - "127.0.0.0/8"
+            # RFC 4193 Unique Local (IPv6)
+            - "fc00::/7"
+            # RFC 4291 Link-Local (IPv6)
+            - "fe80::/10"
+            # RFC 4291 Loopback (IPv6)
+            - "::1/128"
+            # RFC 3056 6to4 (IPv6)
+            - "2002::/16"
+            # Tailscale CGNAT range
+            - "100.64.0.0/10"
+          clientTrustedIPs:
+            # RFC 1918 Private Networks (IPv4)
+            - "10.0.0.0/8"
+            - "172.16.0.0/12"
+            - "192.168.0.0/16"
+            # RFC 3927 Link-Local (IPv4)
+            - "169.254.0.0/16"
+            # RFC 5735 Loopback (IPv4)
+            - "127.0.0.0/8"
+            # RFC 4193 Unique Local (IPv6)
+            - "fc00::/7"
+            # RFC 4291 Link-Local (IPv6)
+            - "fe80::/10"
+            # RFC 4291 Loopback (IPv6)
+            - "::1/128"
+            # RFC 3056 6to4 (IPv6)
+            - "2002::/16"
+            # Tailscale CGNAT range
+            - "100.64.0.0/10"
+          forwardedHeadersCustomName: X-Custom-Header
+          remediationHeadersCustomName: cs-remediation
+          redisCacheEnabled: false
+          redisCacheHost: redis:6379
+          redisCachePassword: ${REDIS_PASSWORD:-redis}
+          redisCacheDatabase: "5"
+          redisCacheUnreachableBlock: true
+          crowdsecLapiTLSCertificateBouncerKeyFile: /etc/traefik/crowdsec-certs/bouncer-key.pem
+          captchaProvider: hcaptcha
+          captchaGracePeriodSeconds: 1800
+          captchaHTMLFilePath: /captcha.html
+          banHTMLFilePath: /ban.html

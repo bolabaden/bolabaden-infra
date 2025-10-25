@@ -1,0 +1,63 @@
+apiVersion: {{ include "mediaflow-proxy.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ include "mediaflow-proxy.fullname" . }}
+  labels:
+    {{- include "mediaflow-proxy.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "mediaflow-proxy.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "mediaflow-proxy.selectorLabels" . | nindent 8 }}
+    spec:
+      # Note: network_mode: service:gluetun-premiumize from docker-compose is not directly supported.
+      # This pod runs in its own network namespace.
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "mediaflow-proxy.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.containerName | default .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- $envFilePath := .Values.envFilePath | default "" -}}
+          {{- if and $envFilePath (.Files.Exists $envFilePath) }}
+          envFrom:
+            - secretRef:
+                # References the secret created from the envFilePath
+                name: {{ include "mediaflow-proxy.fullname" . }}-env
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          # No healthcheck defined in docker-compose
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          # No volumes defined in docker-compose
+      restartPolicy: {{ .Values.restartPolicy }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }} 

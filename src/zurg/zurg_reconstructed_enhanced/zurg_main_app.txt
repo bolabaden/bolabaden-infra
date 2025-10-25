@@ -1,0 +1,1151 @@
+TEXT github.com/debridmediamanager/zurg/internal.MainApp(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/internal/app.go
+  app.go:21		0x3ef6e0		f9400b90		MOVD 16(R28), R16										
+  app.go:21		0x3ef6e4		d11283f1		SUB $1184, RSP, R17										
+  app.go:21		0x3ef6e8		eb10023f		CMP R16, R17											
+  app.go:21		0x3ef6ec		54007a49		BLS 978(PC)											
+  app.go:21		0x3ef6f0		d11483f4		SUB $1312, RSP, R20										
+  app.go:21		0x3ef6f4		a93ffa9d		STP (R29, R30), -8(R20)										
+  app.go:21		0x3ef6f8		9100029f		MOVD R20, RSP											
+  app.go:21		0x3ef6fc		d10023fd		SUB $8, RSP, R29										
+  app.go:21		0x3ef700		f9029fe2		MOVD R2, 1336(RSP)										
+  app.go:21		0x3ef704		f90287ff		MOVD ZR, 1288(RSP)										
+  app.go:21		0x3ef708		f9028bff		MOVD ZR, 1296(RSP)										
+  app.go:24		0x3ef70c		f90297e0		MOVD R0, 1320(RSP)										
+  app.go:24		0x3ef710		f9029be1		MOVD R1, 1328(RSP)										
+  app.go:21		0x3ef714		3900ffff		MOVB ZR, 63(RSP)										
+  app.go:21		0x3ef718		911043fb		ADD $1040, RSP, R27										
+  app.go:21		0x3ef71c		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:23		0x3ef720		9113e3fb		ADD $1272, RSP, R27										
+  app.go:23		0x3ef724		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:23		0x3ef728		aa0203e0		MOVD R2, R0											
+  app.go:23		0x3ef72c		aa0303e1		MOVD R3, R1											
+  app.go:23		0x3ef730		97fef960		CALL github.com/debridmediamanager/zurg/internal/config.LoadZurgConfig(SB)			
+  app.go:23		0x3ef734		f9027fe1		MOVD R1, 1272(RSP)										
+  app.go:23		0x3ef738		f90283e2		MOVD R2, 1280(RSP)										
+  app.go:24		0x3ef73c		b40002a1		CBZ R1, 21(PC)											
+  app.go:25		0x3ef740		9113a3fb		ADD $1256, RSP, R27										
+  app.go:25		0x3ef744		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:25		0x3ef748		b4000041		CBZ R1, 2(PC)											
+  app.go:25		0x3ef74c		f9400421		MOVD 8(R1), R1											
+  app.go:25		0x3ef750		f90277e1		MOVD R1, 1256(RSP)										
+  app.go:25		0x3ef754		f9027be2		MOVD R2, 1264(RSP)										
+  app.go:25		0x3ef758		f0000780		ADRP 995328(PC), R0										
+  app.go:25		0x3ef75c		9113dc00		ADD $1271, R0, R0										
+  app.go:25		0x3ef760		d2800321		MOVD $25, R1											
+  app.go:25		0x3ef764		9113a3e2		ADD $1256, RSP, R2										
+  app.go:25		0x3ef768		b24003e3		ORR $1, ZR, R3											
+  app.go:25		0x3ef76c		aa0303e4		MOVD R3, R4											
+  app.go:25		0x3ef770		97f44f04		CALL fmt.Errorf(SB)										
+  app.go:25		0x3ef774		f9027fe0		MOVD R0, 1272(RSP)										
+  app.go:25		0x3ef778		f90283e1		MOVD R1, 1280(RSP)										
+  app.go:25		0x3ef77c		f9020be0		MOVD R0, 1040(RSP)										
+  app.go:25		0x3ef780		f9020fe1		MOVD R1, 1048(RSP)										
+  app.go:25		0x3ef784		a97ffbfd		LDP -8(RSP), (R29, R30)										
+  app.go:25		0x3ef788		911483ff		ADD $1312, RSP, RSP										
+  app.go:25		0x3ef78c		d65f03c0		RET												
+  app.go:23		0x3ef790		f90233e0		MOVD R0, 1120(RSP)										
+  app.go:29		0x3ef794		aa1f03e0		MOVD ZR, R0											
+  app.go:29		0x3ef798		97fffa9e		CALL github.com/debridmediamanager/zurg/pkg/logutil.NewLogger(SB)				
+  app.go:29		0x3ef79c		f90223e0		MOVD R0, 1088(RSP)										
+  app.go:30		0x3ef7a0		9112e3fb		ADD $1208, RSP, R27										
+  app.go:30		0x3ef7a4		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:30		0x3ef7a8		b0000001		ADRP 4096(PC), R1										
+  app.go:30		0x3ef7ac		9121c021		ADD $2160, R1, R1										
+  app.go:30		0x3ef7b0		f9025fe1		MOVD R1, 1208(RSP)										
+  app.go:30		0x3ef7b4		f90263e0		MOVD R0, 1216(RSP)										
+  app.go:30		0x3ef7b8		9112e3e1		ADD $1208, RSP, R1										
+  app.go:30		0x3ef7bc		f90287e1		MOVD R1, 1288(RSP)										
+  app.go:30		0x3ef7c0		b24003e1		ORR $1, ZR, R1											
+  app.go:30		0x3ef7c4		3900ffe1		MOVB R1, 63(RSP)										
+  app.go:37		0x3ef7c8		910f43fb		ADD $976, RSP, R27										
+  app.go:37		0x3ef7cc		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:37		0x3ef7d0		910f83fb		ADD $992, RSP, R27										
+  app.go:37		0x3ef7d4		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:37		0x3ef7d8		910fc3fb		ADD $1008, RSP, R27										
+  app.go:37		0x3ef7dc		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:37		0x3ef7e0		911003fb		ADD $1024, RSP, R27										
+  app.go:37		0x3ef7e4		a9007f7f		STP (ZR, ZR), (R27)										
+  field.go:223		0x3ef7e8		d0000742		ADRP 958464(PC), R2										
+  field.go:223		0x3ef7ec		91094842		ADD $594, R2, R2										
+  field.go:223		0x3ef7f0		f901ebe2		MOVD R2, 976(RSP)										
+  field.go:223		0x3ef7f4		b2400be2		ORR $7, ZR, R2											
+  field.go:223		0x3ef7f8		f901efe2		MOVD R2, 984(RSP)										
+  field.go:223		0x3ef7fc		b2400fe3		ORR $15, ZR, R3											
+  field.go:223		0x3ef800		390f83e3		MOVB R3, 992(RSP)										
+  field.go:223		0x3ef804		90000764		ADRP 966656(PC), R4										
+  field.go:223		0x3ef808		9111fc84		ADD $1151, R4, R4										
+  field.go:223		0x3ef80c		f901fbe4		MOVD R4, 1008(RSP)										
+  field.go:223		0x3ef810		b27e07e4		ORR $12, ZR, R4											
+  field.go:223		0x3ef814		f901ffe4		MOVD R4, 1016(RSP)										
+  app.go:38		0x3ef818		910e43fb		ADD $912, RSP, R27										
+  app.go:38		0x3ef81c		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:38		0x3ef820		910e83fb		ADD $928, RSP, R27										
+  app.go:38		0x3ef824		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:38		0x3ef828		910ec3fb		ADD $944, RSP, R27										
+  app.go:38		0x3ef82c		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:38		0x3ef830		910f03fb		ADD $960, RSP, R27										
+  app.go:38		0x3ef834		a9007f7f		STP (ZR, ZR), (R27)										
+  field.go:223		0x3ef838		f0000745		ADRP 962560(PC), R5										
+  field.go:223		0x3ef83c		911854a5		ADD $1557, R5, R5										
+  field.go:223		0x3ef840		f901cbe5		MOVD R5, 912(RSP)										
+  field.go:223		0x3ef844		d2800145		MOVD $10, R5											
+  field.go:223		0x3ef848		f901cfe5		MOVD R5, 920(RSP)										
+  field.go:223		0x3ef84c		390e83e3		MOVB R3, 928(RSP)										
+  field.go:223		0x3ef850		b00007e5		ADRP 1036288(PC), R5										
+  field.go:223		0x3ef854		913b04a5		ADD $3777, R5, R5										
+  field.go:223		0x3ef858		f901dbe5		MOVD R5, 944(RSP)										
+  field.go:223		0x3ef85c		d2800505		MOVD $40, R5											
+  field.go:223		0x3ef860		f901dfe5		MOVD R5, 952(RSP)										
+  app.go:39		0x3ef864		910d43fb		ADD $848, RSP, R27										
+  app.go:39		0x3ef868		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:39		0x3ef86c		910d83fb		ADD $864, RSP, R27										
+  app.go:39		0x3ef870		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:39		0x3ef874		910dc3fb		ADD $880, RSP, R27										
+  app.go:39		0x3ef878		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:39		0x3ef87c		910e03fb		ADD $896, RSP, R27										
+  app.go:39		0x3ef880		a9007f7f		STP (ZR, ZR), (R27)										
+  field.go:223		0x3ef884		d0000746		ADRP 958464(PC), R6										
+  field.go:223		0x3ef888		911fc0c6		ADD $2032, R6, R6										
+  field.go:223		0x3ef88c		f901abe6		MOVD R6, 848(RSP)										
+  field.go:223		0x3ef890		b27d03e6		ORR $8, ZR, R6											
+  field.go:223		0x3ef894		f901afe6		MOVD R6, 856(RSP)										
+  field.go:223		0x3ef898		390d83e3		MOVB R3, 864(RSP)										
+  field.go:223		0x3ef89c		f0000767		ADRP 978944(PC), R7										
+  field.go:223		0x3ef8a0		912468e7		ADD $2330, R7, R7										
+  field.go:223		0x3ef8a4		f901bbe7		MOVD R7, 880(RSP)										
+  field.go:223		0x3ef8a8		d2800267		MOVD $19, R7											
+  field.go:223		0x3ef8ac		f901bfe7		MOVD R7, 888(RSP)										
+  types.go:66		0x3ef8b0		f94233e7		MOVD 1120(RSP), R7										
+  types.go:66		0x3ef8b4		f9400ce8		MOVD 24(R7), R8											
+  types.go:66		0x3ef8b8		f94008e9		MOVD 16(R7), R9											
+  app.go:40		0x3ef8bc		910c43fb		ADD $784, RSP, R27										
+  app.go:40		0x3ef8c0		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:40		0x3ef8c4		910c83fb		ADD $800, RSP, R27										
+  app.go:40		0x3ef8c8		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:40		0x3ef8cc		910cc3fb		ADD $816, RSP, R27										
+  app.go:40		0x3ef8d0		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:40		0x3ef8d4		910d03fb		ADD $832, RSP, R27										
+  app.go:40		0x3ef8d8		a9007f7f		STP (ZR, ZR), (R27)										
+  field.go:223		0x3ef8dc		b000074a		ADRP 954368(PC), R10										
+  field.go:223		0x3ef8e0		911e394a		ADD $1934, R10, R10										
+  field.go:223		0x3ef8e4		f9018bea		MOVD R10, 784(RSP)										
+  field.go:223		0x3ef8e8		b27e03ea		ORR $4, ZR, R10											
+  field.go:223		0x3ef8ec		f9018fea		MOVD R10, 792(RSP)										
+  field.go:223		0x3ef8f0		390c83e3		MOVB R3, 800(RSP)										
+  types.go:66		0x3ef8f4		f100011f		CMP $0, R8											
+  app.go:40		0x3ef8f8		9a880048		CSEL EQ, R2, R8, R8										
+  app.go:40		0x3ef8fc		d000074b		ADRP 958464(PC), R11										
+  app.go:40		0x3ef900		910ab56b		ADD $685, R11, R11										
+  app.go:40		0x3ef904		9a890169		CSEL EQ, R11, R9, R9										
+  field.go:223		0x3ef908		f9019be9		MOVD R9, 816(RSP)										
+  field.go:223		0x3ef90c		f9019fe8		MOVD R8, 824(RSP)										
+  types.go:74		0x3ef910		f94010e8		MOVD 32(R7), R8											
+  app.go:41		0x3ef914		910b43fb		ADD $720, RSP, R27										
+  app.go:41		0x3ef918		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:41		0x3ef91c		910b83fb		ADD $736, RSP, R27										
+  app.go:41		0x3ef920		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:41		0x3ef924		910bc3fb		ADD $752, RSP, R27										
+  app.go:41		0x3ef928		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:41		0x3ef92c		910c03fb		ADD $768, RSP, R27										
+  app.go:41		0x3ef930		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:41		0x3ef934		b0000749		ADRP 954368(PC), R9										
+  app.go:41		0x3ef938		911e4929		ADD $1938, R9, R9										
+  app.go:41		0x3ef93c		f9016be9		MOVD R9, 720(RSP)										
+  app.go:41		0x3ef940		f9016fea		MOVD R10, 728(RSP)										
+  app.go:41		0x3ef944		d2800169		MOVD $11, R9											
+  app.go:41		0x3ef948		390b83e9		MOVB R9, 736(RSP)										
+  types.go:74		0x3ef94c		f100011f		CMP $0, R8											
+  app.go:41		0x3ef950		d284e1ec		MOVD $9999, R12											
+  app.go:41		0x3ef954		9a880188		CSEL EQ, R12, R8, R8										
+  app.go:41		0x3ef958		f90177e8		MOVD R8, 744(RSP)										
+  app.go:36		0x3ef95c		f0000260		ADRP 323584(PC), R0										
+  app.go:36		0x3ef960		910d0000		ADD $832, R0, R0										
+  app.go:36		0x3ef964		97f0c8eb		CALL runtime.newobject(SB)									
+  app.go:36		0x3ef968		f9024be0		MOVD R0, 1168(RSP)										
+  app.go:36		0x3ef96c		f000287b		ADRP 5304320(PC), R27										
+  app.go:36		0x3ef970		b9448361		MOVWU 1152(R27), R1										
+  app.go:36		0x3ef974		340000e1		CBZW R1, 7(PC)											
+  app.go:36		0x3ef978		aa0003e1		MOVD R0, R1											
+  app.go:36		0x3ef97c		910f43e2		ADD $976, RSP, R2										
+  app.go:36		0x3ef980		b0000600		ADRP 790528(PC), R0										
+  app.go:36		0x3ef984		911f0000		ADD $1984, R0, R0										
+  app.go:36		0x3ef988		97f0e1ea		CALL runtime.wbMove(SB)										
+  app.go:36		0x3ef98c		f9424be0		MOVD 1168(RSP), R0										
+  app.go:36		0x3ef990		910f43fb		ADD $976, RSP, R27										
+  app.go:36		0x3ef994		a9401f66		LDP (R27), (R6, R7)										
+  app.go:36		0x3ef998		910f83fb		ADD $992, RSP, R27										
+  app.go:36		0x3ef99c		a9402768		LDP (R27), (R8, R9)										
+  app.go:36		0x3ef9a0		910fc3fb		ADD $1008, RSP, R27										
+  app.go:36		0x3ef9a4		a9402f6a		LDP (R27), (R10, R11)										
+  app.go:36		0x3ef9a8		911003fb		ADD $1024, RSP, R27										
+  app.go:36		0x3ef9ac		a940376c		LDP (R27), (R12, R13)										
+  app.go:36		0x3ef9b0		a9001c06		STP (R6, R7), (R0)										
+  app.go:36		0x3ef9b4		a9012408		STP (R8, R9), 16(R0)										
+  app.go:36		0x3ef9b8		a9022c0a		STP (R10, R11), 32(R0)										
+  app.go:36		0x3ef9bc		a903340c		STP (R12, R13), 48(R0)										
+  app.go:36		0x3ef9c0		f000287b		ADRP 5304320(PC), R27										
+  app.go:36		0x3ef9c4		b9448366		MOVWU 1152(R27), R6										
+  app.go:36		0x3ef9c8		340000e6		CBZW R6, 7(PC)											
+  app.go:36		0x3ef9cc		91010001		ADD $64, R0, R1											
+  app.go:36		0x3ef9d0		910e43e2		ADD $912, RSP, R2										
+  app.go:36		0x3ef9d4		b0000600		ADRP 790528(PC), R0										
+  app.go:36		0x3ef9d8		911f0000		ADD $1984, R0, R0										
+  app.go:36		0x3ef9dc		97f0e1d5		CALL runtime.wbMove(SB)										
+  app.go:36		0x3ef9e0		f9424be0		MOVD 1168(RSP), R0										
+  app.go:36		0x3ef9e4		910e43fb		ADD $912, RSP, R27										
+  app.go:36		0x3ef9e8		a9401f66		LDP (R27), (R6, R7)										
+  app.go:36		0x3ef9ec		910e83fb		ADD $928, RSP, R27										
+  app.go:36		0x3ef9f0		a9402768		LDP (R27), (R8, R9)										
+  app.go:36		0x3ef9f4		910ec3fb		ADD $944, RSP, R27										
+  app.go:36		0x3ef9f8		a9402f6a		LDP (R27), (R10, R11)										
+  app.go:36		0x3ef9fc		910f03fb		ADD $960, RSP, R27										
+  app.go:36		0x3efa00		a940376c		LDP (R27), (R12, R13)										
+  app.go:36		0x3efa04		a9041c06		STP (R6, R7), 64(R0)										
+  app.go:36		0x3efa08		a9052408		STP (R8, R9), 80(R0)										
+  app.go:36		0x3efa0c		a9062c0a		STP (R10, R11), 96(R0)										
+  app.go:36		0x3efa10		a907340c		STP (R12, R13), 112(R0)										
+  app.go:36		0x3efa14		f000287b		ADRP 5304320(PC), R27										
+  app.go:36		0x3efa18		b9448366		MOVWU 1152(R27), R6										
+  app.go:36		0x3efa1c		340000e6		CBZW R6, 7(PC)											
+  app.go:36		0x3efa20		91020001		ADD $128, R0, R1										
+  app.go:36		0x3efa24		910d43e2		ADD $848, RSP, R2										
+  app.go:36		0x3efa28		b0000600		ADRP 790528(PC), R0										
+  app.go:36		0x3efa2c		911f0000		ADD $1984, R0, R0										
+  app.go:36		0x3efa30		97f0e1c0		CALL runtime.wbMove(SB)										
+  app.go:36		0x3efa34		f9424be0		MOVD 1168(RSP), R0										
+  app.go:36		0x3efa38		910d43fb		ADD $848, RSP, R27										
+  app.go:36		0x3efa3c		a9401f66		LDP (R27), (R6, R7)										
+  app.go:36		0x3efa40		910d83fb		ADD $864, RSP, R27										
+  app.go:36		0x3efa44		a9402768		LDP (R27), (R8, R9)										
+  app.go:36		0x3efa48		910dc3fb		ADD $880, RSP, R27										
+  app.go:36		0x3efa4c		a9402f6a		LDP (R27), (R10, R11)										
+  app.go:36		0x3efa50		910e03fb		ADD $896, RSP, R27										
+  app.go:36		0x3efa54		a940376c		LDP (R27), (R12, R13)										
+  app.go:36		0x3efa58		a9081c06		STP (R6, R7), 128(R0)										
+  app.go:36		0x3efa5c		a9092408		STP (R8, R9), 144(R0)										
+  app.go:36		0x3efa60		a90a2c0a		STP (R10, R11), 160(R0)										
+  app.go:36		0x3efa64		a90b340c		STP (R12, R13), 176(R0)										
+  app.go:36		0x3efa68		f000287b		ADRP 5304320(PC), R27										
+  app.go:36		0x3efa6c		b9448366		MOVWU 1152(R27), R6										
+  app.go:36		0x3efa70		340000e6		CBZW R6, 7(PC)											
+  app.go:36		0x3efa74		91030001		ADD $192, R0, R1										
+  app.go:36		0x3efa78		910c43e2		ADD $784, RSP, R2										
+  app.go:36		0x3efa7c		b0000600		ADRP 790528(PC), R0										
+  app.go:36		0x3efa80		911f0000		ADD $1984, R0, R0										
+  app.go:36		0x3efa84		97f0e1ab		CALL runtime.wbMove(SB)										
+  app.go:36		0x3efa88		f9424be0		MOVD 1168(RSP), R0										
+  app.go:36		0x3efa8c		910c43fb		ADD $784, RSP, R27										
+  app.go:36		0x3efa90		a9401f66		LDP (R27), (R6, R7)										
+  app.go:36		0x3efa94		910c83fb		ADD $800, RSP, R27										
+  app.go:36		0x3efa98		a9402768		LDP (R27), (R8, R9)										
+  app.go:36		0x3efa9c		910cc3fb		ADD $816, RSP, R27										
+  app.go:36		0x3efaa0		a9402f6a		LDP (R27), (R10, R11)										
+  app.go:36		0x3efaa4		910d03fb		ADD $832, RSP, R27										
+  app.go:36		0x3efaa8		a940376c		LDP (R27), (R12, R13)										
+  app.go:36		0x3efaac		a90c1c06		STP (R6, R7), 192(R0)										
+  app.go:36		0x3efab0		a90d2408		STP (R8, R9), 208(R0)										
+  app.go:36		0x3efab4		a90e2c0a		STP (R10, R11), 224(R0)										
+  app.go:36		0x3efab8		a90f340c		STP (R12, R13), 240(R0)										
+  app.go:36		0x3efabc		f000287b		ADRP 5304320(PC), R27										
+  app.go:36		0x3efac0		b9448366		MOVWU 1152(R27), R6										
+  app.go:36		0x3efac4		340000e6		CBZW R6, 7(PC)											
+  app.go:36		0x3efac8		91040001		ADD $256, R0, R1										
+  app.go:36		0x3efacc		910b43e2		ADD $720, RSP, R2										
+  app.go:36		0x3efad0		b0000600		ADRP 790528(PC), R0										
+  app.go:36		0x3efad4		911f0000		ADD $1984, R0, R0										
+  app.go:36		0x3efad8		97f0e196		CALL runtime.wbMove(SB)										
+  app.go:36		0x3efadc		f9424be0		MOVD 1168(RSP), R0										
+  app.go:36		0x3efae0		910b43fb		ADD $720, RSP, R27										
+  app.go:36		0x3efae4		a9401f66		LDP (R27), (R6, R7)										
+  app.go:36		0x3efae8		910b83fb		ADD $736, RSP, R27										
+  app.go:36		0x3efaec		a9402768		LDP (R27), (R8, R9)										
+  app.go:36		0x3efaf0		910bc3fb		ADD $752, RSP, R27										
+  app.go:36		0x3efaf4		a9402f6a		LDP (R27), (R10, R11)										
+  app.go:36		0x3efaf8		910c03fb		ADD $768, RSP, R27										
+  app.go:36		0x3efafc		a940376c		LDP (R27), (R12, R13)										
+  app.go:36		0x3efb00		a9101c06		STP (R6, R7), 256(R0)										
+  app.go:36		0x3efb04		a9112408		STP (R8, R9), 272(R0)										
+  app.go:36		0x3efb08		a9122c0a		STP (R10, R11), 288(R0)										
+  app.go:36		0x3efb0c		a913340c		STP (R12, R13), 304(R0)										
+  app.go:36		0x3efb10		f94223e6		MOVD 1088(RSP), R6										
+  app.go:36		0x3efb14		f94000c7		MOVD (R6), R7											
+  app.go:36		0x3efb18		90000761		ADRP 966656(PC), R1										
+  app.go:36		0x3efb1c		912e3821		ADD $2958, R1, R1										
+  app.go:36		0x3efb20		d28001a2		MOVD $13, R2											
+  app.go:36		0x3efb24		aa0003e3		MOVD R0, R3											
+  app.go:36		0x3efb28		d28000a4		MOVD $5, R4											
+  app.go:36		0x3efb2c		aa0403e5		MOVD R4, R5											
+  app.go:36		0x3efb30		aa0703e0		MOVD R7, R0											
+  app.go:36		0x3efb34		97fe0b4b		CALL go.uber.org/zap.(*Logger).Info(SB)								
+  app.go:45		0x3efb38		d503201f		NOOP												
+  types.go:61		0x3efb3c		f94233e6		MOVD 1120(RSP), R6										
+  types.go:61		0x3efb40		f94004c7		MOVD 8(R6), R7											
+  types.go:66		0x3efb44		b4005447		CBZ R7, 674(PC)											
+  types.go:185		0x3efb48		f94058c4		MOVD 176(R6), R4										
+  types.go:92		0x3efb4c		f94028c2		MOVD 80(R6), R2											
+  types.go:92		0x3efb50		f94024c1		MOVD 72(R6), R1											
+  types.go:167		0x3efb54		394270c3		MOVBU 156(R6), R3										
+  app.go:52		0x3efb58		d503201f		NOOP												
+  app.go:53		0x3efb5c		d503201f		NOOP												
+  types.go:185		0x3efb60		f100009f		CMP $0, R4											
+  app.go:51		0x3efb64		b27f0fe5		ORR $30, ZR, R5											
+  app.go:51		0x3efb68		9a8400a4		CSEL EQ, R5, R4, R4										
+  app.go:51		0x3efb6c		d2994005		MOVD $51712, R5											
+  app.go:51		0x3efb70		f2a77345		MOVK $(15258<<16), R5										
+  app.go:51		0x3efb74		9b057c80		MUL R5, R4, R0											
+  app.go:50		0x3efb78		97ffdd9e		CALL github.com/debridmediamanager/zurg/pkg/http.NewHTTPClient(SB)				
+  app.go:50		0x3efb7c		f90227e0		MOVD R0, 1096(RSP)										
+  app.go:57		0x3efb80		d503201f		NOOP												
+  app.go:57		0x3efb84		d503201f		NOOP												
+  types.go:61		0x3efb88		f94233e4		MOVD 1120(RSP), R4										
+  types.go:61		0x3efb8c		f9400085		MOVD (R4), R5											
+  types.go:61		0x3efb90		f9003fe5		MOVD R5, 120(RSP)										
+  types.go:61		0x3efb94		f9400486		MOVD 8(R4), R6											
+  types.go:61		0x3efb98		f90027e6		MOVD R6, 72(RSP)										
+  api.go:27		0x3efb9c		900004a0		ADRP 606208(PC), R0										
+  api.go:27		0x3efba0		91318000		ADD $3168, R0, R0										
+  api.go:27		0x3efba4		97f0c85b		CALL runtime.newobject(SB)									
+  api.go:28		0x3efba8		f000287b		ADRP 5304320(PC), R27										
+  api.go:28		0x3efbac		b9448364		MOVWU 1152(R27), R4										
+  api.go:28		0x3efbb0		35000084		CBNZW R4, 4(PC)											
+  api.go:28		0x3efbb4		f94227e6		MOVD 1096(RSP), R6										
+  api.go:29		0x3efbb8		f9403fe7		MOVD 120(RSP), R7										
+  api.go:28		0x3efbbc		14000006		JMP 6(PC)											
+  api.go:28		0x3efbc0		97f26904		CALL runtime.gcWriteBarrier2(SB)								
+  api.go:28		0x3efbc4		f94227e6		MOVD 1096(RSP), R6										
+  api.go:28		0x3efbc8		f9000326		MOVD R6, (R25)											
+  api.go:29		0x3efbcc		f9403fe7		MOVD 120(RSP), R7										
+  api.go:29		0x3efbd0		f9000727		MOVD R7, 8(R25)											
+  api.go:27		0x3efbd4		f9021be0		MOVD R0, 1072(RSP)										
+  api.go:28		0x3efbd8		f9000006		MOVD R6, (R0)											
+  api.go:29		0x3efbdc		f94027e6		MOVD 72(RSP), R6										
+  api.go:29		0x3efbe0		f9000806		MOVD R6, 16(R0)											
+  api.go:29		0x3efbe4		f9000407		MOVD R7, 8(R0)											
+  app.go:60		0x3efbe8		f94223e6		MOVD 1088(RSP), R6										
+  app.go:60		0x3efbec		f94000c7		MOVD (R6), R7											
+  app.go:60		0x3efbf0		900007e1		ADRP 1032192(PC), R1										
+  app.go:60		0x3efbf4		91002c21		ADD $11, R1, R1											
+  app.go:60		0x3efbf8		d28004a2		MOVD $37, R2											
+  app.go:60		0x3efbfc		aa1f03e3		MOVD ZR, R3											
+  app.go:60		0x3efc00		aa1f03e4		MOVD ZR, R4											
+  app.go:60		0x3efc04		aa0403e5		MOVD R4, R5											
+  app.go:60		0x3efc08		aa0703e0		MOVD R7, R0											
+  app.go:60		0x3efc0c		97fe0b15		CALL go.uber.org/zap.(*Logger).Info(SB)								
+  app.go:61		0x3efc10		9113e3fb		ADD $1272, RSP, R27										
+  app.go:61		0x3efc14		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:61		0x3efc18		f9421be0		MOVD 1072(RSP), R0										
+  app.go:61		0x3efc1c		f94297e1		MOVD 1320(RSP), R1										
+  app.go:61		0x3efc20		f9429be2		MOVD 1328(RSP), R2										
+  app.go:61		0x3efc24		97ffe4ab		CALL github.com/debridmediamanager/zurg/pkg/realdebrid.(*RealDebrid).GetUserInformation(SB)	
+  app.go:61		0x3efc28		f9027fe1		MOVD R1, 1272(RSP)										
+  app.go:61		0x3efc2c		f90283e2		MOVD R2, 1280(RSP)										
+  types.go:185		0x3efc30		b4000c21		CBZ R1, 97(PC)											
+  app.go:61		0x3efc34		f9003be1		MOVD R1, 112(RSP)										
+  error.go:34		0x3efc38		a9107fff		STP (ZR, ZR), 256(RSP)										
+  error.go:34		0x3efc3c		a9117fff		STP (ZR, ZR), 272(RSP)										
+  error.go:34		0x3efc40		a9127fff		STP (ZR, ZR), 288(RSP)										
+  error.go:34		0x3efc44		a9137fff		STP (ZR, ZR), 304(RSP)										
+  error.go:48		0x3efc48		b0000743		ADRP 954368(PC), R3										
+  error.go:48		0x3efc4c		912a9063		ADD $2724, R3, R3										
+  error.go:48		0x3efc50		f90083e3		MOVD R3, 256(RSP)										
+  error.go:48		0x3efc54		d28000a3		MOVD $5, R3											
+  error.go:48		0x3efc58		f90087e3		MOVD R3, 264(RSP)										
+  error.go:48		0x3efc5c		d2800343		MOVD $26, R3											
+  error.go:48		0x3efc60		390443e3		MOVB R3, 272(RSP)										
+  error.go:48		0x3efc64		b4000061		CBZ R1, 3(PC)											
+  error.go:48		0x3efc68		f9400423		MOVD 8(R1), R3											
+  error.go:48		0x3efc6c		14000002		JMP 2(PC)											
+  error.go:48		0x3efc70		aa0103e3		MOVD R1, R3											
+  app.go:61		0x3efc74		f90247e2		MOVD R2, 1160(RSP)										
+  error.go:48		0x3efc78		f9009be3		MOVD R3, 304(RSP)										
+  error.go:48		0x3efc7c		f9009fe2		MOVD R2, 312(RSP)										
+  app.go:62		0x3efc80		a9500fe1		LDP 256(RSP), (R1, R3)										
+  app.go:62		0x3efc84		a95117e4		LDP 272(RSP), (R4, R5)										
+  app.go:62		0x3efc88		a9521fe6		LDP 288(RSP), (R6, R7)										
+  app.go:62		0x3efc8c		a95327e8		LDP 304(RSP), (R8, R9)										
+  app.go:62		0x3efc90		910a43fb		ADD $656, RSP, R27										
+  app.go:62		0x3efc94		a9000f61		STP (R1, R3), (R27)										
+  app.go:62		0x3efc98		910a83fb		ADD $672, RSP, R27										
+  app.go:62		0x3efc9c		a9001764		STP (R4, R5), (R27)										
+  app.go:62		0x3efca0		910ac3fb		ADD $688, RSP, R27										
+  app.go:62		0x3efca4		a9001f66		STP (R6, R7), (R27)										
+  app.go:62		0x3efca8		910b03fb		ADD $704, RSP, R27										
+  app.go:62		0x3efcac		a9002768		STP (R8, R9), (R27)										
+  app.go:62		0x3efcb0		f0000260		ADRP 323584(PC), R0										
+  app.go:62		0x3efcb4		910a0000		ADD $640, R0, R0										
+  app.go:62		0x3efcb8		97f0c816		CALL runtime.newobject(SB)									
+  app.go:62		0x3efcbc		f000287b		ADRP 5304320(PC), R27										
+  app.go:62		0x3efcc0		b9448361		MOVWU 1152(R27), R1										
+  app.go:62		0x3efcc4		34000101		CBZW R1, 8(PC)											
+  app.go:62		0x3efcc8		f90243e0		MOVD R0, 1152(RSP)										
+  app.go:62		0x3efccc		aa0003e1		MOVD R0, R1											
+  app.go:62		0x3efcd0		910a43e2		ADD $656, RSP, R2										
+  app.go:62		0x3efcd4		b0000600		ADRP 790528(PC), R0										
+  app.go:62		0x3efcd8		911f0000		ADD $1984, R0, R0										
+  app.go:62		0x3efcdc		97f0e115		CALL runtime.wbMove(SB)										
+  app.go:62		0x3efce0		f94243e0		MOVD 1152(RSP), R0										
+  app.go:62		0x3efce4		910a43fb		ADD $656, RSP, R27										
+  app.go:62		0x3efce8		a9401f66		LDP (R27), (R6, R7)										
+  app.go:62		0x3efcec		910a83fb		ADD $672, RSP, R27										
+  app.go:62		0x3efcf0		a9402768		LDP (R27), (R8, R9)										
+  app.go:62		0x3efcf4		910ac3fb		ADD $688, RSP, R27										
+  app.go:62		0x3efcf8		a9402f6a		LDP (R27), (R10, R11)										
+  app.go:62		0x3efcfc		910b03fb		ADD $704, RSP, R27										
+  app.go:62		0x3efd00		a940376c		LDP (R27), (R12, R13)										
+  app.go:62		0x3efd04		a9001c06		STP (R6, R7), (R0)										
+  app.go:62		0x3efd08		a9012408		STP (R8, R9), 16(R0)										
+  app.go:62		0x3efd0c		a9022c0a		STP (R10, R11), 32(R0)										
+  app.go:62		0x3efd10		a903340c		STP (R12, R13), 48(R0)										
+  app.go:62		0x3efd14		f94223e6		MOVD 1088(RSP), R6										
+  app.go:62		0x3efd18		f94000c6		MOVD (R6), R6											
+  app.go:62		0x3efd1c		f00007c1		ADRP 1028096(PC), R1										
+  app.go:62		0x3efd20		910e9821		ADD $934, R1, R1										
+  app.go:62		0x3efd24		d2800482		MOVD $36, R2											
+  app.go:62		0x3efd28		aa0003e3		MOVD R0, R3											
+  app.go:62		0x3efd2c		b24003e4		ORR $1, ZR, R4											
+  app.go:62		0x3efd30		aa0403e5		MOVD R4, R5											
+  app.go:62		0x3efd34		aa0603e0		MOVD R6, R0											
+  app.go:62		0x3efd38		97fe0b1a		CALL go.uber.org/zap.(*Logger).Error(SB)							
+  app.go:63		0x3efd3c		9113a3fb		ADD $1256, RSP, R27										
+  app.go:63		0x3efd40		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:63		0x3efd44		f9403be0		MOVD 112(RSP), R0										
+  app.go:63		0x3efd48		b4000060		CBZ R0, 3(PC)											
+  app.go:63		0x3efd4c		f9400401		MOVD 8(R0), R1											
+  app.go:63		0x3efd50		14000002		JMP 2(PC)											
+  app.go:63		0x3efd54		aa0003e1		MOVD R0, R1											
+  app.go:63		0x3efd58		f90277e1		MOVD R1, 1256(RSP)										
+  app.go:63		0x3efd5c		f94247e5		MOVD 1160(RSP), R5										
+  app.go:63		0x3efd60		f9027be5		MOVD R5, 1264(RSP)										
+  app.go:63		0x3efd64		b00007e0		ADRP 1036288(PC), R0										
+  app.go:63		0x3efd68		913ba400		ADD $3817, R0, R0										
+  app.go:63		0x3efd6c		d2800501		MOVD $40, R1											
+  app.go:63		0x3efd70		9113a3e2		ADD $1256, RSP, R2										
+  app.go:63		0x3efd74		b24003e3		ORR $1, ZR, R3											
+  app.go:63		0x3efd78		aa0303e4		MOVD R3, R4											
+  app.go:63		0x3efd7c		97f44d81		CALL fmt.Errorf(SB)										
+  app.go:63		0x3efd80		f9027fe0		MOVD R0, 1272(RSP)										
+  app.go:63		0x3efd84		f90283e1		MOVD R1, 1280(RSP)										
+  app.go:63		0x3efd88		f9020be0		MOVD R0, 1040(RSP)										
+  app.go:63		0x3efd8c		f9020fe1		MOVD R1, 1048(RSP)										
+  app.go:63		0x3efd90		3900ffff		MOVB ZR, 63(RSP)										
+  app.go:63		0x3efd94		f94287fa		MOVD 1288(RSP), R26										
+  app.go:63		0x3efd98		f9400345		MOVD (R26), R5											
+  app.go:63		0x3efd9c		d63f00a0		CALL (R5)											
+  app.go:63		0x3efda0		f9420be0		MOVD 1040(RSP), R0										
+  app.go:63		0x3efda4		f9420fe1		MOVD 1048(RSP), R1										
+  app.go:63		0x3efda8		a97ffbfd		LDP -8(RSP), (R29, R30)										
+  app.go:63		0x3efdac		911483ff		ADD $1312, RSP, RSP										
+  app.go:63		0x3efdb0		d65f03c0		RET												
+  app.go:66		0x3efdb4		f9400401		MOVD 8(R0), R1											
+  app.go:66		0x3efdb8		f9400802		MOVD 16(R0), R2											
+  app.go:66		0x3efdbc		910943fb		ADD $592, RSP, R27										
+  app.go:66		0x3efdc0		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:66		0x3efdc4		910983fb		ADD $608, RSP, R27										
+  app.go:66		0x3efdc8		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:66		0x3efdcc		9109c3fb		ADD $624, RSP, R27										
+  app.go:66		0x3efdd0		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:66		0x3efdd4		910a03fb		ADD $640, RSP, R27										
+  app.go:66		0x3efdd8		a9007f7f		STP (ZR, ZR), (R27)										
+  field.go:223		0x3efddc		d0000743		ADRP 958464(PC), R3										
+  field.go:223		0x3efde0		911fe063		ADD $2040, R3, R3										
+  field.go:223		0x3efde4		f9012be3		MOVD R3, 592(RSP)										
+  field.go:223		0x3efde8		b27d03e3		ORR $8, ZR, R3											
+  field.go:223		0x3efdec		f9012fe3		MOVD R3, 600(RSP)										
+  field.go:223		0x3efdf0		b2400fe3		ORR $15, ZR, R3											
+  field.go:223		0x3efdf4		390983e3		MOVB R3, 608(RSP)										
+  field.go:223		0x3efdf8		f9013be1		MOVD R1, 624(RSP)										
+  field.go:223		0x3efdfc		f9013fe2		MOVD R2, 632(RSP)										
+  app.go:67		0x3efe00		f9402801		MOVD 80(R0), R1											
+  app.go:67		0x3efe04		f9402c02		MOVD 88(R0), R2											
+  app.go:67		0x3efe08		910843fb		ADD $528, RSP, R27										
+  app.go:67		0x3efe0c		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:67		0x3efe10		910883fb		ADD $544, RSP, R27										
+  app.go:67		0x3efe14		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:67		0x3efe18		9108c3fb		ADD $560, RSP, R27										
+  app.go:67		0x3efe1c		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:67		0x3efe20		910903fb		ADD $576, RSP, R27										
+  app.go:67		0x3efe24		a9007f7f		STP (ZR, ZR), (R27)										
+  field.go:223		0x3efe28		b0000744		ADRP 954368(PC), R4										
+  field.go:223		0x3efe2c		911e5884		ADD $1942, R4, R4										
+  field.go:223		0x3efe30		f9010be4		MOVD R4, 528(RSP)										
+  field.go:223		0x3efe34		b27e03e4		ORR $4, ZR, R4											
+  field.go:223		0x3efe38		f9010fe4		MOVD R4, 536(RSP)										
+  field.go:223		0x3efe3c		390883e3		MOVB R3, 544(RSP)										
+  field.go:223		0x3efe40		f9011be1		MOVD R1, 560(RSP)										
+  field.go:223		0x3efe44		f9011fe2		MOVD R2, 568(RSP)										
+  app.go:68		0x3efe48		f9403001		MOVD 96(R0), R1											
+  app.go:68		0x3efe4c		a91d7fff		STP (ZR, ZR), 464(RSP)										
+  app.go:68		0x3efe50		a91e7fff		STP (ZR, ZR), 480(RSP)										
+  app.go:68		0x3efe54		a91f7fff		STP (ZR, ZR), 496(RSP)										
+  app.go:68		0x3efe58		910803fb		ADD $512, RSP, R27										
+  app.go:68		0x3efe5c		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:68		0x3efe60		d0000742		ADRP 958464(PC), R2										
+  app.go:68		0x3efe64		910ad042		ADD $692, R2, R2										
+  app.go:68		0x3efe68		f900ebe2		MOVD R2, 464(RSP)										
+  app.go:68		0x3efe6c		b2400be2		ORR $7, ZR, R2											
+  app.go:68		0x3efe70		f900efe2		MOVD R2, 472(RSP)										
+  app.go:68		0x3efe74		d2800163		MOVD $11, R3											
+  app.go:68		0x3efe78		390783e3		MOVB R3, 480(RSP)										
+  app.go:68		0x3efe7c		f900f7e1		MOVD R1, 488(RSP)										
+  app.go:65		0x3efe80		f0000260		ADRP 323584(PC), R0										
+  app.go:65		0x3efe84		910b8000		ADD $736, R0, R0										
+  app.go:65		0x3efe88		97f0c7a2		CALL runtime.newobject(SB)									
+  app.go:65		0x3efe8c		f9023fe0		MOVD R0, 1144(RSP)										
+  app.go:65		0x3efe90		f000287b		ADRP 5304320(PC), R27										
+  app.go:65		0x3efe94		b9448361		MOVWU 1152(R27), R1										
+  app.go:65		0x3efe98		340000e1		CBZW R1, 7(PC)											
+  app.go:65		0x3efe9c		aa0003e1		MOVD R0, R1											
+  app.go:65		0x3efea0		910943e2		ADD $592, RSP, R2										
+  app.go:65		0x3efea4		b0000600		ADRP 790528(PC), R0										
+  app.go:65		0x3efea8		911f0000		ADD $1984, R0, R0										
+  app.go:65		0x3efeac		97f0e0a1		CALL runtime.wbMove(SB)										
+  app.go:65		0x3efeb0		f9423fe0		MOVD 1144(RSP), R0										
+  app.go:65		0x3efeb4		910943fb		ADD $592, RSP, R27										
+  app.go:65		0x3efeb8		a9401f66		LDP (R27), (R6, R7)										
+  app.go:65		0x3efebc		910983fb		ADD $608, RSP, R27										
+  app.go:65		0x3efec0		a9402768		LDP (R27), (R8, R9)										
+  app.go:65		0x3efec4		9109c3fb		ADD $624, RSP, R27										
+  app.go:65		0x3efec8		a9402f6a		LDP (R27), (R10, R11)										
+  app.go:65		0x3efecc		910a03fb		ADD $640, RSP, R27										
+  app.go:65		0x3efed0		a940376c		LDP (R27), (R12, R13)										
+  app.go:65		0x3efed4		a9001c06		STP (R6, R7), (R0)										
+  app.go:65		0x3efed8		a9012408		STP (R8, R9), 16(R0)										
+  app.go:65		0x3efedc		a9022c0a		STP (R10, R11), 32(R0)										
+  app.go:65		0x3efee0		a903340c		STP (R12, R13), 48(R0)										
+  app.go:65		0x3efee4		f000287b		ADRP 5304320(PC), R27										
+  app.go:65		0x3efee8		b9448366		MOVWU 1152(R27), R6										
+  app.go:65		0x3efeec		340000e6		CBZW R6, 7(PC)											
+  app.go:65		0x3efef0		91010001		ADD $64, R0, R1											
+  app.go:65		0x3efef4		910843e2		ADD $528, RSP, R2										
+  app.go:65		0x3efef8		b0000600		ADRP 790528(PC), R0										
+  app.go:65		0x3efefc		911f0000		ADD $1984, R0, R0										
+  app.go:65		0x3eff00		97f0e08c		CALL runtime.wbMove(SB)										
+  app.go:65		0x3eff04		f9423fe0		MOVD 1144(RSP), R0										
+  app.go:65		0x3eff08		910843fb		ADD $528, RSP, R27										
+  app.go:65		0x3eff0c		a9401f66		LDP (R27), (R6, R7)										
+  app.go:65		0x3eff10		910883fb		ADD $544, RSP, R27										
+  app.go:65		0x3eff14		a9402768		LDP (R27), (R8, R9)										
+  app.go:65		0x3eff18		9108c3fb		ADD $560, RSP, R27										
+  app.go:65		0x3eff1c		a9402f6a		LDP (R27), (R10, R11)										
+  app.go:65		0x3eff20		910903fb		ADD $576, RSP, R27										
+  app.go:65		0x3eff24		a940376c		LDP (R27), (R12, R13)										
+  app.go:65		0x3eff28		a9041c06		STP (R6, R7), 64(R0)										
+  app.go:65		0x3eff2c		a9052408		STP (R8, R9), 80(R0)										
+  app.go:65		0x3eff30		a9062c0a		STP (R10, R11), 96(R0)										
+  app.go:65		0x3eff34		a907340c		STP (R12, R13), 112(R0)										
+  app.go:65		0x3eff38		f000287b		ADRP 5304320(PC), R27										
+  app.go:65		0x3eff3c		b9448366		MOVWU 1152(R27), R6										
+  app.go:65		0x3eff40		340000e6		CBZW R6, 7(PC)											
+  app.go:65		0x3eff44		91020001		ADD $128, R0, R1										
+  app.go:65		0x3eff48		910743e2		ADD $464, RSP, R2										
+  app.go:65		0x3eff4c		b0000600		ADRP 790528(PC), R0										
+  app.go:65		0x3eff50		911f0000		ADD $1984, R0, R0										
+  app.go:65		0x3eff54		97f0e077		CALL runtime.wbMove(SB)										
+  app.go:65		0x3eff58		f9423fe0		MOVD 1144(RSP), R0										
+  app.go:65		0x3eff5c		a95d1fe6		LDP 464(RSP), (R6, R7)										
+  app.go:65		0x3eff60		a95e27e8		LDP 480(RSP), (R8, R9)										
+  app.go:65		0x3eff64		a95f2fea		LDP 496(RSP), (R10, R11)									
+  app.go:65		0x3eff68		910803fb		ADD $512, RSP, R27										
+  app.go:65		0x3eff6c		a940376c		LDP (R27), (R12, R13)										
+  app.go:65		0x3eff70		a9081c06		STP (R6, R7), 128(R0)										
+  app.go:65		0x3eff74		a9092408		STP (R8, R9), 144(R0)										
+  app.go:65		0x3eff78		a90a2c0a		STP (R10, R11), 160(R0)										
+  app.go:65		0x3eff7c		a90b340c		STP (R12, R13), 176(R0)										
+  app.go:65		0x3eff80		f94223e6		MOVD 1088(RSP), R6										
+  app.go:65		0x3eff84		f94000c7		MOVD (R6), R7											
+  app.go:65		0x3eff88		b00007a1		ADRP 1003520(PC), R1										
+  app.go:65		0x3eff8c		91181821		ADD $1542, R1, R1										
+  app.go:65		0x3eff90		b27e0be2		ORR $28, ZR, R2											
+  app.go:65		0x3eff94		aa0003e3		MOVD R0, R3											
+  app.go:65		0x3eff98		b24007e4		ORR $3, ZR, R4											
+  app.go:65		0x3eff9c		aa0403e5		MOVD R4, R5											
+  app.go:65		0x3effa0		aa0703e0		MOVD R7, R0											
+  app.go:65		0x3effa4		97fe0a2f		CALL go.uber.org/zap.(*Logger).Info(SB)								
+  factory.go:58		0x3effa8		f94223e6		MOVD 1088(RSP), R6										
+  factory.go:58		0x3effac		f94000c7		MOVD (R6), R7											
+  factory.go:58		0x3effb0		f900e7e7		MOVD R7, 456(RSP)										
+  app.go:73		0x3effb4		f0000520		ADRP 684032(PC), R0										
+  app.go:73		0x3effb8		911f0000		ADD $1984, R0, R0										
+  app.go:73		0x3effbc		97f0c755		CALL runtime.newobject(SB)									
+  app.go:73		0x3effc0		b0000006		ADRP 4096(PC), R6										
+  app.go:73		0x3effc4		912000c6		ADD $2048, R6, R6										
+  app.go:73		0x3effc8		f9000006		MOVD R6, (R0)											
+  app.go:73		0x3effcc		f94297e6		MOVD 1320(RSP), R6										
+  app.go:73		0x3effd0		f9000406		MOVD R6, 8(R0)											
+  app.go:73		0x3effd4		f000287b		ADRP 5304320(PC), R27										
+  app.go:73		0x3effd8		b9448367		MOVWU 1152(R27), R7										
+  app.go:73		0x3effdc		350000a7		CBNZW R7, 5(PC)											
+  app.go:73		0x3effe0		f9429be1		MOVD 1328(RSP), R1										
+  app.go:73		0x3effe4		f9421be2		MOVD 1072(RSP), R2										
+  app.go:73		0x3effe8		f940e7e3		MOVD 456(RSP), R3										
+  app.go:73		0x3effec		14000008		JMP 8(PC)											
+  app.go:73		0x3efff0		97f267fc		CALL runtime.gcWriteBarrier3(SB)								
+  app.go:73		0x3efff4		f9429be1		MOVD 1328(RSP), R1										
+  app.go:73		0x3efff8		f9000321		MOVD R1, (R25)											
+  app.go:73		0x3efffc		f9421be2		MOVD 1072(RSP), R2										
+  app.go:73		0x3f0000		f9000722		MOVD R2, 8(R25)											
+  app.go:73		0x3f0004		f940e7e3		MOVD 456(RSP), R3										
+  app.go:73		0x3f0008		f9000b23		MOVD R3, 16(R25)										
+  app.go:73		0x3f000c		f9000801		MOVD R1, 16(R0)											
+  app.go:73		0x3f0010		f9000c02		MOVD R2, 24(R0)											
+  app.go:73		0x3f0014		f9001003		MOVD R3, 32(R0)											
+  app.go:73		0x3f0018		97f1acda		CALL runtime.newproc(SB)									
+  app.go:85		0x3f001c		d503201f		NOOP												
+  app.go:85		0x3f0020		d503201f		NOOP												
+  factory.go:58		0x3f0024		f94223e1		MOVD 1088(RSP), R1										
+  factory.go:58		0x3f0028		f9400022		MOVD (R1), R2											
+  factory.go:58		0x3f002c		f900e3e2		MOVD R2, 448(RSP)										
+  handlers.go:26	0x3f0030		90000500		ADRP 655360(PC), R0										
+  handlers.go:26	0x3f0034		91048000		ADD $288, R0, R0										
+  handlers.go:26	0x3f0038		97f0c736		CALL runtime.newobject(SB)									
+  handlers.go:27	0x3f003c		d000287b		ADRP 5300224(PC), R27										
+  handlers.go:27	0x3f0040		b9448361		MOVWU 1152(R27), R1										
+  handlers.go:27	0x3f0044		350000a1		CBNZW R1, 5(PC)											
+  handlers.go:27	0x3f0048		f94233e1		MOVD 1120(RSP), R1										
+  handlers.go:28	0x3f004c		f9421be2		MOVD 1072(RSP), R2										
+  handlers.go:29	0x3f0050		f940e3e3		MOVD 448(RSP), R3										
+  handlers.go:27	0x3f0054		14000008		JMP 8(PC)											
+  handlers.go:27	0x3f0058		97f267e2		CALL runtime.gcWriteBarrier3(SB)								
+  handlers.go:27	0x3f005c		f94233e1		MOVD 1120(RSP), R1										
+  handlers.go:27	0x3f0060		f9000321		MOVD R1, (R25)											
+  handlers.go:28	0x3f0064		f9421be2		MOVD 1072(RSP), R2										
+  handlers.go:28	0x3f0068		f9000722		MOVD R2, 8(R25)											
+  handlers.go:29	0x3f006c		f940e3e3		MOVD 448(RSP), R3										
+  handlers.go:29	0x3f0070		f9000b23		MOVD R3, 16(R25)										
+  handlers.go:27	0x3f0074		f9000001		MOVD R1, (R0)											
+  handlers.go:28	0x3f0078		f9000402		MOVD R2, 8(R0)											
+  handlers.go:29	0x3f007c		f9000803		MOVD R3, 16(R0)											
+  app.go:88		0x3f0080		97ffe8c4		CALL github.com/debridmediamanager/zurg/internal/handlers.(*Handlers).AttachHandlers(SB)	
+  app.go:88		0x3f0084		f9021fe0		MOVD R0, 1080(RSP)										
+  types.go:66		0x3f0088		f94233e1		MOVD 1120(RSP), R1										
+  types.go:66		0x3f008c		f9400c22		MOVD 24(R1), R2											
+  types.go:66		0x3f0090		f9400823		MOVD 16(R1), R3											
+  types.go:74		0x3f0094		f9401024		MOVD 32(R1), R4											
+  types.go:74		0x3f0098		f90037e4		MOVD R4, 104(RSP)										
+  app.go:91		0x3f009c		911323fb		ADD $1224, RSP, R27										
+  app.go:91		0x3f00a0		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:91		0x3f00a4		911363fb		ADD $1240, RSP, R27										
+  app.go:91		0x3f00a8		a9007f7f		STP (ZR, ZR), (R27)										
+  types.go:66		0x3f00ac		f100005f		CMP $0, R2											
+  app.go:91		0x3f00b0		b2400be5		ORR $7, ZR, R5											
+  app.go:91		0x3f00b4		9a8200a2		CSEL EQ, R5, R2, R2										
+  app.go:91		0x3f00b8		b0000745		ADRP 954368(PC), R5										
+  app.go:91		0x3f00bc		910ab4a5		ADD $685, R5, R5										
+  app.go:91		0x3f00c0		9a8300a3		CSEL EQ, R5, R3, R3										
+  app.go:91		0x3f00c4		aa0303e0		MOVD R3, R0											
+  app.go:91		0x3f00c8		aa0203e1		MOVD R2, R1											
+  app.go:91		0x3f00cc		97f0bbdd		CALL runtime.convTstring(SB)									
+  app.go:91		0x3f00d0		b0000221		ADRP 282624(PC), R1										
+  app.go:91		0x3f00d4		910c0021		ADD $768, R1, R1										
+  app.go:91		0x3f00d8		f90267e1		MOVD R1, 1224(RSP)										
+  app.go:91		0x3f00dc		f9026be0		MOVD R0, 1232(RSP)										
+  types.go:74		0x3f00e0		f94037e1		MOVD 104(RSP), R1										
+  types.go:74		0x3f00e4		f100003f		CMP $0, R1											
+  app.go:91		0x3f00e8		d284e1e2		MOVD $9999, R2											
+  app.go:91		0x3f00ec		9a810040		CSEL EQ, R2, R1, R0										
+  app.go:91		0x3f00f0		97f0bbb4		CALL runtime.convT64(SB)									
+  app.go:91		0x3f00f4		b0000221		ADRP 282624(PC), R1										
+  app.go:91		0x3f00f8		91150021		ADD $1344, R1, R1										
+  app.go:91		0x3f00fc		f9026fe1		MOVD R1, 1240(RSP)										
+  app.go:91		0x3f0100		f90273e0		MOVD R0, 1248(RSP)										
+  app.go:91		0x3f0104		90000740		ADRP 950272(PC), R0										
+  app.go:91		0x3f0108		912aa400		ADD $2729, R0, R0										
+  app.go:91		0x3f010c		d28000a1		MOVD $5, R1											
+  app.go:91		0x3f0110		911323e2		ADD $1224, RSP, R2										
+  app.go:91		0x3f0114		b27f03e3		ORR $2, ZR, R3											
+  app.go:91		0x3f0118		aa0303e4		MOVD R3, R4											
+  app.go:91		0x3f011c		97f457b5		CALL fmt.Sprintf(SB)										
+  app.go:91		0x3f0120		f90037e1		MOVD R1, 104(RSP)										
+  app.go:91		0x3f0124		f90247e0		MOVD R0, 1160(RSP)										
+  types.go:193		0x3f0128		f94233e2		MOVD 1120(RSP), R2										
+  types.go:193		0x3f012c		f9405c42		MOVD 184(R2), R2										
+  types.go:193		0x3f0130		f90033e2		MOVD R2, 96(RSP)										
+  app.go:90		0x3f0134		b00006c0		ADRP 888832(PC), R0										
+  app.go:90		0x3f0138		910e0000		ADD $896, R0, R0										
+  app.go:90		0x3f013c		97f0c6f5		CALL runtime.newobject(SB)									
+  app.go:91		0x3f0140		f94037e1		MOVD 104(RSP), R1										
+  app.go:91		0x3f0144		f9000401		MOVD R1, 8(R0)											
+  types.go:193		0x3f0148		f94033e1		MOVD 96(RSP), R1										
+  types.go:193		0x3f014c		f100003f		CMP $0, R1											
+  app.go:94		0x3f0150		d2802582		MOVD $300, R2											
+  app.go:94		0x3f0154		9a810041		CSEL EQ, R2, R1, R1										
+  app.go:93		0x3f0158		d2994002		MOVD $51712, R2											
+  app.go:93		0x3f015c		f2a77342		MOVK $(15258<<16), R2										
+  app.go:93		0x3f0160		9b017c41		MUL R1, R2, R1											
+  app.go:91		0x3f0164		d000287b		ADRP 5300224(PC), R27										
+  app.go:91		0x3f0168		b9448362		MOVWU 1152(R27), R2										
+  app.go:91		0x3f016c		35000082		CBNZW R2, 4(PC)											
+  app.go:91		0x3f0170		f94247e2		MOVD 1160(RSP), R2										
+  app.go:92		0x3f0174		f9421fe3		MOVD 1080(RSP), R3										
+  app.go:91		0x3f0178		14000006		JMP 6(PC)											
+  app.go:91		0x3f017c		97f26795		CALL runtime.gcWriteBarrier2(SB)								
+  app.go:91		0x3f0180		f94247e2		MOVD 1160(RSP), R2										
+  app.go:91		0x3f0184		f9000322		MOVD R2, (R25)											
+  app.go:92		0x3f0188		f9421fe3		MOVD 1080(RSP), R3										
+  app.go:92		0x3f018c		f9000723		MOVD R3, 8(R25)											
+  app.go:90		0x3f0190		f90217e0		MOVD R0, 1064(RSP)										
+  app.go:91		0x3f0194		f9000002		MOVD R2, (R0)											
+  app.go:92		0x3f0198		b0000d82		ADRP 1773568(PC), R2										
+  app.go:92		0x3f019c		91330042		ADD $3264, R2, R2										
+  app.go:92		0x3f01a0		f9000802		MOVD R2, 16(R0)											
+  app.go:92		0x3f01a4		f9000c03		MOVD R3, 24(R0)											
+  app.go:93		0x3f01a8		f9001801		MOVD R1, 48(R0)											
+  app.go:94		0x3f01ac		f9002001		MOVD R1, 64(R0)											
+  app.go:95		0x3f01b0		d2960002		MOVD $45056, R2											
+  app.go:95		0x3f01b4		f2be11c2		MOVK $(61582<<16), R2										
+  app.go:95		0x3f01b8		f2c00362		MOVK $(27<<32), R2										
+  app.go:95		0x3f01bc		f9002402		MOVD R2, 72(R0)											
+  app.go:99		0x3f01c0		b24003e1		ORR $1, ZR, R1											
+  app.go:99		0x3f01c4		f0000220		ADRP 290816(PC), R0										
+  app.go:99		0x3f01c8		913a0000		ADD $3712, R0, R0										
+  app.go:99		0x3f01cc		97f0a541		CALL runtime.makechan(SB)									
+  app.go:99		0x3f01d0		f90213e0		MOVD R0, 1056(RSP)										
+  app.go:100		0x3f01d4		d0000520		ADRP 679936(PC), R0										
+  app.go:100		0x3f01d8		911c0000		ADD $1792, R0, R0										
+  app.go:100		0x3f01dc		97f0c6cd		CALL runtime.newobject(SB)									
+  app.go:100		0x3f01e0		90000002		ADRP 0(PC), R2											
+  app.go:100		0x3f01e4		91198042		ADD $1632, R2, R2										
+  app.go:100		0x3f01e8		f9000002		MOVD R2, (R0)											
+  app.go:100		0x3f01ec		d000287b		ADRP 5300224(PC), R27										
+  app.go:100		0x3f01f0		b9448362		MOVWU 1152(R27), R2										
+  app.go:100		0x3f01f4		350000a2		CBNZW R2, 5(PC)											
+  app.go:100		0x3f01f8		f94223e1		MOVD 1088(RSP), R1										
+  app.go:100		0x3f01fc		f94217e2		MOVD 1064(RSP), R2										
+  app.go:100		0x3f0200		f94213e3		MOVD 1056(RSP), R3										
+  app.go:100		0x3f0204		14000008		JMP 8(PC)											
+  app.go:100		0x3f0208		97f26776		CALL runtime.gcWriteBarrier3(SB)								
+  app.go:100		0x3f020c		f94223e1		MOVD 1088(RSP), R1										
+  app.go:100		0x3f0210		f9000321		MOVD R1, (R25)											
+  app.go:100		0x3f0214		f94217e2		MOVD 1064(RSP), R2										
+  app.go:100		0x3f0218		f9000722		MOVD R2, 8(R25)											
+  app.go:100		0x3f021c		f94213e3		MOVD 1056(RSP), R3										
+  app.go:100		0x3f0220		f9000b23		MOVD R3, 16(R25)										
+  app.go:100		0x3f0224		f9000401		MOVD R1, 8(R0)											
+  app.go:100		0x3f0228		f9000802		MOVD R2, 16(R0)											
+  app.go:100		0x3f022c		f9000c03		MOVD R3, 24(R0)											
+  app.go:100		0x3f0230		97f1ac54		CALL runtime.newproc(SB)									
+  app.go:109		0x3f0234		f94297e1		MOVD 1320(RSP), R1										
+  app.go:109		0x3f0238		f9401021		MOVD 32(R1), R1											
+  app.go:109		0x3f023c		f9429be0		MOVD 1328(RSP), R0										
+  app.go:109		0x3f0240		d63f0020		CALL (R1)											
+  app.go:111		0x3f0244		9113e3fb		ADD $1272, RSP, R27										
+  app.go:111		0x3f0248		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:108		0x3f024c		911263fb		ADD $1176, RSP, R27										
+  app.go:108		0x3f0250		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:108		0x3f0254		9112a3fb		ADD $1192, RSP, R27										
+  app.go:108		0x3f0258		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:109		0x3f025c		f90257e0		MOVD R0, 1192(RSP)										
+  app.go:111		0x3f0260		f94213e1		MOVD 1056(RSP), R1										
+  app.go:111		0x3f0264		f9024fe1		MOVD R1, 1176(RSP)										
+  app.go:111		0x3f0268		9113e3e1		ADD $1272, RSP, R1										
+  app.go:111		0x3f026c		f90253e1		MOVD R1, 1184(RSP)										
+  app.go:108		0x3f0270		911263e0		ADD $1176, RSP, R0										
+  app.go:108		0x3f0274		910103e1		ADD $64, RSP, R1										
+  app.go:108		0x3f0278		aa1f03e2		MOVD ZR, R2											
+  app.go:108		0x3f027c		aa1f03e3		MOVD ZR, R3											
+  app.go:108		0x3f0280		b27f03e4		ORR $2, ZR, R4											
+  app.go:108		0x3f0284		b24003e5		ORR $1, ZR, R5											
+  app.go:108		0x3f0288		97f1ce56		CALL runtime.selectgo(SB)									
+  types.go:66		0x3f028c		b5000a40		CBNZ R0, 82(PC)											
+  app.go:111		0x3f0290		f94283e1		MOVD 1280(RSP), R1										
+  app.go:111		0x3f0294		f9022fe1		MOVD R1, 1112(RSP)										
+  app.go:111		0x3f0298		f9427fe2		MOVD 1272(RSP), R2										
+  app.go:111		0x3f029c		f9002fe2		MOVD R2, 88(RSP)										
+  error.go:34		0x3f02a0		a90c7fff		STP (ZR, ZR), 192(RSP)										
+  error.go:34		0x3f02a4		a90d7fff		STP (ZR, ZR), 208(RSP)										
+  error.go:34		0x3f02a8		a90e7fff		STP (ZR, ZR), 224(RSP)										
+  error.go:34		0x3f02ac		a90f7fff		STP (ZR, ZR), 240(RSP)										
+  error.go:45		0x3f02b0		b40001e2		CBZ R2, 15(PC)											
+  error.go:48		0x3f02b4		90000743		ADRP 950272(PC), R3										
+  error.go:48		0x3f02b8		912a9063		ADD $2724, R3, R3										
+  error.go:48		0x3f02bc		f90063e3		MOVD R3, 192(RSP)										
+  error.go:48		0x3f02c0		d28000a3		MOVD $5, R3											
+  error.go:48		0x3f02c4		f90067e3		MOVD R3, 200(RSP)										
+  error.go:48		0x3f02c8		d2800343		MOVD $26, R3											
+  error.go:48		0x3f02cc		390343e3		MOVB R3, 208(RSP)										
+  error.go:48		0x3f02d0		b4000062		CBZ R2, 3(PC)											
+  error.go:48		0x3f02d4		f9400443		MOVD 8(R2), R3											
+  error.go:48		0x3f02d8		14000002		JMP 2(PC)											
+  error.go:48		0x3f02dc		aa0203e3		MOVD R2, R3											
+  error.go:48		0x3f02e0		f9007be3		MOVD R3, 240(RSP)										
+  error.go:48		0x3f02e4		f9007fe1		MOVD R1, 248(RSP)										
+  error.go:34		0x3f02e8		14000007		JMP 7(PC)											
+  error.go:34		0x3f02ec		a90c7fff		STP (ZR, ZR), 192(RSP)										
+  error.go:34		0x3f02f0		a90d7fff		STP (ZR, ZR), 208(RSP)										
+  error.go:34		0x3f02f4		a90e7fff		STP (ZR, ZR), 224(RSP)										
+  error.go:34		0x3f02f8		a90f7fff		STP (ZR, ZR), 240(RSP)										
+  error.go:34		0x3f02fc		d2800363		MOVD $27, R3											
+  error.go:34		0x3f0300		390343e3		MOVB R3, 208(RSP)										
+  app.go:112		0x3f0304		a94c0be1		LDP 192(RSP), (R1, R2)										
+  app.go:112		0x3f0308		a94d13e3		LDP 208(RSP), (R3, R4)										
+  app.go:112		0x3f030c		a94e1be5		LDP 224(RSP), (R5, R6)										
+  app.go:112		0x3f0310		a94f23e7		LDP 240(RSP), (R7, R8)										
+  app.go:112		0x3f0314		a9180be1		STP (R1, R2), 384(RSP)										
+  app.go:112		0x3f0318		a91913e3		STP (R3, R4), 400(RSP)										
+  app.go:112		0x3f031c		a91a1be5		STP (R5, R6), 416(RSP)										
+  app.go:112		0x3f0320		a91b23e7		STP (R7, R8), 432(RSP)										
+  app.go:112		0x3f0324		d0000260		ADRP 319488(PC), R0										
+  app.go:112		0x3f0328		910a0000		ADD $640, R0, R0										
+  app.go:112		0x3f032c		97f0c679		CALL runtime.newobject(SB)									
+  app.go:112		0x3f0330		d000287b		ADRP 5300224(PC), R27										
+  app.go:112		0x3f0334		b9448361		MOVWU 1152(R27), R1										
+  app.go:112		0x3f0338		34000101		CBZW R1, 8(PC)											
+  app.go:112		0x3f033c		f9023be0		MOVD R0, 1136(RSP)										
+  app.go:112		0x3f0340		aa0003e1		MOVD R0, R1											
+  app.go:112		0x3f0344		910603e2		ADD $384, RSP, R2										
+  app.go:112		0x3f0348		90000600		ADRP 786432(PC), R0										
+  app.go:112		0x3f034c		911f0000		ADD $1984, R0, R0										
+  app.go:112		0x3f0350		97f0df78		CALL runtime.wbMove(SB)										
+  app.go:112		0x3f0354		f9423be0		MOVD 1136(RSP), R0										
+  app.go:112		0x3f0358		a9581fe6		LDP 384(RSP), (R6, R7)										
+  app.go:112		0x3f035c		a95927e8		LDP 400(RSP), (R8, R9)										
+  app.go:112		0x3f0360		a95a2fea		LDP 416(RSP), (R10, R11)									
+  app.go:112		0x3f0364		a95b37ec		LDP 432(RSP), (R12, R13)									
+  app.go:112		0x3f0368		a9001c06		STP (R6, R7), (R0)										
+  app.go:112		0x3f036c		a9012408		STP (R8, R9), 16(R0)										
+  app.go:112		0x3f0370		a9022c0a		STP (R10, R11), 32(R0)										
+  app.go:112		0x3f0374		a903340c		STP (R12, R13), 48(R0)										
+  app.go:112		0x3f0378		f94223e6		MOVD 1088(RSP), R6										
+  app.go:112		0x3f037c		f94000c6		MOVD (R6), R6											
+  app.go:112		0x3f0380		f0000741		ADRP 962560(PC), R1										
+  app.go:112		0x3f0384		91122c21		ADD $1163, R1, R1										
+  app.go:112		0x3f0388		b27e07e2		ORR $12, ZR, R2											
+  app.go:112		0x3f038c		aa0003e3		MOVD R0, R3											
+  app.go:112		0x3f0390		b24003e4		ORR $1, ZR, R4											
+  app.go:112		0x3f0394		aa0403e5		MOVD R4, R5											
+  app.go:112		0x3f0398		aa0603e0		MOVD R6, R0											
+  app.go:112		0x3f039c		97fe0981		CALL go.uber.org/zap.(*Logger).Error(SB)							
+  app.go:113		0x3f03a0		f9402fe6		MOVD 88(RSP), R6										
+  app.go:113		0x3f03a4		f9020be6		MOVD R6, 1040(RSP)										
+  app.go:113		0x3f03a8		f9422fe6		MOVD 1112(RSP), R6										
+  app.go:113		0x3f03ac		f9020fe6		MOVD R6, 1048(RSP)										
+  app.go:113		0x3f03b0		3900ffff		MOVB ZR, 63(RSP)										
+  app.go:113		0x3f03b4		f94287fa		MOVD 1288(RSP), R26										
+  app.go:113		0x3f03b8		f9400346		MOVD (R26), R6											
+  app.go:113		0x3f03bc		d63f00c0		CALL (R6)											
+  app.go:113		0x3f03c0		f9420be0		MOVD 1040(RSP), R0										
+  app.go:113		0x3f03c4		f9420fe1		MOVD 1048(RSP), R1										
+  app.go:113		0x3f03c8		a97ffbfd		LDP -8(RSP), (R29, R30)										
+  app.go:113		0x3f03cc		911483ff		ADD $1312, RSP, RSP										
+  app.go:113		0x3f03d0		d65f03c0		RET												
+  app.go:110		0x3f03d4		f94223e6		MOVD 1088(RSP), R6										
+  app.go:110		0x3f03d8		f94000c0		MOVD (R6), R0											
+  app.go:110		0x3f03dc		b0000781		ADRP 987136(PC), R1										
+  app.go:110		0x3f03e0		91082c21		ADD $523, R1, R1										
+  app.go:110		0x3f03e4		d28002e2		MOVD $23, R2											
+  app.go:110		0x3f03e8		aa1f03e3		MOVD ZR, R3											
+  app.go:110		0x3f03ec		aa1f03e4		MOVD ZR, R4											
+  app.go:110		0x3f03f0		aa0403e5		MOVD R4, R5											
+  app.go:110		0x3f03f4		97fe091b		CALL go.uber.org/zap.(*Logger).Info(SB)								
+  app.go:117		0x3f03f8		d0000da0		ADRP 1794048(PC), R0										
+  app.go:117		0x3f03fc		91116000		ADD $1112, R0, R0										
+  app.go:117		0x3f0400		b0002861		ADRP 5296128(PC), R1										
+  app.go:117		0x3f0404		913e8021		ADD $4000, R1, R1										
+  app.go:117		0x3f0408		d2958002		MOVD $44032, R2											
+  app.go:117		0x3f040c		f2bf8462		MOVK $(64547<<16), R2										
+  app.go:117		0x3f0410		f2c000c2		MOVK $(6<<32), R2										
+  app.go:117		0x3f0414		97f31233		CALL context.WithTimeout(SB)									
+  app.go:118		0x3f0418		f9028be2		MOVD R2, 1296(RSP)										
+  app.go:118		0x3f041c		b24007e6		ORR $3, ZR, R6											
+  app.go:118		0x3f0420		3900ffe6		MOVB R6, 63(RSP)										
+  app.go:120		0x3f0424		aa0103e2		MOVD R1, R2											
+  app.go:120		0x3f0428		aa0003e1		MOVD R0, R1											
+  app.go:120		0x3f042c		f94217e0		MOVD 1064(RSP), R0										
+  app.go:120		0x3f0430		97fc96fc		CALL net/http.(*Server).Shutdown(SB)								
+  app.go:120		0x3f0434		b40009a0		CBZ R0, 77(PC)											
+  app.go:120		0x3f0438		f9002be0		MOVD R0, 80(RSP)										
+  error.go:34		0x3f043c		a9087fff		STP (ZR, ZR), 128(RSP)										
+  error.go:34		0x3f0440		a9097fff		STP (ZR, ZR), 144(RSP)										
+  error.go:34		0x3f0444		a90a7fff		STP (ZR, ZR), 160(RSP)										
+  error.go:34		0x3f0448		a90b7fff		STP (ZR, ZR), 176(RSP)										
+  error.go:48		0x3f044c		90000742		ADRP 950272(PC), R2										
+  error.go:48		0x3f0450		912a9042		ADD $2724, R2, R2										
+  error.go:48		0x3f0454		f90043e2		MOVD R2, 128(RSP)										
+  error.go:48		0x3f0458		d28000a2		MOVD $5, R2											
+  error.go:48		0x3f045c		f90047e2		MOVD R2, 136(RSP)										
+  error.go:48		0x3f0460		d2800342		MOVD $26, R2											
+  error.go:48		0x3f0464		390243e2		MOVB R2, 144(RSP)										
+  error.go:48		0x3f0468		b4000060		CBZ R0, 3(PC)											
+  error.go:48		0x3f046c		f9400402		MOVD 8(R0), R2											
+  error.go:48		0x3f0470		14000002		JMP 2(PC)											
+  error.go:48		0x3f0474		aa0003e2		MOVD R0, R2											
+  app.go:120		0x3f0478		f9022be1		MOVD R1, 1104(RSP)										
+  error.go:48		0x3f047c		f9005be2		MOVD R2, 176(RSP)										
+  error.go:48		0x3f0480		f9005fe1		MOVD R1, 184(RSP)										
+  app.go:121		0x3f0484		a9480fe2		LDP 128(RSP), (R2, R3)										
+  app.go:121		0x3f0488		a94917e4		LDP 144(RSP), (R4, R5)										
+  app.go:121		0x3f048c		a94a1fe6		LDP 160(RSP), (R6, R7)										
+  app.go:121		0x3f0490		a94b27e8		LDP 176(RSP), (R8, R9)										
+  app.go:121		0x3f0494		a9140fe2		STP (R2, R3), 320(RSP)										
+  app.go:121		0x3f0498		a91517e4		STP (R4, R5), 336(RSP)										
+  app.go:121		0x3f049c		a9161fe6		STP (R6, R7), 352(RSP)										
+  app.go:121		0x3f04a0		a91727e8		STP (R8, R9), 368(RSP)										
+  app.go:121		0x3f04a4		d0000260		ADRP 319488(PC), R0										
+  app.go:121		0x3f04a8		910a0000		ADD $640, R0, R0										
+  app.go:121		0x3f04ac		97f0c619		CALL runtime.newobject(SB)									
+  app.go:121		0x3f04b0		d000287b		ADRP 5300224(PC), R27										
+  app.go:121		0x3f04b4		b9448361		MOVWU 1152(R27), R1										
+  app.go:121		0x3f04b8		34000101		CBZW R1, 8(PC)											
+  app.go:121		0x3f04bc		f90237e0		MOVD R0, 1128(RSP)										
+  app.go:121		0x3f04c0		aa0003e1		MOVD R0, R1											
+  app.go:121		0x3f04c4		910503e2		ADD $320, RSP, R2										
+  app.go:121		0x3f04c8		90000600		ADRP 786432(PC), R0										
+  app.go:121		0x3f04cc		911f0000		ADD $1984, R0, R0										
+  app.go:121		0x3f04d0		97f0df18		CALL runtime.wbMove(SB)										
+  app.go:121		0x3f04d4		f94237e0		MOVD 1128(RSP), R0										
+  app.go:121		0x3f04d8		a9541fe6		LDP 320(RSP), (R6, R7)										
+  app.go:121		0x3f04dc		a95527e8		LDP 336(RSP), (R8, R9)										
+  app.go:121		0x3f04e0		a9562fea		LDP 352(RSP), (R10, R11)									
+  app.go:121		0x3f04e4		a95737ec		LDP 368(RSP), (R12, R13)									
+  app.go:121		0x3f04e8		a9001c06		STP (R6, R7), (R0)										
+  app.go:121		0x3f04ec		a9012408		STP (R8, R9), 16(R0)										
+  app.go:121		0x3f04f0		a9022c0a		STP (R10, R11), 32(R0)										
+  app.go:121		0x3f04f4		a903340c		STP (R12, R13), 48(R0)										
+  app.go:121		0x3f04f8		f94223e6		MOVD 1088(RSP), R6										
+  app.go:121		0x3f04fc		f94000c6		MOVD (R6), R6											
+  app.go:121		0x3f0500		90000781		ADRP 983040(PC), R1										
+  app.go:121		0x3f0504		911e0021		ADD $1920, R1, R1										
+  app.go:121		0x3f0508		d28002c2		MOVD $22, R2											
+  app.go:121		0x3f050c		aa0003e3		MOVD R0, R3											
+  app.go:121		0x3f0510		b24003e4		ORR $1, ZR, R4											
+  app.go:121		0x3f0514		aa0403e5		MOVD R4, R5											
+  app.go:121		0x3f0518		aa0603e0		MOVD R6, R0											
+  app.go:121		0x3f051c		97fe0921		CALL go.uber.org/zap.(*Logger).Error(SB)							
+  app.go:122		0x3f0520		f9402be6		MOVD 80(RSP), R6										
+  app.go:122		0x3f0524		f9020be6		MOVD R6, 1040(RSP)										
+  app.go:122		0x3f0528		f9422be6		MOVD 1104(RSP), R6										
+  app.go:122		0x3f052c		f9020fe6		MOVD R6, 1048(RSP)										
+  app.go:122		0x3f0530		b24003e6		ORR $1, ZR, R6											
+  app.go:122		0x3f0534		3900ffe6		MOVB R6, 63(RSP)										
+  app.go:122		0x3f0538		f9428bfa		MOVD 1296(RSP), R26										
+  app.go:122		0x3f053c		f9400346		MOVD (R26), R6											
+  app.go:122		0x3f0540		d63f00c0		CALL (R6)											
+  app.go:122		0x3f0544		3900ffff		MOVB ZR, 63(RSP)										
+  app.go:122		0x3f0548		f94287fa		MOVD 1288(RSP), R26										
+  app.go:122		0x3f054c		f9400346		MOVD (R26), R6											
+  app.go:122		0x3f0550		d63f00c0		CALL (R6)											
+  app.go:122		0x3f0554		f9420be0		MOVD 1040(RSP), R0										
+  app.go:122		0x3f0558		f9420fe1		MOVD 1048(RSP), R1										
+  app.go:122		0x3f055c		a97ffbfd		LDP -8(RSP), (R29, R30)										
+  app.go:122		0x3f0560		911483ff		ADD $1312, RSP, RSP										
+  app.go:122		0x3f0564		d65f03c0		RET												
+  app.go:125		0x3f0568		f94223e6		MOVD 1088(RSP), R6										
+  app.go:125		0x3f056c		f94000c0		MOVD (R6), R0											
+  app.go:125		0x3f0570		d0000781		ADRP 991232(PC), R1										
+  app.go:125		0x3f0574		91144021		ADD $1296, R1, R1										
+  app.go:125		0x3f0578		d2800322		MOVD $25, R2											
+  app.go:125		0x3f057c		aa1f03e3		MOVD ZR, R3											
+  app.go:125		0x3f0580		aa1f03e4		MOVD ZR, R4											
+  app.go:125		0x3f0584		aa0403e5		MOVD R4, R5											
+  app.go:125		0x3f0588		97fe08b6		CALL go.uber.org/zap.(*Logger).Info(SB)								
+  app.go:126		0x3f058c		911043fb		ADD $1040, RSP, R27										
+  app.go:126		0x3f0590		a9007f7f		STP (ZR, ZR), (R27)										
+  app.go:126		0x3f0594		b24003e6		ORR $1, ZR, R6											
+  app.go:126		0x3f0598		3900ffe6		MOVB R6, 63(RSP)										
+  app.go:126		0x3f059c		f9428bfa		MOVD 1296(RSP), R26										
+  app.go:126		0x3f05a0		f9400346		MOVD (R26), R6											
+  app.go:126		0x3f05a4		d63f00c0		CALL (R6)											
+  app.go:126		0x3f05a8		3900ffff		MOVB ZR, 63(RSP)										
+  app.go:126		0x3f05ac		f94287fa		MOVD 1288(RSP), R26										
+  app.go:126		0x3f05b0		f9400346		MOVD (R26), R6											
+  app.go:126		0x3f05b4		d63f00c0		CALL (R6)											
+  app.go:126		0x3f05b8		f9420be0		MOVD 1040(RSP), R0										
+  app.go:126		0x3f05bc		f9420fe1		MOVD 1048(RSP), R1										
+  app.go:126		0x3f05c0		a97ffbfd		LDP -8(RSP), (R29, R30)										
+  app.go:126		0x3f05c4		911483ff		ADD $1312, RSP, RSP										
+  app.go:126		0x3f05c8		d65f03c0		RET												
+  app.go:46		0x3f05cc		900007c0		ADRP 1015808(PC), R0										
+  app.go:46		0x3f05d0		91005400		ADD $21, R0, R0											
+  app.go:46		0x3f05d4		d2800421		MOVD $33, R1											
+  app.go:46		0x3f05d8		aa1f03e2		MOVD ZR, R2											
+  app.go:46		0x3f05dc		aa1f03e3		MOVD ZR, R3											
+  app.go:46		0x3f05e0		aa0303e4		MOVD R3, R4											
+  app.go:46		0x3f05e4		97f44b67		CALL fmt.Errorf(SB)										
+  app.go:46		0x3f05e8		f9027fe0		MOVD R0, 1272(RSP)										
+  app.go:46		0x3f05ec		f90283e1		MOVD R1, 1280(RSP)										
+  app.go:46		0x3f05f0		f9020be0		MOVD R0, 1040(RSP)										
+  app.go:46		0x3f05f4		f9020fe1		MOVD R1, 1048(RSP)										
+  app.go:46		0x3f05f8		3900ffff		MOVB ZR, 63(RSP)										
+  app.go:46		0x3f05fc		f94287fa		MOVD 1288(RSP), R26										
+  app.go:46		0x3f0600		f9400345		MOVD (R26), R5											
+  app.go:46		0x3f0604		d63f00a0		CALL (R5)											
+  app.go:46		0x3f0608		f9420be0		MOVD 1040(RSP), R0										
+  app.go:46		0x3f060c		f9420fe1		MOVD 1048(RSP), R1										
+  app.go:46		0x3f0610		a97ffbfd		LDP -8(RSP), (R29, R30)										
+  app.go:46		0x3f0614		911483ff		ADD $1312, RSP, RSP										
+  app.go:46		0x3f0618		d65f03c0		RET												
+  app.go:46		0x3f061c		97f17219		CALL runtime.deferreturn(SB)									
+  app.go:46		0x3f0620		f9420be0		MOVD 1040(RSP), R0										
+  app.go:46		0x3f0624		f9420fe1		MOVD 1048(RSP), R1										
+  app.go:46		0x3f0628		a97ffbfd		LDP -8(RSP), (R29, R30)										
+  app.go:46		0x3f062c		911483ff		ADD $1312, RSP, RSP										
+  app.go:46		0x3f0630		d65f03c0		RET												
+  app.go:21		0x3f0634		f90007e0		MOVD R0, 8(RSP)											
+  app.go:21		0x3f0638		f9000be1		MOVD R1, 16(RSP)										
+  app.go:21		0x3f063c		f9000fe2		MOVD R2, 24(RSP)										
+  app.go:21		0x3f0640		f90013e3		MOVD R3, 32(RSP)										
+  app.go:21		0x3f0644		aa1e03e3		MOVD R30, R3											
+  app.go:21		0x3f0648		97f25d72		CALL runtime.morestack_noctxt.abi0(SB)								
+  app.go:21		0x3f064c		f94007e0		MOVD 8(RSP), R0											
+  app.go:21		0x3f0650		f9400be1		MOVD 16(RSP), R1										
+  app.go:21		0x3f0654		f9400fe2		MOVD 24(RSP), R2										
+  app.go:21		0x3f0658		f94013e3		MOVD 32(RSP), R3										
+  app.go:21		0x3f065c		17fffc21		JMP github.com/debridmediamanager/zurg/internal.MainApp(SB)					
+
+TEXT github.com/debridmediamanager/zurg/internal.MainApp.func2(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/internal/app.go
+  app.go:100		0x3f0660		f9400b90		MOVD 16(R28), R16							
+  app.go:100		0x3f0664		d10143f1		SUB $80, RSP, R17							
+  app.go:100		0x3f0668		eb10023f		CMP R16, R17								
+  app.go:100		0x3f066c		54000c09		BLS 96(PC)								
+  app.go:100		0x3f0670		f8130ffe		MOVD.W R30, -208(RSP)							
+  app.go:100		0x3f0674		f81f83fd		MOVD R29, -8(RSP)							
+  app.go:100		0x3f0678		d10023fd		SUB $8, RSP, R29							
+  app.go:100		0x3f067c		f9400b41		MOVD 16(R26), R1							
+  app.go:100		0x3f0680		f90047e1		MOVD R1, 136(RSP)							
+  app.go:101		0x3f0684		f9400022		MOVD (R1), R2								
+  app.go:101		0x3f0688		f9400423		MOVD 8(R1), R3								
+  app.go:100		0x3f068c		f9400f44		MOVD 24(R26), R4							
+  app.go:100		0x3f0690		f90043e4		MOVD R4, 128(RSP)							
+  app.go:100		0x3f0694		f9400745		MOVD 8(R26), R5								
+  app.go:100		0x3f0698		f9004be5		MOVD R5, 144(RSP)							
+  app.go:101		0x3f069c		a9047fff		STP (ZR, ZR), 64(RSP)							
+  app.go:101		0x3f06a0		a9057fff		STP (ZR, ZR), 80(RSP)							
+  app.go:101		0x3f06a4		a9067fff		STP (ZR, ZR), 96(RSP)							
+  app.go:101		0x3f06a8		a9077fff		STP (ZR, ZR), 112(RSP)							
+  field.go:223		0x3f06ac		90000746		ADRP 950272(PC), R6							
+  field.go:223		0x3f06b0		911e68c6		ADD $1946, R6, R6							
+  field.go:223		0x3f06b4		f90023e6		MOVD R6, 64(RSP)							
+  field.go:223		0x3f06b8		b27e03e6		ORR $4, ZR, R6								
+  field.go:223		0x3f06bc		f90027e6		MOVD R6, 72(RSP)							
+  field.go:223		0x3f06c0		b2400fe6		ORR $15, ZR, R6								
+  field.go:223		0x3f06c4		390143e6		MOVB R6, 80(RSP)							
+  field.go:223		0x3f06c8		f90033e2		MOVD R2, 96(RSP)							
+  field.go:223		0x3f06cc		f90037e3		MOVD R3, 104(RSP)							
+  app.go:101		0x3f06d0		d0000260		ADRP 319488(PC), R0							
+  app.go:101		0x3f06d4		910a0000		ADD $640, R0, R0							
+  app.go:101		0x3f06d8		97f0c58e		CALL runtime.newobject(SB)						
+  app.go:101		0x3f06dc		d000287b		ADRP 5300224(PC), R27							
+  app.go:101		0x3f06e0		b9448361		MOVWU 1152(R27), R1							
+  app.go:101		0x3f06e4		34000101		CBZW R1, 8(PC)								
+  app.go:101		0x3f06e8		f90063e0		MOVD R0, 192(RSP)							
+  app.go:101		0x3f06ec		aa0003e1		MOVD R0, R1								
+  app.go:101		0x3f06f0		910103e2		ADD $64, RSP, R2							
+  app.go:101		0x3f06f4		90000600		ADRP 786432(PC), R0							
+  app.go:101		0x3f06f8		911f0000		ADD $1984, R0, R0							
+  app.go:101		0x3f06fc		97f0de8d		CALL runtime.wbMove(SB)							
+  app.go:101		0x3f0700		f94063e0		MOVD 192(RSP), R0							
+  app.go:101		0x3f0704		a9441fe6		LDP 64(RSP), (R6, R7)							
+  app.go:101		0x3f0708		a94527e8		LDP 80(RSP), (R8, R9)							
+  app.go:101		0x3f070c		a9462fea		LDP 96(RSP), (R10, R11)							
+  app.go:101		0x3f0710		a94737ec		LDP 112(RSP), (R12, R13)						
+  app.go:101		0x3f0714		a9001c06		STP (R6, R7), (R0)							
+  app.go:101		0x3f0718		a9012408		STP (R8, R9), 16(R0)							
+  app.go:101		0x3f071c		a9022c0a		STP (R10, R11), 32(R0)							
+  app.go:101		0x3f0720		a903340c		STP (R12, R13), 48(R0)							
+  app.go:101		0x3f0724		f9404be6		MOVD 144(RSP), R6							
+  app.go:101		0x3f0728		f94000c6		MOVD (R6), R6								
+  app.go:101		0x3f072c		90000761		ADRP 966656(PC), R1							
+  app.go:101		0x3f0730		91261021		ADD $2436, R1, R1							
+  app.go:101		0x3f0734		b2400fe2		ORR $15, ZR, R2								
+  app.go:101		0x3f0738		aa0003e3		MOVD R0, R3								
+  app.go:101		0x3f073c		b24003e4		ORR $1, ZR, R4								
+  app.go:101		0x3f0740		aa0403e5		MOVD R4, R5								
+  app.go:101		0x3f0744		aa0603e0		MOVD R6, R0								
+  app.go:101		0x3f0748		97fe0846		CALL go.uber.org/zap.(*Logger).Info(SB)					
+  app.go:102		0x3f074c		f94047e0		MOVD 136(RSP), R0							
+  app.go:102		0x3f0750		97fc98d8		CALL net/http.(*Server).ListenAndServe(SB)				
+  app.go:102		0x3f0754		b4000200		CBZ R0, 16(PC)								
+  app.go:102		0x3f0758		900024bb		ADRP 4800512(PC), R27							
+  app.go:102		0x3f075c		f940e365		MOVD 448(R27), R5							
+  app.go:102		0x3f0760		eb05001f		CMP R5, R0								
+  app.go:102		0x3f0764		54000060		BEQ 3(PC)								
+  app.go:102		0x3f0768		b24003e3		ORR $1, ZR, R3								
+  app.go:102		0x3f076c		1400000b		JMP 11(PC)								
+  app.go:102		0x3f0770		f9001fe0		MOVD R0, 56(RSP)							
+  app.go:102		0x3f0774		f9004fe1		MOVD R1, 152(RSP)							
+  app.go:102		0x3f0778		900024bb		ADRP 4800512(PC), R27							
+  app.go:102		0x3f077c		f940e762		MOVD 456(R27), R2							
+  app.go:102		0x3f0780		97f09d1c		CALL runtime.ifaceeq(SB)						
+  app.go:102		0x3f0784		d2400003		EOR $1, R0, R3								
+  app.go:103		0x3f0788		f9401fe0		MOVD 56(RSP), R0							
+  app.go:103		0x3f078c		f9404fe1		MOVD 152(RSP), R1							
+  app.go:102		0x3f0790		14000002		JMP 2(PC)								
+  app.go:102		0x3f0794		aa1f03e3		MOVD ZR, R3								
+  app.go:102		0x3f0798		36000243		TBZ $0, R3, 18(PC)							
+  app.go:103		0x3f079c		a90b7fff		STP (ZR, ZR), 176(RSP)							
+  app.go:103		0x3f07a0		b4000040		CBZ R0, 2(PC)								
+  app.go:103		0x3f07a4		f9400400		MOVD 8(R0), R0								
+  app.go:103		0x3f07a8		f9005be0		MOVD R0, 176(RSP)							
+  app.go:103		0x3f07ac		f9005fe1		MOVD R1, 184(RSP)							
+  app.go:103		0x3f07b0		d0000780		ADRP 991232(PC), R0							
+  app.go:103		0x3f07b4		913b7800		ADD $3806, R0, R0							
+  app.go:103		0x3f07b8		d2800341		MOVD $26, R1								
+  app.go:103		0x3f07bc		9102c3e2		ADD $176, RSP, R2							
+  app.go:103		0x3f07c0		b24003e3		ORR $1, ZR, R3								
+  app.go:103		0x3f07c4		aa0303e4		MOVD R3, R4								
+  app.go:103		0x3f07c8		97f44aee		CALL fmt.Errorf(SB)							
+  app.go:103		0x3f07cc		f90053e0		MOVD R0, 160(RSP)							
+  app.go:103		0x3f07d0		f90057e1		MOVD R1, 168(RSP)							
+  app.go:103		0x3f07d4		f94043e0		MOVD 128(RSP), R0							
+  app.go:103		0x3f07d8		910283e1		ADD $160, RSP, R1							
+  app.go:103		0x3f07dc		97f0a431		CALL runtime.chansend1(SB)						
+  app.go:105		0x3f07e0		a97ffbfd		LDP -8(RSP), (R29, R30)							
+  app.go:105		0x3f07e4		910343ff		ADD $208, RSP, RSP							
+  app.go:105		0x3f07e8		d65f03c0		RET									
+  app.go:100		0x3f07ec		aa1e03e3		MOVD R30, R3								
+  app.go:100		0x3f07f0		97f25ce8		CALL runtime.morestack.abi0(SB)						
+  app.go:100		0x3f07f4		17ffff9b		JMP github.com/debridmediamanager/zurg/internal.MainApp.func2(SB)	
+  app.go:100		0x3f07f8		00000000		?									
+  app.go:100		0x3f07fc		00000000		?									
+
+TEXT github.com/debridmediamanager/zurg/internal.MainApp.gowrap1(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/internal/app.go
+  app.go:73		0x3f0800		f9400b90		MOVD 16(R28), R16								
+  app.go:73		0x3f0804		eb3063ff		CMP R16, RSP									
+  app.go:73		0x3f0808		540001c9		BLS 14(PC)									
+  app.go:73		0x3f080c		f81d0ffe		MOVD.W R30, -48(RSP)								
+  app.go:73		0x3f0810		f81f83fd		MOVD R29, -8(RSP)								
+  app.go:73		0x3f0814		d10023fd		SUB $8, RSP, R29								
+  app.go:73		0x3f0818		f9401390		MOVD 32(R28), R16								
+  app.go:73		0x3f081c		b5000190		CBNZ R16, 12(PC)								
+  app.go:73		0x3f0820		f9401343		MOVD 32(R26), R3								
+  app.go:73		0x3f0824		f9400740		MOVD 8(R26), R0									
+  app.go:73		0x3f0828		f9400b41		MOVD 16(R26), R1								
+  app.go:73		0x3f082c		f9400f42		MOVD 24(R26), R2								
+  app.go:73		0x3f0830		97fff75c		CALL github.com/debridmediamanager/zurg/pkg/premium.MonitorPremiumStatus(SB)	
+  app.go:73		0x3f0834		a97ffbfd		LDP -8(RSP), (R29, R30)								
+  app.go:73		0x3f0838		9100c3ff		ADD $48, RSP, RSP								
+  app.go:73		0x3f083c		d65f03c0		RET										
+  app.go:73		0x3f0840		aa1e03e3		MOVD R30, R3									
+  app.go:73		0x3f0844		97f25cd3		CALL runtime.morestack.abi0(SB)							
+  app.go:73		0x3f0848		17ffffee		JMP github.com/debridmediamanager/zurg/internal.MainApp.gowrap1(SB)		
+  app.go:73		0x3f084c		f9400211		MOVD (R16), R17									
+  app.go:73		0x3f0850		9100e3f4		ADD $56, RSP, R20								
+  app.go:73		0x3f0854		eb11029f		CMP R17, R20									
+  app.go:73		0x3f0858		54fffe41		BNE -14(PC)									
+  app.go:73		0x3f085c		910023f4		ADD $8, RSP, R20								
+  app.go:73		0x3f0860		f9000214		MOVD R20, (R16)									
+  app.go:73		0x3f0864		17ffffef		JMP -17(PC)									
+  app.go:73		0x3f0868		00000000		?										
+  app.go:73		0x3f086c		00000000		?										
+
+TEXT github.com/debridmediamanager/zurg/internal.MainApp.func1(SB) /home/ubuntu/my-media-stack/src/zurg/zurg_reconstructed_enhanced/internal/app.go
+  app.go:30		0x3f0870		f9400b90		MOVD 16(R28), R16							
+  app.go:30		0x3f0874		eb3063ff		CMP R16, RSP								
+  app.go:30		0x3f0878		540001a9		BLS 13(PC)								
+  app.go:30		0x3f087c		f81e0ffe		MOVD.W R30, -32(RSP)							
+  app.go:30		0x3f0880		f81f83fd		MOVD R29, -8(RSP)							
+  app.go:30		0x3f0884		d10023fd		SUB $8, RSP, R29							
+  app.go:30		0x3f0888		f9400741		MOVD 8(R26), R1								
+  app.go:31		0x3f088c		f9400021		MOVD (R1), R1								
+  logger.go:303		0x3f0890		f9400022		MOVD (R1), R2								
+  logger.go:303		0x3f0894		f9400420		MOVD 8(R1), R0								
+  logger.go:303		0x3f0898		f9401441		MOVD 40(R2), R1								
+  logger.go:303		0x3f089c		d63f0020		CALL (R1)								
+  app.go:34		0x3f08a0		a97ffbfd		LDP -8(RSP), (R29, R30)							
+  app.go:34		0x3f08a4		910083ff		ADD $32, RSP, RSP							
+  app.go:34		0x3f08a8		d65f03c0		RET									
+  app.go:30		0x3f08ac		aa1e03e3		MOVD R30, R3								
+  app.go:30		0x3f08b0		97f25cb8		CALL runtime.morestack.abi0(SB)						
+  app.go:30		0x3f08b4		17ffffef		JMP github.com/debridmediamanager/zurg/internal.MainApp.func1(SB)	
+  app.go:30		0x3f08b8		00000000		?									
+  app.go:30		0x3f08bc		00000000		?									

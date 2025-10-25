@@ -5,6 +5,12 @@
 secrets:
   premiumize-auth:
     file: ${CONFIG_PATH:-./volumes}/premiumize-auth.txt
+  grafana-admin-password:
+    file: ${SECRETS_PATH:?}/grafana-password.txt
+  grafana-secret-key:
+    file: ${SECRETS_PATH:?}/grafana-secret-key.txt
+  sudo-password:
+    file: ${SECRETS_PATH:?}/sudo-password.txt
 
 
 
@@ -364,7 +370,8 @@ configs:
       secret_key = ${GF_SECURITY_SECRET_KEY:-SW2YcwTIb9zpOOhoPsMm}
 
       # current key provider used for envelope encryption, default to static value specified by secret_key
-      encryption_provider = ${GF_SECURITY_ENCRYPTION_PROVIDER:-secretKey.v1}
+      # Using empty/default provider instead of secretKey.v1 to avoid configuration issues
+      encryption_provider = ${GF_SECURITY_ENCRYPTION_PROVIDER:-}
 
       # list of configured key providers, space separated (Enterprise only): e.g., awskms.v1 azurekv.v1
       available_encryption_providers = ${GF_SECURITY_AVAILABLE_ENCRYPTION_PROVIDERS:-}
@@ -2160,7 +2167,8 @@ configs:
       # Used for signing
       secret_key = ${GF_SECRETS_MANAGER_SECRET_KEY:-SW2YcwTIb9zpOOhoPsMm}
       # Current key provider used for envelope encryption, default to static value specified by secret_key
-      encryption_provider = ${GF_SECRETS_MANAGER_ENCRYPTION_PROVIDER:-secretKey.v1}
+      # Using empty/default provider instead of secretKey.v1 to avoid configuration issues
+      encryption_provider = ${GF_SECRETS_MANAGER_ENCRYPTION_PROVIDER:-}
       # List of configured key providers, space separated (Enterprise only): e.g., awskms.v1 azurekv.v1
       available_encryption_providers = ${GF_SECRETS_MANAGER_AVAILABLE_ENCRYPTION_PROVIDERS:-}
 
@@ -4618,39 +4626,54 @@ services:
       - publicnet
     expose:
       - 3000
+    secrets:
+      - grafana-admin-password
+      - grafana-secret-key
     environment:
       # Enhanced plugin list including VictoriaMetrics datasource and monitoring plugins
-      GF_PLUGINS_PREINSTALL: grafana-piechart-panel,grafana-worldmap-panel,natel-discrete-panel,flant-statusmap-panel,vonage-status-panel,michaeldmoore-multistat-panel,grafana-polystat-panel,marcusolsson-dynamictext-panel,yesoreyeram-boomtable-panel,grafana-clock-panel,grafana-simple-json-datasource,btplc-status-dot-panel,camptocamp-prometheus-alertmanager-datasource
       GF_LOG_LEVEL: ${GF_LOG_LEVEL:-info}  # For detailed logs
-      GF_PATHS_PROVISIONING: ${GF_PATHS_PROVISIONING:-/etc/grafana/provisioning}
-      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD:?}
-      GF_SERVER_DOMAIN: ${GF_FQDN:-grafana.$DOMAIN}
-      GF_SERVER_ROOT_URL: ${GF_URL:-https://${GF_FQDN:-grafana.$DOMAIN}}
-      GF_SERVER_SERVE_FROM_SUB_PATH: ${GF_SERVE_FROM_SUB_PATH:-false}  # Explicitly disable if no subpath
       # VictoriaMetrics specific settings
       GF_FEATURE_TOGGLES_ENABLE: ${GF_FEATURE_TOGGLES_ENABLE:-}
+      # Disabling custom encryption provider - using default (override .env values)
+      GF_SECURITY_ENCRYPTION_PROVIDER: ""
+      GF_SECURITY_AVAILABLE_ENCRYPTION_PROVIDERS: ""
+      # Core required settings
+      GF_SERVER_DOMAIN: ${GF_FQDN:-grafana.$DOMAIN}
+      GF_SERVER_ROOT_URL: ${GF_URL:-https://${GF_FQDN:-grafana.$DOMAIN}}
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER:-admin}
+      # Security settings using Docker secrets
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana-admin-password
+      GF_SECURITY_SECRET_KEY__FILE: /run/secrets/grafana-secret-key
+      GF_SECRETS_MANAGER_SECRET_KEY__FILE: /run/secrets/grafana-secret-key
+      # Paths configuration
+      GF_PATHS_PROVISIONING: ${GF_PATHS_PROVISIONING:-/etc/grafana/provisioning}
+      # Server configuration
+      GF_SERVER_SERVE_FROM_SUB_PATH: ${GF_SERVE_FROM_SUB_PATH:-false}  # Explicitly disable if no subpath
+      # VictoriaMetrics plugin support
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ${GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS:-victoriametrics-datasource}
-      # Enhanced security and performance settings
+      GF_PLUGINS_PREINSTALL: grafana-piechart-panel,grafana-worldmap-panel,natel-discrete-panel,flant-statusmap-panel,vonage-status-panel,michaeldmoore-multistat-panel,grafana-polystat-panel,marcusolsson-dynamictext-panel,yesoreyeram-boomtable-panel,grafana-clock-panel,grafana-simple-json-datasource,btplc-status-dot-panel,camptocamp-prometheus-alertmanager-datasource
+      # Security settings - all required
       GF_SECURITY_COOKIE_SECURE: ${GF_SECURITY_COOKIE_SECURE:-true}
       GF_SECURITY_COOKIE_SAMESITE: ${GF_SECURITY_COOKIE_SAMESITE:-lax}
       GF_SECURITY_CONTENT_TYPE_PROTECTION: ${GF_SECURITY_CONTENT_TYPE_PROTECTION:-true}
       GF_SECURITY_X_CONTENT_TYPE_OPTIONS: ${GF_SECURITY_X_CONTENT_TYPE_OPTIONS:-nosniff}
       GF_SECURITY_X_XSS_PROTECTION: ${GF_SECURITY_X_XSS_PROTECTION:-true}
       GF_SECURITY_STRICT_TRANSPORT_SECURITY: ${GF_SECURITY_STRICT_TRANSPORT_SECURITY:-true}
+      # User management - strict settings
       GF_USERS_ALLOW_SIGN_UP: ${GF_USERS_ALLOW_SIGN_UP:-false}
       GF_USERS_ALLOW_ORG_CREATE: ${GF_USERS_ALLOW_ORG_CREATE:-false}
       GF_USERS_AUTO_ASSIGN_ORG: ${GF_USERS_AUTO_ASSIGN_ORG:-true}
       GF_USERS_AUTO_ASSIGN_ORG_ROLE: ${GF_USERS_AUTO_ASSIGN_ORG_ROLE:-Viewer}
-      # Performance settings
+      # Database performance settings
       GF_DATABASE_MAX_IDLE_CONN: ${GF_DATABASE_MAX_IDLE_CONN:-2}
       GF_DATABASE_MAX_OPEN_CONN: ${GF_DATABASE_MAX_OPEN_CONN:-0}
       GF_DATABASE_CONN_MAX_LIFETIME: ${GF_DATABASE_CONN_MAX_LIFETIME:-14400}
       # Email settings (using your contact email)
-      GF_SMTP_ENABLED: ${GF_SMTP_ENABLED:-false}
-      GF_SMTP_HOST: ${GF_SMTP_HOST:-localhost:587}
       GF_SMTP_USER: ${GF_SMTP_USER:-}
       GF_SMTP_PASSWORD: ${GF_SMTP_PASSWORD:-}
+      # SMTP settings
+      GF_SMTP_ENABLED: ${GF_SMTP_ENABLED:-false}
+      GF_SMTP_HOST: ${GF_SMTP_HOST:-localhost:587}
       GF_SMTP_FROM_ADDRESS: ${GF_SMTP_FROM_ADDRESS:-contact@bolabaden.org}
       GF_SMTP_FROM_NAME: ${GF_SMTP_FROM_NAME:-Grafana}
     configs:

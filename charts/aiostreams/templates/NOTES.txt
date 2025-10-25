@@ -1,0 +1,62 @@
+{{- /*
+NOTES for the aiostreams Helm chart.
+*/ -}}
+
+This chart deploys the AIOStreams application.
+
+{{- $envFilePath := .Values.envFilePath | default "" -}}
+{{- if and $envFilePath (not (.Files.Exists $envFilePath)) }}
+**WARNING:**
+Environment file path specified but not found: {{ $envFilePath }}
+The application may not start correctly without its environment variables.
+Please ensure the file exists at the specified path within the chart before installation.
+{{ end }}
+
+To get the Service URL (if using LoadBalancer or NodePort):
+
+{{- if contains "LoadBalancer" .Values.service.type }}
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "aiostreams.fullname" . }} --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}")
+  echo "Access AIOStreams at: http{{ if .Values.ingress.tls }}s{{ end }}://$SERVICE_IP:{{ .Values.service.port }}"
+{{- else if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "aiostreams.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo "Access AIOStreams at: http://$NODE_IP:$NODE_PORT"
+{{- else }}
+  # For ClusterIP, access via port-forwarding or Ingress
+  echo "AIOStreams service type is ClusterIP."
+  echo "Access via port-forward: kubectl port-forward svc/{{ include "aiostreams.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}"
+  echo "Then access at: http://127.0.0.1:{{ .Values.service.port }}"
+  {{- if .Values.ingress.enabled }}
+  echo "Or access via Ingress at defined hosts."
+  {{- end }}
+{{- end }}
+
+{{- if .Values.secret.create }}
+2. Environment Variables loaded from File:
+   This chart is configured to create a Secret named '{{ include "aiostreams.secretName" . }}'.
+   To achieve 1:1 functionality with the docker-compose 'env_file' directive, you MUST
+   provide the contents of the environment file during Helm installation using the '--set-file' flag.
+
+   Run helm install with the following additional flag:
+
+   --set-file secret.stringData.env=<PATH_TO_YOUR_ENV_FILE>
+
+   Replace <PATH_TO_YOUR_ENV_FILE> with the actual path to the aiostreams environment file:
+   -> ${CONFIG_PATH:-./configs}/stremio/addons/aiostreams/config/.env
+
+   Example:
+   helm install {{ .Release.Name }} . --namespace {{ .Release.Namespace }} --set-file secret.stringData.env=${CONFIG_PATH:-./configs}/stremio/addons/aiostreams/config/.env
+
+   This command instructs Helm to read the specified file and inject its contents into the
+   'env' key within the 'stringData' of the Secret resource created by this chart.
+   The deployment will then mount these variables into the container.
+{{- else }}
+2. Environment Variables:
+   Secret creation is disabled (secret.create is false).
+   If the application requires environment variables, ensure they are provided through other means
+   (e.g., an existing Secret referenced via 'existingSecret' value, although this is not the current configuration).
+{{- end }}
+
+{{- end }}
+
+{{- include "aiostreams.notes" . -}} 

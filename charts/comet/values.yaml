@@ -1,0 +1,109 @@
+# Default values for comet chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: g0ldyy/comet
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Base path for configuration files on the host, mirroring docker-compose ${CONFIG_PATH}.
+# This is used when hostPath persistence is enabled.
+configPath: "./configs"
+
+# Path to the .env file relative to the chart's root directory.
+# Helm will read this file via .Files.Get to create the necessary secret.
+# The user must place the .env file at this location within the chart structure before installing.
+# Example: charts/comet/env/config.env
+envFilePath: "env/config.env"
+# Original docker-compose path: ${CONFIG_PATH:-./configs}/stremio/addons/comet/config/.env
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 3006 # Corresponds to COMET_PORT default in docker-compose
+  targetPort: 8000 # Internal port of the comet container
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: comet.local # This needs to be set based on ${DOMAIN} or similar
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: comet-tls
+  #    hosts:
+  #      - comet.local
+
+# Persistence Configuration (defaulting to hostPath for 1:1 docker-compose bind mount)
+persistence:
+  enabled: true # Volume is defined in docker-compose
+  # hostPath is the default type, mirroring docker-compose bind mounts.
+  # Ensure the specified host path exists on the target Kubernetes nodes.
+  # The path is constructed based on configPath and cometDataSubPath.
+  storageClassName: "" # Set if using PVC instead of hostPath
+  accessMode: ReadWriteOnce # Set if using PVC
+  size: 1Gi # Set if using PVC
+  existingClaim: "" # Set if using existing PVC
+
+# Path within the container where the volume should be mounted
+volumeMountPath: /data
+# Subpath for comet data within the configPath (used for hostPath construction)
+cometDataSubPath: "stremio/addons/comet/data"
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Overrides the container name template
+containerName: comet
+
+# Default restart policy
+restartPolicy: Always 

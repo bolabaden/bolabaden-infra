@@ -9,7 +9,13 @@ volumes:
 configs: {  }
 
 
-secrets: {  }
+secrets:
+  authentik-secret-key:
+    file: ${SECRETS_PATH:?}/authentik-secret-key.txt
+  gmail-app-password:
+    file: ${SECRETS_PATH:?}/gmail-app-password.txt
+  sudo-password:
+    file: ${SECRETS_PATH:?}/sudo-password.txt
 
 
 services:
@@ -20,6 +26,7 @@ services:
       redis:
         condition: service_healthy
     image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.8.3}
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.8.3}
     container_name: authentik
     hostname: authentik
     extra_hosts:
@@ -27,26 +34,28 @@ services:
     networks:
       - backend
       - publicnet
+    secrets:
+      - authentik-secret-key
+      - gmail-app-password
+      - sudo-password
     environment:
       AUTHENTIK_REDIS__HOST: redis
       AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
       AUTHENTIK_POSTGRESQL__USER: authentik
       AUTHENTIK_POSTGRESQL__NAME: authentik
       AUTHENTIK_POSTGRESQL__PASSWORD: authentik
-      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?}
+      AUTHENTIK_SECRET_KEY: /run/secrets/authentik-secret-key
       AUTHENTIK_ERROR_REPORTING__ENABLED: true
       AUTHENTIK_EMAIL__HOST: smtp.gmail.com
       AUTHENTIK_EMAIL__PORT: 587
       AUTHENTIK_EMAIL__USERNAME: boden.crouch@gmail.com
-      AUTHENTIK_EMAIL__PASSWORD: ${GMAIL_APP_PASSWORD:?}
+      AUTHENTIK_EMAIL__PASSWORD: /run/secrets/gmail-app-password
       AUTHENTIK_EMAIL__USE_TLS: true
       AUTHENTIK_EMAIL__USE_SSL: false
       AUTHENTIK_EMAIL__TIMEOUT: 10
       AUTHENTIK_EMAIL__FROM: boden.crouch@gmail.com
       AUTHENTIK_BOOTSTRAP__EMAIL: boden.crouch@gmail.com
-      AUTHENTIK_BOOTSTRAP__PASSWORD: ${SUDO_PASSWORD:?}
-      AUTHENTIK_BOOTSTRAP_EMAIL: boden.crouch@gmail.com
-      AUTHENTIK_BOOTSTRAP_PASSWORD: ${SUDO_PASSWORD:?}
+      AUTHENTIK_BOOTSTRAP__PASSWORD: /run/secrets/sudo-password
     volumes:
       - '${CONFIG_PATH:-./volumes}/authentik/media:/media'
       - '${CONFIG_PATH:-./volumes}/authentik/custom-templates:/templates'
@@ -96,6 +105,10 @@ services:
     networks:
       - backend
       - publicnet
+    secrets:
+      - authentik-secret-key
+      - gmail-app-password
+      - sudo-password
     volumes:
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
       - '${CONFIG_PATH:-./volumes}/authentik/media:/media'
@@ -108,20 +121,18 @@ services:
       AUTHENTIK_POSTGRESQL__USER: authentik
       AUTHENTIK_POSTGRESQL__NAME: authentik
       AUTHENTIK_POSTGRESQL__PASSWORD: authentik
-      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?}
+      AUTHENTIK_SECRET_KEY: /run/secrets/authentik-secret-key
       AUTHENTIK_ERROR_REPORTING__ENABLED: true
       AUTHENTIK_EMAIL__HOST: smtp.gmail.com
       AUTHENTIK_EMAIL__PORT: 587
       AUTHENTIK_EMAIL__USERNAME: boden.crouch@gmail.com
-      AUTHENTIK_EMAIL__PASSWORD: ${GMAIL_APP_PASSWORD:?}
+      AUTHENTIK_EMAIL__PASSWORD: /run/secrets/gmail-app-password
       AUTHENTIK_EMAIL__USE_TLS: true
       AUTHENTIK_EMAIL__USE_SSL: false
       AUTHENTIK_EMAIL__TIMEOUT: 10
       AUTHENTIK_EMAIL__FROM: boden.crouch@gmail.com
       AUTHENTIK_BOOTSTRAP__EMAIL: boden.crouch@gmail.com
-      AUTHENTIK_BOOTSTRAP__PASSWORD: ${SUDO_PASSWORD:?}
-      AUTHENTIK_BOOTSTRAP_EMAIL: boden.crouch@gmail.com
-      AUTHENTIK_BOOTSTRAP_PASSWORD: ${SUDO_PASSWORD:?}
+      AUTHENTIK_BOOTSTRAP__PASSWORD: /run/secrets/sudo-password
     command: worker
     restart: always
   authentik-postgresql:

@@ -1,0 +1,87 @@
+# Default values for mediaflow-proxy chart.
+
+replicaCount: 1
+
+image:
+  repository: mhdzumair/mediaflow-proxy
+  pullPolicy: IfNotPresent
+  tag: "latest" # Corresponds to the image tag used in docker-compose
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Base path for configuration files on the host (if needed for env file location reference).
+configPath: "./configs" # Define path if needed, though not used for volumes here.
+
+# Path to the .env file relative to the chart's root directory.
+# Helm will read this file via .Files.Get to create the necessary secret.
+# The user must place the .env file at this location before installation.
+# Example: charts/mediaflow-proxy/env/mediaflow-proxy.env
+# This file should contain API_PASSWORD and ENABLE_STREAMING_PROGRESS.
+envFilePath: "env/mediaflow-proxy.env"
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8888 # Internal port from docker-compose labels
+  targetPort: 8888
+
+ingress:
+  # Ingress settings are kept for potential use.
+  # Docker-compose used Traefik labels for routing.
+  enabled: false
+  className: ""
+  annotations: {}
+    # Traefik labels from docker-compose would translate to annotations here
+    # e.g., traefik.http.routers.mediaflow-proxy.rule: Host(`mediaflow-proxy.${DOMAIN}`)
+    #       traefik.http.services.mediaflow-proxy.loadbalancer.server.port: 8888
+  hosts:
+    - host: mediaflow-proxy.local # Replace based on ${DOMAIN}
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+# Persistence Configuration
+persistence:
+  enabled: false # No volumes defined in docker-compose
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Container name override
+containerName: mediaflow-proxy
+
+# Default restart policy (docker-compose defaults to always)
+restartPolicy: Always
+
+# Network Mode Limitation:
+# docker-compose used `network_mode: service:gluetun-premiumize`.
+# This cannot be replicated directly in Kubernetes.
+# This chart deploys mediaflow-proxy in its own pod network.
+# Communication with gluetun-premiumize must happen via its Kubernetes Service name.
+networkModeLimitation: true # Informational value
+
+# Default labels from docker-compose (translated to annotations/values)
+homepage:
+  enabled: true
+  group: Media Management
+  name: MediaFlow Proxy
+  icon: mediaflow-proxy.png
+  # href: https://mediaflow-proxy.${DOMAIN}/ # Requires DOMAIN variable 
