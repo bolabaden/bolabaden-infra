@@ -113,6 +113,8 @@ services:
       - host.docker.internal:host-gateway
     networks:
       - backend
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/nuq-postgres/data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${FIRECRAWL_POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${FIRECRAWL_POSTGRES_PASSWORD:-postgres}
