@@ -26,6 +26,7 @@ services:
       redis:
         condition: service_healthy
     image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.8.3}
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2025.8.3}
     container_name: authentik
     hostname: authentik
     extra_hosts:

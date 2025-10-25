@@ -957,17 +957,17 @@ services:
     networks:
       - publicnet
     expose:
-      - 53/udp       #DNS service
-      - 80/tcp       #DNS-over-HTTP
-      - 443/tcp      #DNS-over-HTTPS
-      - 538/tcp      #DNS-over-TCP-PROXY
-      - 853/tcp      #DNS-over-TLS
-      - 853/udp      #DNS-over-QUIC
-      - 8053/tcp     #DNS-over-HTTPS
-      - 5380/tcp     #DNS web console (HTTP)
-      - 53443/tcp    #DNS web console (HTTPS)
+      - 53/udp       # DNS service
+      - 80/tcp       # DNS-over-HTTP
+      - 443/tcp      # DNS-over-HTTPS
+      - 538/tcp      # DNS-over-TCP-PROXY
+      - 853/tcp      # DNS-over-TLS
+      - 853/udp      # DNS-over-QUIC
+      - 8053/tcp     # DNS-over-HTTPS
+      - 5380/tcp     # DNS web console (HTTP)
+      - 53443/tcp    # DNS web console (HTTPS)
     ports:
-      - 53:53/udp       #DNS service
+      - 53:53/udp       # DNS service
     volumes:
       - ${CONFIG_PATH:-./volumes}/dns-server/config:/etc/dns
     labels:
