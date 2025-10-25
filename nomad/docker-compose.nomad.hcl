@@ -63,12 +63,12 @@ variable "sudo_password" {
   description = "Admin/sudo password (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
 }
 
-# Service-specific variables
-variable "mongodb_hostname" {
+variable "main_username" {
   type    = string
-  default = "mongodb"
+  default = "brunner56"
 }
 
+# Service-specific variables
 variable "redis_hostname" {
   type    = string
   default = "redis"
@@ -175,25 +175,15 @@ variable "cloudflare_zone_id" {
   description = "Cloudflare Zone ID for DNS management (defined in secrets.auto.tfvars.hcl)"
 }
 
-variable "codeserver_hashed_password" {
+variable "nginx_auth_api_key" {
   type        = string
-  description = "Code Server password (argon2 hash) (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
-}
-
-variable "codeserver_sudo_password_hash" {
-  type        = string
-  description = "Code Server sudo password (SHA-512 hash) (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
+  description = "Nginx auth middleware API key (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
 }
 
 # API Keys
 variable "openai_api_key" {
   type        = string
   description = "OpenAI API key (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
-}
-
-variable "openrouter_api_key" {
-  type        = string
-  description = "OpenRouter API key (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
 }
 
 variable "firecrawl_api_key" {
@@ -221,16 +211,6 @@ variable "open_webui_secret_key" {
   description = "Open WebUI secret key (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
 }
 
-variable "nginx_auth_api_key" {
-  type        = string
-  description = "Nginx auth middleware API key (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
-}
-
-variable "main_username" {
-  type    = string
-  default = "brunner56"
-}
-
 # WARP Variables
 variable "warp_license_key" {
   type    = string
@@ -252,11 +232,6 @@ variable "warp_sleep" {
   default = 2
 }
 
-variable "gost_socks5_port" {
-  type    = number
-  default = 1080
-}
-
 # Stremio/Media Variables
 variable "aiostreams_secret_key" {
   type        = string
@@ -266,26 +241,6 @@ variable "aiostreams_secret_key" {
 variable "aiostreams_addon_password" {
   type        = string
   description = "AIOStreams addon password (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
-}
-
-variable "aiostreams_port" {
-  type    = number
-  default = 3000
-}
-
-variable "mediafusion_secret_key" {
-  type        = string
-  description = "MediaFusion secret key (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
-}
-
-variable "mediaflow_proxy_port" {
-  type    = number
-  default = 8888
-}
-
-variable "mediaflow_proxy_api_password" {
-  type        = string
-  description = "MediaFlow proxy API password (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
 }
 
 variable "stremthru_proxy_auth" {
@@ -307,11 +262,6 @@ variable "rclone_port" {
 variable "realdebrid_api_key" {
   type        = string
   description = "Real-Debrid API key (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
-}
-
-variable "realdebrid_token" {
-  type        = string
-  description = "Real-Debrid token (alias for API key) (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
 }
 
 variable "alldebrid_api_key" {
@@ -378,11 +328,6 @@ variable "crowdsec_lapi_key" {
   description = "CrowdSec LAPI key (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
 }
 
-variable "crowdsec_enroll_key" {
-  type        = string
-  description = "CrowdSec enrollment key (SENSITIVE - defined in secrets.auto.tfvars.hcl)"
-}
-
 variable "crowdsec_bouncer_enabled" {
   type    = string
   default = "true"
@@ -412,12 +357,6 @@ variable "traefik_http_challenge" {
 variable "traefik_tls_challenge" {
   type    = string
   default = "false"
-}
-
-# Paths
-variable "certs_path" {
-  type    = string
-  default = "/home/ubuntu/my-media-stack/volumes/traefik/certs"
 }
 
 job "docker-compose-stack" {
@@ -2491,7 +2430,7 @@ EOF
         cap_add = ["NET_ADMIN"]
         volumes = [
           #"${var.docker_socket}:/var/run/docker.sock:ro",
-          "${var.config_path}/traefik/dynamic:/traefik/dynamic",
+          # Dynamic config is now generated via template in /local/dynamic/
           "${var.config_path}/traefik/certs:/certs",
           "${var.config_path}/traefik/plugins-local:/plugins-local",
           "${var.config_path}/traefik/logs:/var/log/traefik:rw"
@@ -2553,7 +2492,7 @@ EOF
           "--providers.consulCatalog.defaultRule=Host(`{{ normalize .Name }}.${var.domain}`) || Host(`{{ normalize .Name }}.${var.ts_hostname}.${var.domain}`)",
           "--providers.consulCatalog.watch=true",
           "--providers.consulCatalog.prefix=traefik",
-          "--providers.file.directory=/traefik/dynamic/",
+          "--providers.file.directory=/local/dynamic/",
           "--providers.file.watch=true",
           "--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin",
           "--experimental.plugins.bouncer.version=v1.4.5",
@@ -4129,6 +4068,7 @@ EOF
     network {
       mode = "bridge"
       
+      port "stremio_webui" { to = 8080 }
       port "stremio_http" {
         static = 11470
         to = 11470
@@ -4145,7 +4085,7 @@ EOF
 
       config {
         image = "ghcr.io/tsaridas/stremio-docker:main"
-        ports = ["stremio_http", "stremio_https"]
+        ports = ["stremio_webui", "stremio_http", "stremio_https"]
         volumes = [
           "${var.config_path}/stremio/root/.stremio-server:/root/.stremio-server"
         ]
@@ -4171,18 +4111,41 @@ EOF
       service {
 
         name = "stremio"
-        port = "stremio_http"
+        port = "stremio_webui"
         tags = [
           "stremio",
           "${var.domain}",
           "traefik.enable=true",
+          # Redirect stremio-web.$DOMAIN to stremio.$DOMAIN
           "traefik.http.middlewares.stremio-web-redirect.redirectRegex.regex=^(http|https)://stremio(-web)\\.(${var.domain}|${var.ts_hostname}\\.${var.domain})(.*)$$",
           "traefik.http.middlewares.stremio-web-redirect.redirectRegex.replacement=$$1://stremio.$$3$$4",
           "traefik.http.middlewares.stremio-web-redirect.redirectRegex.permanent=false",
-          "traefik.http.routers.stremio.service=stremio",
+          # Redirect stremio.$DOMAIN/shell-v4.4 to /shell
+          "traefik.http.middlewares.stremio-shell-redirect.redirectRegex.regex=^(http|https)://stremio\\.(${var.domain}|${var.ts_hostname}\\.${var.domain})(.*)$$",
+          "traefik.http.middlewares.stremio-shell-redirect.redirectRegex.replacement=$$1://stremio.$$2$$3",
+          "traefik.http.middlewares.stremio-shell-redirect.redirectRegex.permanent=false",
+          # Redirect to add/replace streamingServer parameter for shell URLs
+          "traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.regex=^(http|https)://stremio\\.(${var.domain}|${var.ts_hostname}\\.${var.domain})(/shell[^#?]*)(\\\\?[^#]*?streamingServer=[^&#]*)?([^#]*)(#.*)?$$",
+          "traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.replacement=$$1://stremio.$$2$$3?streamingServer=https%3A%2F%2Fstremio.$$2$$5$$6",
+          "traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.permanent=false",
+          # Stremio Web UI (port 8080)
+          "traefik.http.routers.stremio.service=stremio@consulcatalog",
           "traefik.http.routers.stremio.rule=Host(`stremio-web.${var.domain}`) || Host(`stremio-web.${var.ts_hostname}.${var.domain}`) || Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.stremio.middlewares=stremio-web-redirect@consulcatalog,stremio-shell-redirect@consulcatalog,stremio-streaming-server-redirect@consulcatalog",
           "traefik.http.services.stremio.loadbalancer.server.scheme=https",
           "traefik.http.services.stremio.loadbalancer.server.port=8080",
+          # Stremio HTTP Streaming Server (port 11470)
+          "traefik.http.routers.stremio-http11470.service=stremio-http11470@consulcatalog",
+          "traefik.http.services.stremio-http11470.loadbalancer.server.scheme=http",
+          "traefik.http.services.stremio-http11470.loadbalancer.server.port=11470",
+          # Stremio API/streaming routes to 11470
+          "traefik.http.routers.stremio-http11470.rule=(Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts_hostname}.${var.domain}`)) && ( PathPrefix(`/hlsv2`) || PathPrefix(`/casting`) || PathPrefix(`/local-addon`) || PathPrefix(`/proxy`) || PathPrefix(`/rar`) || PathPrefix(`/zip`) || PathPrefix(`/settings`) || PathPrefix(`/create`) || PathPrefix(`/removeAll`) || PathPrefix(`/samples`) || PathPrefix(`/probe`) || PathPrefix(`/subtitlesTracks`) || PathPrefix(`/opensubHash`) || PathPrefix(`/subtitles`) || PathPrefix(`/network-info`) || PathPrefix(`/device-info`) || PathPrefix(`/get-https`) || PathPrefix(`/hwaccel-profiler`) || PathPrefix(`/status`) || PathPrefix(`/exec`) || PathPrefix(`/stream`) || PathRegexp(`^/[^/]+/(stats\\\\.json|create|remove|destroy)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stats\\\\.json|hls\\\\.m3u8|master\\\\.m3u8|stream\\\\.m3u8|dlna|thumb\\\\.jpg)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+\\\\.m3u8|stream-[^/]+\\\\.m3u8|subs-[^/]+\\\\.m3u8)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+|stream-[^/]+)/[^/]+\\\\.(ts|mp4)$$`) || PathRegexp(`^/yt/[^/]+(\\\\.json)?$$`) || Path(`/thumb.jpg`) || Path(`/stats.json`) )",
+          # Stremio HTTPS Streaming Server (port 12470)
+          "traefik.http.routers.stremio-https12470.service=stremio-https12470@consulcatalog",
+          "traefik.http.services.stremio-https12470.loadbalancer.server.scheme=https",
+          "traefik.http.services.stremio-https12470.loadbalancer.server.port=12470",
+          # Stremio API/streaming routes to 12470
+          "traefik.http.routers.stremio-https12470.rule=(Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts_hostname}.${var.domain}`)) && ( PathPrefix(`/hlsv2`) || PathPrefix(`/casting`) || PathPrefix(`/local-addon`) || PathPrefix(`/proxy`) || PathPrefix(`/rar`) || PathPrefix(`/zip`) || PathPrefix(`/settings`) || PathPrefix(`/create`) || PathPrefix(`/removeAll`) || PathPrefix(`/samples`) || PathPrefix(`/probe`) || PathPrefix(`/subtitlesTracks`) || PathPrefix(`/opensubHash`) || PathPrefix(`/subtitles`) || PathPrefix(`/network-info`) || PathPrefix(`/device-info`) || PathPrefix(`/get-https`) || PathPrefix(`/hwaccel-profiler`) || PathPrefix(`/status`) || PathPrefix(`/exec`) || PathPrefix(`/stream`) || PathRegexp(`^/[^/]+/(stats\\\\.json|create|remove|destroy)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stats\\\\.json|hls\\\\.m3u8|master\\\\.m3u8|stream\\\\.m3u8|dlna|thumb\\\\.jpg)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+\\\\.m3u8|stream-[^/]+\\\\.m3u8|subs-[^/]+\\\\.m3u8)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+|stream-[^/]+)/[^/]+\\\\.(ts|mp4)$$`) || PathRegexp(`^/yt/[^/]+(\\\\.json)?$$`) || Path(`/thumb.jpg`) || Path(`/stats.json`) )",
           "homepage.group=Media Streaming Platforms",
           "homepage.name=Stremio",
           "homepage.icon=stremio.png",
