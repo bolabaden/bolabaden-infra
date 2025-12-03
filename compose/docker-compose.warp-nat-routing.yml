@@ -512,13 +512,6 @@ services:
       GOST_ARGS: ${GOST_ARGS:--L :${GOST_SOCKS5_PORT:-1080}}
       # If set, will register consumer account (WARP or WARP+, in contrast to Zero Trust) even when mdm.xml exists.
       # You usually don't need this, as mdm.xml are usually used for Zero Trust.
-    # Simple healthcheck - just check if the container is running, not WARP connection status
-    healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep -q warp-svc || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
       # However, some users may want to adjust advanced settings in mdm.xml while still using consumer account.
       #REGISTER_WHEN_MDM_EXISTS: ""
       # If set, will work as warp mode and turn NAT on.
