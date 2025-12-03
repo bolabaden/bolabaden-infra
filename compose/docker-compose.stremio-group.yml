@@ -425,21 +425,12 @@ services:
       traefik.enable: true
       traefik.http.routers.jackett.rule: Host(`jackett.$DOMAIN`) || Host(`jackett.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.services.jackett.loadbalancer.server.port: 9117
-      homepage.group: Source Aggregator
-      homepage.name: Jackett Indexer
-      homepage.icon: jackett.png
-      homepage.href: https://jackett.$DOMAIN/
-      homepage.description: Connects your download applications with various source providers and indexers, making it easier to find and download content through your download clients.
-      homepage.weight: 1
-      # Jackett widget disabled - the /all endpoint queries ALL indexers which causes timeouts (100+ seconds)
-      # Homepage SSR cannot handle these timeouts and crashes with TypeError
-      # Widget shows indexer count anyway, not very useful vs just linking to Jackett UI
-      # homepage.widget.type: jackett
-      # homepage.widget.url: ${JACKETT_INTERNAL_URL:-http://jackett:9117}
-      # homepage.widget.key: $JACKETT_API_KEY
       kuma.jackett.http.name: jackett.$TS_HOSTNAME.$DOMAIN
       kuma.jackett.http.url: https://jackett.$DOMAIN/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=$JACKETT_API_KEY
       kuma.jackett.http.interval: 30
+      # Homepage labels completely removed - Jackett widget causes TypeError due to 100+ second /all endpoint timeouts
+      # Jackett is still accessible via direct URL, just not shown on Homepage dashboard
+      # Per Jackett documentation, the /all endpoint should not be used - add indexers individually to client apps
     healthcheck:
       test: ["CMD-SHELL", "curl -fs http://127.0.0.1:9117/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=$JACKETT_API_KEY > /dev/null 2>&1 || exit 1"]
       interval: 30s
@@ -478,9 +469,12 @@ services:
       homepage.href: https://prowlarr.$DOMAIN/
       homepage.description: Indexer proxy and manager; normalizes indexers and feeds PVR apps like Sonarr/Radarr
       homepage.weight: 1
-      homepage.widget.type: prowlarr
-      homepage.widget.url: ${PROWLARR_INTERNAL_URL:-http://prowlarr:9696}
-      homepage.widget.key: $PROWLARR_API_KEY
+      # Prowlarr widget disabled - /indexerstats endpoint returns 500 Internal Server Error
+      # This causes Homepage to receive null data and crash with TypeError
+      # Prowlarr is fully functional, just the widget API is broken
+      # homepage.widget.type: prowlarr
+      # homepage.widget.url: ${PROWLARR_INTERNAL_URL:-http://prowlarr:9696}
+      # homepage.widget.key: $PROWLARR_API_KEY
       kuma.prowlarr.http.name: prowlarr.$TS_HOSTNAME.$DOMAIN
       kuma.prowlarr.http.url: https://prowlarr.$DOMAIN/api/v1/system/status
       kuma.prowlarr.http.interval: 60
