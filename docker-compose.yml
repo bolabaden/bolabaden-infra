@@ -138,6 +138,66 @@ configs:
         - searxng:
           - abbr: SE
             href: https://searxng.$DOMAIN/
+  jackett-serverconfig.json:
+    content: |
+      {
+        "Port": 9117,
+        "LocalBindAddress": "127.0.0.1",
+        "AllowExternal": true,
+        "AllowCORS": true,
+        "APIKey": "$${JACKETT_API_KEY:-nnx0n84pcj7umynyd2pbid2nl1zzuemz}",
+        "AdminPassword": "",
+        "InstanceId": "jackett-bolabaden-$${DOMAIN}",
+        "BlackholeDir": "/blackhole",
+        "UpdateDisabled": false,
+        "UpdatePrerelease": false,
+        "BasePathOverride": "",
+        "BaseUrlOverride": "",
+        "CacheEnabled": true,
+        "CacheTtl": 2100,
+        "CacheMaxResultsPerIndexer": 1000,
+        "FlareSolverrUrl": "http://flaresolverr:8191",
+        "FlareSolverrMaxTimeout": 55000,
+        "OmdbApiKey": "",
+        "OmdbApiUrl": "",
+        "ProxyType": -1,
+        "ProxyUrl": "",
+        "ProxyPort": null,
+        "ProxyUsername": "",
+        "ProxyPassword": "",
+        "ProxyIsAnonymous": true
+      }
+  jackett-indexer-blacklist.txt:
+    content: |
+      # List of slow/broken indexers to exclude from Jackett provisioning
+      # These indexers cause timeouts and performance issues
+      audiobookbay
+      audiobook bay
+      ebookbay
+      ebook bay
+  jackett-init.sh:
+    content: |
+      #!/usr/bin/with-contenv bash
+      # Jackett initialization script - provisions config and removes slow indexers
+      
+      # Copy default ServerConfig if not exists
+      mkdir -p /config/Jackett
+      if [ ! -f /config/Jackett/ServerConfig.json ]; then
+        cp /defaults/ServerConfig.json /config/Jackett/ServerConfig.json
+        chown abc:abc /config/Jackett/ServerConfig.json
+        echo "Provisioned Jackett ServerConfig.json"
+      fi
+      
+      # Remove blacklisted indexers on every startup (self-healing)
+      if [ -f /indexer-blacklist.txt ]; then
+        while IFS= read -r indexer || [ -n "$$indexer" ]; do
+          # Skip comments and empty lines
+          [[ "$$indexer" =~ ^#.*$$ ]] && continue
+          [[ -z "$$indexer" ]] && continue
+          # Remove the indexer files (both active and backups)
+          find /config/Jackett/Indexers -iname "*$$indexer*.json*" -delete 2>/dev/null && echo "Removed slow indexer: $$indexer"
+        done < /indexer-blacklist.txt
+      fi
 
 
 services:
