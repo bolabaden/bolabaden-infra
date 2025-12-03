@@ -867,6 +867,7 @@ services:
     image: bolabaden/kotormodsync-telemetry-auth:latest
     container_name: telemetry-auth-test
     hostname: telemetry-auth
+    user: "0:0"  # Run as root to read secrets
     ports:
       - "8080:8080"
     secrets:
