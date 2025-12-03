@@ -877,7 +877,7 @@ services:
     restart: always
   tinyauth:
     # 🔹🔹 TinyAuth 🔹🔹
-    image: ghcr.io/steveiliop56/tinyauth:v3
+    image: ghcr.io/steveiliop56/tinyauth:latest
     container_name: tinyauth
     hostname: auth
     extra_hosts:
@@ -929,7 +929,7 @@ services:
   crowdsec:
     # 🔹🔹 CrowdSec 🔹🔹
     # Highly recommend this guide: https://blog.lrvt.de/configuring-crowdsec-with-traefik/
-    image: docker.io/crowdsecurity/crowdsec:v1.7.0
+    image: docker.io/crowdsecurity/crowdsec:v1.7
     container_name: crowdsec
     hostname: crowdsec
     extra_hosts:
@@ -1007,7 +1007,7 @@ services:
     depends_on:
       - crowdsec
       - dockerproxy-ro
-    image: docker.io/traefik:v3.5.2  # Built on 2025-09-09T10:16:55Z
+    image: docker.io/traefik:v3.2  # Latest v3.2 stable
     container_name: traefik
     hostname: traefik
     extra_hosts:
@@ -1138,7 +1138,7 @@ services:
     restart: always
   whoami:
     # 🔹🔹 Whoami 🔹🔹
-    image: docker.io/traefik/whoami:v1.11
+    image: docker.io/traefik/whoami:v1
     container_name: whoami
     hostname: whoami
     extra_hosts:

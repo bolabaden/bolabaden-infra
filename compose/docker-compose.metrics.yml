@@ -4458,7 +4458,7 @@ configs:
 services:
   # VictoriaMetrics initialization container
   init_victoriametrics:
-    image: docker.io/victoriametrics/victoria-metrics:v1.119.0
+    image: docker.io/victoriametrics/victoria-metrics:latest
     container_name: init_victoriametrics
     hostname: init_victoriametrics
     extra_hosts:
@@ -4473,7 +4473,7 @@ services:
     depends_on:
       init_victoriametrics:
         condition: service_completed_successfully
-    image: docker.io/victoriametrics/victoria-metrics:v1.119.0
+    image: docker.io/victoriametrics/victoria-metrics:latest
     container_name: victoriametrics
     hostname: victoriametrics
     extra_hosts:

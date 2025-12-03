@@ -365,8 +365,8 @@ services:
       - publicnet
     expose:
       - 3000
-    extra_hosts:
-      - host.docker.internal:host-gateway
+    # extra_hosts:
+    #   - host.docker.internal:host-gateway
     environment:
       <<: *common-env
       NODE_ENV: production

@@ -1028,7 +1028,7 @@ services:
           memory: 20M
     restart: always
   riven-db:
-    image: 'postgres:16.3-alpine3.20'
+    image: 'postgres:17-alpine'
     container_name: riven-db
     hostname: riven-db
     extra_hosts:
