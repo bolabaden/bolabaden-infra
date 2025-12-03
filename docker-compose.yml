@@ -170,18 +170,23 @@ configs:
   jackett-indexer-blacklist.txt:
     content: |
       # List of slow/broken indexers to exclude from Jackett provisioning
-      # These indexers cause timeouts and performance issues
+      # These indexers cause timeouts (100+ seconds) and degrade Homepage performance
+      # Remove these to ensure fast widget API responses
       audiobookbay
       audiobook bay
       ebookbay
       ebook bay
+      animetosho
+      anime tosho
+      internetarchive
+      internet archive
   jackett-init.sh:
     content: |
       #!/usr/bin/with-contenv bash
       # Jackett initialization script - provisions config and removes slow indexers
       
       # Copy default ServerConfig if not exists
-      mkdir -p /config/Jackett
+      mkdir -p /config/Jackett /config/Jackett/Indexers
       if [ ! -f /config/Jackett/ServerConfig.json ]; then
         cp /defaults/ServerConfig.json /config/Jackett/ServerConfig.json
         chown abc:abc /config/Jackett/ServerConfig.json
@@ -192,10 +197,17 @@ configs:
       if [ -f /indexer-blacklist.txt ]; then
         while IFS= read -r indexer || [ -n "$$indexer" ]; do
           # Skip comments and empty lines
-          [[ "$$indexer" =~ ^#.*$$ ]] && continue
-          [[ -z "$$indexer" ]] && continue
-          # Remove the indexer files (both active and backups)
-          find /config/Jackett/Indexers -iname "*$$indexer*.json*" -delete 2>/dev/null && echo "Removed slow indexer: $$indexer"
+          case "$$indexer" in
+            \#*|"") continue ;;
+          esac
+          # Remove the indexer files (both active and backups) - use exact match
+          removed=0
+          for file in /config/Jackett/Indexers/*.json*; do
+            basename=$$(basename "$$file")
+            if echo "$$basename" | grep -qi "$$indexer"; then
+              rm -f "$$file" && echo "Removed slow indexer file: $$basename" && removed=1
+            fi
+          done
         done < /indexer-blacklist.txt
       fi
 
