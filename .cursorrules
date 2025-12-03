@@ -26,6 +26,38 @@ Example: `git commit -m "fix: add healthcheck and self-healing to critical infra
 
 ---
 
+## ⚠️ CRITICAL: Healthcheck Requirements ⚠️
+
+**MANDATORY**: ALL Docker services MUST have comprehensive, exhaustive healthchecks. 
+
+**NEVER:**
+- ❌ Disable healthchecks
+- ❌ Comment out healthchecks
+- ❌ Use simplified TCP-only checks (nc -z)
+- ❌ Remove healthchecks to "fix" issues
+
+**ALWAYS:**
+- ✅ Use full HTTP/HTTPS endpoint checks that validate the service actually works
+- ✅ Include proper intervals, timeouts, retries, and start_period
+- ✅ Test actual service functionality, not just port availability
+- ✅ Add deunhealth labels for self-healing: `deunhealth.restart.on.unhealthy: "true"`
+- ✅ If a container lacks health check tools (curl/wget), install them in the healthcheck command
+- ✅ Use comprehensive healthchecks like: `wget --spider`, `curl -f`, API endpoint validation
+
+**Example of PROPER healthcheck:**
+```yaml
+healthcheck:
+  test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 30s
+```
+
+**If "fix" means disabling healthchecks, you're doing it WRONG. Fix the actual problem.**
+
+---
+
 # Python Best Practices
 
 ## Project Structure
