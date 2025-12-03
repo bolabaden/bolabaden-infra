@@ -9,6 +9,10 @@ x-common-env: &common-env
   UMASK: ${UMASK:-002}
 
 
+secrets:
+  signing_secret:
+    file: ${SECRETS_PATH:?}/signing_secret.txt
+
 
 networks:  # https://docs.docker.com/engine/network/drivers/bridge/#differences-between-user-defined-bridges-and-the-default-bridge
   warp-nat-net:
@@ -43,7 +47,7 @@ networks:  # https://docs.docker.com/engine/network/drivers/bridge/#differences-
 
 
 include:
-  - compose/docker-compose.authentik.yml
+#  - compose/docker-compose.authentik.yml
   - compose/docker-compose.coolify-proxy.yml
   - compose/docker-compose.firecrawl.yml
   - compose/docker-compose.headscale.yml
@@ -856,6 +860,30 @@ services:
 
     restart: always
 
+  telemetry-auth:
+    build:
+      context: projects/kotormodsync/telemetry-auth
+      dockerfile: Dockerfile
+    image: bolabaden/kotormodsync-telemetry-auth:latest
+    container_name: telemetry-auth-test
+    hostname: telemetry-auth
+    ports:
+      - "8080:8080"
+    secrets:
+      - signing_secret
+    environment:
+      AUTH_SERVICE_PORT: 8080
+      KOTORMODSYNC_SECRET_FILE: /run/secrets/signing_secret
+      REQUIRE_AUTH: ${REQUIRE_AUTH:-true}
+      MAX_TIMESTAMP_DRIFT: ${MAX_TIMESTAMP_DRIFT:-300}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
   redis:
     # 🔹🔹 Redis 🔹🔹
     image: docker.io/redis:alpine
