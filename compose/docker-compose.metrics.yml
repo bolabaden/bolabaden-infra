@@ -4833,6 +4833,14 @@ services:
       prometheus.io/scrape: true
       prometheus.io/port: 8080
       prometheus.io/path: metrics
+      deunhealth.restart.on.unhealthy: "true"
+    healthcheck:
+      # Comprehensive healthcheck - install wget and validate cAdvisor metrics endpoint
+      test: ["CMD-SHELL", "command -v wget >/dev/null || (apt-get update >/dev/null 2>&1 && apt-get install -y wget >/dev/null 2>&1); wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/metrics || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     restart: always
   loki:  # Logs
     image: docker.io/grafana/loki
