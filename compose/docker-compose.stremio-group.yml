@@ -431,9 +431,12 @@ services:
       homepage.href: https://jackett.$DOMAIN/
       homepage.description: Connects your download applications with various source providers and indexers, making it easier to find and download content through your download clients.
       homepage.weight: 1
-      homepage.widget.type: jackett
-      homepage.widget.url: ${JACKETT_INTERNAL_URL:-http://jackett:9117}
-      homepage.widget.key: $JACKETT_API_KEY
+      # Jackett widget disabled - the /all endpoint queries ALL indexers which causes timeouts (100+ seconds)
+      # Homepage SSR cannot handle these timeouts and crashes with TypeError
+      # Widget shows indexer count anyway, not very useful vs just linking to Jackett UI
+      # homepage.widget.type: jackett
+      # homepage.widget.url: ${JACKETT_INTERNAL_URL:-http://jackett:9117}
+      # homepage.widget.key: $JACKETT_API_KEY
       kuma.jackett.http.name: jackett.$TS_HOSTNAME.$DOMAIN
       kuma.jackett.http.url: https://jackett.$DOMAIN/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=$JACKETT_API_KEY
       kuma.jackett.http.interval: 30
