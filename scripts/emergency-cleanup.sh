@@ -20,7 +20,7 @@ echo "Stopping all containers..."
 docker stop $(docker ps -q) 2>/dev/null || true
 
 echo "Pruning system (aggressive)..."
-docker system prune -af --volumes
+docker system prune -af --volumes || true
 
 echo "Cleaning application caches..."
 sudo rm -rf /opt/docker/data/prometheus/data/wal/* || true
@@ -28,7 +28,7 @@ sudo find /opt/docker/data/stremio -type f -mtime +7 -delete || true
 sudo rm -rf /opt/docker/data/open-webui/cache/*.tmp || true
 
 echo "Cleaning system caches..."
-sudo journalctl --vacuum-time=7d
+sudo journalctl --vacuum-time=7d || true
 sudo apt-get clean || true
 npm cache clean --force || true
 rm -rf ~/.cache/uv/archive-v0/* || true
