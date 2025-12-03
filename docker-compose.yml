@@ -86,9 +86,9 @@ configs:
       # https://gethomepage.dev/configs/docker/
 
       my-docker:
-        socket: /var/run/docker.sock
-      #  host: dockerproxy
-      #  port: 2375
+      #  socket: /var/run/docker.sock
+        host: dockerproxy-ro
+        port: 2375
   gethomepage-widgets.yaml:
     content: |
       ---
@@ -470,6 +470,9 @@ services:
 
   homepage:
     # 🔹🔹 Homepage 🔹🔹  # https://github.com/gethomepage/homepage
+    depends_on:
+      dockerproxy-ro:
+        condition: service_healthy
     image: ghcr.io/gethomepage/homepage
     container_name: homepage
     hostname: homepage
@@ -477,6 +480,7 @@ services:
       - host.docker.internal:host-gateway
     networks:
       - backend
+      - default
       - publicnet
     configs:
       - source: gethomepage-custom.css
@@ -499,10 +503,10 @@ services:
         mode: 0777
     volumes:
       # DO NOT create a bind mount to the entire /app/public/ directory.
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+      #- ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
       - ${CONFIG_PATH:-./volumes}/homepage:/app/config
     environment:
-      #DOCKER_HOST: tcp://dockerproxy-ro:2375  # Point to proxy instead of socket
+      DOCKER_HOST: tcp://dockerproxy-ro:2375  # Point to proxy instead of socket
       HOMEPAGE_ALLOWED_HOSTS: "*"
       HOMEPAGE_VAR_TITLE: Bolabaden
       HOMEPAGE_VAR_SEARCH_PROVIDER: duckduckgo
@@ -516,6 +520,8 @@ services:
       #      HOMEPAGE_VAR_WEATHER_TIME: ""
       HOMEPAGE_VAR_WEATHER_UNIT: fahrenheit
     labels:
+      # Auto-restart on unhealthy state
+      deunhealth.restart.on.unhealthy: "true"
       traefik.enable: true
       traefik.http.services.homepage.loadbalancer.server.port: 3000
       kuma.homepage.http.name: homepage.$TS_HOSTNAME.$DOMAIN
@@ -523,8 +529,10 @@ services:
       kuma.homepage.http.interval: 30
     healthcheck:  # docker exec homepage ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1"]
+      interval: 30s
       timeout: 15s
       retries: 3
+      start_period: 30s
     cpus: 0.25
     mem_reservation: 128M
     mem_limit: 1G
