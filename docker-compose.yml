@@ -193,9 +193,11 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1m"
-        max-file: "1"
+        max-size: "10m"
+        max-file: "3"
     labels:
+      # Auto-restart on unhealthy state
+      deunhealth.restart.on.unhealthy: "true"
       traefik.enable: true
       traefik.http.services.searxng.loadbalancer.server.port: ${SEARXNG_PORT:-8080}
       homepage.group: Search
@@ -208,8 +210,10 @@ services:
       kuma.searxng.http.interval: 30
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${SEARXNG_PORT:-8080}/ || exit 1"]
+      interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 30s
     restart: always
 
   code-server:
@@ -410,6 +414,15 @@ services:
       EVENTS: 1
       INFO: 1
       DISABLE_IPV6: ${DISABLE_IPV6:-0}
+    labels:
+      # Auto-restart on unhealthy state (requires deunhealth or autoheal container)
+      deunhealth.restart.on.unhealthy: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:2375/_ping > /dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     restart: always
   dozzle:
     # 🔹🔹 Dozzle 🔹🔹

@@ -1005,8 +1005,10 @@ services:
     # 🔹🔹 Traefik 🔹🔹
     # https://doc.traefik.io
     depends_on:
-      - crowdsec
-      - dockerproxy-ro
+      crowdsec:
+        condition: service_started
+      dockerproxy-ro:
+        condition: service_healthy
     image: docker.io/traefik:latest
     container_name: traefik
     hostname: traefik
