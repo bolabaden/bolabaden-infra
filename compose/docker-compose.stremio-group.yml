@@ -463,21 +463,12 @@ services:
       traefik.enable: true
       traefik.http.routers.prowlarr.rule: Host(`prowlarr.$DOMAIN`) || Host(`prowlarr.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.services.prowlarr.loadbalancer.server.port: 9696
-      homepage.group: Indexers
-      homepage.name: Prowlarr
-      homepage.icon: prowlarr.png
-      homepage.href: https://prowlarr.$DOMAIN/
-      homepage.description: Indexer proxy and manager; normalizes indexers and feeds PVR apps like Sonarr/Radarr
-      homepage.weight: 1
-      # Prowlarr widget disabled - /indexerstats endpoint returns 500 Internal Server Error
-      # This causes Homepage to receive null data and crash with TypeError
-      # Prowlarr is fully functional, just the widget API is broken
-      # homepage.widget.type: prowlarr
-      # homepage.widget.url: ${PROWLARR_INTERNAL_URL:-http://prowlarr:9696}
-      # homepage.widget.key: $PROWLARR_API_KEY
       kuma.prowlarr.http.name: prowlarr.$TS_HOSTNAME.$DOMAIN
       kuma.prowlarr.http.url: https://prowlarr.$DOMAIN/api/v1/system/status
       kuma.prowlarr.http.interval: 60
+      # ALL Homepage labels removed - /indexerstats API endpoint returns 500 Internal Server Error
+      # Prowlarr is fully functional and accessible via https://prowlarr.bolabaden.org
+      # Just not shown on Homepage dashboard due to broken widget API
     mem_limit: 6G
     mem_reservation: 128M
     cpus: 2.0
