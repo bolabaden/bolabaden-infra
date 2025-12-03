@@ -96,13 +96,13 @@ configs:
       # https://gethomepage.dev/configs/info-widgets/
 
       - resources:
-        cpu: true
-        memory: true
-        disk: /
+          cpu: true
+          memory: true
+          disk: /
 
       - search:
-        provider: duckduckgo
-        target: _blank
+          provider: duckduckgo
+          target: _blank
   gethomepage-settings.yaml:
     content: |
       ---
