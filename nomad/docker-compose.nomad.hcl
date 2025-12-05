@@ -1660,47 +1660,54 @@ EOF
     }
   }
 
-  # Cloudflare Ddns Group (temporarily disabled)
-  # group "cloudflare-ddns-group" {
-  #   count = 1
+  # Cloudflare Ddns Group - 1:1 with Docker
+  group "cloudflare-ddns-group" {
+    count = 1
 
-  #   network {
-  #     mode = "host"
-  #   }
+    network {
+      mode = "host"
+    }
 
-  #   # Cloudflare DDNS
-  #   task "cloudflare-ddns" {
-  #     driver = "docker"
+    # Cloudflare DDNS - Copied verbatim from docker-compose.coolify-proxy.yml
+    task "cloudflare-ddns" {
+      driver = "docker"
 
-  #     config {
-  #       image       = "docker.io/favonia/cloudflare-ddns:1"
-  #       network_mode = "host"
-  #       #read_only    = true read_only not supported in Nomad Docker driver
-  #       cap_drop     = ["all"]
-  #       #security_opt = ["no-new-privileges:true"] security_opt not supported in Nomad Docker driver
-  #       labels = {
-  #         "com.docker.compose.project" = "coolify-proxy-group"
-  #         "com.docker.compose.service" = "cloudflare-ddns"
-  #       }
-  #     }
+      config {
+        image        = "docker.io/favonia/cloudflare-ddns:1"
+        network_mode = "host"
+        # read_only = true  # Not supported in Nomad Docker driver
+        cap_drop     = ["all"]
+        # security_opt = ["no-new-privileges:true"]  # Not supported in Nomad Docker driver
+        labels = {
+          "com.docker.compose.project" = "coolify-proxy-group"
+          "com.docker.compose.service" = "cloudflare-ddns"
+        }
+      }
 
-  #     env {
-  #       TZ                     = var.tz
-  #       CLOUDFLARE_API_TOKEN   = var.cloudflare_api_token
-  #       DOMAINS                = "${node.unique.name}.${var.domain},*.${node.unique.name}.${var.domain}"
-  #       PROXIED                = "is(${var.domain})||is(*.${var.domain})"
-  #       TTL                    = "1"
-  #       RECORD_COMMENT         = "Updated by Cloudflare DDNS on server ${node.unique.name}.${var.domain}"
-  #     }
+      env {
+        TZ                       = var.tz
+        CLOUDFLARE_API_TOKEN     = var.cloudflare_api_token
+        DOMAINS                  = "${node.unique.name}.${var.domain},*.${node.unique.name}.${var.domain}"
+        PROXIED                  = "is(${var.domain})||is(*.${var.domain})"
+        TTL                      = "1"
+        RECORD_COMMENT           = "Updated by Cloudflare DDNS on server `${node.unique.name}.${var.domain}`"
+      }
 
-  #     resources {
-  #       cpu        = 1
-  #       memory     = 256
-  #       memory_max = 0
-  #     
-  #     }
-  #   }
-  # }
+      resources {
+        cpu        = 1
+        memory     = 256
+        memory_max = 0
+      }
+
+      service {
+        name = "cloudflare-ddns"
+        tags = [
+          "cloudflare-ddns",
+          "${var.domain}"
+        ]
+      }
+    }
+  }
 
   # Nginx Traefik Extensions Group
   group "nginx-traefik-extensions-group" {
@@ -3265,7 +3272,9 @@ EOF
         ports = ["headscale_stun", "headscale_http", "headscale_metrics", "headscale_grpc"]
         command = "serve"
         args    = ["--config", "/etc/headscale/config.yaml"]
+        extra_hosts = ["host.docker.internal:host-gateway"]
         volumes = [
+          "${var.root_path}/certs/private/${var.domain}.key:/var/lib/headscale/private.key",
           "${var.config_path}/headscale/config:/etc/headscale",
           "${var.config_path}/headscale/lib:/var/lib/headscale",
           "${var.config_path}/headscale/run:/var/run/headscale"
@@ -3589,14 +3598,10 @@ EOF
       }
 
       service {
-
         name = "headscale-server"
         port = "headscale_http"
         tags = [
-          "headscale-server",
-          "${var.domain}",
           "traefik.enable=true",
-          # Redirect tailscale's expected /admin to headscale ui's /web for seamless transition
           "traefik.http.middlewares.headscale-admin-redirect.redirectRegex.regex=^https?://headscale(-server)?\\.(${var.domain}|${node.unique.name}\\.${var.domain})/admin(.*)$$",
           "traefik.http.middlewares.headscale-admin-redirect.redirectRegex.replacement=https://headscale.${var.domain}/web$$3",
           "traefik.http.middlewares.headscale-admin-redirect.redirectRegex.permanent=false",
@@ -3623,6 +3628,21 @@ EOF
       mode = "bridge"
       
       port "headscale" { to = 8080 }
+      
+      # DNS configuration from Docker
+      dns {
+        servers = [
+          "1.1.1.1",
+          "1.0.0.1",
+          "2606:4700:4700::1111",
+          "2606:4700:4700::1001",
+          "9.9.9.9",
+          "2620:fe::fe",
+          "8.8.8.8",
+          "2001:4860:4860::8888",
+          "2001:4860:4860::8844"
+        ]
+      }
     }
 
     # Headscale UI (named "headscale" to match Docker naming)
@@ -3632,6 +3652,7 @@ EOF
       config {
         image = "ghcr.io/gurucomputing/headscale-ui:latest"
         ports = ["headscale"]
+        extra_hosts = ["host.docker.internal:host-gateway"]
         volumes = [
           "${var.config_path}/headscale/config:/etc/headscale"
         ]
@@ -3649,12 +3670,9 @@ EOF
       }
 
       service {
-
         name = "headscale"
         port = "headscale"
         tags = [
-          "headscale",
-          "${var.domain}",
           "traefik.enable=true",
           "traefik.http.routers.headscale.service=headscale",
           "traefik.http.routers.headscale.rule=(Host(`headscale.${var.domain}`) || Host(`headscale.${node.unique.name}.${var.domain}`)) && (PathPrefix(`/web`) || PathPrefix(`/web/users.html`) || PathPrefix(`/web/groups.html`) || PathPrefix(`/web/devices.html`) || PathPrefix(`/web/settings.html`))",
@@ -5241,7 +5259,7 @@ EOF
   }
 
   # Warp Net Init Group - 1:1 with Docker (separate service, runs once)
-  group "warp-net-init-group" {
+  group "warp-nat-routing-group" {
     count = 0  # DISABLED: Complex networking setup, optional service
 
     network {
@@ -5251,6 +5269,11 @@ EOF
     # Network Initialization Task
     task "warp-net-init" {
       driver = "docker"
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false  # Run once before other tasks
+      }
 
       config {
         image = "docker:cli"
@@ -5323,6 +5346,11 @@ EOF
     # 🔹🔹 WARP in Docker (with NAT) 🔹🔹
     task "warp-nat-gateway" {
       driver = "docker"
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = true
+      }
 
       config {
         image = "docker.io/caomingjun/warp:latest"
