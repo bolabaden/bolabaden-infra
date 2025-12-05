@@ -1095,6 +1095,7 @@ EOF
     task "telemetry-auth" {
       driver = "docker"
 
+      # Note: Docker has build context, but Nomad uses pre-built image
       config {
         image = "bolabaden/kotormodsync-telemetry-auth:latest"
         ports = ["telemetry_auth"]
@@ -1118,6 +1119,14 @@ EOF
         env         = false
       }
 
+      env {
+        AUTH_SERVICE_PORT        = "8080"
+        KOTORMODSYNC_SECRET_FILE = "/run/secrets/signing_secret"
+        REQUIRE_AUTH             = "true"
+        MAX_TIMESTAMP_DRIFT      = "300"
+        LOG_LEVEL                = "info"
+      }
+
       resources {
         cpu        = 500
         memory     = 256
@@ -1133,10 +1142,12 @@ EOF
         ]
 
         check {
-          type     = "http"
-          path     = "/health"
+          type     = "script"
+          command  = "/bin/sh"
+          args     = ["-c", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1"]
           interval = "10s"
           timeout  = "3s"
+          retries  = 5
         }
       }
     }
@@ -1668,46 +1679,39 @@ EOF
       mode = "host"
     }
 
-    # Cloudflare DDNS - Copied verbatim from docker-compose.coolify-proxy.yml
-    task "cloudflare-ddns" {
-      driver = "docker"
+  #   # Cloudflare DDNS
+  #   task "cloudflare-ddns" {
+  #     driver = "docker"
 
-      config {
-        image        = "docker.io/favonia/cloudflare-ddns:1"
-        network_mode = "host"
-        # read_only = true  # Not supported in Nomad Docker driver
-        cap_drop     = ["all"]
-        # security_opt = ["no-new-privileges:true"]  # Not supported in Nomad Docker driver
-        labels = {
-          "com.docker.compose.project" = "coolify-proxy-group"
-          "com.docker.compose.service" = "cloudflare-ddns"
-        }
-      }
+  #     config {
+  #       image       = "docker.io/favonia/cloudflare-ddns:1"
+  #       network_mode = "host"
+  #       #read_only    = true read_only not supported in Nomad Docker driver
+  #       cap_drop     = ["all"]
+  #       #security_opt = ["no-new-privileges:true"] security_opt not supported in Nomad Docker driver
+  #       labels = {
+  #         "com.docker.compose.project" = "coolify-proxy-group"
+  #         "com.docker.compose.service" = "cloudflare-ddns"
+  #       }
+  #     }
 
-      env {
-        TZ                       = var.tz
-        CLOUDFLARE_API_TOKEN     = var.cloudflare_api_token
-        DOMAINS                  = "${node.unique.name}.${var.domain},*.${node.unique.name}.${var.domain}"
-        PROXIED                  = "is(${var.domain})||is(*.${var.domain})"
-        TTL                      = "1"
-        RECORD_COMMENT           = "Updated by Cloudflare DDNS on server `${node.unique.name}.${var.domain}`"
-      }
+  #     env {
+  #       TZ                     = var.tz
+  #       CLOUDFLARE_API_TOKEN   = var.cloudflare_api_token
+  #       DOMAINS                = "${node.unique.name}.${var.domain},*.${node.unique.name}.${var.domain}"
+  #       PROXIED                = "is(${var.domain})||is(*.${var.domain})"
+  #       TTL                    = "1"
+  #       RECORD_COMMENT         = "Updated by Cloudflare DDNS on server ${node.unique.name}.${var.domain}"
+  #     }
 
-      resources {
-        cpu        = 1
-        memory     = 256
-        memory_max = 0
-      }
-
-      service {
-        name = "cloudflare-ddns"
-        tags = [
-          "cloudflare-ddns",
-          "${var.domain}"
-        ]
-      }
-    }
-  }
+  #     resources {
+  #       cpu        = 1
+  #       memory     = 256
+  #       memory_max = 0
+  #     
+  #     }
+  #   }
+  # }
 
   # Nginx Traefik Extensions Group
   group "nginx-traefik-extensions-group" {
