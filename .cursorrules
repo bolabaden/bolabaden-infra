@@ -3,6 +3,61 @@ description: Python best practices and patterns for modern software development 
 globs: **/*.py, src/**/*.py, tests/**/*.py, **/docker-compose*.yml, 
 ---
 
+## ⚠️ CRITICAL: Git Commit Requirement ⚠️
+
+**MANDATORY FOR ALL AI AGENTS**: After making ANY changes to files in this repository, you MUST:
+
+1. **Stage all modified files**: `git add <file1> <file2> ...` (or `git add .` for all changes)
+2. **Commit with a descriptive message**: `git commit -m "type: descriptive message"`
+3. **Verify the commit succeeded**: Check that `git commit` returns successfully with no errors
+
+**This is NOT optional.** Do NOT summarize changes without committing them. Do NOT skip this step. Every code change, file modification, or configuration update MUST be committed before you consider the task complete.
+
+**Commit message format**: Use conventional commits format:
+
+- `fix:` for bug fixes
+- `feat:` for new features
+- `refactor:` for code refactoring
+- `docs:` for documentation changes
+- `chore:` for maintenance tasks
+- `test:` for test changes
+
+Example: `git commit -m "fix: add healthcheck and self-healing to critical infrastructure services"`
+
+---
+
+## ⚠️ CRITICAL: Healthcheck Requirements ⚠️
+
+**MANDATORY**: ALL Docker services MUST have comprehensive, exhaustive healthchecks. 
+
+**NEVER:**
+- ❌ Disable healthchecks
+- ❌ Comment out healthchecks
+- ❌ Use simplified TCP-only checks (nc -z)
+- ❌ Remove healthchecks to "fix" issues
+
+**ALWAYS:**
+- ✅ Use full HTTP/HTTPS endpoint checks that validate the service actually works
+- ✅ Include proper intervals, timeouts, retries, and start_period
+- ✅ Test actual service functionality, not just port availability
+- ✅ Add deunhealth labels for self-healing: `deunhealth.restart.on.unhealthy: "true"`
+- ✅ If a container lacks health check tools (curl/wget), install them in the healthcheck command
+- ✅ Use comprehensive healthchecks like: `wget --spider`, `curl -f`, API endpoint validation
+
+**Example of PROPER healthcheck:**
+```yaml
+healthcheck:
+  test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 30s
+```
+
+**If "fix" means disabling healthchecks, you're doing it WRONG. Fix the actual problem.**
+
+---
+
 # Python Best Practices
 
 ## Project Structure

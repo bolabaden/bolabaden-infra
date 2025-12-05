@@ -99,3 +99,11 @@ vendor/docker/openvpn/client.conf
 static/
 reference/
 .github/
+
+# Vendored code lock files (causes false security warnings)
+src/**/package-lock.json
+vendor/**/package-lock.json
+reference/**/package-lock.json
+!package-lock.json  # Keep root lock file
+
+SECURITY_STATUS.md

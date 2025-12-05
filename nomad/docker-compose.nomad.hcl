@@ -1078,9 +1078,73 @@ EOF
     }
   }
 
+  # Telemetry Auth Group
+  group "telemetry-auth-group" {
+    count = 1
+
+    network {
+      mode = "bridge"
+      
+      port "telemetry_auth" {
+        static = 8080
+        to = 8080
+      }
+    }
+
+    # KotorModSync Telemetry Auth Service
+    task "telemetry-auth" {
+      driver = "docker"
+
+      config {
+        image = "bolabaden/kotormodsync-telemetry-auth:latest"
+        ports = ["telemetry_auth"]
+        extra_hosts = ["host.docker.internal:10.16.1.78"]
+      }
+
+      env {
+        AUTH_SERVICE_PORT = "8080"
+        KOTORMODSYNC_SECRET_FILE = "/run/secrets/signing_secret"
+        REQUIRE_AUTH = var.require_auth
+        MAX_TIMESTAMP_DRIFT = var.max_timestamp_drift
+        LOG_LEVEL = var.log_level
+      }
+
+      # Secret file template (from secrets.auto.tfvars.hcl)
+      template {
+        data = <<EOF
+{{ with secret "secret/signing_secret" }}{{ .Data.data.value }}{{ end }}
+EOF
+        destination = "secrets/signing_secret"
+        env         = false
+      }
+
+      resources {
+        cpu        = 500
+        memory     = 256
+        memory_max = 512
+      }
+
+      service {
+        name = "telemetry-auth"
+        port = "telemetry_auth"
+        tags = [
+          "telemetry-auth",
+          "${var.domain}"
+        ]
+
+        check {
+          type     = "http"
+          path     = "/health"
+          interval = "10s"
+          timeout  = "3s"
+        }
+      }
+    }
+  }
+
   # Authentik  # Authentik services group
   group "authentik-services" {
-    count = 1
+    count = 0  # DISABLED: Commented out in docker-compose.yml (line 50)
 
     network {
       mode = "bridge"
@@ -2898,6 +2962,73 @@ EOF
         memory     = 256
         memory_max = 0
       
+      }
+    }
+  }
+
+  # Docker Gen Failover Group
+  group "docker-gen-failover-group" {
+    count = 1
+
+    network {
+      mode = "bridge"
+      
+    }
+
+    # Docker Gen for Traefik Failover Configuration
+    task "docker-gen-failover" {
+      driver = "docker"
+
+      config {
+        image = "docker.io/nginxproxy/docker-gen:latest"
+        volumes = [
+          "${var.config_path}/traefik/dynamic:/traefik/dynamic"
+        ]
+        args = [
+          "-endpoint", "tcp://dockerproxy-rw:2375",
+          "-only-exposed",
+          "-include-stopped",
+          "-event-filter", "event=start",
+          "-event-filter", "event=create",
+          "-event-filter", "event=expose",
+          "-event-filter", "event=update",
+          "-event-filter", "event=connect",
+          "-event-filter", "label=traefik.enable=true",
+          "-container-filter", "label=traefik.enable=true",
+          "-watch", "/templates/traefik-failover-dynamic.conf.tmpl", "/traefik/dynamic/failover-fallbacks.yaml"
+        ]
+        extra_hosts = ["host.docker.internal:10.16.1.78"]
+      }
+
+      # Traefik failover template
+      template {
+        data = <<EOF
+# NOTE: This template is a placeholder - the actual template content 
+# should be copied from compose/docker-compose.coolify-proxy.yml config section
+# for traefik-failover-dynamic.conf.tmpl
+# 
+# This generates dynamic Traefik configuration for container failover
+EOF
+        destination = "local/templates/traefik-failover-dynamic.conf.tmpl"
+      }
+
+      resources {
+        cpu        = 500
+        memory     = 256
+        memory_max = 512
+      }
+
+      service {
+        name = "docker-gen-failover"
+        tags = [
+          "docker-gen-failover",
+          "${var.domain}"
+        ]
+      }
+
+      restart {
+        attempts = 0
+        mode     = "fail"
       }
     }
   }
@@ -5115,6 +5246,62 @@ EOF
 
     network {
       mode = "host"
+    }
+
+    # Network Initialization Task
+    task "warp-net-init" {
+      driver = "docker"
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false  # Run once before other tasks
+      }
+
+      config {
+        image = "docker:cli"
+        network_mode = "host"
+        command = "sh"
+        args = [
+          "-c",
+          <<EOF
+# Create network if it doesn't exist
+if ! docker network inspect $${DOCKER_NETWORK_NAME:-warp-nat-net} >/dev/null 2>&1; then
+  echo "Creating network $${DOCKER_NETWORK_NAME:-warp-nat-net}..."
+  docker network create \
+    --driver=bridge \
+    --attachable \
+    -o com.docker.network.bridge.name=br_$${DOCKER_NETWORK_NAME:-warp-nat-net} \
+    -o com.docker.network.bridge.enable_ip_masquerade=false \
+    --subnet=$${WARP_NAT_NET_SUBNET:-10.0.2.0/24} \
+    --gateway=$${WARP_NAT_NET_GATEWAY:-10.0.2.1} \
+    $${DOCKER_NETWORK_NAME:-warp-nat-net}
+  echo "Network created successfully"
+else
+  echo "Network $${DOCKER_NETWORK_NAME:-warp-nat-net} already exists"
+fi
+EOF
+        ]
+        volumes = [
+          "${var.docker_socket}:/var/run/docker.sock:ro"
+        ]
+      }
+
+      env {
+        DOCKER_NETWORK_NAME  = var.docker_network_name
+        WARP_NAT_NET_SUBNET  = var.warp_nat_net_subnet
+        WARP_NAT_NET_GATEWAY = var.warp_nat_net_gateway
+      }
+
+      resources {
+        cpu        = 100
+        memory     = 128
+        memory_max = 0
+      }
+
+      restart {
+        attempts = 0
+        mode     = "fail"
+      }
     }
 
     # 🔹🔹 WARP in Docker (with NAT) 🔹🔹

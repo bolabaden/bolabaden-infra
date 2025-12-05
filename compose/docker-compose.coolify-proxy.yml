@@ -877,7 +877,7 @@ services:
     restart: always
   tinyauth:
     # 🔹🔹 TinyAuth 🔹🔹
-    image: ghcr.io/steveiliop56/tinyauth:v3
+    image: ghcr.io/steveiliop56/tinyauth:latest
     container_name: tinyauth
     hostname: auth
     extra_hosts:
@@ -929,7 +929,7 @@ services:
   crowdsec:
     # 🔹🔹 CrowdSec 🔹🔹
     # Highly recommend this guide: https://blog.lrvt.de/configuring-crowdsec-with-traefik/
-    image: docker.io/crowdsecurity/crowdsec:v1.7.0
+    image: docker.io/crowdsecurity/crowdsec:latest
     container_name: crowdsec
     hostname: crowdsec
     extra_hosts:
@@ -1005,9 +1005,11 @@ services:
     # 🔹🔹 Traefik 🔹🔹
     # https://doc.traefik.io
     depends_on:
-      - crowdsec
-      - dockerproxy-ro
-    image: docker.io/traefik:v3.5.2  # Built on 2025-09-09T10:16:55Z
+      crowdsec:
+        condition: service_started
+      dockerproxy-ro:
+        condition: service_healthy
+    image: docker.io/traefik:latest
     container_name: traefik
     hostname: traefik
     extra_hosts:
@@ -1058,7 +1060,7 @@ services:
       - '--api.dashboard=true'
       - '--api.debug=true'
       - '--api.disableDashboardAd=true'
-      - '--api.insecure=false'
+      - '--api.insecure=true'
       - '--api=true'
       # use staging for testing/development/debugging to avoid rate limiting
       #- '--certificatesResolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory'
@@ -1125,6 +1127,7 @@ services:
       homepage.icon: traefik.png
       homepage.href: https://traefik.$DOMAIN/dashboard
       homepage.widget.type: traefik
+      homepage.widget.url: http://traefik:8080
       homepage.description: Reverse proxy entrypoint for all services with TLS, Cloudflare integration, and auth middleware
       kuma.traefik.http.name: traefik.$TS_HOSTNAME.$DOMAIN
       kuma.traefik.http.url: https://traefik.$DOMAIN/dashboard
@@ -1138,7 +1141,7 @@ services:
     restart: always
   whoami:
     # 🔹🔹 Whoami 🔹🔹
-    image: docker.io/traefik/whoami:v1.11
+    image: docker.io/traefik/whoami:latest
     container_name: whoami
     hostname: whoami
     extra_hosts:

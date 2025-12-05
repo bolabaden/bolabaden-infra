@@ -9,6 +9,10 @@ x-common-env: &common-env
   UMASK: ${UMASK:-002}
 
 
+secrets:
+  signing_secret:
+    file: ${SECRETS_PATH:?}/signing_secret.txt
+
 
 networks:  # https://docs.docker.com/engine/network/drivers/bridge/#differences-between-user-defined-bridges-and-the-default-bridge
   warp-nat-net:
@@ -43,7 +47,7 @@ networks:  # https://docs.docker.com/engine/network/drivers/bridge/#differences-
 
 
 include:
-  - compose/docker-compose.authentik.yml
+#  - compose/docker-compose.authentik.yml
   - compose/docker-compose.coolify-proxy.yml
   - compose/docker-compose.firecrawl.yml
   - compose/docker-compose.headscale.yml
@@ -82,9 +86,9 @@ configs:
       # https://gethomepage.dev/configs/docker/
 
       my-docker:
-        socket: /var/run/docker.sock
-      #  host: dockerproxy
-      #  port: 2375
+      #  socket: /var/run/docker.sock
+        host: dockerproxy-ro
+        port: 2375
   gethomepage-widgets.yaml:
     content: |
       ---
@@ -92,22 +96,23 @@ configs:
       # https://gethomepage.dev/configs/info-widgets/
 
       - resources:
-        cpu: true
-        memory: true
-        disk: /
+          cpu: true
+          memory: true
+          disk: /
 
       - search:
-        provider: duckduckgo
-        target: _blank
+          provider: duckduckgo
+          target: _blank
   gethomepage-settings.yaml:
     content: |
       ---
       # For configuration options and examples, please see:
       # https://gethomepage.dev/configs/settings/
-
-      providers:
-        openweathermap: $OPENWEATHERMAP_API_KEY
-        weatherapi: $WEATHERAPI_API_KEY
+      
+      # Weather providers disabled - API keys not configured
+      # providers:
+      #   openweathermap: $OPENWEATHERMAP_API_KEY
+      #   weatherapi: $WEATHERAPI_API_KEY
   gethomepage-bookmarks.yaml:
     content: |
       ---
@@ -134,6 +139,78 @@ configs:
         - searxng:
           - abbr: SE
             href: https://searxng.$DOMAIN/
+  jackett-serverconfig.json:
+    content: |
+      {
+        "Port": 9117,
+        "LocalBindAddress": "127.0.0.1",
+        "AllowExternal": true,
+        "AllowCORS": true,
+        "APIKey": "$${JACKETT_API_KEY:-nnx0n84pcj7umynyd2pbid2nl1zzuemz}",
+        "AdminPassword": "",
+        "InstanceId": "jackett-bolabaden-$${DOMAIN}",
+        "BlackholeDir": "/blackhole",
+        "UpdateDisabled": false,
+        "UpdatePrerelease": false,
+        "BasePathOverride": "",
+        "BaseUrlOverride": "",
+        "CacheEnabled": true,
+        "CacheTtl": 2100,
+        "CacheMaxResultsPerIndexer": 1000,
+        "FlareSolverrUrl": "http://flaresolverr:8191",
+        "FlareSolverrMaxTimeout": 55000,
+        "OmdbApiKey": "",
+        "OmdbApiUrl": "",
+        "ProxyType": -1,
+        "ProxyUrl": "",
+        "ProxyPort": null,
+        "ProxyUsername": "",
+        "ProxyPassword": "",
+        "ProxyIsAnonymous": true
+      }
+  jackett-indexer-blacklist.txt:
+    content: |
+      # List of slow/broken indexers to exclude from Jackett provisioning
+      # These indexers cause timeouts (100+ seconds) and degrade Homepage performance
+      # Remove these to ensure fast widget API responses
+      audiobookbay
+      audiobook bay
+      ebookbay
+      ebook bay
+      animetosho
+      anime tosho
+      internetarchive
+      internet archive
+  jackett-init.sh:
+    content: |
+      #!/usr/bin/with-contenv bash
+      # Jackett initialization script - provisions config and removes slow indexers
+      
+      # Copy default ServerConfig if not exists
+      mkdir -p /config/Jackett /config/Jackett/Indexers
+      if [ ! -f /config/Jackett/ServerConfig.json ]; then
+        cp /defaults/ServerConfig.json /config/Jackett/ServerConfig.json
+        chown abc:abc /config/Jackett/ServerConfig.json
+        echo "Provisioned Jackett ServerConfig.json"
+      fi
+      
+      # Remove blacklisted indexers on every startup (self-healing)
+      if [ -f /indexer-blacklist.txt ]; then
+        while IFS= read -r indexer || [ -n "$$indexer" ]; do
+          # Skip comments and empty lines
+          case "$$indexer" in
+            \#*|"") continue ;;
+          esac
+          # Remove the indexer files (both active and backups) - use exact match
+          removed=0
+          for file in /config/Jackett/Indexers/*.json*; do
+            basename=$$(basename "$$file")
+            if echo "$$basename" | grep -qi "$$indexer"; then
+              rm -f "$$file" && echo "Removed slow indexer file: $$basename" && removed=1
+            fi
+          done
+        done < /indexer-blacklist.txt
+      fi
 
 
 services:
@@ -189,9 +266,11 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1m"
-        max-file: "1"
+        max-size: "10m"
+        max-file: "3"
     labels:
+      # Auto-restart on unhealthy state
+      deunhealth.restart.on.unhealthy: "true"
       traefik.enable: true
       traefik.http.services.searxng.loadbalancer.server.port: ${SEARXNG_PORT:-8080}
       homepage.group: Search
@@ -204,8 +283,10 @@ services:
       kuma.searxng.http.interval: 30
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${SEARXNG_PORT:-8080}/ || exit 1"]
+      interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 30s
     restart: always
 
   code-server:
@@ -361,8 +442,8 @@ services:
       - publicnet
     expose:
       - 3000
-    extra_hosts:
-      - host.docker.internal:host-gateway
+    # extra_hosts:
+    #   - host.docker.internal:host-gateway
     environment:
       <<: *common-env
       NODE_ENV: production
@@ -406,6 +487,15 @@ services:
       EVENTS: 1
       INFO: 1
       DISABLE_IPV6: ${DISABLE_IPV6:-0}
+    labels:
+      # Auto-restart on unhealthy state (requires deunhealth or autoheal container)
+      deunhealth.restart.on.unhealthy: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:2375/_ping > /dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     restart: always
   dozzle:
     # 🔹🔹 Dozzle 🔹🔹
@@ -453,6 +543,9 @@ services:
 
   homepage:
     # 🔹🔹 Homepage 🔹🔹  # https://github.com/gethomepage/homepage
+    depends_on:
+      dockerproxy-ro:
+        condition: service_healthy
     image: ghcr.io/gethomepage/homepage
     container_name: homepage
     hostname: homepage
@@ -460,6 +553,7 @@ services:
       - host.docker.internal:host-gateway
     networks:
       - backend
+      - default
       - publicnet
     configs:
       - source: gethomepage-custom.css
@@ -482,10 +576,10 @@ services:
         mode: 0777
     volumes:
       # DO NOT create a bind mount to the entire /app/public/ directory.
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+      #- ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
       - ${CONFIG_PATH:-./volumes}/homepage:/app/config
     environment:
-      #DOCKER_HOST: tcp://dockerproxy-ro:2375  # Point to proxy instead of socket
+      DOCKER_HOST: tcp://dockerproxy-ro:2375  # Point to proxy instead of socket
       HOMEPAGE_ALLOWED_HOSTS: "*"
       HOMEPAGE_VAR_TITLE: Bolabaden
       HOMEPAGE_VAR_SEARCH_PROVIDER: duckduckgo
@@ -499,6 +593,8 @@ services:
       #      HOMEPAGE_VAR_WEATHER_TIME: ""
       HOMEPAGE_VAR_WEATHER_UNIT: fahrenheit
     labels:
+      # Auto-restart on unhealthy state
+      deunhealth.restart.on.unhealthy: "true"
       traefik.enable: true
       traefik.http.services.homepage.loadbalancer.server.port: 3000
       kuma.homepage.http.name: homepage.$TS_HOSTNAME.$DOMAIN
@@ -506,8 +602,10 @@ services:
       kuma.homepage.http.interval: 30
     healthcheck:  # docker exec homepage ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1"]
+      interval: 30s
       timeout: 15s
       retries: 3
+      start_period: 30s
     cpus: 0.25
     mem_reservation: 128M
     mem_limit: 1G
@@ -856,6 +954,31 @@ services:
 
     restart: always
 
+  telemetry-auth:
+    build:
+      context: projects/kotormodsync/telemetry-auth
+      dockerfile: Dockerfile
+    image: bolabaden/kotormodsync-telemetry-auth:latest
+    container_name: telemetry-auth-test
+    hostname: telemetry-auth
+    user: "0:0"  # Run as root to read secrets
+    ports:
+      - "8080:8080"
+    secrets:
+      - signing_secret
+    environment:
+      AUTH_SERVICE_PORT: 8080
+      KOTORMODSYNC_SECRET_FILE: /run/secrets/signing_secret
+      REQUIRE_AUTH: ${REQUIRE_AUTH:-true}
+      MAX_TIMESTAMP_DRIFT: ${MAX_TIMESTAMP_DRIFT:-300}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
   redis:
     # 🔹🔹 Redis 🔹🔹
     image: docker.io/redis:alpine

@@ -12,8 +12,9 @@
 - [Internal Failover & Routing](#4-internal-failover--routing)
 - [Configuration Management](#how-config-actually-becomes-live-behavior)
 - [Observability](#observability)
+- [Maintenance & Disk Management](#maintenance--disk-management) 🆕
 - [Hosting bolabaden.org](#hosting-bolabadenorg-specifically)
-- [Problems I expect, and how I’m handling them](#problems-i-expect-and-how-im-handling-them)
+- [Problems I expect, and how I'm handling them](#problems-i-expect-and-how-im-handling-them)
 - [Failure Scenarios](#failure-stories-on-purpose)
 - [Trade-offs](#where-im-okay-with-tradeoffs)
 - [Implementation Details](#what-still-needs-real-values-placeholders-to-fill)
@@ -198,6 +199,111 @@ logs:
   targets:
     - /var/log/nginx/*.log
     - /var/log/haproxy.log
+```
+
+---
+
+## Maintenance & Disk Management {#maintenance--disk-management}
+
+**🛡️ Automated maintenance is critical for VPS longevity.** Without it, Docker overlay2, container logs, and application caches will silently fill your disk until services fail.
+
+### The Problem
+
+Common disk space killers:
+- **Docker overlay2:** 97GB from a single stopped container's `/tmp` directory
+- **Container logs:** Grow unbounded without rotation
+- **Prometheus WAL:** Accumulates write-ahead logs
+- **Stremio cache:** Can grow to 10GB+
+- **VictoriaMetrics data:** Long retention periods
+- **System logs:** `/var/log` accumulation
+
+### The Solution
+
+This repository includes a complete automated maintenance system:
+
+#### 📦 Quick Install
+
+```bash
+cd /home/ubuntu/my-media-stack
+./scripts/install-maintenance-system.sh
+```
+
+This installs:
+- ✅ Docker daemon log rotation (10MB × 3 files, compressed)
+- ✅ Weekly full cleanup (Sundays at 2 AM)
+- ✅ Daily light cleanup (Every day at 3 AM)
+- ✅ Daily disk monitoring (Every day at 4 AM)
+- ✅ Logrotate for maintenance logs
+- ✅ Emergency cleanup script
+
+#### 📖 Full Documentation
+
+See **[docs/MAINTENANCE.md](docs/MAINTENANCE.md)** for complete details on:
+- What gets cleaned and when
+- How to customize retention periods
+- Monitoring and troubleshooting
+- Emergency procedures
+- Cloud-init bootstrap
+
+#### 🚀 Key Features
+
+1. **Docker Log Rotation:** Configured in `/etc/docker/daemon.json`
+2. **Automated Cleanup:** `scripts/docker-maintenance.sh` removes:
+   - Stopped containers (>7 days)
+   - Unused images (>30 days)
+   - Unused volumes, networks, build cache
+   - Application caches (Prometheus, Stremio, Open-WebUI)
+   - System logs (keep 30 days)
+3. **Resource Limits:** `compose/docker-compose.maintenance.yml` adds memory limits and logging to all services
+4. **Environment Tuning:** `.env.maintenance` contains recommended retention settings
+
+#### 🔧 Usage
+
+```bash
+# Include maintenance overlay in your compose stack
+docker compose -f docker-compose.yml -f compose/docker-compose.maintenance.yml up -d
+
+# Or add to docker-compose.yml:
+include:
+  - compose/docker-compose.maintenance.yml
+
+# Manual cleanup
+sudo ./scripts/docker-maintenance.sh
+
+# Emergency cleanup (interactive)
+./scripts/emergency-cleanup.sh
+
+# Check disk usage
+df -h /
+docker system df
+```
+
+#### 📊 Monitoring
+
+```bash
+# View maintenance logs
+tail -f /var/log/docker-maintenance.log
+
+# View disk alerts
+tail -f /var/log/disk-usage.log
+
+# Check cron jobs
+crontab -l
+```
+
+#### 🆕 New VPS Setup
+
+For fresh VPS deployments, use the cloud-init script:
+
+```bash
+sudo bash scripts/cloud-init-maintenance.sh
+```
+
+Or in cloud-init user-data:
+```yaml
+#cloud-config
+runcmd:
+  - curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/my-media-stack/main/scripts/cloud-init-maintenance.sh | bash
 ```
 
 ---
