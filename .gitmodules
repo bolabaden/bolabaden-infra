@@ -4,3 +4,6 @@
 [submodule "ai-researchwizard"]
 	path = ai-researchwizard
 	url = https://github.com/bolabaden/ai-researchwizard
+[submodule "projects/website/bolabaden-site"]
+	path = projects/website/bolabaden-site
+	url = https://github.com/bolabaden/bolabaden-site
