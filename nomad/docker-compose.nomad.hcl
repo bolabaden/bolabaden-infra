@@ -18,11 +18,6 @@ variable "domain" {
   default = "bolabaden.org"
 }
 
-variable "ts_hostname" {
-  type    = string
-  default = "micklethefickle"
-}
-
 variable "config_path" {
   type    = string
   default = "/home/ubuntu/my-media-stack/volumes"
@@ -31,11 +26,6 @@ variable "config_path" {
 variable "root_path" {
   type    = string
   default = "/home/ubuntu/my-media-stack"
-}
-
-variable "docker_socket" {
-  type    = string
-  default = "/var/run/docker.sock"
 }
 
 variable "tz" {
@@ -363,6 +353,13 @@ job "docker-compose-stack" {
   datacenters = ["dc1"]
   type        = "service"
 
+  # Ensure all task groups run on nodes with Consul (required for service discovery)
+  constraint {
+    attribute = "${attr.consul.version}"
+    operator  = "semver"
+    value     = ">= 1.8.0"
+  }
+
   # Mongodb Group
   group "mongodb-group" {
     count = 1
@@ -383,7 +380,10 @@ job "docker-compose-stack" {
         volumes = [
           "${var.config_path}/mongodb/data:/data/db"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "core-group"
+          "com.docker.compose.service" = "mongodb"
+        }
       }
 
       env {
@@ -391,9 +391,9 @@ job "docker-compose-stack" {
       }
 
       resources {
-        cpu        = 1
-        memory     = 256
-        memory_max = 0
+        cpu        = 2000
+        memory     = 1024
+        memory_max = 2048
       
       }
 
@@ -403,10 +403,10 @@ job "docker-compose-stack" {
         port = "mongodb"
         tags = [
           "traefik.enable=true",
-          "traefik.tcp.routers.mongodb.rule=HostSNI(`mongodb.${var.domain}`) || HostSNI(`mongodb.${var.ts_hostname}.${var.domain}`)",
+          "traefik.tcp.routers.mongodb.rule=HostSNI(`mongodb.${var.domain}`) || HostSNI(`mongodb.${node.unique.name}.${var.domain}`)",
           "traefik.tcp.routers.mongodb.service=mongodb@consulcatalog",
           "traefik.tcp.routers.mongodb.tls.domains[0].main=${var.domain}",
-          "traefik.tcp.routers.mongodb.tls.domains[0].sans=*.${var.domain},${var.ts_hostname}.${var.domain}",
+          "traefik.tcp.routers.mongodb.tls.domains[0].sans=*.${var.domain},${node.unique.name}.${var.domain}",
           "traefik.tcp.routers.mongodb.tls.passthrough=true",
           "traefik.tcp.services.mongodb.loadbalancer.server.port=27017",
           "traefik.tcp.services.mongodb.loadbalancer.server.tls=true"
@@ -445,7 +445,10 @@ job "docker-compose-stack" {
           "${var.config_path}/searxng/config:/etc/searxng",
           "${var.config_path}/searxng/data:/var/cache/searxng"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "core-group"
+          "com.docker.compose.service" = "searxng"
+        }
         logging {
           type = "json-file"
           config {
@@ -487,7 +490,7 @@ EOF
           "homepage.icon=searxng.png",
           "homepage.href=https://searxng.${var.domain}/",
           "homepage.description=Privacy-focused metasearch that aggregates results from many sources without tracking",
-          "kuma.searxng.http.name=searxng.${var.ts_hostname}.${var.domain}",
+          "kuma.searxng.http.name=searxng.${node.unique.name}.${var.domain}",
           "kuma.searxng.http.url=https://searxng.${var.domain}",
           "kuma.searxng.http.interval=30"
         ]
@@ -525,14 +528,16 @@ EOF
           "apk add python3 py3-pip docker-cli zip unzip && pip install fastapi uvicorn httpx websockets docker jinja2 python-multipart --break-system-packages --root-user-action=ignore && mkdir -p /tmp/templates && python3 session_manager.py"
         ]
         volumes = [
-          "${var.docker_socket}:/var/run/docker.sock:rw",
           "${var.config_path}/extensions:${var.config_path}/extensions",
           # Mount session manager files from host
           "${var.root_path}/projects/kotor/kotorscript-session-manager/session_manager.py:/session_manager.py:ro",
           "${var.root_path}/projects/kotor/kotorscript-session-manager/index.html:/tmp/templates/index.html:ro",
           "${var.root_path}/projects/kotor/kotorscript-session-manager/waiting.html:/tmp/templates/waiting.html:ro"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "core-group"
+          "com.docker.compose.service" = "session-manager"
+        }
       }
 
       env {
@@ -557,42 +562,42 @@ EOF
         port = "session_manager"
         tags = [
           "traefik.enable=true",
-          "traefik.http.middlewares.holoscripter-redirect.redirectRegex.regex=^https?://holoscripter\\.((?:${var.domain}|${var.ts_hostname}\\.${var.domain}))(.*)$$",
+          "traefik.http.middlewares.holoscripter-redirect.redirectRegex.regex=^https?://holoscripter\\.((?:${var.domain}|${node.unique.name}\\.${var.domain}))(.*)$$",
           "traefik.http.middlewares.holoscripter-redirect.redirectRegex.replacement=https://holoscript.$$1$$2",
           "traefik.http.middlewares.holoscripter-redirect.redirectRegex.permanent=false",
-          "traefik.http.middlewares.kotorscripter-redirect.redirectRegex.regex=^https?://kotorscripter\\.((?:${var.domain}|${var.ts_hostname}\\.${var.domain}))(.*)$$",
+          "traefik.http.middlewares.kotorscripter-redirect.redirectRegex.regex=^https?://kotorscripter\\.((?:${var.domain}|${node.unique.name}\\.${var.domain}))(.*)$$",
           "traefik.http.middlewares.kotorscripter-redirect.redirectRegex.replacement=https://holoscript.$$1$$2",
           "traefik.http.middlewares.kotorscripter-redirect.redirectRegex.permanent=false",
-          "traefik.http.middlewares.kotorscript-redirect.redirectRegex.regex=^https?://kotorscript\\.((?:${var.domain}|${var.ts_hostname}\\.${var.domain}))(.*)$$",
+          "traefik.http.middlewares.kotorscript-redirect.redirectRegex.regex=^https?://kotorscript\\.((?:${var.domain}|${node.unique.name}\\.${var.domain}))(.*)$$",
           "traefik.http.middlewares.kotorscript-redirect.redirectRegex.replacement=https://holoscript.$$1$$2",
           "traefik.http.middlewares.kotorscript-redirect.redirectRegex.permanent=false",
-          "traefik.http.middlewares.tslscript-redirect.redirectRegex.regex=^https?://tslscript\\.((?:${var.domain}|${var.ts_hostname}\\.${var.domain}))(.*)$$",
+          "traefik.http.middlewares.tslscript-redirect.redirectRegex.regex=^https?://tslscript\\.((?:${var.domain}|${node.unique.name}\\.${var.domain}))(.*)$$",
           "traefik.http.middlewares.tslscript-redirect.redirectRegex.replacement=https://holoscript.$$1$$2",
           "traefik.http.middlewares.tslscript-redirect.redirectRegex.permanent=false",
-          "traefik.http.middlewares.kscript-redirect.redirectRegex.regex=^https?://kscript\\.((?:${var.domain}|${var.ts_hostname}\\.${var.domain}))(.*)$$",
+          "traefik.http.middlewares.kscript-redirect.redirectRegex.regex=^https?://kscript\\.((?:${var.domain}|${node.unique.name}\\.${var.domain}))(.*)$$",
           "traefik.http.middlewares.kscript-redirect.redirectRegex.replacement=https://holoscript.$$1$$2",
           "traefik.http.middlewares.kscript-redirect.redirectRegex.permanent=false",
-          "traefik.http.middlewares.hololsp-redirect.redirectRegex.regex=^https?://hololsp\\.((?:${var.domain}|${var.ts_hostname}\\.${var.domain}))(.*)$$",
+          "traefik.http.middlewares.hololsp-redirect.redirectRegex.regex=^https?://hololsp\\.((?:${var.domain}|${node.unique.name}\\.${var.domain}))(.*)$$",
           "traefik.http.middlewares.hololsp-redirect.redirectRegex.replacement=https://holoscript.$$1$$2",
           "traefik.http.middlewares.hololsp-redirect.redirectRegex.permanent=false",
-          "traefik.http.routers.holoscript.rule=Host(`holoscript.${var.domain}`) || Host(`holoscript.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.holoscript.rule=Host(`holoscript.${var.domain}`) || Host(`holoscript.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.holoscript.loadbalancer.server.port=8080",
-          "traefik.http.routers.holoscripter-redirect.rule=Host(`holoscripter.${var.domain}`) || Host(`holoscripter.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.holoscripter-redirect.rule=Host(`holoscripter.${var.domain}`) || Host(`holoscripter.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.holoscripter-redirect.middlewares=holoscripter-redirect@consulcatalog",
           "traefik.http.routers.holoscripter-redirect.service=holoscript@consulcatalog",
-          "traefik.http.routers.kotorscripter-redirect.rule=Host(`kotorscripter.${var.domain}`) || Host(`kotorscripter.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.kotorscripter-redirect.rule=Host(`kotorscripter.${var.domain}`) || Host(`kotorscripter.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.kotorscripter-redirect.middlewares=kotorscripter-redirect@consulcatalog",
           "traefik.http.routers.kotorscripter-redirect.service=holoscript@consulcatalog",
-          "traefik.http.routers.kotorscript-redirect.rule=Host(`kotorscript.${var.domain}`) || Host(`kotorscript.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.kotorscript-redirect.rule=Host(`kotorscript.${var.domain}`) || Host(`kotorscript.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.kotorscript-redirect.middlewares=kotorscript-redirect@consulcatalog",
           "traefik.http.routers.kotorscript-redirect.service=holoscript@consulcatalog",
-          "traefik.http.routers.tslscript-redirect.rule=Host(`tslscript.${var.domain}`) || Host(`tslscript.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.tslscript-redirect.rule=Host(`tslscript.${var.domain}`) || Host(`tslscript.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.tslscript-redirect.middlewares=tslscript-redirect@consulcatalog",
           "traefik.http.routers.tslscript-redirect.service=holoscript@consulcatalog",
-          "traefik.http.routers.kscript-redirect.rule=Host(`kscript.${var.domain}`) || Host(`kscript.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.kscript-redirect.rule=Host(`kscript.${var.domain}`) || Host(`kscript.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.kscript-redirect.middlewares=kscript-redirect@consulcatalog",
           "traefik.http.routers.kscript-redirect.service=holoscript@consulcatalog",
-          "traefik.http.routers.hololsp-redirect.rule=Host(`hololsp.${var.domain}`) || Host(`hololsp.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.hololsp-redirect.rule=Host(`hololsp.${var.domain}`) || Host(`hololsp.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.hololsp-redirect.middlewares=hololsp-redirect@consulcatalog",
           "traefik.http.routers.hololsp-redirect.service=holoscript@consulcatalog"
         ]
@@ -625,7 +630,10 @@ EOF
       config {
         image = "docker.io/bolabaden/bolabaden-nextjs"
         ports = ["bolabaden_nextjs"]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "core-group"
+          "com.docker.compose.service" = "bolabaden-nextjs"
+        }
       }
 
       env {
@@ -657,10 +665,10 @@ EOF
           "traefik.http.middlewares.bolabaden-error-pages.errors.service=bolabaden-nextjs@consulcatalog",
           "traefik.http.middlewares.bolabaden-error-pages.errors.query=/api/error/{status}",
           # Router for bolabaden-nextjs
-          "traefik.http.routers.bolabaden-nextjs.rule=Host(`${var.domain}`) || Host(`${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.bolabaden-nextjs.rule=Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`)",
           # bolabaden-nextjs Service definition
           "traefik.http.services.bolabaden-nextjs.loadbalancer.server.port=3000",
-          "kuma.bolabaden-nextjs.http.name=${var.ts_hostname}.${var.domain}",
+          "kuma.bolabaden-nextjs.http.name=${node.unique.name}.${var.domain}",
           "kuma.bolabaden-nextjs.http.url=https://${var.domain}",
           "kuma.bolabaden-nextjs.http.interval=30"
         ]
@@ -693,9 +701,10 @@ EOF
       config {
         image = "docker.io/amir20/dozzle"
         ports = ["dozzle"]
-        #volumes:
-        #  - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "core-group"
+          "com.docker.compose.service" = "dozzle"
+        }
       }
 
       env {
@@ -743,7 +752,7 @@ EOF
           "homepage.icon=dozzle.png",
           "homepage.href=https://dozzle.${var.domain}",
           "homepage.description=Real-time web UI for viewing Docker container logs across the host",
-          "kuma.dozzle.http.name=dozzle.${var.ts_hostname}.${var.domain}",
+          "kuma.dozzle.http.name=dozzle.${node.unique.name}.${var.domain}",
           "kuma.dozzle.http.url=https://dozzle.${var.domain}",
           "kuma.dozzle.http.interval=60"
         ]
@@ -777,16 +786,18 @@ EOF
         ports = ["homepage"]
         volumes = [
           # DO NOT create a bind mount to the entire /app/config/ directory.
-          "${var.docker_socket}:/var/run/docker.sock:ro",
           "${var.config_path}/homepage:/app/config"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "core-group"
+          "com.docker.compose.service" = "homepage"
+        }
       }
 
       # Homepage configuration files via templates
       template {
         data = <<EOF
-/* Custom CSS for ${var.domain} - ${var.ts_hostname} */
+/* Custom CSS for ${var.domain} - ${node.unique.name} */
 EOF
         destination = "local/custom.css"
       }
@@ -904,7 +915,7 @@ EOF
         tags = [
           "traefik.enable=true",
           "traefik.http.services.homepage.loadbalancer.server.port=3000",
-          "kuma.homepage.http.name=homepage.${var.ts_hostname}.${var.domain}",
+          "kuma.homepage.http.name=homepage.${node.unique.name}.${var.domain}",
           "kuma.homepage.http.url=https://homepage.${var.domain}",
           "kuma.homepage.http.interval=30"
         ]
@@ -949,7 +960,10 @@ EOF
           "-c",
           "sysctl vm.overcommit_memory=1 &> /dev/null && redis-server --appendonly yes --save 60 1 --bind 0.0.0.0 --port ${var.redis_port} --requirepass ${var.redis_password}"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "core-group"
+          "com.docker.compose.service" = "redis"
+        }
         logging {
           type = "json-file"
           config {
@@ -983,10 +997,10 @@ EOF
         port = "redis"
         tags = [
           "traefik.enable=true",
-          "traefik.tcp.routers.redis.rule=HostSNI(`redis.${var.domain}`) || HostSNI(`redis.${var.ts_hostname}.${var.domain}`)",
+          "traefik.tcp.routers.redis.rule=HostSNI(`redis.${var.domain}`) || HostSNI(`redis.${node.unique.name}.${var.domain}`)",
           "traefik.tcp.routers.redis.service=redis@consulcatalog",
           "traefik.tcp.routers.redis.tls.domains[0].main=${var.domain}",
-          "traefik.tcp.routers.redis.tls.domains[0].sans=*.${var.domain},${var.ts_hostname}.${var.domain}",
+          "traefik.tcp.routers.redis.tls.domains[0].sans=*.${var.domain},${node.unique.name}.${var.domain}",
           "traefik.tcp.routers.redis.tls.passthrough=true",
           "traefik.tcp.services.redis.loadbalancer.server.port=${var.redis_port}",
           "traefik.tcp.services.redis.loadbalancer.server.tls=true"
@@ -1025,10 +1039,12 @@ EOF
         image = "docker.io/portainer/portainer-ce"
         ports = ["portainer_api", "portainer_http", "portainer_https"]
         volumes = [
-          "${var.docker_socket}:/var/run/docker.sock:rw",
           "${var.config_path}/portainer/data:/data"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "portainer-group"
+          "com.docker.compose.service" = "portainer"
+        }
       }
 
       resources {
@@ -1047,7 +1063,7 @@ EOF
           "traefik.http.routers.portainer.middlewares=nginx-auth@file",
           "traefik.http.routers.portainer.service=portainer@consulcatalog",
           "traefik.http.services.portainer.loadbalancer.server.port=9000",
-          "kuma.portainer.http.name=portainer.${var.ts_hostname}.${var.domain}",
+          "kuma.portainer.http.name=portainer.${node.unique.name}.${var.domain}",
           "kuma.portainer.http.url=https://portainer.${var.domain}",
           "kuma.portainer.http.interval=60"
         ]
@@ -1152,7 +1168,10 @@ EOF
         volumes = [
           "${var.config_path}/authentik/postgresql:/var/lib/postgresql/data"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "authentik-group"
+          "com.docker.compose.service" = "authentik-services"
+        }
       }
 
       env {
@@ -1200,7 +1219,10 @@ EOF
           "${var.config_path}/authentik/media:/media",
           "${var.config_path}/authentik/custom-templates:/templates"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "authentik-group"
+          "com.docker.compose.service" = "authentik"
+        }
       }
 
       env {
@@ -1241,25 +1263,25 @@ EOF
           "traefik.enable=true",
           "traefik.http.middlewares.gzip.compress=true",
           # Redirect Middlewares
-          "traefik.http.middlewares.authentik-server-redirect.redirectRegex.regex=^https?://authentik-server\\.((?:${var.domain}|${var.ts_hostname}\\.${var.domain}))(.*)$$",
+          "traefik.http.middlewares.authentik-server-redirect.redirectRegex.regex=^https?://authentik-server\\.((?:${var.domain}|${node.unique.name}\\.${var.domain}))(.*)$$",
           "traefik.http.middlewares.authentik-server-redirect.redirectRegex.replacement=https://authentik.$$1$$2",
           "traefik.http.middlewares.authentik-server-redirect.redirectRegex.permanent=false",
-          "traefik.http.middlewares.authentikserver-redirect.redirectRegex.regex=^https?://authentikserver\\.((?:${var.domain}|${var.ts_hostname}\\.${var.domain}))(.*)$$",
+          "traefik.http.middlewares.authentikserver-redirect.redirectRegex.regex=^https?://authentikserver\\.((?:${var.domain}|${node.unique.name}\\.${var.domain}))(.*)$$",
           "traefik.http.middlewares.authentikserver-redirect.redirectRegex.replacement=https://authentik.$$1$$2",
           "traefik.http.middlewares.authentikserver-redirect.redirectRegex.permanent=false",
           # Redirect Routers
           "traefik.http.routers.authentik-server-redirect.service=authentik@consulcatalog",
-          "traefik.http.routers.authentik-server-redirect.rule=Host(`authentik-server.${var.domain}`) || Host(`authentik-server.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.authentik-server-redirect.rule=Host(`authentik-server.${var.domain}`) || Host(`authentik-server.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.authentik-server-redirect.middlewares=authentik-server-redirect@consulcatalog",
           "traefik.http.routers.authentikserver-redirect.service=authentik@consulcatalog",
-          "traefik.http.routers.authentikserver-redirect.rule=Host(`authentikserver.${var.domain}`) || Host(`authentikserver.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.authentikserver-redirect.rule=Host(`authentikserver.${var.domain}`) || Host(`authentikserver.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.authentikserver-redirect.middlewares=authentikserver-redirect@consulcatalog",
           # Main Router
           "traefik.http.routers.authentik.service=authentik",
-          "traefik.http.routers.authentik.rule=Host(`authentik.${var.domain}`) || Host(`authentik.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.authentik.rule=Host(`authentik.${var.domain}`) || Host(`authentik.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.authentik.middlewares=gzip",
           "traefik.http.services.authentik.loadbalancer.server.port=9000",
-          "kuma.authentik.http.name=authentik.${var.ts_hostname}.${var.domain}",
+          "kuma.authentik.http.name=authentik.${node.unique.name}.${var.domain}",
           "kuma.authentik.http.url=https://authentik.${var.domain}",
           "kuma.authentik.http.interval=60"
         ]
@@ -1282,12 +1304,14 @@ EOF
         image = "ghcr.io/goauthentik/server:2025.8.3"
         command = "worker"
         volumes = [
-          "${var.docker_socket}:/var/run/docker.sock:rw",
           "${var.config_path}/authentik/media:/media",
           "${var.config_path}/authentik/certs:/certs",
           "${var.config_path}/authentik/custom-templates:/templates"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "authentik-group"
+          "com.docker.compose.service" = "authentik-worker"
+        }
       }
 
       user = "root"
@@ -1340,53 +1364,6 @@ EOF
       }
     }
 
-    # 🔹🔹 Docker Socket Proxy (Read-Only) 🔹🔹
-    # This is an optional security container.
-    # This will be used to filter ONLY get requests to the Docker Engine API.
-    # It stops stuff like https://blog.quarkslab.com/why-is-exposing-the-docker-socket-a-really-bad-idea.html
-    task "dockerproxy-ro" {
-      driver = "docker"
-
-      lifecycle {
-        hook    = "prestart"
-        sidecar = true
-      }
-
-      config {
-        image = "docker.io/tecnativa/docker-socket-proxy"
-        ports = ["dockerproxy_ro"]
-        privileged = true
-        userns_mode = "host"  # this is needed if https://docs.docker.com/engine/security/userns-remap/#enable-userns-remap-on-the-daemon is setup
-        volumes = [
-          "${var.docker_socket}:/var/run/docker.sock"
-        ]
-      }
-
-      env {
-        TZ            = var.tz
-        PUID          = var.puid
-        PGID          = var.pgid
-        UMASK         = var.umask
-        CONTAINERS    = "1"
-        EVENTS        = "1"
-        INFO          = "1"
-        DISABLE_IPV6  = "0"
-      }
-
-      resources {
-        cpu        = 1
-        memory     = 256
-        memory_max = 0
-      
-      }
-
-      service {
-        name = "dockerproxy-ro"
-        port = "dockerproxy_ro"
-        tags = ["dockerproxy-ro"]
-      }
-    }
-
     # 🔹🔹 Docker Socket Proxy (Read-Write) 🔹🔹
     task "dockerproxy-rw" {
       driver = "docker"
@@ -1397,9 +1374,11 @@ EOF
         privileged = true
         userns_mode = "host"  # this is needed if https://docs.docker.com/engine/security/userns-remap/#enable-userns-remap-on-the-daemon is setup
         volumes = [
-          "${var.docker_socket}:/var/run/docker.sock"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "core-group"
+          "com.docker.compose.service" = "dockerproxy-rw"
+        }
       }
 
       env {
@@ -1513,9 +1492,11 @@ EOF
       config {
         image = "docker.io/containrrr/watchtower"
         volumes = [
-          "${var.docker_socket}:/var/run/docker.sock:rw"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "core-group"
+          "com.docker.compose.service" = "watchtower"
+        }
       }
 
       # Watchtower needs Docker credentials config
@@ -1679,44 +1660,47 @@ EOF
     }
   }
 
-  # Cloudflare Ddns Group
-  group "cloudflare-ddns-group" {
-    count = 1
+  # Cloudflare Ddns Group (temporarily disabled)
+  # group "cloudflare-ddns-group" {
+  #   count = 1
 
-    network {
-      mode = "bridge"
-      
-    }
+  #   network {
+  #     mode = "host"
+  #   }
 
-    # Cloudflare DDNS
-    task "cloudflare-ddns" {
-      driver = "docker"
+  #   # Cloudflare DDNS
+  #   task "cloudflare-ddns" {
+  #     driver = "docker"
 
-      config {
-        image       = "docker.io/favonia/cloudflare-ddns:1"
-        network_mode = "host"
-        #read_only    = true read_only not supported in Nomad Docker driver
-        cap_drop     = ["all"]
-        #security_opt = ["no-new-privileges:true"] security_opt not supported in Nomad Docker driver  
-      }
+  #     config {
+  #       image       = "docker.io/favonia/cloudflare-ddns:1"
+  #       network_mode = "host"
+  #       #read_only    = true read_only not supported in Nomad Docker driver
+  #       cap_drop     = ["all"]
+  #       #security_opt = ["no-new-privileges:true"] security_opt not supported in Nomad Docker driver
+  #       labels = {
+  #         "com.docker.compose.project" = "coolify-proxy-group"
+  #         "com.docker.compose.service" = "cloudflare-ddns"
+  #       }
+  #     }
 
-      env {
-        TZ                     = var.tz
-        CLOUDFLARE_API_TOKEN   = var.cloudflare_api_token
-        DOMAINS                = "${var.ts_hostname}.${var.domain},*.${var.ts_hostname}.${var.domain}"
-        PROXIED                = "is(${var.domain})||is(*.${var.domain})"
-        TTL                    = "1"
-        RECORD_COMMENT         = "Updated by Cloudflare DDNS on server ${var.ts_hostname}.${var.domain}"
-      }
+  #     env {
+  #       TZ                     = var.tz
+  #       CLOUDFLARE_API_TOKEN   = var.cloudflare_api_token
+  #       DOMAINS                = "${node.unique.name}.${var.domain},*.${node.unique.name}.${var.domain}"
+  #       PROXIED                = "is(${var.domain})||is(*.${var.domain})"
+  #       TTL                    = "1"
+  #       RECORD_COMMENT         = "Updated by Cloudflare DDNS on server ${node.unique.name}.${var.domain}"
+  #     }
 
-      resources {
-        cpu        = 1
-        memory     = 256
-        memory_max = 0
-      
-      }
-    }
-  }
+  #     resources {
+  #       cpu        = 1
+  #       memory     = 256
+  #       memory_max = 0
+  #     
+  #     }
+  #   }
+  # }
 
   # Nginx Traefik Extensions Group
   group "nginx-traefik-extensions-group" {
@@ -1739,7 +1723,10 @@ EOF
           "${var.config_path}/traefik/nginx-middlewares/auth:/etc/nginx/auth:ro"
         ]
         args = ["nginx", "-c", "/local/nginx.conf", "-g", "daemon off;"]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "coolify-proxy-group"
+          "com.docker.compose.service" = "nginx-traefik-extensions"
+        }
       }
 
       # Nginx configuration template
@@ -1929,7 +1916,10 @@ EOF
         volumes = [
           "${var.config_path}/traefik/tinyauth:/data"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "coolify-proxy-group"
+          "com.docker.compose.service" = "tinyauth"
+        }
       }
 
       env {
@@ -1965,7 +1955,7 @@ EOF
           "tinyauth",
           "${var.domain}",
           "traefik.enable=true",
-          "traefik.http.routers.tinyauth.rule=Host(`auth.${var.domain}`) || Host(`auth.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.tinyauth.rule=Host(`auth.${var.domain}`) || Host(`auth.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.tinyauth.loadbalancer.server.port=3000"
         ]
 
@@ -2010,7 +2000,10 @@ EOF
           # Log bind mounts into crowdsec
           "${var.config_path}/traefik/logs:/var/log/traefik:ro"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "coolify-proxy-group"
+          "com.docker.compose.service" = "crowdsec"
+        }
       }
 
       env {
@@ -2493,13 +2486,11 @@ EOF
         ports = ["traefik_api", "traefik_http", "traefik_https"]
         cap_add = ["NET_ADMIN"]
         volumes = [
-          #"${var.docker_socket}:/var/run/docker.sock:ro",
           # Dynamic config is now generated via template in /local/dynamic/
           "${var.config_path}/traefik/certs:/certs",
           "${var.config_path}/traefik/plugins-local:/plugins-local",
           "${var.config_path}/traefik/logs:/var/log/traefik:rw"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
         args = [
           "--accessLog=true",
           "--accessLog.bufferingSize=0",
@@ -2542,7 +2533,7 @@ EOF
           "--entryPoints.websecure.http.tls=true",
           "--entryPoints.websecure.http.tls.certResolver=letsencrypt",
           "--entryPoints.websecure.http.tls.domains[0].main=${var.domain}",
-          "--entryPoints.websecure.http.tls.domains[0].sans=www.${var.domain},*.${var.domain},*.${var.ts_hostname}.${var.domain}",
+          "--entryPoints.websecure.http.tls.domains[0].sans=www.${var.domain},*.${var.domain},*.${node.unique.name}.${var.domain}",
           "--entryPoints.websecure.http2.maxConcurrentStreams=100",
           "--entryPoints.websecure.http3",
           "--global.checkNewVersion=true",
@@ -2551,9 +2542,9 @@ EOF
           "--ping=true",
           # Consul Catalog provider for Nomad service discovery
           "--providers.consulCatalog=true",
-          "--providers.consulCatalog.endpoint.address=10.16.1.78:8500",
+          "--providers.consulCatalog.endpoint.address=172.26.64.1:8500",
           "--providers.consulCatalog.exposedByDefault=false",
-          "--providers.consulCatalog.defaultRule=Host(`{{ normalize .Name }}.${var.domain}`) || Host(`{{ normalize .Name }}.${var.ts_hostname}.${var.domain}`)",
+          "--providers.consulCatalog.defaultRule=Host(`{{ normalize .Name }}.${var.domain}`) || Host(`{{ normalize .Name }}.${node.unique.name}.${var.domain}`)",
           "--providers.consulCatalog.watch=true",
           "--providers.consulCatalog.prefix=traefik",
           "--providers.file.directory=/local/dynamic/",
@@ -2570,6 +2561,10 @@ EOF
           # however, in our configuration, this is REQUIRED to be true (avoids errors like 'ERR 500 Internal Server Error error="tls: failed to verify certificate: x509: cannot validate certificate for 10.76.0.2 because it doesn't contain any IP SANs"') in stremio
           "--serversTransport.insecureSkipVerify=true"
         ]
+        labels = {
+          "com.docker.compose.project" = "coolify-proxy-group"
+          "com.docker.compose.service" = "traefik"
+        }
       }
 
       template {
@@ -2601,16 +2596,42 @@ EOF
 # yaml-language-server: $schema=https://www.schemastore.org/traefik-v3-file-provider.json
 http:
   routers:
+    nomad-ui:
+      entryPoints:
+        - web
+        - websecure
+      service: nomad-ui@file
+      rule: Host(`nomad.${var.domain}`) || Host(`nomad.${node.unique.name}.${var.domain}`)
+      middlewares:
+        - nginx-auth@file
+      priority: 100
+    consul-ui:
+      entryPoints:
+        - web
+        - websecure
+      service: consul-ui@file
+      rule: Host(`consul.${var.domain}`) || Host(`consul.${node.unique.name}.${var.domain}`)
+      middlewares:
+        - nginx-auth@file
+      priority: 100
     catchall:
       entryPoints:
         - web
         - websecure
       service: noop@internal
-      rule: Host(`${var.domain}`) || Host(`${var.ts_hostname}.${var.domain}`) || HostRegexp(`^(.+)$`)
+      rule: Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`) || HostRegexp(`^(.+)$`)
       priority: 1
       middlewares:
         - traefikerrorreplace@file
   services:
+    nomad-ui:
+      loadBalancer:
+        servers:
+          - url: http://172.26.64.1:4646
+    consul-ui:
+      loadBalancer:
+        servers:
+          - url: http://172.26.64.1:8500
     nginx-traefik-extensions:
       loadBalancer:
         servers:
@@ -2619,6 +2640,9 @@ http:
       loadBalancer:
         servers:
           - url: http://bolabaden-nextjs:3000
+  serversTransports:
+    default:
+      insecureSkipVerify: true
   middlewares:
     traefikerrorreplace:
       plugin:
@@ -2816,7 +2840,7 @@ EOF
           "${var.domain}",
           "traefik.enable=true",
           "traefik.http.routers.traefik.service=api@internal",
-          "traefik.http.routers.traefik.rule=Host(`traefik.${var.domain}`) || Host(`traefik.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.traefik.rule=Host(`traefik.${var.domain}`) || Host(`traefik.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.traefik.loadbalancer.server.port=8080",
           "homepage.group=Infrastructure",
           "homepage.name=Traefik",
@@ -2824,7 +2848,7 @@ EOF
           "homepage.href=https://traefik.${var.domain}/dashboard",
           "homepage.widget.type=traefik",
           "homepage.description=Reverse proxy entrypoint for all services with TLS, Cloudflare integration, and auth middleware",
-          "kuma.traefik.http.name=traefik.${var.ts_hostname}.${var.domain}",
+          "kuma.traefik.http.name=traefik.${node.unique.name}.${var.domain}",
           "kuma.traefik.http.url=https://traefik.${var.domain}/dashboard",
           "kuma.traefik.http.interval=20"
         ]
@@ -2857,7 +2881,10 @@ EOF
       config {
         image = "docker.io/traefik/whoami:v1.11"
         ports = ["whoami"]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "coolify-proxy-group"
+          "com.docker.compose.service" = "whoami"
+        }
       }
 
       resources {
@@ -2880,7 +2907,7 @@ EOF
           "homepage.icon=whoami.png",
           "homepage.href=https://whoami.${var.domain}",
           "homepage.description=Request echo service used to verify reverse-proxy, headers, and auth middleware",
-          "kuma.whoami.http.name=whoami.${var.ts_hostname}.${var.domain}",
+          "kuma.whoami.http.name=whoami.${node.unique.name}.${var.domain}",
           "kuma.whoami.http.url=https://whoami.${var.domain}",
           "kuma.whoami.http.interval=60"
         ]
@@ -2911,9 +2938,11 @@ EOF
       config {
         image = "ghcr.io/bigboot/autokuma:latest"
         volumes = [
-          "${var.docker_socket}:/var/run/docker.sock:ro"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "coolify-proxy-group"
+          "com.docker.compose.service" = "autokuma"
+        }
       }
 
       template {
@@ -3008,10 +3037,7 @@ EOF
   group "logrotate-traefik-group" {
     count = 1
 
-    network {
-      mode = "bridge"
-      
-    }
+    # Task uses network_mode = "none", so we don't need a network block
 
     # Logrotate for Traefik
     task "logrotate-traefik" {
@@ -3023,6 +3049,10 @@ EOF
         volumes = [
           "${var.config_path}/traefik/logs:/var/log/traefik"
         ]
+        labels = {
+          "com.docker.compose.project" = "coolify-proxy-group"
+          "com.docker.compose.service" = "logrotate-traefik"
+        }
       }
 
       env {
@@ -3055,7 +3085,10 @@ EOF
       config {
         image = "postgres:16.3-alpine"
         ports = ["nuq_postgres"]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "firecrawl-group"
+          "com.docker.compose.service" = "nuq-postgres"
+        }
       }
 
       env {
@@ -3109,7 +3142,10 @@ EOF
       config {
         image = "ghcr.io/firecrawl/playwright-service:latest"
         ports = ["playwright"]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "firecrawl-group"
+          "com.docker.compose.service" = "playwright-service"
+        }
       }
 
       env {
@@ -3152,11 +3188,14 @@ EOF
         ports = ["firecrawl", "firecrawl_extract", "firecrawl_worker"]
         command = "node"
         args    = ["dist/src/harness.js", "--start-docker"]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
         ulimit {
           nofile       = "65535"
           nproc        = "8192"
           core         = "0"
+        }
+        labels = {
+          "com.docker.compose.project" = "firecrawl-group"
+          "com.docker.compose.service" = "firecrawl"
         }
       }
 
@@ -3197,7 +3236,7 @@ EOF
           "firecrawl",
           "${var.domain}",
           "traefik.enable=true",
-          "traefik.http.routers.firecrawl.rule=Host(`firecrawl-api.${var.domain}`) || Host(`firecrawl-api.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.firecrawl.rule=Host(`firecrawl-api.${var.domain}`) || Host(`firecrawl-api.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.firecrawl.loadbalancer.server.port=3002"
         ]
       }
@@ -3231,7 +3270,10 @@ EOF
           "${var.config_path}/headscale/lib:/var/lib/headscale",
           "${var.config_path}/headscale/run:/var/run/headscale"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "headscale-group"
+          "com.docker.compose.service" = "headscale-server"
+        }
       }
 
       # Headscale configuration template
@@ -3555,18 +3597,18 @@ EOF
           "${var.domain}",
           "traefik.enable=true",
           # Redirect tailscale's expected /admin to headscale ui's /web for seamless transition
-          "traefik.http.middlewares.headscale-admin-redirect.redirectRegex.regex=^https?://headscale(-server)?\\.(${var.domain}|${var.ts_hostname}\\.${var.domain})/admin(.*)$$",
+          "traefik.http.middlewares.headscale-admin-redirect.redirectRegex.regex=^https?://headscale(-server)?\\.(${var.domain}|${node.unique.name}\\.${var.domain})/admin(.*)$$",
           "traefik.http.middlewares.headscale-admin-redirect.redirectRegex.replacement=https://headscale.${var.domain}/web$$3",
           "traefik.http.middlewares.headscale-admin-redirect.redirectRegex.permanent=false",
-          "traefik.http.middlewares.headscale-server-redirect.redirectRegex.regex=^https?://headscale-server\\.((?:${var.domain}|${var.ts_hostname}\\.${var.domain}))(.*)$$",
+          "traefik.http.middlewares.headscale-server-redirect.redirectRegex.regex=^https?://headscale-server\\.((?:${var.domain}|${node.unique.name}\\.${var.domain}))(.*)$$",
           "traefik.http.middlewares.headscale-server-redirect.redirectRegex.replacement=https://headscale.$$1$$2",
           "traefik.http.middlewares.headscale-server-redirect.redirectRegex.permanent=false",
           "traefik.http.routers.headscale-server.service=headscale-server@consulcatalog",
-          "traefik.http.routers.headscale-server.rule=Host(`headscale-server.${var.domain}`) || Host(`headscale-server.${var.ts_hostname}.${var.domain}`) || Host(`headscale.${var.domain}`) || Host(`headscale.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.headscale-server.rule=Host(`headscale-server.${var.domain}`) || Host(`headscale-server.${node.unique.name}.${var.domain}`) || Host(`headscale.${var.domain}`) || Host(`headscale.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.headscale-server.middlewares=headscale-admin-redirect@consulcatalog,headscale-server-redirect@consulcatalog",
           "traefik.http.services.headscale-server.loadbalancer.server.port=8081",
           "traefik.http.routers.headscale-metrics.service=headscale-metrics@consulcatalog",
-          "traefik.http.routers.headscale-metrics.rule=(Host(`headscale.${var.domain}`) || Host(`headscale.${var.ts_hostname}.${var.domain}`)) && PathPrefix(`/metrics`)",
+          "traefik.http.routers.headscale-metrics.rule=(Host(`headscale.${var.domain}`) || Host(`headscale.${node.unique.name}.${var.domain}`)) && PathPrefix(`/metrics`)",
           "traefik.http.services.headscale-metrics.loadbalancer.server.port=8080"
         ]
       }
@@ -3593,7 +3635,10 @@ EOF
         volumes = [
           "${var.config_path}/headscale/config:/etc/headscale"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "headscale-group"
+          "com.docker.compose.service" = "headscale-ui"
+        }
       }
 
       resources {
@@ -3612,7 +3657,7 @@ EOF
           "${var.domain}",
           "traefik.enable=true",
           "traefik.http.routers.headscale.service=headscale",
-          "traefik.http.routers.headscale.rule=(Host(`headscale.${var.domain}`) || Host(`headscale.${var.ts_hostname}.${var.domain}`)) && (PathPrefix(`/web`) || PathPrefix(`/web/users.html`) || PathPrefix(`/web/groups.html`) || PathPrefix(`/web/devices.html`) || PathPrefix(`/web/settings.html`))",
+          "traefik.http.routers.headscale.rule=(Host(`headscale.${var.domain}`) || Host(`headscale.${node.unique.name}.${var.domain}`)) && (PathPrefix(`/web`) || PathPrefix(`/web/users.html`) || PathPrefix(`/web/groups.html`) || PathPrefix(`/web/devices.html`) || PathPrefix(`/web/settings.html`))",
           "traefik.http.services.headscale.loadbalancer.server.port=8080",
           "homepage.group=Networking",
           "homepage.name=Headscale UI",
@@ -3651,7 +3696,10 @@ EOF
         volumes = [
           "${var.config_path}/litellm/pgdata:/var/lib/postgresql/data"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "llm-group"
+          "com.docker.compose.service" = "litellm-postgres"
+        }
       }
 
       env {
@@ -3708,7 +3756,10 @@ EOF
         volumes = [
           "${var.config_path}/litellm:/app/config:ro"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "llm-group"
+          "com.docker.compose.service" = "litellm"
+        }
       }
 
       template {
@@ -3760,7 +3811,7 @@ EOF
           "litellm",
           "${var.domain}",
           "traefik.enable=true",
-          "traefik.http.routers.litellm.rule=Host(`litellm.${var.domain}`) || Host(`litellm.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.litellm.rule=Host(`litellm.${var.domain}`) || Host(`litellm.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.litellm.loadbalancer.server.port=4000"
         ]
 
@@ -3798,7 +3849,10 @@ EOF
           "--cors-allow-origins", "*",
           "--config", "/local/mcp_servers.json"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "llm-group"
+          "com.docker.compose.service" = "mcpo"
+        }
       }
 
       # MCP servers configuration
@@ -3848,7 +3902,7 @@ EOF
           "${var.domain}",
           "traefik.enable=true",
           "traefik.http.routers.mcpo.middlewares=nginx-auth@file",
-          "traefik.http.routers.mcpo.rule=Host(`mcpo.${var.domain}`) || Host(`mcpo.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.mcpo.rule=Host(`mcpo.${var.domain}`) || Host(`mcpo.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.mcpo.loadbalancer.server.port=8000"
         ]
 
@@ -3887,7 +3941,10 @@ EOF
           "${var.config_path}/open-webui/vector_db:/app/backend/data/vector_db:rw",
           "${var.config_path}/open-webui/webui.db:/app/backend/data/webui.db:rw"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "llm-group"
+          "com.docker.compose.service" = "open-webui"
+        }
       }
 
       env {
@@ -3954,7 +4011,7 @@ EOF
           "open-webui",
           "${var.domain}",
           "traefik.enable=true",
-          "traefik.http.routers.open-webui.rule=Host(`open-webui.${var.domain}`) || Host(`open-webui.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.open-webui.rule=Host(`open-webui.${var.domain}`) || Host(`open-webui.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.open-webui.loadbalancer.server.port=8080"
         ]
 
@@ -3995,7 +4052,10 @@ EOF
           "${var.config_path}/gptr/outputs:/usr/src/app/outputs",
           "${var.config_path}/gptr/reports:/usr/src/app/reports"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "llm-group"
+          "com.docker.compose.service" = "gptr"
+        }
       }
 
       template {
@@ -4057,7 +4117,7 @@ EOF
           "${var.domain}",
           "traefik.enable=true",
           "traefik.http.routers.gptr-legacy.service=gptr-legacy@consulcatalog",
-          "traefik.http.routers.gptr-legacy.rule=Host(`gptr.${var.domain}`) || Host(`gptr.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.gptr-legacy.rule=Host(`gptr.${var.domain}`) || Host(`gptr.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.gptr-legacy.loadbalancer.server.port=8000"
         ]
 
@@ -4073,6 +4133,131 @@ EOF
   }
 
   # Qdrant Group
+  group "qdrant-group" {
+    count = 1
+
+    network {
+      mode = "bridge"
+      
+      port "qdrant" { to = 6333 }
+    }
+
+    # 🔹🔹 Qdrant 🔹🔹
+    task "qdrant" {
+      driver = "docker"
+
+      config {
+        image = "docker.io/qdrant/qdrant"
+        ports = ["qdrant"]
+        volumes = [
+          "${var.config_path}/qdrant/storage:/qdrant/storage"
+        ]
+        labels = {
+          "com.docker.compose.project" = "llm-group"
+          "com.docker.compose.service" = "qdrant"
+        }
+      }
+
+      env {
+        QDRANT_STORAGE_PATH      = "/qdrant/storage"
+        QDRANT_STORAGE_TYPE      = "disk"
+        QDRANT_STORAGE_DISK_PATH = "/qdrant/storage"
+        QDRANT_STORAGE_DISK_TYPE = "disk"
+      }
+
+      resources {
+        cpu        = 1
+        memory     = 256
+        memory_max = 0
+      }
+
+      service {
+        name = "qdrant"
+        port = "qdrant"
+        tags = [
+          "traefik.enable=true",
+          "traefik.http.services.qdrant.loadbalancer.server.port=6333",
+          "homepage.group=AI",
+          "homepage.name=Qdrant",
+          "homepage.icon=qdrant.png",
+          "homepage.href=https://qdrant.${var.domain}",
+          "homepage.description=Qdrant is a vector database for storing and querying vectors."
+        ]
+      }
+    }
+  }
+
+  # Mcp Proxy Group
+  group "mcp-proxy-group" {
+    count = 1
+
+    network {
+      mode = "bridge"
+      
+      port "mcp_proxy" { to = 9090 }
+    }
+
+    # MCP Proxy
+    task "mcp-proxy" {
+      driver = "docker"
+
+      config {
+        image = "ghcr.io/tbxark/mcp-proxy"
+        ports = ["mcp_proxy"]
+        args = [
+          "--config", "/local/config.json",
+          "-expand-env"
+        ]
+        labels = {
+          "com.docker.compose.project" = "llm-group"
+          "com.docker.compose.service" = "mcp-proxy"
+        }
+      }
+
+      template {
+        data = <<EOF
+{
+  "mcpProxy": {
+    "baseURL": "https://mcp.${var.domain}",
+    "addr": ":9090",
+    "name": "MCP Proxy",
+    "version": "1.0.0",
+    "type": "streamable-http",
+    "options": {
+      "panicIfInvalid": false,
+      "logEnabled": true,
+      "authTokens": []
+    }
+  },
+  "mcpServers": {}
+}
+EOF
+        destination = "local/config.json"
+      }
+
+      resources {
+        cpu        = 500
+        memory     = 512
+        memory_max = 0
+      }
+
+      service {
+        name = "mcp-proxy"
+        port = "mcp_proxy"
+        tags = [
+          "traefik.enable=true",
+          "traefik.http.routers.mcp-proxy.rule=Host(`mcp.${var.domain}`) || Host(`mcp.${node.unique.name}.${var.domain}`)",
+          "traefik.http.services.mcp-proxy.loadbalancer.server.port=9090",
+          "homepage.group=MCP",
+          "homepage.name=MCP Proxy",
+          "homepage.icon=mcp-proxy.png",
+          "homepage.href=https://mcp.${var.domain}",
+          "homepage.description=MCP Proxy is a tool for proxying MCP servers."
+        ]
+      }
+    }
+  }
+
   # Stremio Group
   group "stremio-group" {
     count = 1
@@ -4101,11 +4286,14 @@ EOF
         volumes = [
           "${var.config_path}/stremio/root/.stremio-server:/root/.stremio-server"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "stremio-group"
+          "com.docker.compose.service" = "stremio"
+        }
       }
 
       env {
-        IPADDRESS        = "127.0.0.1"
+        IPADDRESS        = "0.0.0.0"
         AUTO_SERVER_URL  = "1"
         SERVER_URL       = "https://stremio.${var.domain}/"
         WEBUI_LOCATION   = "https://stremio.${var.domain}/shell/"
@@ -4114,9 +4302,9 @@ EOF
       }
 
       resources {
-        cpu        = 1
-        memory     = 256
-        memory_max = 0
+        cpu        = 2000
+        memory     = 1024
+        memory_max = 2048
       
       }
 
@@ -4129,40 +4317,43 @@ EOF
           "${var.domain}",
           "traefik.enable=true",
           # Redirect stremio-web.$DOMAIN to stremio.$DOMAIN
-          "traefik.http.middlewares.stremio-web-redirect.redirectRegex.regex=^(http|https)://stremio(-web)\\.(${var.domain}|${var.ts_hostname}\\.${var.domain})(.*)$$",
+          "traefik.http.middlewares.stremio-web-redirect.redirectRegex.regex=^(http|https)://stremio(-web)\\.(${var.domain}|${node.unique.name}\\.${var.domain})(.*)$$",
           "traefik.http.middlewares.stremio-web-redirect.redirectRegex.replacement=$$1://stremio.$$3$$4",
           "traefik.http.middlewares.stremio-web-redirect.redirectRegex.permanent=false",
           # Redirect stremio.$DOMAIN/shell-v4.4 to /shell
-          "traefik.http.middlewares.stremio-shell-redirect.redirectRegex.regex=^(http|https)://stremio\\.(${var.domain}|${var.ts_hostname}\\.${var.domain})(.*)$$",
+          "traefik.http.middlewares.stremio-shell-redirect.redirectRegex.regex=^(http|https)://stremio\\.(${var.domain}|${node.unique.name}\\.${var.domain})(.*)$$",
           "traefik.http.middlewares.stremio-shell-redirect.redirectRegex.replacement=$$1://stremio.$$2$$3",
           "traefik.http.middlewares.stremio-shell-redirect.redirectRegex.permanent=false",
           # Redirect to add/replace streamingServer parameter for shell URLs
-          "traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.regex=^(http|https)://stremio\\.(${var.domain}|${var.ts_hostname}\\.${var.domain})(/shell[^#?]*)(\\\\?[^#]*?streamingServer=[^&#]*)?([^#]*)(#.*)?$$",
+          "traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.regex=^(http|https)://stremio\\.(${var.domain}|${node.unique.name}\\.${var.domain})(/shell[^#?]*)(\\\\?[^#]*?streamingServer=[^&#]*)?([^#]*)(#.*)?$$",
           "traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.replacement=$$1://stremio.$$2$$3?streamingServer=https%3A%2F%2Fstremio.$$2$$5$$6",
           "traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.permanent=false",
-          # Stremio Web UI (port 8080)
+          # Stremio Web UI (dynamic port maps to container port 8080)
           "traefik.http.routers.stremio.service=stremio@consulcatalog",
-          "traefik.http.routers.stremio.rule=Host(`stremio-web.${var.domain}`) || Host(`stremio-web.${var.ts_hostname}.${var.domain}`) || Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.stremio.rule=Host(`stremio-web.${var.domain}`) || Host(`stremio-web.${node.unique.name}.${var.domain}`) || Host(`stremio.${var.domain}`) || Host(`stremio.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.stremio.middlewares=stremio-web-redirect@consulcatalog,stremio-shell-redirect@consulcatalog,stremio-streaming-server-redirect@consulcatalog",
           "traefik.http.services.stremio.loadbalancer.server.scheme=https",
-          "traefik.http.services.stremio.loadbalancer.server.port=8080",
+          "traefik.http.services.stremio.loadbalancer.passhostheader=false",
           # Stremio HTTP Streaming Server (port 11470)
           "traefik.http.routers.stremio-http11470.service=stremio-http11470@consulcatalog",
           "traefik.http.services.stremio-http11470.loadbalancer.server.scheme=http",
           "traefik.http.services.stremio-http11470.loadbalancer.server.port=11470",
           # Stremio API/streaming routes to 11470
-          "traefik.http.routers.stremio-http11470.rule=(Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts_hostname}.${var.domain}`)) && ( PathPrefix(`/hlsv2`) || PathPrefix(`/casting`) || PathPrefix(`/local-addon`) || PathPrefix(`/proxy`) || PathPrefix(`/rar`) || PathPrefix(`/zip`) || PathPrefix(`/settings`) || PathPrefix(`/create`) || PathPrefix(`/removeAll`) || PathPrefix(`/samples`) || PathPrefix(`/probe`) || PathPrefix(`/subtitlesTracks`) || PathPrefix(`/opensubHash`) || PathPrefix(`/subtitles`) || PathPrefix(`/network-info`) || PathPrefix(`/device-info`) || PathPrefix(`/get-https`) || PathPrefix(`/hwaccel-profiler`) || PathPrefix(`/status`) || PathPrefix(`/exec`) || PathPrefix(`/stream`) || PathRegexp(`^/[^/]+/(stats\\\\.json|create|remove|destroy)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stats\\\\.json|hls\\\\.m3u8|master\\\\.m3u8|stream\\\\.m3u8|dlna|thumb\\\\.jpg)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+\\\\.m3u8|stream-[^/]+\\\\.m3u8|subs-[^/]+\\\\.m3u8)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+|stream-[^/]+)/[^/]+\\\\.(ts|mp4)$$`) || PathRegexp(`^/yt/[^/]+(\\\\.json)?$$`) || Path(`/thumb.jpg`) || Path(`/stats.json`) )",
+          "traefik.http.routers.stremio-http11470.rule=(Host(`stremio.${var.domain}`) || Host(`stremio.${node.unique.name}.${var.domain}`)) && ( PathPrefix(`/hlsv2`) || PathPrefix(`/casting`) || PathPrefix(`/local-addon`) || PathPrefix(`/proxy`) || PathPrefix(`/rar`) || PathPrefix(`/zip`) || PathPrefix(`/settings`) || PathPrefix(`/create`) || PathPrefix(`/removeAll`) || PathPrefix(`/samples`) || PathPrefix(`/probe`) || PathPrefix(`/subtitlesTracks`) || PathPrefix(`/opensubHash`) || PathPrefix(`/subtitles`) || PathPrefix(`/network-info`) || PathPrefix(`/device-info`) || PathPrefix(`/get-https`) || PathPrefix(`/hwaccel-profiler`) || PathPrefix(`/status`) || PathPrefix(`/exec`) || PathPrefix(`/stream`) || PathRegexp(`^/[^/]+/(stats\\\\.json|create|remove|destroy)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stats\\\\.json|hls\\\\.m3u8|master\\\\.m3u8|stream\\\\.m3u8|dlna|thumb\\\\.jpg)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+\\\\.m3u8|stream-[^/]+\\\\.m3u8|subs-[^/]+\\\\.m3u8)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+|stream-[^/]+)/[^/]+\\\\.(ts|mp4)$$`) || PathRegexp(`^/yt/[^/]+(\\\\.json)?$$`) || Path(`/thumb.jpg`) || Path(`/stats.json`) )",
           # Stremio HTTPS Streaming Server (port 12470)
           "traefik.http.routers.stremio-https12470.service=stremio-https12470@consulcatalog",
           "traefik.http.services.stremio-https12470.loadbalancer.server.scheme=https",
           "traefik.http.services.stremio-https12470.loadbalancer.server.port=12470",
           # Stremio API/streaming routes to 12470
-          "traefik.http.routers.stremio-https12470.rule=(Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts_hostname}.${var.domain}`)) && ( PathPrefix(`/hlsv2`) || PathPrefix(`/casting`) || PathPrefix(`/local-addon`) || PathPrefix(`/proxy`) || PathPrefix(`/rar`) || PathPrefix(`/zip`) || PathPrefix(`/settings`) || PathPrefix(`/create`) || PathPrefix(`/removeAll`) || PathPrefix(`/samples`) || PathPrefix(`/probe`) || PathPrefix(`/subtitlesTracks`) || PathPrefix(`/opensubHash`) || PathPrefix(`/subtitles`) || PathPrefix(`/network-info`) || PathPrefix(`/device-info`) || PathPrefix(`/get-https`) || PathPrefix(`/hwaccel-profiler`) || PathPrefix(`/status`) || PathPrefix(`/exec`) || PathPrefix(`/stream`) || PathRegexp(`^/[^/]+/(stats\\\\.json|create|remove|destroy)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stats\\\\.json|hls\\\\.m3u8|master\\\\.m3u8|stream\\\\.m3u8|dlna|thumb\\\\.jpg)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+\\\\.m3u8|stream-[^/]+\\\\.m3u8|subs-[^/]+\\\\.m3u8)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+|stream-[^/]+)/[^/]+\\\\.(ts|mp4)$$`) || PathRegexp(`^/yt/[^/]+(\\\\.json)?$$`) || Path(`/thumb.jpg`) || Path(`/stats.json`) )",
+          "traefik.http.routers.stremio-https12470.rule=(Host(`stremio.${var.domain}`) || Host(`stremio.${node.unique.name}.${var.domain}`)) && ( PathPrefix(`/hlsv2`) || PathPrefix(`/casting`) || PathPrefix(`/local-addon`) || PathPrefix(`/proxy`) || PathPrefix(`/rar`) || PathPrefix(`/zip`) || PathPrefix(`/settings`) || PathPrefix(`/create`) || PathPrefix(`/removeAll`) || PathPrefix(`/samples`) || PathPrefix(`/probe`) || PathPrefix(`/subtitlesTracks`) || PathPrefix(`/opensubHash`) || PathPrefix(`/subtitles`) || PathPrefix(`/network-info`) || PathPrefix(`/device-info`) || PathPrefix(`/get-https`) || PathPrefix(`/hwaccel-profiler`) || PathPrefix(`/status`) || PathPrefix(`/exec`) || PathPrefix(`/stream`) || PathRegexp(`^/[^/]+/(stats\\\\.json|create|remove|destroy)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stats\\\\.json|hls\\\\.m3u8|master\\\\.m3u8|stream\\\\.m3u8|dlna|thumb\\\\.jpg)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+\\\\.m3u8|stream-[^/]+\\\\.m3u8|subs-[^/]+\\\\.m3u8)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+|stream-[^/]+)/[^/]+\\\\.(ts|mp4)$$`) || PathRegexp(`^/yt/[^/]+(\\\\.json)?$$`) || Path(`/thumb.jpg`) || Path(`/stats.json`) )",
           "homepage.group=Media Streaming Platforms",
           "homepage.name=Stremio",
           "homepage.icon=stremio.png",
           "homepage.href=https://stremio.${var.domain}/",
-          "homepage.description=A one-stop hub for video content aggregation"
+          "homepage.description=A one-stop hub for video content aggregation, allowing you to stream movies, series, and more from various sources",
+          "kuma.stremio.http.name=stremio.${node.unique.name}.${var.domain}",
+          "kuma.stremio.http.url=https://stremio.${var.domain}",
+          "kuma.stremio.http.interval=60"
         ]
 
         check {
@@ -4193,7 +4384,10 @@ EOF
       config {
         image = "ghcr.io/flaresolverr/flaresolverr:latest"
         ports = ["flaresolverr"]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "indexers-group"
+          "com.docker.compose.service" = "flaresolverr"
+        }
       }
 
       env {
@@ -4229,7 +4423,7 @@ EOF
           "${var.domain}",
           "traefik.enable=true",
           "traefik.http.routers.flaresolverr.middlewares=nginx-auth@file",
-          "traefik.http.routers.flaresolverr.rule=Host(`flaresolverr.${var.domain}`) || Host(`flaresolverr.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.flaresolverr.rule=Host(`flaresolverr.${var.domain}`) || Host(`flaresolverr.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.flaresolverr.loadbalancer.server.port=8191",
           "homepage.group=Infrastructure",
           "homepage.name=Flaresolverr",
@@ -4272,7 +4466,10 @@ EOF
           "${var.config_path}/jackett/config:/config",
           "/mnt/remote/blackhole:/blackhole"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "indexers-group"
+          "com.docker.compose.service" = "jackett"
+        }
       }
 
       env {
@@ -4300,7 +4497,7 @@ EOF
           "jackett",
           "${var.domain}",
           "traefik.enable=true",
-          "traefik.http.routers.jackett.rule=Host(`jackett.${var.domain}`) || Host(`jackett.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.jackett.rule=Host(`jackett.${var.domain}`) || Host(`jackett.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.jackett.loadbalancer.server.port=9117",
           "homepage.group=Source Aggregator",
           "homepage.name=Jackett Indexer",
@@ -4344,7 +4541,10 @@ EOF
         volumes = [
           "${var.config_path}/prowlarr/config:/config:rw"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "indexers-group"
+          "com.docker.compose.service" = "prowlarr"
+        }
       }
 
       env {
@@ -4368,7 +4568,7 @@ EOF
           "prowlarr",
           "${var.domain}",
           "traefik.enable=true",
-          "traefik.http.routers.prowlarr.rule=Host(`prowlarr.${var.domain}`) || Host(`prowlarr.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.prowlarr.rule=Host(`prowlarr.${var.domain}`) || Host(`prowlarr.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.prowlarr.loadbalancer.server.port=9696",
           "homepage.group=Indexers",
           "homepage.name=Prowlarr",
@@ -4409,6 +4609,10 @@ EOF
         volumes = [
           "${var.config_path}/stremio/addons/aiostreams/data:/app/data"
         ]
+        labels = {
+          "com.docker.compose.project" = "stremio-group"
+          "com.docker.compose.service" = "aiostreams"
+        }
       }
 
       template {
@@ -4577,7 +4781,7 @@ EOF
           "aiostreams",
           "${var.domain}",
           "traefik.enable=true",
-          "traefik.http.routers.aiostreams.rule=Host(`aiostreams.${var.domain}`) || Host(`aiostreams.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.aiostreams.rule=Host(`aiostreams.${var.domain}`) || Host(`aiostreams.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.aiostreams.loadbalancer.server.port=3000",
           "homepage.group=Stremio Addons",
           "homepage.name=AIOStreams",
@@ -4609,7 +4813,10 @@ EOF
         volumes = [
           "${var.config_path}/stremio/addons/stremthru/app/data:/app/data"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "stremio-group"
+          "com.docker.compose.service" = "stremthru"
+        }
       }
 
       template {
@@ -4698,7 +4905,7 @@ EOF
           "stremthru",
           "${var.domain}",
           "traefik.enable=true",
-          "traefik.http.routers.stremthru.rule=Host(`stremthru.${var.domain}`) || Host(`stremthru.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.stremthru.rule=Host(`stremthru.${var.domain}`) || Host(`stremthru.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.stremthru.loadbalancer.server.port=8080",
           "homepage.group=Stremio Addons",
           "homepage.name=StremThru",
@@ -4761,7 +4968,10 @@ EOF
           "--config=/config/rclone/rclone.conf",
           "--cache-dir=/.cache/rclone"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "rclone-group"
+          "com.docker.compose.service" = "rclone"
+        }
       }
 
       # Rclone config template
@@ -4915,7 +5125,7 @@ EOF
           "${var.domain}",
           "traefik.enable=true",
           "traefik.http.routers.rclone.middlewares=nginx-auth@file",
-          "traefik.http.routers.rclone.rule=Host(`rclone.${var.domain}`) || Host(`rclone.${var.ts_hostname}.${var.domain}`)",
+          "traefik.http.routers.rclone.rule=Host(`rclone.${var.domain}`) || Host(`rclone.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.rclone.loadbalancer.server.port=5572",
           "homepage.group=Cloud",
           "homepage.name=Rclone",
@@ -4942,7 +5152,6 @@ EOF
 
     network {
       mode = "bridge"
-      
     }
 
     # Rclone Init container
@@ -4951,10 +5160,14 @@ EOF
 
       config {
         image = "ghcr.io/coanghel/rclone-docker-automount/rclone-init:latest"
+        network_mode = "bridge"
         volumes = [
           "/mnt/remote:/mnt/remote:rshared"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "core-group"
+          "com.docker.compose.service" = "rclone-init"
+        }
       }
 
       # Mount configuration template
@@ -5121,7 +5334,10 @@ EOF
         volumes = [
           "warp-config-data:/var/lib/cloudflare-warp"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        labels = {
+          "com.docker.compose.project" = "warp-nat-routing-group"
+          "com.docker.compose.service" = "warp-nat-gateway"
+        }
       }
 
       env {
@@ -5174,10 +5390,13 @@ EOF
         privileged = true
         network_mode = "host"
         volumes = [
-          "${var.docker_socket}:/var/run/docker.sock:rw",
           "/etc/iproute2/rt_tables:/etc/iproute2/rt_tables:rw",
           "/proc:/proc:rw"
         ]
+        labels = {
+          "com.docker.compose.project" = "warp-nat-routing-group"
+          "com.docker.compose.service" = "warp_router"
+        }
       }
 
       # WARP NAT Setup Script template
@@ -5581,6 +5800,10 @@ EOF
           "-c",
           "apk add --no-cache curl ipcalc && while true; do echo \"$(date): $(curl -s --max-time 4 ifconfig.me)\"; sleep 5; done"
         ]
+        labels = {
+          "com.docker.compose.project" = "warp-nat-routing-group"
+          "com.docker.compose.service" = "ip-checker-warp"
+        }
       }
 
       resources {
