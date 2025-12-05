@@ -1062,9 +1062,73 @@ EOF
     }
   }
 
+  # Telemetry Auth Group
+  group "telemetry-auth-group" {
+    count = 1
+
+    network {
+      mode = "bridge"
+      
+      port "telemetry_auth" {
+        static = 8080
+        to = 8080
+      }
+    }
+
+    # KotorModSync Telemetry Auth Service
+    task "telemetry-auth" {
+      driver = "docker"
+
+      config {
+        image = "bolabaden/kotormodsync-telemetry-auth:latest"
+        ports = ["telemetry_auth"]
+        extra_hosts = ["host.docker.internal:10.16.1.78"]
+      }
+
+      env {
+        AUTH_SERVICE_PORT = "8080"
+        KOTORMODSYNC_SECRET_FILE = "/run/secrets/signing_secret"
+        REQUIRE_AUTH = var.require_auth
+        MAX_TIMESTAMP_DRIFT = var.max_timestamp_drift
+        LOG_LEVEL = var.log_level
+      }
+
+      # Secret file template (from secrets.auto.tfvars.hcl)
+      template {
+        data = <<EOF
+{{ with secret "secret/signing_secret" }}{{ .Data.data.value }}{{ end }}
+EOF
+        destination = "secrets/signing_secret"
+        env         = false
+      }
+
+      resources {
+        cpu        = 500
+        memory     = 256
+        memory_max = 512
+      }
+
+      service {
+        name = "telemetry-auth"
+        port = "telemetry_auth"
+        tags = [
+          "telemetry-auth",
+          "${var.domain}"
+        ]
+
+        check {
+          type     = "http"
+          path     = "/health"
+          interval = "10s"
+          timeout  = "3s"
+        }
+      }
+    }
+  }
+
   # Authentik  # Authentik services group
   group "authentik-services" {
-    count = 1
+    count = 0  # DISABLED: Commented out in docker-compose.yml (line 50)
 
     network {
       mode = "bridge"
@@ -3942,125 +4006,6 @@ EOF
   }
 
   # Qdrant Group
-  group "qdrant-group" {
-    count = 1
-
-    network {
-      mode = "bridge"
-      
-      port "qdrant" { to = 6333 }
-    }
-
-    # 🔹🔹 Qdrant 🔹🔹
-    task "qdrant" {
-      driver = "docker"
-
-      config {
-        image = "docker.io/qdrant/qdrant"
-        ports = ["qdrant"]
-        volumes = [
-          "${var.config_path}/qdrant/storage:/qdrant/storage"
-        ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
-      }
-
-      env {
-        QDRANT_STORAGE_PATH      = "/qdrant/storage"
-        QDRANT_STORAGE_TYPE      = "disk"
-        QDRANT_STORAGE_DISK_PATH = "/qdrant/storage"
-        QDRANT_STORAGE_DISK_TYPE = "disk"
-      }
-
-      resources {
-        cpu        = 1
-        memory     = 256
-        memory_max = 0
-      }
-
-      service {
-        name = "qdrant"
-        port = "qdrant"
-        tags = [
-          "traefik.enable=true",
-          "traefik.http.services.qdrant.loadbalancer.server.port=6333",
-          "homepage.group=AI",
-          "homepage.name=Qdrant",
-          "homepage.icon=qdrant.png",
-          "homepage.href=https://qdrant.${var.domain}",
-          "homepage.description=Qdrant is a vector database for storing and querying vectors."
-        ]
-      }
-    }
-  }
-
-  # Mcp Proxy Group
-  group "mcp-proxy-group" {
-    count = 1
-
-    network {
-      mode = "bridge"
-      
-      port "mcp_proxy" { to = 9090 }
-    }
-
-    # MCP Proxy
-    task "mcp-proxy" {
-      driver = "docker"
-
-      config {
-        image = "ghcr.io/tbxark/mcp-proxy"
-        ports = ["mcp_proxy"]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
-        args = [
-          "--config", "/local/config.json",
-          "-expand-env"
-        ]
-      }
-
-      template {
-        data = <<EOF
-{
-  "mcpProxy": {
-    "baseURL": "https://mcp.${var.domain}",
-    "addr": ":9090",
-    "name": "MCP Proxy",
-    "version": "1.0.0",
-    "type": "streamable-http",
-    "options": {
-      "panicIfInvalid": false,
-      "logEnabled": true,
-      "authTokens": []
-    }
-  },
-  "mcpServers": {}
-}
-EOF
-        destination = "local/config.json"
-      }
-
-      resources {
-        cpu        = 500
-        memory     = 512
-        memory_max = 0
-      }
-
-      service {
-        name = "mcp-proxy"
-        port = "mcp_proxy"
-        tags = [
-          "traefik.enable=true",
-          "traefik.http.routers.mcp-proxy.rule=Host(`mcp.${var.domain}`) || Host(`mcp.${var.ts_hostname}.${var.domain}`)",
-          "traefik.http.services.mcp-proxy.loadbalancer.server.port=9090",
-          "homepage.group=MCP",
-          "homepage.name=MCP Proxy",
-          "homepage.icon=mcp-proxy.png",
-          "homepage.href=https://mcp.${var.domain}",
-          "homepage.description=MCP Proxy is a tool for proxying MCP servers."
-        ]
-      }
-    }
-  }
-
   # Stremio Group
   group "stremio-group" {
     count = 1
