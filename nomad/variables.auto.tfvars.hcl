@@ -4,15 +4,11 @@
 
 # Core Configuration
 domain                     = "bolabaden.org"
-ts_hostname                = "micklethefickle"
 main_username              = "brunner56"
 
 # Paths
 root_path                  = "/home/ubuntu/my-media-stack"
 config_path                = "/home/ubuntu/my-media-stack/volumes"
-
-# Docker Configuration
-docker_socket              = "/var/run/docker.sock"
 
 # System Configuration
 tz                         = "America/Chicago"
@@ -35,7 +31,7 @@ searxng_port               = 8080
 rclone_port                = 5572
 
 # TinyAuth OAuth Whitelist
-tinyauth_oauth_whitelist   = "boden.crouch@gmail.com,halomastar@gmail.com,athenajaguiar@gmail.com,dgorsch2@gmail.com,dgorsch4@gmail.com"
+tinyauth_oauth_whitelist   = "boden.crouch@gmail.com,halomastar@gmail.com"
 
 # Traefik Configuration
 traefik_ca_server          = "https://acme-v02.api.letsencrypt.org/directory"
