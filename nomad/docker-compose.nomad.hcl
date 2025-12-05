@@ -786,7 +786,8 @@ EOF
         ports = ["homepage"]
         volumes = [
           # DO NOT create a bind mount to the entire /app/config/ directory.
-          "${var.config_path}/homepage:/app/config"
+          "${var.config_path}/homepage:/app/config",
+          "/var/run/docker.sock:/var/run/docker.sock:ro"
         ]
         labels = {
           "com.docker.compose.project" = "core-group"
@@ -1039,6 +1040,7 @@ EOF
         image = "docker.io/portainer/portainer-ce"
         ports = ["portainer_api", "portainer_http", "portainer_https"]
         volumes = [
+          "/var/run/docker.sock:/var/run/docker.sock:rw",
           "${var.config_path}/portainer/data:/data"
         ]
         labels = {
@@ -1375,6 +1377,58 @@ EOF
       }
     }
 
+    # 🔹🔹 Docker Socket Proxy (Read-Only) 🔹🔹
+    task "dockerproxy-ro" {
+      driver = "docker"
+
+      config {
+        image = "docker.io/tecnativa/docker-socket-proxy"
+        ports = ["dockerproxy_ro"]
+        privileged = true
+        userns_mode = "host"  # needed if userns-remap is enabled on the host
+        volumes = [
+          "/var/run/docker.sock:/var/run/docker.sock"
+        ]
+        labels = {
+          "com.docker.compose.project" = "core-group"
+          "com.docker.compose.service" = "dockerproxy-ro"
+          "deunhealth.restart.on.unhealthy" = "true"
+        }
+      }
+
+      env {
+        TZ           = var.tz
+        PUID         = var.puid
+        PGID         = var.pgid
+        UMASK        = var.umask
+        CONTAINERS   = "1"
+        EVENTS       = "1"
+        INFO         = "1"
+        DISABLE_IPV6 = "0"
+      }
+
+      resources {
+        cpu        = 500
+        memory     = 256
+        memory_max = 512
+      }
+
+      service {
+        name = "dockerproxy-ro"
+        port = "dockerproxy_ro"
+        tags = ["dockerproxy-ro"]
+
+        check {
+          type     = "script"
+          command  = "/bin/sh"
+          args     = ["-c", "wget --no-verbose --tries=1 --spider http://127.0.0.1:2375/_ping || exit 1"]
+          interval = "30s"
+          timeout  = "10s"
+          retries  = 3
+        }
+      }
+    }
+
     # 🔹🔹 Docker Socket Proxy (Read-Write) 🔹🔹
     task "dockerproxy-rw" {
       driver = "docker"
@@ -1503,6 +1557,7 @@ EOF
       config {
         image = "docker.io/containrrr/watchtower"
         volumes = [
+          "/var/run/docker.sock:/var/run/docker.sock:rw"
         ]
         labels = {
           "com.docker.compose.project" = "core-group"
@@ -2949,6 +3004,7 @@ EOF
       config {
         image = "ghcr.io/bigboot/autokuma:latest"
         volumes = [
+          "/var/run/docker.sock:/var/run/docker.sock:ro"
         ]
         labels = {
           "com.docker.compose.project" = "coolify-proxy-group"
@@ -4355,6 +4411,7 @@ EOF
           "traefik.http.routers.stremio.rule=Host(`stremio-web.${var.domain}`) || Host(`stremio-web.${node.unique.name}.${var.domain}`) || Host(`stremio.${var.domain}`) || Host(`stremio.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.stremio.middlewares=stremio-web-redirect@consulcatalog,stremio-shell-redirect@consulcatalog,stremio-streaming-server-redirect@consulcatalog",
           "traefik.http.services.stremio.loadbalancer.server.scheme=https",
+          "traefik.http.services.stremio.loadbalancer.server.port=8080",
           "traefik.http.services.stremio.loadbalancer.passhostheader=false",
           # Stremio HTTP Streaming Server (port 11470)
           "traefik.http.routers.stremio-http11470.service=stremio-http11470@consulcatalog",
@@ -5434,7 +5491,8 @@ EOF
         network_mode = "host"
         volumes = [
           "/etc/iproute2/rt_tables:/etc/iproute2/rt_tables:rw",
-          "/proc:/proc:rw"
+          "/proc:/proc:rw",
+          "/var/run/docker.sock:/var/run/docker.sock"
         ]
         labels = {
           "com.docker.compose.project" = "warp-nat-routing-group"
