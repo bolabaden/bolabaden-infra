@@ -1043,6 +1043,7 @@ services:
         mode: 0644
     environment:
       DOCKER_HOST: tcp://dockerproxy-ro:2375
+      DOCKER_API_VERSION: ${DOCKER_API_VERSION_OVERRIDE:-1.52}
       LETS_ENCRYPT_EMAIL: ${ACME_RESOLVER_EMAIL:?}
       CLOUDFLARE_EMAIL: ${CLOUDFLARE_EMAIL:?}
       CLOUDFLARE_API_KEY_FILE: /run/secrets/cloudflare-api-key
@@ -1099,6 +1100,7 @@ services:
       - '--ping=true'
       - '--providers.docker=true'
       - '--providers.docker.endpoint=tcp://dockerproxy-ro:2375'
+      - '--providers.docker.apiVersion=${DOCKER_API_VERSION_OVERRIDE:-1.52}'
       - '--providers.docker.network=${STACK_NAME:?}_publicnet'
       - '--providers.docker.defaultRule=Host(`{{ normalize .ContainerName }}.$DOMAIN`) || Host(`{{ normalize .Name }}.$DOMAIN`) || Host(`{{ normalize .ContainerName }}.$TS_HOSTNAME.$DOMAIN`) || Host(`{{ normalize .Name }}.$TS_HOSTNAME.$DOMAIN`)'
       - '--providers.docker.exposedByDefault=false'
