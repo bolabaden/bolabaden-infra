@@ -3615,29 +3615,29 @@ EOF
     }
   }
 
-  # Headscale Ui Group
-  group "headscale-ui-group" {
+  # Headscale Group (UI) - 1:1 naming with Docker
+  group "headscale-group" {
     count = 1
 
     network {
       mode = "bridge"
       
-      port "headscale_ui" { to = 8080 }
+      port "headscale" { to = 8080 }
     }
 
-    # Headscale UI
-    task "headscale-ui" {
+    # Headscale UI (named "headscale" to match Docker naming)
+    task "headscale" {
       driver = "docker"
 
       config {
         image = "ghcr.io/gurucomputing/headscale-ui:latest"
-        ports = ["headscale_ui"]
+        ports = ["headscale"]
         volumes = [
           "${var.config_path}/headscale/config:/etc/headscale"
         ]
         labels = {
           "com.docker.compose.project" = "headscale-group"
-          "com.docker.compose.service" = "headscale-ui"
+          "com.docker.compose.service" = "headscale"
         }
       }
 
@@ -3651,7 +3651,7 @@ EOF
       service {
 
         name = "headscale"
-        port = "headscale_ui"
+        port = "headscale"
         tags = [
           "headscale",
           "${var.domain}",
