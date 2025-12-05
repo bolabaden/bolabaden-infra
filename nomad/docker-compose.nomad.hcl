@@ -5240,8 +5240,8 @@ EOF
     }
   }
 
-  # WARP NAT Routing Group
-  group "warp-nat-routing" {
+  # Warp Net Init Group - 1:1 with Docker (separate service, runs once)
+  group "warp-net-init-group" {
     count = 0  # DISABLED: Complex networking setup, optional service
 
     network {
@@ -5251,11 +5251,6 @@ EOF
     # Network Initialization Task
     task "warp-net-init" {
       driver = "docker"
-
-      lifecycle {
-        hook    = "prestart"
-        sidecar = false  # Run once before other tasks
-      }
 
       config {
         image = "docker:cli"
@@ -5284,6 +5279,10 @@ EOF
         volumes = [
           "${var.docker_socket}:/var/run/docker.sock:ro"
         ]
+        labels = {
+          "com.docker.compose.project" = "warp-nat-routing-group"
+          "com.docker.compose.service" = "warp-net-init"
+        }
       }
 
       env {
@@ -5298,20 +5297,32 @@ EOF
         memory_max = 0
       }
 
+      service {
+        name = "warp-net-init"
+        tags = [
+          "warp-net-init",
+          "${var.domain}"
+        ]
+      }
+
       restart {
         attempts = 0
         mode     = "fail"
       }
     }
+  }
+
+  # WARP NAT Routing Group
+  group "warp-nat-routing" {
+    count = 0  # DISABLED: Complex networking setup, optional service
+
+    network {
+      mode = "host"
+    }
 
     # 🔹🔹 WARP in Docker (with NAT) 🔹🔹
     task "warp-nat-gateway" {
       driver = "docker"
-
-      lifecycle {
-        hook    = "prestart"
-        sidecar = true
-      }
 
       config {
         image = "docker.io/caomingjun/warp:latest"
