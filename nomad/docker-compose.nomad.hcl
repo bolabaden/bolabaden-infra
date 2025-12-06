@@ -425,9 +425,9 @@ job "docker-compose-stack" {
       }
 
       resources {
-        cpu        = 600
-        memory     = 768
-        memory_max = 1024
+        cpu        = 300
+        memory     = 512
+        memory_max = 768
       
       }
 
@@ -1116,7 +1116,7 @@ EOF
 
   # Telemetry Auth Group
   group "telemetry-auth-group" {
-    count = 1
+    count = 0
 
     network {
       mode = "bridge"
@@ -1608,7 +1608,7 @@ EOF
         DOCKER_HOST                        = "unix:///var/run/docker.sock"
         # Docker API version to use by the Docker client for connecting to the Docker daemon.
         # Default: "1.24"
-        DOCKER_API_VERSION                 = "1.24"
+        DOCKER_API_VERSION                 = "1.52"
         # Use TLS when connecting to the Docker socket and verify the server's certificate.
         # Default: false
         DOCKER_TLS_VERIFY                  = "false"
@@ -3795,7 +3795,7 @@ EOF
 
   # Litellm Group
   group "litellm-group" {
-    count = 1
+    count = 0
 
     network {
       mode = "bridge"
@@ -3975,7 +3975,7 @@ EOF
 
   # Open Webui Group
   group "open-webui-group" {
-    count = 1
+    count = 0
 
     network {
       mode = "bridge"
@@ -4084,7 +4084,7 @@ EOF
 
   # Gptr Group
   group "gptr-group" {
-    count = 1
+    count = 0
 
     network {
       mode = "bridge"
@@ -4246,7 +4246,7 @@ EOF
 
   # Mcp Proxy Group
   group "mcp-proxy-group" {
-    count = 1
+    count = 0
 
     network {
       mode = "bridge"
