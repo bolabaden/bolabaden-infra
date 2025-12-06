@@ -396,7 +396,7 @@ job "docker-compose-stack" {
 
   # Mongodb Group
   group "mongodb-group" {
-    count = 1
+    count = 0
 
     network {
       mode = "bridge"
