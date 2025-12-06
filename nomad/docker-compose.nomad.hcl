@@ -17,7 +17,6 @@ variable "domain" {
   type    = string
   default = "bolabaden.org"
 }
-
 variable "config_path" {
   type    = string
   default = "/home/ubuntu/my-media-stack/volumes"
@@ -26,6 +25,11 @@ variable "config_path" {
 variable "root_path" {
   type    = string
   default = "/home/ubuntu/my-media-stack"
+}
+
+variable "docker_socket" {
+  type    = string
+  default = "/var/run/docker.sock"
 }
 
 variable "tz" {
@@ -56,6 +60,21 @@ variable "sudo_password" {
 variable "main_username" {
   type    = string
   default = "brunner56"
+}
+
+variable "require_auth" {
+  type    = string
+  default = "true"
+}
+
+variable "max_timestamp_drift" {
+  type    = number
+  default = 300
+}
+
+variable "log_level" {
+  type    = string
+  default = "info"
 }
 
 # Service-specific variables
@@ -220,6 +239,21 @@ variable "warp_enable_nat" {
 variable "warp_sleep" {
   type    = number
   default = 2
+}
+
+variable "docker_network_name" {
+  type    = string
+  default = "warp-nat-net"
+}
+
+variable "warp_nat_net_subnet" {
+  type    = string
+  default = "10.0.2.0/24"
+}
+
+variable "warp_nat_net_gateway" {
+  type    = string
+  default = "10.0.2.1"
 }
 
 # Stremio/Media Variables
@@ -1101,7 +1135,7 @@ EOF
       config {
         image = "bolabaden/kotormodsync-telemetry-auth:latest"
         ports = ["telemetry_auth"]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
       }
 
       env {
@@ -1119,14 +1153,6 @@ EOF
 EOF
         destination = "secrets/signing_secret"
         env         = false
-      }
-
-      env {
-        AUTH_SERVICE_PORT        = "8080"
-        KOTORMODSYNC_SECRET_FILE = "/run/secrets/signing_secret"
-        REQUIRE_AUTH             = "true"
-        MAX_TIMESTAMP_DRIFT      = "300"
-        LOG_LEVEL                = "info"
       }
 
       resources {
@@ -1149,7 +1175,6 @@ EOF
           args     = ["-c", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1"]
           interval = "10s"
           timeout  = "3s"
-          retries  = 5
         }
       }
     }
@@ -1371,10 +1396,7 @@ EOF
       port "dockerproxy_ro" { to = 2375 }
       
       # dockerproxy-rw has ports: 127.0.0.1:2375:2375 in docker-compose.yml
-      port "dockerproxy_rw" {
-        static = 2375
-        to     = 2375
-      }
+      port "dockerproxy_rw" { to = 2375 }
     }
 
     # 🔹🔹 Docker Socket Proxy (Read-Only) 🔹🔹
@@ -1424,7 +1446,6 @@ EOF
           args     = ["-c", "wget --no-verbose --tries=1 --spider http://127.0.0.1:2375/_ping || exit 1"]
           interval = "30s"
           timeout  = "10s"
-          retries  = 3
         }
       }
     }
@@ -1725,48 +1746,6 @@ EOF
       }
     }
   }
-
-  # Cloudflare Ddns Group - 1:1 with Docker
-  group "cloudflare-ddns-group" {
-    count = 1
-
-    network {
-      mode = "host"
-    }
-
-  #   # Cloudflare DDNS
-  #   task "cloudflare-ddns" {
-  #     driver = "docker"
-
-  #     config {
-  #       image       = "docker.io/favonia/cloudflare-ddns:1"
-  #       network_mode = "host"
-  #       #read_only    = true read_only not supported in Nomad Docker driver
-  #       cap_drop     = ["all"]
-  #       #security_opt = ["no-new-privileges:true"] security_opt not supported in Nomad Docker driver
-  #       labels = {
-  #         "com.docker.compose.project" = "coolify-proxy-group"
-  #         "com.docker.compose.service" = "cloudflare-ddns"
-  #       }
-  #     }
-
-  #     env {
-  #       TZ                     = var.tz
-  #       CLOUDFLARE_API_TOKEN   = var.cloudflare_api_token
-  #       DOMAINS                = "${node.unique.name}.${var.domain},*.${node.unique.name}.${var.domain}"
-  #       PROXIED                = "is(${var.domain})||is(*.${var.domain})"
-  #       TTL                    = "1"
-  #       RECORD_COMMENT         = "Updated by Cloudflare DDNS on server ${node.unique.name}.${var.domain}"
-  #     }
-
-  #     resources {
-  #       cpu        = 1
-  #       memory     = 256
-  #       memory_max = 0
-  #     
-  #     }
-  #   }
-  # }
 
   # Nginx Traefik Extensions Group
   group "nginx-traefik-extensions-group" {
@@ -3064,7 +3043,7 @@ EOF
           "-container-filter", "label=traefik.enable=true",
           "-watch", "/templates/traefik-failover-dynamic.conf.tmpl", "/traefik/dynamic/failover-fallbacks.yaml"
         ]
-        extra_hosts = ["host.docker.internal:10.16.1.78"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
       }
 
       # Traefik failover template
@@ -3332,7 +3311,7 @@ EOF
         ports = ["headscale_stun", "headscale_http", "headscale_metrics", "headscale_grpc"]
         command = "serve"
         args    = ["--config", "/etc/headscale/config.yaml"]
-        extra_hosts = ["host.docker.internal:host-gateway"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
         volumes = [
           "${var.root_path}/certs/private/${var.domain}.key:/var/lib/headscale/private.key",
           "${var.config_path}/headscale/config:/etc/headscale",
@@ -3712,7 +3691,7 @@ EOF
       config {
         image = "ghcr.io/gurucomputing/headscale-ui:latest"
         ports = ["headscale"]
-        extra_hosts = ["host.docker.internal:host-gateway"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
         volumes = [
           "${var.config_path}/headscale/config:/etc/headscale"
         ]
