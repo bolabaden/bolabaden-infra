@@ -425,9 +425,9 @@ job "docker-compose-stack" {
       }
 
       resources {
-        cpu        = 2000
-        memory     = 1024
-        memory_max = 2048
+        cpu        = 600
+        memory     = 768
+        memory_max = 1024
       
       }
 
@@ -1156,7 +1156,7 @@ EOF
       }
 
       resources {
-        cpu        = 500
+        cpu        = 200
         memory     = 256
         memory_max = 512
       }
@@ -1430,7 +1430,7 @@ EOF
       }
 
       resources {
-        cpu        = 500
+        cpu        = 200
         memory     = 256
         memory_max = 512
       }
@@ -3854,7 +3854,7 @@ EOF
       }
 
       resources {
-        cpu        = 1000
+        cpu        = 300
         memory     = 512
         memory_max = 0
       
@@ -4054,9 +4054,9 @@ EOF
       }
 
       resources {
-        cpu        = 1000
-        memory     = 1536
-        memory_max = 0
+        cpu        = 400
+        memory     = 1024
+        memory_max = 1536
       
       }
 
@@ -4159,9 +4159,9 @@ EOF
       }
 
       resources {
-        cpu        = 1000
-        memory     = 2048
-        memory_max = 0
+        cpu        = 400
+        memory     = 1024
+        memory_max = 1536
       
       }
 
@@ -4293,7 +4293,7 @@ EOF
       }
 
       resources {
-        cpu        = 500
+        cpu        = 250
         memory     = 512
         memory_max = 0
       }
