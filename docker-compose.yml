@@ -486,6 +486,7 @@ services:
       CONTAINERS: 1
       EVENTS: 1
       INFO: 1
+      DOCKER_API_VERSION: ${DOCKER_API_VERSION_OVERRIDE:-1.52}
       DISABLE_IPV6: ${DISABLE_IPV6:-0}
     labels:
       # Auto-restart on unhealthy state (requires deunhealth or autoheal container)
@@ -840,6 +841,7 @@ services:
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
     environment:
       <<: *common-env
+      DOCKER_API_VERSION: ${DOCKER_API_VERSION_OVERRIDE:-1.52}
 
       # Controls /containers/{id}/start (POST).
       # Set 1 to allow starting containers even if POST=0.
