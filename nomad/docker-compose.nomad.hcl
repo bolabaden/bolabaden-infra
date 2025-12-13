@@ -396,7 +396,7 @@ job "docker-compose-stack" {
 
   # Mongodb Group
   group "mongodb-group" {
-    count = 0
+    count = 1
 
     network {
       mode = "bridge"
@@ -3129,7 +3129,8 @@ EOF
       driver = "docker"
 
       config {
-        image = "postgres:16.3-alpine"
+        image = "nuq-postgres:latest"
+        force_pull = false  # Use locally built ARM64 image - built at /tmp/firecrawl/apps/nuq-postgres
         ports = ["nuq_postgres"]
         labels = {
           "com.docker.compose.project" = "firecrawl-group"
@@ -3173,7 +3174,7 @@ EOF
 
   # Playwright Service Group
   group "playwright-service-group" {
-    count = 0  # DISABLED: Requires locally built ARM64 image (not available upstream)
+    count = 1  # ENABLED: Builds locally for ARM64 compatibility
 
     network {
       mode = "bridge"
@@ -3186,7 +3187,8 @@ EOF
       driver = "docker"
 
       config {
-        image = "ghcr.io/firecrawl/playwright-service:latest"
+        image = "playwright-service:latest"
+        force_pull = false  # Use locally built ARM64 image - built at /tmp/firecrawl/apps/playwright-service-ts
         ports = ["playwright"]
         labels = {
           "com.docker.compose.project" = "firecrawl-group"
@@ -3214,7 +3216,7 @@ EOF
 
   # Firecrawl Group
   group "firecrawl-group" {
-    count = 0  # DISABLED: Requires locally built ARM64 image (not available upstream)
+    count = 1  # ENABLED: Builds locally for ARM64 compatibility
 
     network {
       mode = "bridge"
@@ -3229,8 +3231,8 @@ EOF
       driver = "docker"
 
       config {
-        image = "ghcr.io/firecrawl/firecrawl:latest"
-        force_pull = false  # Use locally built ARM64 image
+        image = "firecrawl:latest"
+        force_pull = false  # Use locally built ARM64 image - built at /tmp/firecrawl/apps/api
         ports = ["firecrawl", "firecrawl_extract", "firecrawl_worker"]
         command = "node"
         args    = ["dist/src/harness.js", "--start-docker"]
@@ -3247,19 +3249,21 @@ EOF
 
       env {
         TZ                        = var.tz
-        REDIS_URL                 = "redis://${var.redis_hostname}:${var.redis_port}"
-        REDIS_RATE_LIMIT_URL      = "redis://${var.redis_hostname}:${var.redis_port}"
+        REDIS_URL                 = "redis://redis:6379"
+        REDIS_RATE_LIMIT_URL      = "redis://redis:6379"
         PLAYWRIGHT_MICROSERVICE_URL = "http://playwright-service:3000/scrape"
         NUQ_DATABASE_URL          = "postgres://postgres:postgres@nuq-postgres:5432/postgres"
         EXTRACT_WORKER_PORT       = "3004"
         USE_DB_AUTHENTICATION     = ""
         OPENAI_API_KEY            = var.openai_api_key
+        # Note: OPENAI_API_KEY_FILE would require secrets support
         OPENAI_BASE_URL           = ""
         MODEL_NAME                = ""
         MODEL_EMBEDDING_NAME      = ""
         OLLAMA_BASE_URL           = ""
         BULL_AUTH_KEY             = var.firecrawl_api_key
         TEST_API_KEY              = var.firecrawl_api_key
+        # Note: BULL_AUTH_KEY_FILE and TEST_API_KEY_FILE would require secrets support
         SEARXNG_ENDPOINT          = "https://searxng.${var.domain}"
         HOST                      = "0.0.0.0"
         PORT                      = "3002"
@@ -3268,9 +3272,9 @@ EOF
       }
 
       resources {
-        cpu        = 4000
+        cpu        = 2000
         memory     = 4096
-        memory_max = 0
+        memory_max = 8192
       
       }
 
@@ -3795,7 +3799,7 @@ EOF
 
   # Litellm Group
   group "litellm-group" {
-    count = 0
+    count = 1
 
     network {
       mode = "bridge"
@@ -3813,6 +3817,8 @@ EOF
         volumes = [
           "${var.config_path}/litellm:/app/config:ro"
         ]
+        command = "--config"
+        args = ["/app/config/litellm_config.yaml", "--port", "4000", "--host", "0.0.0.0"]
         labels = {
           "com.docker.compose.project" = "llm-group"
           "com.docker.compose.service" = "litellm"
@@ -3824,10 +3830,8 @@ EOF
 {{ range service "litellm-postgres" -}}
 DATABASE_URL=postgresql://litellm:litellm@{{ .Address }}:{{ .Port }}/litellm
 {{ end -}}
-{{ range service "redis" -}}
-REDIS_HOST={{ .Address }}
-REDIS_PORT={{ .Port }}
-{{ end -}}
+REDIS_HOST=redis
+REDIS_PORT=6379
 LITELLM_LOG={{ env "LITELLM_LOG" | or "INFO" }}
 LITELLM_MASTER_KEY=${var.litellm_master_key}
 LITELLM_MODE={{ env "LITELLM_MODE" | or "PRODUCTION" }}
@@ -3854,9 +3858,9 @@ EOF
       }
 
       resources {
-        cpu        = 300
-        memory     = 512
-        memory_max = 0
+        cpu        = 1000
+        memory     = 2048
+        memory_max = 4096
       
       }
 
@@ -3873,8 +3877,9 @@ EOF
         ]
 
         check {
-          type     = "http"
-          path     = "/health/liveliness"
+          type     = "script"
+          command  = "/bin/sh"
+          args     = ["-c", "wget -qO- http://127.0.0.1:4000/health/liveliness > /dev/null 2>&1 || exit 1"]
           interval = "30s"
           timeout  = "15s"
         }
