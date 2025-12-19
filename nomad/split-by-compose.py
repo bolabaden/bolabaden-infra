@@ -44,13 +44,13 @@ COMPOSE_MAPPING = {
     ],
 }
 
-def extract_group_content(content, group_name):
-    """Extract a specific group from the content."""
-    # Try multiple patterns to find the group
+def extract_group_manual(content, group_name):
+    """Manually extract group by finding start and matching braces."""
+    # Find the group definition - try multiple patterns
     patterns = [
-        rf'^\s+group\s+"{re.escape(group_name)}"\s*\{{',  # With leading whitespace, start of line
-        rf'\s+group\s+"{re.escape(group_name)}"\s*\{{',   # With leading whitespace
-        rf'group\s+"{re.escape(group_name)}"\s*\{{',      # Without leading whitespace
+        rf'^\s+group\s+"{re.escape(group_name)}"\s*\{{',
+        rf'\s+group\s+"{re.escape(group_name)}"\s*\{{',
+        rf'group\s+"{re.escape(group_name)}"\s*\{{',
     ]
     
     match = None
@@ -62,28 +62,35 @@ def extract_group_content(content, group_name):
     if not match:
         return None
     
-    group_start = match.start()
+    # Start from the opening brace
+    start_pos = match.start()
+    # Find the opening brace
+    pos = start_pos
+    while pos < len(content) and content[pos] != '{':
+        pos += 1
+    if pos >= len(content):
+        return None
+    start_pos = pos
+    
+    # Now match braces
     brace_count = 0
     in_string = False
     string_char = None
-    i = group_start
-    
-    # Find the opening brace
-    while i < len(content) and content[i] != '{':
-        i += 1
-    
-    if i >= len(content):
-        return None
+    i = start_pos
     
     brace_count = 1
     i += 1
     
-    # Now find the matching closing brace
     while i < len(content):
         char = content[i]
         
+        # Handle escaped characters
+        if char == '\\' and i + 1 < len(content):
+            i += 2
+            continue
+        
         # Handle string literals
-        if char in ('"', "'") and (i == 0 or content[i-1] != '\\'):
+        if char in ('"', "'"):
             if not in_string:
                 in_string = True
                 string_char = char
@@ -97,7 +104,7 @@ def extract_group_content(content, group_name):
             elif char == '}':
                 brace_count -= 1
                 if brace_count == 0:
-                    return content[group_start:i+1]
+                    return content[match.start():i+1]
         i += 1
     
     return None
@@ -128,7 +135,7 @@ job "{job_name}" {{
     # Extract all groups for this job
     groups_content = []
     for group_name in group_names:
-        group_content = extract_group_content(all_content, group_name)
+        group_content = extract_group_manual(all_content, group_name)
         if group_content:
             groups_content.append(group_content)
         else:
