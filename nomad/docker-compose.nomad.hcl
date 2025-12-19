@@ -797,7 +797,7 @@ EOF
           "traefik.http.routers.bolabaden-nextjs.rule=Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.bolabaden-nextjs.service=bolabaden-nextjs",
           # bolabaden-nextjs Service definition
-          "traefik.http.services.bolabaden-nextjs.loadbalancer.server.port=3000",
+          # Port is automatically detected from Consul ServicePort
           # Iframe embed service
           "traefik.http.routers.bolabaden-embed.rule=Host(`embed.${var.domain}`) || Host(`embed.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.bolabaden-embed.service=bolabaden-nextjs"
