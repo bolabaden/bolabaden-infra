@@ -781,20 +781,14 @@ EOF
       }
 
       service {
-
+        # Service registered in Consul for service discovery only
+        # Traefik configuration is handled by file provider (matches docker-compose.coolify-proxy.yml)
+        # This ensures 1:1 parity - no Consul Catalog registration, only file provider
         name = "bolabaden-nextjs"
         port = "bolabaden_nextjs"
         tags = [
-          "traefik.enable=true",
-          # Error pages (matches docker-compose.yml line 456-458)
-          "traefik.http.middlewares.bolabaden-error-pages.errors.status=400-599",
-          "traefik.http.middlewares.bolabaden-error-pages.errors.service=bolabaden-nextjs@consulcatalog",
-          "traefik.http.middlewares.bolabaden-error-pages.errors.query=/api/error/{status}",
-          # Router for bolabaden-nextjs (matches docker-compose.yml line 460)
-          "traefik.http.routers.bolabaden-nextjs.rule=Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`)",
-          "traefik.http.routers.bolabaden-nextjs.service=bolabaden-nextjs",
-          # bolabaden-nextjs Service definition (matches docker-compose.yml line 462)
-          "traefik.http.services.bolabaden-nextjs.loadbalancer.server.port=3000",
+          # Only non-Traefik labels to avoid Consul Catalog registration
+          # Traefik router/service defined in file provider (docker-compose.coolify-proxy.nomad.hcl)
           "kuma.bolabaden-nextjs.http.name=${node.unique.name}.${var.domain}",
           "kuma.bolabaden-nextjs.http.url=https://${var.domain}",
           "kuma.bolabaden-nextjs.http.interval=30"
