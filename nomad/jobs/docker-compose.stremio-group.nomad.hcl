@@ -3,7 +3,7 @@
 # Variables are loaded from ../variables.nomad.hcl via -var-file
 # This matches the include structure in docker-compose.yml
 
-job "stremio-group" {
+job "docker-compose.stremio-group" {
   datacenters = ["dc1"]
   type        = "service"
 

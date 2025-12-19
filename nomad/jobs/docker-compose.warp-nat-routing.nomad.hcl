@@ -3,7 +3,7 @@
 # Variables are loaded from ../variables.nomad.hcl via -var-file
 # This matches the include structure in docker-compose.yml
 
-job "warp-nat-routing" {
+job "docker-compose.warp-nat-routing" {
   datacenters = ["dc1"]
   type        = "service"
 

@@ -7,40 +7,48 @@ import re
 from pathlib import Path
 
 # Map compose include files to their group names (exact match from docker-compose.nomad.hcl)
+# Files are named to match the exact include paths in docker-compose.yml
 COMPOSE_MAPPING = {
-    # docker-compose.yml main file (services not in includes) -> core.nomad.hcl
-    'core': [
-        'mongodb-group', 'redis-group', 'searxng-group', 'homepage-group',
-        'bolabaden-nextjs-group', 'session-manager-group', 'dozzle-group',
-        'portainer-group', 'telemetry-auth-group', 'authentik-services'
-    ],
-    # compose/docker-compose.coolify-proxy.yml -> coolify-proxy.nomad.hcl
-    'coolify-proxy': [
+    # compose/docker-compose.coolify-proxy.yml -> docker-compose.coolify-proxy.nomad.hcl
+    'docker-compose.coolify-proxy': [
         'traefik-group', 'nginx-traefik-extensions-group', 'tinyauth-group',
         'crowdsec-group', 'whoami-group', 'autokuma-group', 'docker-gen-failover-group',
         'logrotate-traefik-group', 'infrastructure-services'
     ],
-    # compose/docker-compose.firecrawl.yml -> firecrawl.nomad.hcl
-    'firecrawl': [
+    # compose/docker-compose.firecrawl.yml -> docker-compose.firecrawl.nomad.hcl
+    'docker-compose.firecrawl': [
         'firecrawl-group', 'playwright-service-group', 'nuq-postgres-group'
     ],
-    # compose/docker-compose.headscale.yml -> headscale.nomad.hcl
-    'headscale': [
+    # compose/docker-compose.headscale.yml -> docker-compose.headscale.nomad.hcl
+    'docker-compose.headscale': [
         'headscale-server-group', 'headscale-group'
     ],
-    # compose/docker-compose.llm.yml -> llm.nomad.hcl
-    'llm': [
+    # compose/docker-compose.llm.yml -> docker-compose.llm.nomad.hcl
+    'docker-compose.llm': [
         'litellm-group', 'litellm-postgres-group', 'mcpo-group', 'open-webui-group',
         'gptr-group', 'qdrant-group', 'mcp-proxy-group'
     ],
-    # compose/docker-compose.stremio-group.yml -> stremio-group.nomad.hcl
-    'stremio-group': [
+    # compose/docker-compose.metrics.yml -> docker-compose.metrics.nomad.hcl
+    # Note: Metrics services not yet fully ported to Nomad
+    'docker-compose.metrics': [
+        # 'victoriametrics-group', 'prometheus-group', 'grafana-group',
+        # 'node-exporter-group', 'cadvisor-group', 'loki-group', 'promtail-group',
+        # 'blackbox-exporter-group'
+    ],
+    # compose/docker-compose.stremio-group.yml -> docker-compose.stremio-group.nomad.hcl
+    'docker-compose.stremio-group': [
         'stremio-group', 'aiostreams-group', 'stremthru-group', 'flaresolverr-group',
         'jackett-group', 'prowlarr-group', 'rclone-group', 'rclone-init-group'
     ],
-    # compose/docker-compose.warp-nat-routing.yml -> warp-nat-routing.nomad.hcl
-    'warp-nat-routing': [
+    # compose/docker-compose.warp-nat-routing.yml -> docker-compose.warp-nat-routing.nomad.hcl
+    'docker-compose.warp-nat-routing': [
         'warp-nat-routing-group', 'warp-nat-routing'
+    ],
+    # docker-compose.yml main file (services not in includes) -> docker-compose.core.nomad.hcl
+    'docker-compose.core': [
+        'mongodb-group', 'redis-group', 'searxng-group', 'homepage-group',
+        'bolabaden-nextjs-group', 'session-manager-group', 'dozzle-group',
+        'portainer-group', 'telemetry-auth-group', 'authentik-services'
     ],
 }
 
@@ -111,10 +119,12 @@ def extract_group_manual(content, group_name):
 
 def create_job_file(job_name, compose_file, group_names, all_content, output_dir):
     """Create a Nomad job file for a compose include file."""
-    if compose_file == 'core':
+    if compose_file == 'docker-compose.core':
         compose_file_ref = 'docker-compose.yml (main file services)'
     else:
-        compose_file_ref = f'compose/docker-compose.{compose_file}.yml'
+        # Remove 'docker-compose.' prefix for the compose file reference
+        compose_name = compose_file.replace('docker-compose.', '')
+        compose_file_ref = f'compose/docker-compose.{compose_name}.yml'
     
     job_header = f'''# Nomad job equivalent to {compose_file_ref}
 # Extracted from docker-compose.nomad.hcl
@@ -166,7 +176,7 @@ def main():
     with open(input_file, 'r') as f:
         content = f.read()
     
-    print(f"Creating job files to match docker-compose.yml include structure...\n")
+    print("Creating job files to match docker-compose.yml include structure...\n")
     
     created_files = []
     for job_name, group_names in COMPOSE_MAPPING.items():
@@ -176,7 +186,7 @@ def main():
     
     print(f"\nCreated {len(created_files)} job files matching docker-compose.yml includes")
     print("\nTo run a specific job:")
-    print(f"  nomad job run -var-file=variables.auto.tfvars.hcl -var-file=secrets.auto.tfvars.hcl jobs/<job-name>.nomad.hcl")
+    print("  nomad job run -var-file=variables.auto.tfvars.hcl -var-file=secrets.auto.tfvars.hcl jobs/<job-name>.nomad.hcl")
 
 if __name__ == "__main__":
     main()

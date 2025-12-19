@@ -3,7 +3,7 @@
 # Variables are loaded from ../variables.nomad.hcl via -var-file
 # This matches the include structure in docker-compose.yml
 
-job "core" {
+job "docker-compose.core" {
   datacenters = ["dc1"]
   type        = "service"
 

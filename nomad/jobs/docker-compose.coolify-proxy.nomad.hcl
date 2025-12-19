@@ -3,7 +3,7 @@
 # Variables are loaded from ../variables.nomad.hcl via -var-file
 # This matches the include structure in docker-compose.yml
 
-job "coolify-proxy" {
+job "docker-compose.coolify-proxy" {
   datacenters = ["dc1"]
   type        = "service"
 
@@ -1351,6 +1351,41 @@ EOF
       }
     }
   }
+
+  group "logrotate-traefik-group" {
+    count = 1
+
+    # Task uses network_mode = "none", so we don't need a network block
+
+    # Logrotate for Traefik
+    task "logrotate-traefik" {
+      driver = "docker"
+
+      config {
+        image = "docker.io/bolabaden/logrotate-traefik:latest"
+        network_mode = "none"
+        volumes = [
+          "${var.config_path}/traefik/logs:/var/log/traefik"
+        ]
+        labels = {
+          "com.docker.compose.project" = "coolify-proxy-group"
+          "com.docker.compose.service" = "logrotate-traefik"
+        }
+      }
+
+      env {
+        TZ = var.tz
+      }
+
+      resources {
+        cpu        = 1
+        memory     = 256
+        memory_max = 0
+      
+      }
+    }
+  }
+
   group "infrastructure-services" {
     count = 1
 
