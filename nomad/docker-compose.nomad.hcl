@@ -2514,12 +2514,63 @@ EOF
           # Dynamic config is now generated via template in /local/dynamic/
           "${var.config_path}/traefik/certs:/certs",
           "${var.config_path}/traefik/plugins-local:/plugins-local",
-          "${var.config_path}/traefik/logs:/var/log/traefik:rw",
-          "${var.root_path}/secrets:/run/secrets-src:ro"
+          "${var.config_path}/traefik/logs:/var/log/traefik:rw"
         ]
-        entrypoint = ["/bin/sh", "-c"]
+        command = "--accessLog=true"
         args = [
-          "mkdir -p /run/secrets && for f in /run/secrets-src/*.txt; do ln -sf \"$$f\" \"/run/secrets/$$(basename \"$$f\" .txt)\" 2>/dev/null || true; done && exec traefik --accessLog=true --accessLog.bufferingSize=0 --accessLog.fields.headers.defaultMode=drop --accessLog.fields.headers.names.User-Agent=keep --accessLog.fields.names.StartUTC=drop --accessLog.filePath=/var/log/traefik/traefik.log --accessLog.filters.statusCodes=100-999 --accessLog.format=json --metrics.prometheus.buckets=0.1,0.3,1.2,5.0 --api.dashboard=true --api.debug=true --api.disableDashboardAd=true --api.insecure=true --api=true --certificatesResolvers.letsencrypt.acme.caServer=${var.traefik_ca_server} --certificatesResolvers.letsencrypt.acme.dnsChallenge=${var.traefik_dns_challenge} --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare --certificatesResolvers.letsencrypt.acme.dnsChallenge.resolvers=${var.traefik_dns_resolvers} --certificatesResolvers.letsencrypt.acme.email=${var.acme_resolver_email} --certificatesResolvers.letsencrypt.acme.httpChallenge=${var.traefik_http_challenge} --certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web --certificatesResolvers.letsencrypt.acme.tlsChallenge=${var.traefik_tls_challenge} --certificatesResolvers.letsencrypt.acme.storage=/certs/acme.json --entryPoints.web.address=:80 --entryPoints.web.http.redirections.entryPoint.scheme=https --entryPoints.web.http.redirections.entryPoint.to=websecure --entryPoints.web.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32 --entryPoints.websecure.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32 --entryPoints.websecure.address=:443 --entryPoints.websecure.http.encodeQuerySemiColons=true --entryPoints.websecure.http.middlewares=bolabaden-error-pages@file,crowdsec@file,strip-www@file --entryPoints.websecure.http.tls=true --entryPoints.websecure.http.tls.certResolver=letsencrypt --entryPoints.websecure.http.tls.domains[0].main=${var.domain} --entryPoints.websecure.http.tls.domains[0].sans=www.${var.domain},*.${var.domain},*.${node.unique.name}.${var.domain} --entryPoints.websecure.http2.maxConcurrentStreams=100 --entryPoints.websecure.http3 --global.checkNewVersion=true --global.sendAnonymousUsage=false --log.level=INFO --ping=true --providers.consulCatalog=true --providers.consulCatalog.endpoint.address=172.26.64.1:8500 --providers.consulCatalog.exposedByDefault=false --providers.consulCatalog.defaultRule=Host(`{{ normalize .Name }}.${var.domain}`) || Host(`{{ normalize .Name }}.${node.unique.name}.${var.domain}`) --providers.consulCatalog.watch=true --providers.consulCatalog.prefix=traefik --providers.file.directory=/local/dynamic/ --providers.file.watch=true --experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin --experimental.plugins.bouncer.version=v1.4.5 --experimental.plugins.traefikerrorreplace.modulename=github.com/PseudoResonance/traefikerrorreplace --experimental.plugins.traefikerrorreplace.version=v1.0.1 --serversTransport.insecureSkipVerify=true"
+          "--accessLog.bufferingSize=0",
+          "--accessLog.fields.headers.defaultMode=drop",
+          "--accessLog.fields.headers.names.User-Agent=keep",
+          "--accessLog.fields.names.StartUTC=drop",
+          "--accessLog.filePath=/var/log/traefik/traefik.log",
+          "--accessLog.filters.statusCodes=100-999",
+          "--accessLog.format=json",
+          "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0",
+          "--api.dashboard=true",
+          "--api.debug=true",
+          "--api.disableDashboardAd=true",
+          "--api.insecure=true",
+          "--api=true",
+          "--certificatesResolvers.letsencrypt.acme.caServer=${var.traefik_ca_server}",
+          "--certificatesResolvers.letsencrypt.acme.dnsChallenge=${var.traefik_dns_challenge}",
+          "--certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare",
+          "--certificatesResolvers.letsencrypt.acme.dnsChallenge.resolvers=${var.traefik_dns_resolvers}",
+          "--certificatesResolvers.letsencrypt.acme.email=${var.acme_resolver_email}",
+          "--certificatesResolvers.letsencrypt.acme.httpChallenge=${var.traefik_http_challenge}",
+          "--certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web",
+          "--certificatesResolvers.letsencrypt.acme.tlsChallenge=${var.traefik_tls_challenge}",
+          "--certificatesResolvers.letsencrypt.acme.storage=/certs/acme.json",
+          "--entryPoints.web.address=:80",
+          "--entryPoints.web.http.redirections.entryPoint.scheme=https",
+          "--entryPoints.web.http.redirections.entryPoint.to=websecure",
+          "--entryPoints.web.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32",
+          "--entryPoints.websecure.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32",
+          "--entryPoints.websecure.address=:443",
+          "--entryPoints.websecure.http.encodeQuerySemiColons=true",
+          "--entryPoints.websecure.http.middlewares=bolabaden-error-pages@file,crowdsec@file,strip-www@file",
+          "--entryPoints.websecure.http.tls=true",
+          "--entryPoints.websecure.http.tls.certResolver=letsencrypt",
+          "--entryPoints.websecure.http.tls.domains[0].main=${var.domain}",
+          "--entryPoints.websecure.http.tls.domains[0].sans=www.${var.domain},*.${var.domain},*.${node.unique.name}.${var.domain}",
+          "--entryPoints.websecure.http2.maxConcurrentStreams=100",
+          "--entryPoints.websecure.http3",
+          "--global.checkNewVersion=true",
+          "--global.sendAnonymousUsage=false",
+          "--log.level=INFO",
+          "--ping=true",
+          "--providers.consulCatalog=true",
+          "--providers.consulCatalog.endpoint.address=172.26.64.1:8500",
+          "--providers.consulCatalog.exposedByDefault=false",
+          "--providers.consulCatalog.defaultRule=Host(`{{ normalize .Name }}.${var.domain}`) || Host(`{{ normalize .Name }}.${node.unique.name}.${var.domain}`)",
+          "--providers.consulCatalog.watch=true",
+          "--providers.consulCatalog.prefix=traefik",
+          "--providers.file.directory=/local/dynamic/",
+          "--providers.file.watch=true",
+          "--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin",
+          "--experimental.plugins.bouncer.version=v1.4.5",
+          "--experimental.plugins.traefikerrorreplace.modulename=github.com/PseudoResonance/traefikerrorreplace",
+          "--experimental.plugins.traefikerrorreplace.version=v1.0.1",
+          "--serversTransport.insecureSkipVerify=true"
         ]
         labels = {
           "com.docker.compose.project" = "coolify-proxy-group"
@@ -2541,18 +2592,11 @@ EOF
         }
       }
 
-      template {
-        data = <<EOF
-CLOUDFLARE_API_KEY_FILE=/run/secrets/cloudflare-api-key
-EOF
-        destination = "secrets/cloudflare.env"
-        env         = true
-      }
-
       env {
         TZ                  = var.tz
         LETS_ENCRYPT_EMAIL  = var.acme_resolver_email
         CLOUDFLARE_EMAIL    = var.cloudflare_email
+        CLOUDFLARE_API_KEY  = var.cloudflare_api_key
         CLOUDFLARE_ZONE_ID  = var.cloudflare_zone_id
         CROWDSEC_LAPI_KEY   = var.crowdsec_lapi_key
         CROWDSEC_BOUNCER_ENABLED = var.crowdsec_bouncer_enabled
