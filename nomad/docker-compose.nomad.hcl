@@ -858,12 +858,20 @@ EOF
 
       template {
         data = <<EOF
-{{ range service "dockerproxy-ro" -}}
+{{- if service "dockerproxy-ro" }}
+{{- range service "dockerproxy-ro" }}
 DOZZLE_REMOTE_HOST="tcp://{{ .Address }}:{{ .Port }}"
-{{ end -}}
+{{- end }}
+{{- else }}
+DOZZLE_REMOTE_HOST=""
+{{- end }}
 EOF
         destination = "secrets/docker-host.env"
         env         = true
+        wait {
+          min = "2s"
+          max = "10s"
+        }
       }
 
       resources {
