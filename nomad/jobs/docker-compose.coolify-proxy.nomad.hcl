@@ -945,8 +945,8 @@ http:
       service: bolabaden-nextjs@file
       rule: Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`)
       priority: 100
-      # Note: No middlewares here - matches docker-compose.yml where router has no middlewares
-      # Error pages middleware is defined separately and can be added to router if needed
+      # Note: In docker-compose.yml, the router doesn't have middlewares in the label
+      # The error middleware is defined but not attached to the router
     catchall:
       entryPoints:
         - web
