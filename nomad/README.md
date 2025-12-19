@@ -98,12 +98,12 @@ nomad job run nomad.hcl
 nomad job run \
   -var="domain=my-domain.com" \
   -var="config_path=/custom/path" \
-  docker-compose.nomad.hcl
+  nomad.hcl
 ```
 
 #### Method 4: Custom Variable File
 ```bash
-nomad job run -var-file="production.hcl" docker-compose.nomad.hcl
+nomad job run -var-file="production.hcl" nomad.hcl
 ```
 
 ### Variable Precedence
@@ -211,10 +211,10 @@ For temporary overrides without editing files:
 ```bash
 # Override via environment
 export NOMAD_VAR_domain="staging.example.com"
-nomad job run docker-compose.nomad.hcl
+nomad job run nomad.hcl
 
 # Override via command line
-nomad job run -var="domain=dev.local" docker-compose.nomad.hcl
+nomad job run -var="domain=dev.local" nomad.hcl
 ```
 
 ### Secret Management
@@ -251,13 +251,13 @@ EOF
 cd /home/ubuntu/my-media-stack/nomad
 
 # Validate the job file
-nomad job validate docker-compose.nomad.hcl
+nomad job validate nomad.hcl
 
 # Plan the deployment (dry-run)
-nomad job plan docker-compose.nomad.hcl
+nomad job plan nomad.hcl
 
 # Deploy
-nomad job run docker-compose.nomad.hcl
+nomad job run nomad.hcl
 ```
 
 ### Deploy Metrics Stack
@@ -277,7 +277,7 @@ sudo_password = "your-secure-password"
 EOF
 
 # Deploy with custom variables
-nomad job run -var-file="production.hcl" docker-compose.nomad.hcl
+nomad job run -var-file="production.hcl" nomad.hcl
 ```
 
 ## Monitoring and Management
@@ -321,7 +321,7 @@ nomad job stop docker-compose-stack
 nomad job stop -purge docker-compose-stack
 
 # Restart a job (update with same spec)
-nomad job run docker-compose.nomad.hcl
+nomad job run nomad.hcl
 
 # Scale a task group
 nomad job scale docker-compose-stack core-services=2
@@ -354,7 +354,7 @@ sudo lsof -i :443
 sudo netstat -tlnp | grep :443
 
 # Update port in variables
-nomad job run -var="traefik_https_port=8443" docker-compose.nomad.hcl
+nomad job run -var="traefik_https_port=8443" nomad.hcl
 ```
 
 #### 2. Volume Permission Issues
@@ -382,10 +382,10 @@ sudo chmod -R 755 /home/ubuntu/my-media-stack/volumes/redis
 **Solution**:
 ```bash
 # Check HCL syntax
-nomad job validate docker-compose.nomad.hcl
+nomad job validate nomad.hcl
 
 # Format HCL files
-nomad fmt docker-compose.nomad.hcl
+nomad fmt nomad.hcl
 ```
 
 #### 5. Out of Resources
@@ -400,7 +400,7 @@ nomad node status
 nomad job status -verbose docker-compose-stack
 
 # Reduce resource requirements temporarily
-nomad job run -var="redis_memory=128" docker-compose.nomad.hcl
+nomad job run -var="redis_memory=128" nomad.hcl
 ```
 
 ### Debug Commands
@@ -437,12 +437,12 @@ cd nomad
 cat variables.auto.tfvars.hcl
 
 # Validate job file
-nomad job validate docker-compose.nomad.hcl
+nomad job validate nomad.hcl
 ```
 
 ### 3. Deploy to Nomad
 ```bash
-nomad job run docker-compose.nomad.hcl
+nomad job run nomad.hcl
 ```
 
 ### 4. Verify Services
@@ -609,7 +609,7 @@ When you update your `.env` file and want to sync to Nomad:
 ### Option 1: Manual Update
 Edit `variables.auto.tfvars.hcl` with the new values, then redeploy:
 ```bash
-nomad job run docker-compose.nomad.hcl
+nomad job run nomad.hcl
 ```
 
 ### Option 2: Script to Convert .env to HCL (Future Enhancement)
@@ -682,7 +682,7 @@ EOF
 # Quick test on different domain
 export NOMAD_VAR_domain="dev.local"
 export NOMAD_VAR_config_path="/tmp/dev-volumes"
-nomad job run docker-compose.nomad.hcl
+nomad job run nomad.hcl
 ```
 
 ### Example: Production Deployment
@@ -698,21 +698,21 @@ authentik_secret_key = "$(openssl rand -hex 32)"
 EOF
 
 # Deploy with production config
-nomad job run -var-file="production.hcl" docker-compose.nomad.hcl
+nomad job run -var-file="production.hcl" nomad.hcl
 ```
 
 ### Example: Update Single Service
 
 ```bash
 # Modify just the Redis memory allocation
-nomad job run -var="redis_memory=1024" docker-compose.nomad.hcl
+nomad job run -var="redis_memory=1024" nomad.hcl
 ```
 
 ## File Structure
 
 ```
 nomad/
-├── docker-compose.nomad.hcl    # Main job specification
+├── nomad.hcl    # Main job specification
 ├── metrics.nomad.hcl           # Metrics stack
 ├── variables.auto.tfvars.hcl   # Auto-loaded variables (from .env)
 ├── README.md                   # This file
