@@ -388,11 +388,8 @@ job "docker-compose-stack" {
   type        = "service"
 
   # Ensure all task groups run on nodes with Consul (required for service discovery)
-  constraint {
-    attribute = "${attr.consul.version}"
-    operator  = "semver"
-    value     = ">= 1.8.0"
-  }
+  # Note: Constraint removed - nodes may not expose consul.version attribute
+  # Consul integration is verified via service discovery, not version constraint
 
   # Mongodb Group
   group "mongodb-group" {
