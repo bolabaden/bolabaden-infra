@@ -682,23 +682,44 @@ EOF
       driver = "docker"
 
       config {
-        image = "docker.io/bolabaden/bolabaden-nextjs"
+        image = "th3w1zard1/bolabaden-nextjs"
         ports = ["bolabaden_nextjs"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
         labels = {
           "com.docker.compose.project" = "core-group"
           "com.docker.compose.service" = "bolabaden-nextjs"
+          "deunhealth.restart.on.unhealthy" = "true"
+          "traefik.enable" = "true"
+          # Error middleware configuration
+          "traefik.http.middlewares.error-mw.errors.query" = "/api/error/{status}.html"
+          "traefik.http.middlewares.error-mw.errors.service" = "error-service"
+          "traefik.http.middlewares.error-mw.errors.status" = "400-599"
+          # Error service configuration
+          "traefik.http.services.error-service.loadbalancer.server.port" = "3000"
+          # Errors router
+          "traefik.http.routers.error-router.rule" = "Host(`errors.${var.domain}`) || Host(`errors.${node.unique.name}.${var.domain}`)"
+          "traefik.http.routers.error-router.service" = "error-service"
+          "traefik.http.routers.error-router.middlewares" = "error-mw@docker",
+          # Main website router
+          "traefik.http.routers.bolabaden-nextjs.rule" = "Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`)"
+          "traefik.http.routers.bolabaden-nextjs.service" = "bolabaden-nextjs"
+          "traefik.http.routers.bolabaden-nextjs.middlewares" = "error-mw@docker"
+          # Bolabaden NextJS service configuration
+          "traefik.http.services.bolabaden-nextjs.loadbalancer.server.port" = "3000"
+          # Iframe embed service for other subdomains
+          "traefik.http.routers.bolabaden-embed.rule" = "Host(`embed.${var.domain}`) || Host(`embed.${node.unique.name}.${var.domain}`)"
+          "traefik.http.routers.bolabaden-embed.service" = "bolabaden-nextjs"
         }
       }
 
       env {
-        TZ           = var.tz
-        PUID         = var.puid
-        PGID         = var.pgid
-        UMASK        = var.umask
-        NODE_ENV     = "production"
-        PORT         = "3000"
-        HOSTNAME     = "0.0.0.0"
-        ALLOW_ORIGIN = "*"
+        TZ       = var.tz
+        PUID     = var.puid
+        PGID     = var.pgid
+        UMASK    = var.umask
+        NODE_ENV = "production"
+        PORT     = "3000"
+        HOSTNAME = "0.0.0.0"
       }
 
       resources {
@@ -715,16 +736,22 @@ EOF
         tags = [
           "traefik.enable=true",
           # Error pages
-          "traefik.http.middlewares.bolabaden-error-pages.errors.status=400-599",
-          "traefik.http.middlewares.bolabaden-error-pages.errors.service=bolabaden-nextjs@consulcatalog",
-          "traefik.http.middlewares.bolabaden-error-pages.errors.query=/api/error/{status}",
+          "traefik.http.middlewares.error-mw.errors.status=400-599",
+          "traefik.http.middlewares.error-mw.errors.service=error-service",
+          "traefik.http.middlewares.error-mw.errors.query=/api/error/{status}.html",
+          "traefik.http.services.error-service.loadbalancer.server.port=3000",
+          "traefik.http.routers.error-router.rule=Host(`errors.${var.domain}`) || Host(`errors.${node.unique.name}.${var.domain}`)",
+          "traefik.http.routers.error-router.service=error-service",
+          "traefik.http.routers.error-router.middlewares=error-mw@docker",
           # Router for bolabaden-nextjs
           "traefik.http.routers.bolabaden-nextjs.rule=Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`)",
+          "traefik.http.routers.bolabaden-nextjs.service=bolabaden-nextjs",
+          "traefik.http.routers.bolabaden-nextjs.middlewares=error-mw@docker",
           # bolabaden-nextjs Service definition
           "traefik.http.services.bolabaden-nextjs.loadbalancer.server.port=3000",
-          "kuma.bolabaden-nextjs.http.name=${node.unique.name}.${var.domain}",
-          "kuma.bolabaden-nextjs.http.url=https://${var.domain}",
-          "kuma.bolabaden-nextjs.http.interval=30"
+          # Iframe embed service
+          "traefik.http.routers.bolabaden-embed.rule=Host(`embed.${var.domain}`) || Host(`embed.${node.unique.name}.${var.domain}`)",
+          "traefik.http.routers.bolabaden-embed.service=bolabaden-nextjs"
         ]
 
         check {
@@ -838,128 +865,47 @@ EOF
       config {
         image = "ghcr.io/gethomepage/homepage"
         ports = ["homepage"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
         volumes = [
-          # DO NOT create a bind mount to the entire /app/config/ directory.
-          "${var.config_path}/homepage:/app/config",
-          "/var/run/docker.sock:/var/run/docker.sock:ro"
+          # DO NOT create a bind mount to the entire /app/public/ directory.
+          "/var/run/docker.sock:/var/run/docker.sock:ro",
+          "${var.config_path}/homepage:/app/config"
         ]
         labels = {
           "com.docker.compose.project" = "core-group"
           "com.docker.compose.service" = "homepage"
+          "deunhealth.restart.on.unhealthy" = "true"
+          "traefik.enable" = "true"
+          "traefik.http.routers.homepage.middlewares" = "nginx-auth@file"
+          "traefik.http.routers.homepage.rule" = "Host(`homepage.${var.domain}`) || Host(`homepage.${node.unique.name}.${var.domain}`)"
+          "traefik.http.services.homepage.loadbalancer.server.port" = "3000"
+          "homepage.group" = "Dashboards"
+          "homepage.name" = "Homepage"
+          "homepage.icon" = "homepage.png"
+          "homepage.href" = "https://homepage.${var.domain}/"
+          "homepage.description" = "Homepage is a dashboard that displays all of your services."
         }
       }
 
-      # Homepage configuration files via templates
-      template {
-        data = <<EOF
-/* Custom CSS for ${var.domain} - ${node.unique.name} */
-EOF
-        destination = "local/custom.css"
-      }
-
-      template {
-        data = <<EOF
-/* Custom JavaScript for Bolabaden */
-EOF
-        destination = "local/custom.js"
-      }
-
-      template {
-        data = <<EOF
----
-# For configuration options and examples, please see:
-# https://gethomepage.dev/configs/docker/
-
-my-docker:
-  socket: /var/run/docker.sock
-#  host: dockerproxy
-#  port: 2375
-EOF
-        destination = "local/docker.yaml"
-      }
-
-      template {
-        data = <<EOF
----
-# For configuration options and examples, please see:
-# https://gethomepage.dev/configs/info-widgets/
-
-- resources:
-  cpu: true
-  memory: true
-  disk: /
-
-- search:
-  provider: duckduckgo
-  target: _blank
-EOF
-        destination = "local/widgets.yaml"
-      }
-
-      template {
-        data = <<EOF
----
-# For configuration options and examples, please see:
-# https://gethomepage.dev/configs/settings/
-
-providers:
-  openweathermap: {{ env "OPENWEATHERMAP_API_KEY" | or "" }}
-  weatherapi: {{ env "WEATHERAPI_API_KEY" | or "" }}
-EOF
-        destination = "local/settings.yaml"
-      }
-
-      template {
-        data = <<EOF
----
-# For configuration options and examples, please see:
-# https://gethomepage.dev/configs/bookmarks
-
-- Developer:
-  - Github:
-    - abbr: GH
-      href: https://github.com/bolabaden-site
-
-- Portfolio:
-  - ${var.domain}:
-    - abbr: BO
-      href: https://${var.domain}/
-  - LinkedIn:
-    - abbr: LI
-      href: https://www.linkedin.com/in/boden-crouch-555897193/
-
-- AI/Research:
-  - ai-researchwizard:
-    - abbr: GP
-      href: https://gptr.${var.domain}/
-  - searxng:
-    - abbr: SE
-      href: https://searxng.${var.domain}/
-EOF
-        destination = "local/bookmarks.yaml"
-      }
-
       env {
-        TZ                            = var.tz
-        #DOCKER_HOST                  = "tcp://dockerproxy-ro:2375"  # Point to proxy instead of socket
-        HOMEPAGE_ALLOWED_HOSTS        = "*"
-        HOMEPAGE_VAR_TITLE            = "Bolabaden"
-        HOMEPAGE_VAR_SEARCH_PROVIDER  = "duckduckgo"
-        HOMEPAGE_VAR_HEADER_STYLE     = "glass"
-        HOMEPAGE_VAR_THEME            = "dark"
-        HOMEPAGE_CUSTOM_CSS           = "/app/config/custom.css"
-        HOMEPAGE_CUSTOM_JS            = "/app/config/custom.js"
-        HOMEPAGE_VAR_WEATHER_CITY     = "Iowa City"
-        HOMEPAGE_VAR_WEATHER_LAT      = "41.661129"
-        HOMEPAGE_VAR_WEATHER_LONG     = "-91.5302"
-        #HOMEPAGE_VAR_WEATHER_TIME    = ""
-        HOMEPAGE_VAR_WEATHER_UNIT     = "fahrenheit"
+        TZ                        = var.tz
+        PUID                      = var.puid
+        PGID                      = var.pgid
+        UMASK                     = var.umask
+        HOMEPAGE_ALLOWED_HOSTS    = "*"
+        HOMEPAGE_VAR_TITLE        = "Bolabaden"
+        HOMEPAGE_VAR_SEARCH_PROVIDER = "google"
+        HOMEPAGE_VAR_HEADER_STYLE = ""
+        HOMEPAGE_VAR_WEATHER_CITY = "Chicago"
+        HOMEPAGE_VAR_WEATHER_LAT  = "41.8781"
+        HOMEPAGE_VAR_WEATHER_LONG = "-87.6298"
+        HOMEPAGE_VAR_WEATHER_UNIT = "fahrenheit"
       }
 
       resources {
         cpu        = 250
-        memory     = 1024
-        memory_max = 0
+        memory     = 128
+        memory_max = 1024
       
       }
 
@@ -969,10 +915,14 @@ EOF
         port = "homepage"
         tags = [
           "traefik.enable=true",
+          "traefik.http.routers.homepage.middlewares=nginx-auth@file",
+          "traefik.http.routers.homepage.rule=Host(`homepage.${var.domain}`) || Host(`homepage.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.homepage.loadbalancer.server.port=3000",
-          "kuma.homepage.http.name=homepage.${node.unique.name}.${var.domain}",
-          "kuma.homepage.http.url=https://homepage.${var.domain}",
-          "kuma.homepage.http.interval=30"
+          "homepage.group=Dashboards",
+          "homepage.name=Homepage",
+          "homepage.icon=homepage.png",
+          "homepage.href=https://homepage.${var.domain}/",
+          "homepage.description=Homepage is a dashboard that displays all of your services."
         ]
 
         check {
@@ -2556,89 +2506,56 @@ EOF
       kill_signal  = "SIGTERM"
 
       config {
-        image = "docker.io/traefik:v3.5.3"  # Built on 2025-09-09T10:16:55Z
+        image = "docker.io/traefik:latest"
         ports = ["traefik_api", "traefik_http", "traefik_https"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
         cap_add = ["NET_ADMIN"]
         volumes = [
           # Dynamic config is now generated via template in /local/dynamic/
           "${var.config_path}/traefik/certs:/certs",
           "${var.config_path}/traefik/plugins-local:/plugins-local",
-          "${var.config_path}/traefik/logs:/var/log/traefik:rw"
+          "${var.config_path}/traefik/logs:/var/log/traefik:rw",
+          "${var.root_path}/secrets:/run/secrets-src:ro"
         ]
+        entrypoint = ["/bin/sh", "-c"]
         args = [
-          "--accessLog=true",
-          "--accessLog.bufferingSize=0",
-          "--accessLog.fields.headers.defaultMode=drop",
-          "--accessLog.fields.headers.names.User-Agent=keep",
-          "--accessLog.fields.names.StartUTC=drop",
-          "--accessLog.filePath=/var/log/traefik/traefik.log",
-          "--accessLog.filters.statusCodes=100-999",
-          "--accessLog.format=json",
-          "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0",
-          "--api.dashboard=true",
-          "--api.debug=true",
-          "--api.disableDashboardAd=true",
-          "--api.insecure=false",
-          "--api=true",
-          # use staging for testing/development/debugging to avoid rate limiting
-          #"--certificatesResolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory",
-          "--certificatesResolvers.letsencrypt.acme.caServer=${var.traefik_ca_server}",
-          "--certificatesResolvers.letsencrypt.acme.dnsChallenge=${var.traefik_dns_challenge}",
-          "--certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare",
-          "--certificatesResolvers.letsencrypt.acme.dnsChallenge.resolvers=${var.traefik_dns_resolvers}",
-          "--certificatesResolvers.letsencrypt.acme.email=${var.acme_resolver_email}",
-          "--certificatesResolvers.letsencrypt.acme.httpChallenge=${var.traefik_http_challenge}",
-          "--certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web",
-          "--certificatesResolvers.letsencrypt.acme.tlsChallenge=${var.traefik_tls_challenge}",
-          "--certificatesResolvers.letsencrypt.acme.storage=/certs/acme.json",
-          #"--certificatesResolvers.letsencrypt.acme.dnsChallenge.propagation.disableChecks=true",
-          #"--certificatesResolvers.letsencrypt.acme.dnsChallenge.propagation.delayBeforeChecks=60",
-          #"--entryPoints.dot.address=:853",
-          #"--entryPoints.ping.address=:3000",
-          "--entryPoints.web.address=:80",
-          "--entryPoints.web.http.redirections.entryPoint.scheme=https",
-          "--entryPoints.web.http.redirections.entryPoint.to=websecure",
-          # Ensures that the Traefik logs obtain the correct IP address of site visitors, defined in CloudFlare's `CF_CONNECTING_IP` HTTP header.
-          "--entryPoints.web.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32",
-          "--entryPoints.websecure.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32",
-          "--entryPoints.websecure.address=:443",
-          "--entryPoints.websecure.http.encodeQuerySemiColons=true",
-          "--entryPoints.websecure.http.middlewares=bolabaden-error-pages@file,crowdsec@file,strip-www@file",
-          "--entryPoints.websecure.http.tls=true",
-          "--entryPoints.websecure.http.tls.certResolver=letsencrypt",
-          "--entryPoints.websecure.http.tls.domains[0].main=${var.domain}",
-          "--entryPoints.websecure.http.tls.domains[0].sans=www.${var.domain},*.${var.domain},*.${node.unique.name}.${var.domain}",
-          "--entryPoints.websecure.http2.maxConcurrentStreams=100",
-          "--entryPoints.websecure.http3",
-          "--global.checkNewVersion=true",
-          "--global.sendAnonymousUsage=false",
-          "--log.level=INFO",
-          "--ping=true",
-          # Consul Catalog provider for Nomad service discovery
-          "--providers.consulCatalog=true",
-          "--providers.consulCatalog.endpoint.address=172.26.64.1:8500",
-          "--providers.consulCatalog.exposedByDefault=false",
-          "--providers.consulCatalog.defaultRule=Host(`{{ normalize .Name }}.${var.domain}`) || Host(`{{ normalize .Name }}.${node.unique.name}.${var.domain}`)",
-          "--providers.consulCatalog.watch=true",
-          "--providers.consulCatalog.prefix=traefik",
-          "--providers.file.directory=/local/dynamic/",
-          "--providers.file.watch=true",
-          "--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin",
-          "--experimental.plugins.bouncer.version=v1.4.5",
-          "--experimental.plugins.traefikerrorreplace.modulename=github.com/PseudoResonance/traefikerrorreplace",
-          "--experimental.plugins.traefikerrorreplace.version=v1.0.1",
-          # TLS-specific option within the ServersTransport configuration.
-          # When set to true, it disables the verification of the backend server's TLS certificate chain and hostname.
-          # By default, this option is false, meaning Traefik would validate the certificate to ensure it is issued by a trusted certificate authority (CA), has not expired, and matches the expected hostname.
-          # Setting it to true bypasses these checks, allowing connections to proceed even with self-signed, expired, or mismatched certificates.
-          # This is useful for testing or when you need to connect to services that use self-signed certificates.
-          # however, in our configuration, this is REQUIRED to be true (avoids errors like 'ERR 500 Internal Server Error error="tls: failed to verify certificate: x509: cannot validate certificate for 10.76.0.2 because it doesn't contain any IP SANs"') in stremio
-          "--serversTransport.insecureSkipVerify=true"
+          "mkdir -p /run/secrets && for f in /run/secrets-src/*.txt; do ln -sf \"$$f\" \"/run/secrets/$$(basename \"$$f\" .txt)\" 2>/dev/null || true; done && exec traefik --accessLog=true --accessLog.bufferingSize=0 --accessLog.fields.headers.defaultMode=drop --accessLog.fields.headers.names.User-Agent=keep --accessLog.fields.names.StartUTC=drop --accessLog.filePath=/var/log/traefik/traefik.log --accessLog.filters.statusCodes=100-999 --accessLog.format=json --metrics.prometheus.buckets=0.1,0.3,1.2,5.0 --api.dashboard=true --api.debug=true --api.disableDashboardAd=true --api.insecure=true --api=true --certificatesResolvers.letsencrypt.acme.caServer=${var.traefik_ca_server} --certificatesResolvers.letsencrypt.acme.dnsChallenge=${var.traefik_dns_challenge} --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare --certificatesResolvers.letsencrypt.acme.dnsChallenge.resolvers=${var.traefik_dns_resolvers} --certificatesResolvers.letsencrypt.acme.email=${var.acme_resolver_email} --certificatesResolvers.letsencrypt.acme.httpChallenge=${var.traefik_http_challenge} --certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web --certificatesResolvers.letsencrypt.acme.tlsChallenge=${var.traefik_tls_challenge} --certificatesResolvers.letsencrypt.acme.storage=/certs/acme.json --entryPoints.web.address=:80 --entryPoints.web.http.redirections.entryPoint.scheme=https --entryPoints.web.http.redirections.entryPoint.to=websecure --entryPoints.web.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32 --entryPoints.websecure.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32 --entryPoints.websecure.address=:443 --entryPoints.websecure.http.encodeQuerySemiColons=true --entryPoints.websecure.http.middlewares=bolabaden-error-pages@file,crowdsec@file,strip-www@file --entryPoints.websecure.http.tls=true --entryPoints.websecure.http.tls.certResolver=letsencrypt --entryPoints.websecure.http.tls.domains[0].main=${var.domain} --entryPoints.websecure.http.tls.domains[0].sans=www.${var.domain},*.${var.domain},*.${node.unique.name}.${var.domain} --entryPoints.websecure.http2.maxConcurrentStreams=100 --entryPoints.websecure.http3 --global.checkNewVersion=true --global.sendAnonymousUsage=false --log.level=INFO --ping=true --providers.consulCatalog=true --providers.consulCatalog.endpoint.address=172.26.64.1:8500 --providers.consulCatalog.exposedByDefault=false --providers.consulCatalog.defaultRule=Host(`{{ normalize .Name }}.${var.domain}`) || Host(`{{ normalize .Name }}.${node.unique.name}.${var.domain}`) --providers.consulCatalog.watch=true --providers.consulCatalog.prefix=traefik --providers.file.directory=/local/dynamic/ --providers.file.watch=true --experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin --experimental.plugins.bouncer.version=v1.4.5 --experimental.plugins.traefikerrorreplace.modulename=github.com/PseudoResonance/traefikerrorreplace --experimental.plugins.traefikerrorreplace.version=v1.0.1 --serversTransport.insecureSkipVerify=true"
         ]
         labels = {
           "com.docker.compose.project" = "coolify-proxy-group"
           "com.docker.compose.service" = "traefik"
+          "traefik.enable" = "true"
+          "traefik.http.routers.traefik.service" = "api@internal"
+          "traefik.http.routers.traefik.rule" = "Host(`traefik.${var.domain}`) || Host(`traefik.${node.unique.name}.${var.domain}`)"
+          "traefik.http.services.traefik.loadbalancer.server.port" = "8080"
+          "homepage.group" = "Infrastructure"
+          "homepage.name" = "Traefik"
+          "homepage.icon" = "traefik.png"
+          "homepage.href" = "https://traefik.${var.domain}/dashboard"
+          "homepage.widget.type" = "traefik"
+          "homepage.widget.url" = "http://traefik:8080"
+          "homepage.description" = "Reverse proxy entrypoint for all services with TLS, Cloudflare integration, and auth middleware"
+          "kuma.traefik.http.name" = "traefik.${node.unique.name}.${var.domain}"
+          "kuma.traefik.http.url" = "https://traefik.${var.domain}/dashboard"
+          "kuma.traefik.http.interval" = "20"
         }
+      }
+
+      template {
+        data = <<EOF
+CLOUDFLARE_API_KEY_FILE=/run/secrets/cloudflare-api-key
+EOF
+        destination = "secrets/cloudflare.env"
+        env         = true
+      }
+
+      env {
+        TZ                  = var.tz
+        LETS_ENCRYPT_EMAIL  = var.acme_resolver_email
+        CLOUDFLARE_EMAIL    = var.cloudflare_email
+        CLOUDFLARE_ZONE_ID  = var.cloudflare_zone_id
+        CROWDSEC_LAPI_KEY   = var.crowdsec_lapi_key
+        CROWDSEC_BOUNCER_ENABLED = var.crowdsec_bouncer_enabled
       }
 
       template {
@@ -2652,16 +2569,6 @@ CROWDSEC_APPSEC_HOST="{{ .Address }}:{{ .Port }}"
 EOF
         destination = "secrets/crowdsec-endpoints.env"
         env         = true
-      }
-
-      env {
-        TZ                  = var.tz
-        LETS_ENCRYPT_EMAIL  = var.acme_resolver_email
-        CLOUDFLARE_EMAIL    = var.cloudflare_email
-        CLOUDFLARE_API_KEY  = var.cloudflare_api_key
-        CLOUDFLARE_ZONE_ID  = var.cloudflare_zone_id
-        CROWDSEC_LAPI_KEY   = var.crowdsec_lapi_key
-        CROWDSEC_BOUNCER_ENABLED = var.crowdsec_bouncer_enabled
       }
 
       # traefik-dynamic.yaml - Core dynamic configuration
@@ -3865,14 +3772,27 @@ EOF
       config {
         image = "ghcr.io/berriai/litellm-database:main-stable"
         ports = ["litellm"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
         volumes = [
-          "${var.config_path}/litellm:/app/config:ro"
+          "${var.config_path}/litellm:/app/config:ro",
+          "${var.root_path}/secrets:/run/secrets-src:ro"
         ]
-        command = "--config"
-        args = ["/app/config/litellm_config.yaml", "--port", "4000", "--host", "0.0.0.0"]
+        entrypoint = ["/bin/sh", "-c"]
+        args = [
+          "mkdir -p /run/secrets && for f in /run/secrets-src/*.txt; do ln -sf \"$$f\" \"/run/secrets/$$(basename \"$$f\" .txt)\" 2>/dev/null || true; done && exec litellm --config /app/config/litellm_config.yaml --port 4000 --host 0.0.0.0"
+        ]
         labels = {
           "com.docker.compose.project" = "llm-group"
           "com.docker.compose.service" = "litellm"
+          "traefik.enable" = "true"
+          "homepage.group" = "AI"
+          "homepage.name" = "Litellm"
+          "homepage.icon" = "litellm.png"
+          "homepage.href" = "https://litellm.${var.domain}/"
+          "homepage.description" = "LLM gateway/router with provider failover, caching, rate limits, and analytics"
+          "kuma.litellm.http.name" = "litellm.${node.unique.name}.${var.domain}"
+          "kuma.litellm.http.url" = "https://litellm.${var.domain}"
+          "kuma.litellm.http.interval" = "60"
         }
       }
 
@@ -3884,25 +3804,32 @@ DATABASE_URL=postgresql://litellm:litellm@{{ .Address }}:{{ .Port }}/litellm
 REDIS_HOST=redis
 REDIS_PORT=6379
 LITELLM_LOG={{ env "LITELLM_LOG" | or "INFO" }}
-LITELLM_MASTER_KEY=${var.litellm_master_key}
+LITELLM_MASTER_KEY_FILE=/run/secrets/litellm-master-key
 LITELLM_MODE={{ env "LITELLM_MODE" | or "PRODUCTION" }}
 UI_USERNAME={{ env "LITELLM_UI_USERNAME" | or "admin" }}
-UI_PASSWORD=${var.litellm_master_key}
+UI_PASSWORD_FILE=/run/secrets/litellm-master-key
 POSTGRES_USER=litellm
 POSTGRES_PASSWORD=litellm
 POSTGRES_DB=litellm
-AI21_API_KEY={{ env "AI21_API_KEY" | or "" }}
-ANTHROPIC_API_KEY=${var.anthropic_api_key}
-OPENAI_API_KEY=${var.openai_api_key}
-GEMINI_API_KEY={{ env "GEMINI_API_KEY" | or "" }}
-GROQ_API_KEY={{ env "GROQ_API_KEY" | or "" }}
-MISTRAL_API_KEY={{ env "MISTRAL_API_KEY" | or "" }}
-OPENROUTER_API_KEY={{ env "OPENROUTER_API_KEY" | or "" }}
-PERPLEXITY_API_KEY={{ env "PERPLEXITY_API_KEY" | or "" }}
-DEEPSEEK_API_KEY={{ env "DEEPSEEK_API_KEY" | or "" }}
-REPLICATE_API_KEY={{ env "REPLICATE_API_KEY" | or "" }}
-TOGETHERAI_API_KEY={{ env "TOGETHERAI_API_KEY" | or "" }}
-UPSTAGE_API_KEY={{ env "UPSTAGE_API_KEY" | or "" }}
+ANTHROPIC_API_KEY_FILE=/run/secrets/anthropic-api-key
+OPENAI_API_KEY_FILE=/run/secrets/openai-api-key
+OPENROUTER_API_KEY_FILE=/run/secrets/openrouter-api-key
+GROQ_API_KEY_FILE=/run/secrets/groq-api-key
+DEEPSEEK_API_KEY_FILE=/run/secrets/deepseek-api-key
+GEMINI_API_KEY_FILE=/run/secrets/gemini-api-key
+MISTRAL_API_KEY_FILE=/run/secrets/mistral-api-key
+PERPLEXITY_API_KEY_FILE=/run/secrets/perplexity-api-key
+REPLICATE_API_KEY_FILE=/run/secrets/replicate-api-key
+SAMBANOVA_API_KEY_FILE=/run/secrets/sambanova-api-key
+TOGETHERAI_API_KEY_FILE=/run/secrets/togetherai-api-key
+HF_TOKEN_FILE=/run/secrets/hf-token
+LANGCHAIN_API_KEY_FILE=/run/secrets/langchain-api-key
+SERPAPI_API_KEY_FILE=/run/secrets/serpapi-api-key
+SEARCH1API_KEY_FILE=/run/secrets/search1api-key
+UPSTAGE_API_KEY_FILE=/run/secrets/upstage-api-key
+JINA_API_KEY_FILE=/run/secrets/jina-api-key
+KAGI_API_KEY_FILE=/run/secrets/kagi-api-key
+GLAMA_API_KEY_FILE=/run/secrets/glama-api-key
 EOF
         destination = "secrets/litellm.env"
         env         = true
@@ -4441,20 +4368,20 @@ EOF
           "traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.regex=^(http|https)://stremio\\.(${var.domain}|${node.unique.name}\\.${var.domain})(/shell[^#?]*)(\\\\?[^#]*?streamingServer=[^&#]*)?([^#]*)(#.*)?$$",
           "traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.replacement=$$1://stremio.$$2$$3?streamingServer=https%3A%2F%2Fstremio.$$2$$5$$6",
           "traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.permanent=false",
-          # Stremio Web UI (dynamic port maps to container port 8080)
-          "traefik.http.routers.stremio.service=stremio@consulcatalog",
+          # Stremio Web UI
+          "traefik.http.routers.stremio.service=stremio",
           "traefik.http.routers.stremio.rule=Host(`stremio-web.${var.domain}`) || Host(`stremio-web.${node.unique.name}.${var.domain}`) || Host(`stremio.${var.domain}`) || Host(`stremio.${node.unique.name}.${var.domain}`)",
-          "traefik.http.routers.stremio.middlewares=stremio-web-redirect@consulcatalog,stremio-shell-redirect@consulcatalog,stremio-streaming-server-redirect@consulcatalog",
+          "traefik.http.routers.stremio.middlewares=stremio-web-redirect@docker,stremio-shell-redirect@docker,stremio-streaming-server-redirect@docker",
           "traefik.http.services.stremio.loadbalancer.server.scheme=https",
           "traefik.http.services.stremio.loadbalancer.server.port=8080",
           # Stremio HTTP Streaming Server (port 11470)
-          "traefik.http.routers.stremio-http11470.service=stremio-http11470@consulcatalog",
+          "traefik.http.routers.stremio-http11470.service=stremio-http11470",
           "traefik.http.services.stremio-http11470.loadbalancer.server.scheme=http",
           "traefik.http.services.stremio-http11470.loadbalancer.server.port=11470",
           # Stremio API/streaming routes to 11470
           "traefik.http.routers.stremio-http11470.rule=(Host(`stremio.${var.domain}`) || Host(`stremio.${node.unique.name}.${var.domain}`)) && ( PathPrefix(`/hlsv2`) || PathPrefix(`/casting`) || PathPrefix(`/local-addon`) || PathPrefix(`/proxy`) || PathPrefix(`/rar`) || PathPrefix(`/zip`) || PathPrefix(`/settings`) || PathPrefix(`/create`) || PathPrefix(`/removeAll`) || PathPrefix(`/samples`) || PathPrefix(`/probe`) || PathPrefix(`/subtitlesTracks`) || PathPrefix(`/opensubHash`) || PathPrefix(`/subtitles`) || PathPrefix(`/network-info`) || PathPrefix(`/device-info`) || PathPrefix(`/get-https`) || PathPrefix(`/hwaccel-profiler`) || PathPrefix(`/status`) || PathPrefix(`/exec`) || PathPrefix(`/stream`) || PathRegexp(`^/[^/]+/(stats\\\\.json|create|remove|destroy)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stats\\\\.json|hls\\\\.m3u8|master\\\\.m3u8|stream\\\\.m3u8|dlna|thumb\\\\.jpg)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+\\\\.m3u8|stream-[^/]+\\\\.m3u8|subs-[^/]+\\\\.m3u8)$$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+|stream-[^/]+)/[^/]+\\\\.(ts|mp4)$$`) || PathRegexp(`^/yt/[^/]+(\\\\.json)?$$`) || Path(`/thumb.jpg`) || Path(`/stats.json`) )",
           # Stremio HTTPS Streaming Server (port 12470)
-          "traefik.http.routers.stremio-https12470.service=stremio-https12470@consulcatalog",
+          "traefik.http.routers.stremio-https12470.service=stremio-https12470",
           "traefik.http.services.stremio-https12470.loadbalancer.server.scheme=https",
           "traefik.http.services.stremio-https12470.loadbalancer.server.port=12470",
           # Stremio API/streaming routes to 12470
@@ -4720,7 +4647,12 @@ EOF
         image = "ghcr.io/viren070/aiostreams:v2.12.2"
         ports = ["aiostreams"]
         volumes = [
-          "${var.config_path}/stremio/addons/aiostreams/data:/app/data"
+          "${var.config_path}/stremio/addons/aiostreams/data:/app/data",
+          "${var.root_path}/secrets:/run/secrets-src:ro"
+        ]
+        entrypoint = ["/bin/sh", "-c"]
+        args = [
+          "for f in /run/secrets-src/*.txt; do ln -sf \"$$f\" \"/run/secrets/$$(basename \"$$f\" .txt)\" 2>/dev/null || true; done && exec node /app/dist/index.js"
         ]
         labels = {
           "com.docker.compose.project" = "stremio-group"
@@ -4768,18 +4700,18 @@ BUILTIN_PROWLARR_INDEXERS_CACHE_TTL=1209600
 # ==============================================================================
 #                     DEBRID & OTHER SERVICE API KEYS
 # ==============================================================================
-TMDB_ACCESS_TOKEN=${var.tmdb_access_token}
-TMDB_API_KEY=${var.tmdb_api_key}
+TMDB_ACCESS_TOKEN_FILE=/run/secrets/tmdb-access-token
+TMDB_API_KEY_FILE=/run/secrets/tmdb-api-key
 TRAKT_CLIENT_ID={{ env "TRAKT_CLIENT_ID" | or "" }}
 
-DEFAULT_REALDEBRID_API_KEY=${var.realdebrid_api_key}
-DEFAULT_ALLDEBRID_API_KEY=${var.alldebrid_api_key}
-DEFAULT_PREMIUMIZE_API_KEY=${var.premiumize_api_key}
-DEFAULT_DEBRIDLINK_API_KEY=${var.debridlink_api_key}
-DEFAULT_TORBOX_API_KEY=${var.torbox_api_key}
-DEFAULT_OFFCLOUD_API_KEY=${var.offcloud_api_key}
+DEFAULT_REALDEBRID_API_KEY_FILE=/run/secrets/realdebrid-api-key
+DEFAULT_ALLDEBRID_API_KEY_FILE=/run/secrets/alldebrid-api-key
+DEFAULT_PREMIUMIZE_API_KEY_FILE=/run/secrets/premiumize-api-key
+DEFAULT_DEBRIDLINK_API_KEY_FILE=/run/secrets/debridlink-api-key
+DEFAULT_TORBOX_API_KEY_FILE=/run/secrets/torbox-api-key
+DEFAULT_OFFCLOUD_API_KEY_FILE=/run/secrets/offcloud-api-key
 DEFAULT_OFFCLOUD_EMAIL={{ env "OFFCLOUD_EMAIL" | or "" }}
-DEFAULT_OFFCLOUD_PASSWORD={{ env "OFFCLOUD_PASSWORD" | or "" }}
+DEFAULT_OFFCLOUD_PASSWORD_FILE=/run/secrets/offcloud-password
 
 # ==============================================================================
 #                           CACHE CONFIGURATION
