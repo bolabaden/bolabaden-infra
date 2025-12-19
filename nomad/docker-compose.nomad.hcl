@@ -752,11 +752,9 @@ EOF
           # Errors router
           "traefik.http.routers.error-router.rule" = "Host(`errors.${var.domain}`) || Host(`errors.${node.unique.name}.${var.domain}`)"
           "traefik.http.routers.error-router.service" = "error-service"
-          "traefik.http.routers.error-router.middlewares" = "error-mw@consulcatalog",
           # Main website router
           "traefik.http.routers.bolabaden-nextjs.rule" = "Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`)"
           "traefik.http.routers.bolabaden-nextjs.service" = "bolabaden-nextjs"
-          "traefik.http.routers.bolabaden-nextjs.middlewares" = "error-mw@consulcatalog"
           # Bolabaden NextJS service configuration
           "traefik.http.services.bolabaden-nextjs.loadbalancer.server.port" = "3000"
           # Iframe embed service for other subdomains
@@ -795,11 +793,9 @@ EOF
           "traefik.http.services.error-service.loadbalancer.server.port=3000",
           "traefik.http.routers.error-router.rule=Host(`errors.${var.domain}`) || Host(`errors.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.error-router.service=error-service",
-          "traefik.http.routers.error-router.middlewares=error-mw@consulcatalog",
           # Router for bolabaden-nextjs
           "traefik.http.routers.bolabaden-nextjs.rule=Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.bolabaden-nextjs.service=bolabaden-nextjs",
-          "traefik.http.routers.bolabaden-nextjs.middlewares=error-mw@consulcatalog",
           # bolabaden-nextjs Service definition
           "traefik.http.services.bolabaden-nextjs.loadbalancer.server.port=3000",
           # Iframe embed service
