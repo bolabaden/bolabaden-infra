@@ -973,7 +973,7 @@ http:
       loadBalancer:
         servers:
           # Use Consul DNS name for service resolution (matches docker-compose.coolify-proxy.yml)
-          - url: http://bolabaden-nextjs.service.consul:3000
+          - url: http://bolabaden-nextjs:3000
   serversTransports:
     default:
       insecureSkipVerify: true
