@@ -4696,7 +4696,7 @@ EOF
         ]
         entrypoint = ["/bin/sh", "-c"]
         args = [
-          "for f in /run/secrets-src/*.txt; do ln -sf \"$$f\" \"/run/secrets/$$(basename \"$$f\" .txt)\" 2>/dev/null || true; done && exec node /app/dist/index.js"
+          "mkdir -p /run/secrets && for f in /run/secrets-src/*.txt; do ln -sf \"$$f\" \"/run/secrets/$$(basename \"$$f\" .txt)\" 2>/dev/null || true; done && exec node /app/dist/index.js"
         ]
         labels = {
           "com.docker.compose.project" = "stremio-group"
