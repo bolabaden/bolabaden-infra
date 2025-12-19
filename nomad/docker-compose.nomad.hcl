@@ -785,8 +785,16 @@ EOF
         name = "bolabaden-nextjs"
         port = "bolabaden_nextjs"
         tags = [
-          # Traefik configuration is handled by file provider in traefik-group
-          # Service is still registered in Consul for service discovery
+          "traefik.enable=true",
+          # Error pages middleware (matches docker-compose.yml line 456-458)
+          "traefik.http.middlewares.bolabaden-error-pages.errors.status=400-599",
+          "traefik.http.middlewares.bolabaden-error-pages.errors.service=bolabaden-nextjs@consulcatalog",
+          "traefik.http.middlewares.bolabaden-error-pages.errors.query=/api/error/{status}",
+          # Router for bolabaden-nextjs (matches docker-compose.yml line 460)
+          "traefik.http.routers.bolabaden-nextjs.rule=Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`)",
+          "traefik.http.routers.bolabaden-nextjs.service=bolabaden-nextjs",
+          # bolabaden-nextjs Service definition (matches docker-compose.yml line 462)
+          "traefik.http.services.bolabaden-nextjs.loadbalancer.server.port=3000",
           "kuma.bolabaden-nextjs.http.name=${node.unique.name}.${var.domain}",
           "kuma.bolabaden-nextjs.http.url=https://${var.domain}",
           "kuma.bolabaden-nextjs.http.interval=30"
@@ -2742,15 +2750,6 @@ http:
       middlewares:
         - nginx-auth@file
       priority: 100
-    bolabaden-nextjs:
-      entryPoints:
-        - web
-        - websecure
-      service: bolabaden-nextjs@file
-      rule: Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`)
-      priority: 100
-      middlewares:
-        - bolabaden-error-pages@file
     catchall:
       entryPoints:
         - web
