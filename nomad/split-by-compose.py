@@ -6,45 +6,45 @@ Each include file maps to a Nomad job file with matching groups.
 import re
 from pathlib import Path
 
-# Map compose include files to their group names (exact match from docker-compose.nomad.hcl)
+# Map compose include files to their group names (exact match from nomad.hcl)
 # Files are named to match the exact include paths in docker-compose.yml
 COMPOSE_MAPPING = {
-    # compose/docker-compose.coolify-proxy.yml -> docker-compose.coolify-proxy.nomad.hcl
+    # compose/docker-compose.coolify-proxy.yml -> nomad.coolify-proxy.hcl
     'docker-compose.coolify-proxy': [
         'traefik-group', 'nginx-traefik-extensions-group', 'tinyauth-group',
         'crowdsec-group', 'whoami-group', 'autokuma-group', 'docker-gen-failover-group',
         'logrotate-traefik-group', 'infrastructure-services'
     ],
-    # compose/docker-compose.firecrawl.yml -> docker-compose.firecrawl.nomad.hcl
+    # compose/docker-compose.firecrawl.yml -> nomad.firecrawl.hcl
     'docker-compose.firecrawl': [
         'firecrawl-group', 'playwright-service-group', 'nuq-postgres-group'
     ],
-    # compose/docker-compose.headscale.yml -> docker-compose.headscale.nomad.hcl
+    # compose/docker-compose.headscale.yml -> nomad.headscale.hcl
     'docker-compose.headscale': [
         'headscale-server-group', 'headscale-group'
     ],
-    # compose/docker-compose.llm.yml -> docker-compose.llm.nomad.hcl
+    # compose/docker-compose.llm.yml -> nomad.llm.hcl
     'docker-compose.llm': [
         'litellm-group', 'litellm-postgres-group', 'mcpo-group', 'open-webui-group',
         'gptr-group', 'qdrant-group', 'mcp-proxy-group'
     ],
-    # compose/docker-compose.metrics.yml -> docker-compose.metrics.nomad.hcl
+    # compose/docker-compose.metrics.yml -> nomad.metrics.hcl
     # Note: Metrics services not yet fully ported to Nomad
     'docker-compose.metrics': [
         # 'victoriametrics-group', 'prometheus-group', 'grafana-group',
         # 'node-exporter-group', 'cadvisor-group', 'loki-group', 'promtail-group',
         # 'blackbox-exporter-group'
     ],
-    # compose/docker-compose.stremio-group.yml -> docker-compose.stremio-group.nomad.hcl
+    # compose/docker-compose.stremio-group.yml -> nomad.stremio-group.hcl
     'docker-compose.stremio-group': [
         'stremio-group', 'aiostreams-group', 'stremthru-group', 'flaresolverr-group',
         'jackett-group', 'prowlarr-group', 'rclone-group', 'rclone-init-group'
     ],
-    # compose/docker-compose.warp-nat-routing.yml -> docker-compose.warp-nat-routing.nomad.hcl
+    # compose/docker-compose.warp-nat-routing.yml -> nomad.warp-nat-routing.hcl
     'docker-compose.warp-nat-routing': [
         'warp-nat-routing-group', 'warp-nat-routing'
     ],
-    # docker-compose.yml main file (services not in includes) -> docker-compose.core.nomad.hcl
+    # docker-compose.yml main file (services not in includes) -> nomad.core.hcl
     'docker-compose.core': [
         'mongodb-group', 'redis-group', 'searxng-group', 'homepage-group',
         'bolabaden-nextjs-group', 'session-manager-group', 'dozzle-group',
@@ -127,7 +127,7 @@ def create_job_file(job_name, compose_file, group_names, all_content, output_dir
         compose_file_ref = f'compose/docker-compose.{compose_name}.yml'
     
     job_header = f'''# Nomad job equivalent to {compose_file_ref}
-# Extracted from docker-compose.nomad.hcl
+# Extracted from nomad.hcl
 # Variables are loaded from ../variables.nomad.hcl via -var-file
 # This matches the include structure in docker-compose.yml
 
@@ -157,8 +157,12 @@ job "{job_name}" {{
     
     full_content = job_header + '\n'.join(groups_content) + job_footer
     
-    # Write to file
-    output_file = output_dir / f"{job_name}.nomad.hcl"
+    # Write to file - convert docker-compose.* to nomad.*
+    if job_name.startswith('docker-compose.'):
+        output_name = job_name.replace('docker-compose.', 'nomad.')
+    else:
+        output_name = job_name
+    output_file = output_dir / f"{output_name}.hcl"
     with open(output_file, 'w') as f:
         f.write(full_content)
     
@@ -167,7 +171,7 @@ job "{job_name}" {{
 
 def main():
     script_dir = Path(__file__).parent
-    input_file = script_dir / "docker-compose.nomad.hcl"
+    input_file = script_dir / "nomad.hcl"
     output_dir = script_dir / "jobs"
     
     output_dir.mkdir(exist_ok=True)

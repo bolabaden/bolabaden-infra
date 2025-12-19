@@ -1,5 +1,5 @@
 # Nomad job equivalent to compose/docker-compose.coolify-proxy.yml
-# Extracted from docker-compose.nomad.hcl
+# Extracted from nomad.hcl
 # Variables are loaded from ../variables.nomad.hcl via -var-file
 # This matches the include structure in docker-compose.yml
 

@@ -24,7 +24,7 @@ cp secrets.auto.tfvars.hcl.example secrets.auto.tfvars.hcl
 # Then edit secrets.auto.tfvars.hcl with your actual secrets
 
 # Run the main stack (auto-loads both variables.auto.tfvars.hcl and secrets.auto.tfvars.hcl)
-nomad job run docker-compose.nomad.hcl
+nomad job run nomad.hcl
 
 # Run the metrics stack
 nomad job run metrics.nomad.hcl
@@ -36,7 +36,7 @@ nomad job status metrics-stack
 
 ## Files Overview
 
-### `docker-compose.nomad.hcl`
+### `nomad.hcl`
 The main Nomad job file that converts the core Docker Compose stack including:
 
 - **Core Services**: MongoDB, SearxNG, Code Server, Session Manager, Homepage, Redis, Portainer
@@ -80,7 +80,7 @@ Nomad uses HCL variables instead of Docker Compose's `.env` file approach. Here'
 #### Method 1: Auto-Loaded Variable File (Recommended)
 The `variables.auto.tfvars.hcl` file is **automatically loaded** when you run:
 ```bash
-nomad job run docker-compose.nomad.hcl
+nomad job run nomad.hcl
 ```
 
 This file contains all the values from your `.env` file translated to HCL format.
@@ -90,7 +90,7 @@ Use `NOMAD_VAR_` prefix:
 ```bash
 export NOMAD_VAR_domain="my-custom-domain.com"
 export NOMAD_VAR_config_path="/custom/path"
-nomad job run docker-compose.nomad.hcl
+nomad job run nomad.hcl
 ```
 
 #### Method 3: Command-Line Variables

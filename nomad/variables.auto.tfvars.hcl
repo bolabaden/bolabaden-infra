@@ -1,5 +1,5 @@
 # Nomad Variables File (Non-Sensitive Configuration)
-# Auto-loaded when using: nomad job run docker-compose.nomad.hcl
+# Auto-loaded when using: nomad job run nomad.hcl
 # For secrets (API keys, passwords), see secrets.auto.tfvars.hcl
 
 # Core Configuration

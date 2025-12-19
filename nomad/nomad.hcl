@@ -5,7 +5,7 @@
 # - Actual values come from variables.auto.tfvars.hcl and secrets.auto.tfvars.hcl
 # - Both .tfvars files are automatically loaded by Nomad
 # - Override at runtime: export NOMAD_VAR_domain="my-domain.com"
-# - Or: nomad job run -var="domain=my-domain.com" docker-compose.nomad.hcl
+# - Or: nomad job run -var="domain=my-domain.com" nomad.hcl
 #
 # TEMPLATE SYNTAX IN THIS FILE:
 # - {{ env "VAR" }} - reads runtime environment variable inside container
@@ -788,7 +788,7 @@ EOF
         port = "bolabaden_nextjs"
         tags = [
           # Only non-Traefik labels to avoid Consul Catalog registration
-          # Traefik router/service defined in file provider (docker-compose.coolify-proxy.nomad.hcl)
+          # Traefik router/service defined in file provider (nomad.coolify-proxy.hcl)
           "kuma.bolabaden-nextjs.http.name=${node.unique.name}.${var.domain}",
           "kuma.bolabaden-nextjs.http.url=https://${var.domain}",
           "kuma.bolabaden-nextjs.http.interval=30"

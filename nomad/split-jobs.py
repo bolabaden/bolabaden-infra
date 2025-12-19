@@ -71,7 +71,7 @@ def create_job_file(job_name, group_name, variables_section, group_content, outp
     """Create a separate job file for a group."""
     # Create job header
     job_header = f'''# Nomad job for {group_name}
-# Extracted from docker-compose.nomad.hcl
+# Extracted from nomad.hcl
 # Variables are loaded from ../variables.nomad.hcl via -var-file
 
 job "{job_name}-{group_name}" {{
@@ -99,7 +99,7 @@ job "{job_name}-{group_name}" {{
 
 def main():
     script_dir = Path(__file__).parent
-    input_file = script_dir / "docker-compose.nomad.hcl"
+    input_file = script_dir / "nomad.hcl"
     output_dir = script_dir / "jobs"
     
     output_dir.mkdir(exist_ok=True)
