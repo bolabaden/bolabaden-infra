@@ -786,7 +786,7 @@ EOF
         port = "bolabaden_nextjs"
         tags = [
           "traefik.enable=true",
-          # Error pages middleware (matches docker-compose.yml line 456-458)
+          # Error pages (matches docker-compose.yml line 456-458)
           "traefik.http.middlewares.bolabaden-error-pages.errors.status=400-599",
           "traefik.http.middlewares.bolabaden-error-pages.errors.service=bolabaden-nextjs@consulcatalog",
           "traefik.http.middlewares.bolabaden-error-pages.errors.query=/api/error/{status}",
