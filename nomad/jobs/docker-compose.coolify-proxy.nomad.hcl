@@ -938,6 +938,15 @@ http:
       middlewares:
         - nginx-auth@file
       priority: 100
+    bolabaden-nextjs:
+      entryPoints:
+        - web
+        - websecure
+      service: bolabaden-nextjs@file
+      rule: Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`)
+      priority: 100
+      middlewares:
+        - bolabaden-error-pages@file
     catchall:
       entryPoints:
         - web
