@@ -52,7 +52,7 @@ docker build -t my-media-stack-nuq-postgres:local \
 
 # Option 2: Use pre-built images if available
 # Check if ghcr.io/firecrawl/playwright-service exists for ARM64
-# Update nomad/docker-compose.nomad.hcl to use registry images
+# Update nomad/nomad.hcl to use registry images
 
 # Option 3: Set up CI/CD to build and push images to registry
 ```

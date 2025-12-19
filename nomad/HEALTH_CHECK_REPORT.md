@@ -111,7 +111,7 @@ Generated: $(date)
    - Configure proper health check timeouts
 
 ### 1:1 Parity Verification
-- Compare each service in docker-compose.nomad.hcl with docker-compose.yml
+- Compare each service in nomad.hcl with docker-compose.yml
 - Verify:
   - Image names match
   - Environment variables match
