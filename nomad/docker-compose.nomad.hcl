@@ -3118,6 +3118,12 @@ EOF
   group "nuq-postgres-group" {
     count = 1
 
+    constraint {
+      attribute = "${node.unique.name}"
+      operator  = "="
+      value     = "micklethefickle"
+    }
+
     network {
       mode = "bridge"
       
@@ -3129,9 +3135,12 @@ EOF
       driver = "docker"
 
       config {
-        image = "nuq-postgres:latest"
-        force_pull = false  # Use locally built ARM64 image - built at /tmp/firecrawl/apps/nuq-postgres
+        image = "my-media-stack-nuq-postgres:local"
+        force_pull = false
         ports = ["nuq_postgres"]
+        volumes = [
+          "${var.config_path}/nuq-postgres/data:/var/lib/postgresql/data"
+        ]
         labels = {
           "com.docker.compose.project" = "firecrawl-group"
           "com.docker.compose.service" = "nuq-postgres"
@@ -3163,7 +3172,7 @@ EOF
 
         check {
           type     = "script"
-          command  = "/usr/local/bin/pg_isready"
+          command  = "/usr/bin/pg_isready"
           args     = ["-U", "postgres", "-d", "postgres"]
           interval = "10s"
           timeout  = "5s"
@@ -3176,6 +3185,12 @@ EOF
   group "playwright-service-group" {
     count = 1  # ENABLED: Builds locally for ARM64 compatibility
 
+    constraint {
+      attribute = "${node.unique.name}"
+      operator  = "="
+      value     = "micklethefickle"
+    }
+
     network {
       mode = "bridge"
       
@@ -3187,8 +3202,8 @@ EOF
       driver = "docker"
 
       config {
-        image = "playwright-service:latest"
-        force_pull = false  # Use locally built ARM64 image - built at /tmp/firecrawl/apps/playwright-service-ts
+        image = "my-media-stack-playwright-service:local"
+        force_pull = false
         ports = ["playwright"]
         labels = {
           "com.docker.compose.project" = "firecrawl-group"
@@ -3218,6 +3233,12 @@ EOF
   group "firecrawl-group" {
     count = 1  # ENABLED: Builds locally for ARM64 compatibility
 
+    constraint {
+      attribute = "${node.unique.name}"
+      operator  = "="
+      value     = "micklethefickle"
+    }
+
     network {
       mode = "bridge"
       
@@ -3231,8 +3252,8 @@ EOF
       driver = "docker"
 
       config {
-        image = "firecrawl:latest"
-        force_pull = false  # Use locally built ARM64 image - built at /tmp/firecrawl/apps/api
+        image = "ghcr.io/firecrawl/firecrawl:local"
+        force_pull = false
         ports = ["firecrawl", "firecrawl_extract", "firecrawl_worker"]
         command = "node"
         args    = ["dist/src/harness.js", "--start-docker"]
