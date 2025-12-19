@@ -411,12 +411,21 @@ job "docker-compose-stack" {
       config {
         image = "docker.io/mongo"
         ports = ["mongodb"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
         volumes = [
           "${var.config_path}/mongodb/data:/data/db"
         ]
         labels = {
           "com.docker.compose.project" = "core-group"
           "com.docker.compose.service" = "mongodb"
+          "traefik.enable" = "true"
+          "traefik.tcp.routers.mongodb.rule" = "HostSNI(`mongodb.${var.domain}`) || HostSNI(`mongodb.${node.unique.name}.${var.domain}`)"
+          "traefik.tcp.routers.mongodb.service" = "mongodb@docker"
+          "traefik.tcp.routers.mongodb.tls.domains[0].main" = "${var.domain}"
+          "traefik.tcp.routers.mongodb.tls.domains[0].sans" = "*.${var.domain},${node.unique.name}.${var.domain}"
+          "traefik.tcp.routers.mongodb.tls.passthrough" = "true"
+          "traefik.tcp.services.mongodb.loadbalancer.server.port" = "27017"
+          "traefik.tcp.services.mongodb.loadbalancer.server.tls" = "true"
         }
       }
 
@@ -474,6 +483,7 @@ job "docker-compose-stack" {
       config {
         image = "docker.io/searxng/searxng"
         ports = ["searxng"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
         volumes = [
           # touch ${CONFIG_PATH:-./volumes}/searxng/limiter.toml
           "${var.config_path}/searxng/config:/etc/searxng",
@@ -482,6 +492,16 @@ job "docker-compose-stack" {
         labels = {
           "com.docker.compose.project" = "core-group"
           "com.docker.compose.service" = "searxng"
+          "traefik.enable" = "true"
+          "traefik.http.services.searxng.loadbalancer.server.port" = "${var.searxng_port}"
+          "homepage.group" = "Search"
+          "homepage.name" = "SearxNG"
+          "homepage.icon" = "searxng.png"
+          "homepage.href" = "https://searxng.${var.domain}/"
+          "homepage.description" = "Privacy-focused metasearch that aggregates results from many sources without tracking"
+          "kuma.searxng.http.name" = "searxng.${node.unique.name}.${var.domain}"
+          "kuma.searxng.http.url" = "https://searxng.${var.domain}"
+          "kuma.searxng.http.interval" = "30"
         }
         logging {
           type = "json-file"
@@ -533,7 +553,7 @@ EOF
           type     = "script"
           command  = "/bin/sh"
           args     = ["-c", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${var.searxng_port}/ || exit 1"]
-          interval = "10s"
+          interval = "30s"
           timeout  = "10s"
         }
       }
@@ -986,6 +1006,7 @@ EOF
       config {
         image = "docker.io/redis:alpine"
         ports = ["redis"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
         volumes = [
           "${var.config_path}/redis:/data"
         ]
@@ -998,6 +1019,14 @@ EOF
         labels = {
           "com.docker.compose.project" = "core-group"
           "com.docker.compose.service" = "redis"
+          "traefik.enable" = "true"
+          "traefik.tcp.routers.redis.rule" = "HostSNI(`redis.${var.domain}`) || HostSNI(`redis.${node.unique.name}.${var.domain}`)"
+          "traefik.tcp.routers.redis.service" = "redis@docker"
+          "traefik.tcp.routers.redis.tls.domains[0].main" = "${var.domain}"
+          "traefik.tcp.routers.redis.tls.domains[0].sans" = "*.${var.domain},${node.unique.name}.${var.domain}"
+          "traefik.tcp.routers.redis.tls.passthrough" = "true"
+          "traefik.tcp.services.redis.loadbalancer.server.port" = "${var.redis_port}"
+          "traefik.tcp.services.redis.loadbalancer.server.tls" = "true"
         }
         logging {
           type = "json-file"
@@ -1044,7 +1073,7 @@ EOF
         check {
           type     = "script"
           command  = "/bin/sh"
-          args     = ["-c", "redis-cli ping > /dev/null 2>&1 || exit 1"]
+          args     = ["-c", "redis-cli -a ${var.redis_password} ping > /dev/null 2>&1 || exit 1"]
           interval = "10s"
           timeout  = "5s"
         }
@@ -3138,6 +3167,7 @@ EOF
         image = "my-media-stack-nuq-postgres:local"
         force_pull = false
         ports = ["nuq_postgres"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
         volumes = [
           "${var.config_path}/nuq-postgres/data:/var/lib/postgresql/data"
         ]
@@ -3172,8 +3202,8 @@ EOF
 
         check {
           type     = "script"
-          command  = "/usr/bin/pg_isready"
-          args     = ["-U", "postgres", "-d", "postgres"]
+          command  = "/bin/sh"
+          args     = ["-c", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
           interval = "10s"
           timeout  = "5s"
         }
@@ -3205,6 +3235,7 @@ EOF
         image = "my-media-stack-playwright-service:local"
         force_pull = false
         ports = ["playwright"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
         labels = {
           "com.docker.compose.project" = "firecrawl-group"
           "com.docker.compose.service" = "playwright-service"
@@ -3252,16 +3283,17 @@ EOF
       driver = "docker"
 
       config {
-        image = "ghcr.io/firecrawl/firecrawl:local"
-        force_pull = false
+        image = "ghcr.io/firecrawl/firecrawl"
         ports = ["firecrawl", "firecrawl_extract", "firecrawl_worker"]
         command = "node"
         args    = ["dist/src/harness.js", "--start-docker"]
+        extra_hosts = ["host.docker.internal:${attr.unique.network.ip-address}"]
         ulimit {
-          nofile       = "65535"
-          nproc        = "8192"
-          core         = "0"
+          nofile = "65535"
         }
+        volumes = [
+          "${var.root_path}/secrets:/run/secrets:ro"
+        ]
         labels = {
           "com.docker.compose.project" = "firecrawl-group"
           "com.docker.compose.service" = "firecrawl"
@@ -3276,15 +3308,13 @@ EOF
         NUQ_DATABASE_URL          = "postgres://postgres:postgres@nuq-postgres:5432/postgres"
         EXTRACT_WORKER_PORT       = "3004"
         USE_DB_AUTHENTICATION     = ""
-        OPENAI_API_KEY            = var.openai_api_key
-        # Note: OPENAI_API_KEY_FILE would require secrets support
+        OPENAI_API_KEY_FILE       = "/run/secrets/openai-api-key.txt"
         OPENAI_BASE_URL           = ""
         MODEL_NAME                = ""
         MODEL_EMBEDDING_NAME      = ""
         OLLAMA_BASE_URL           = ""
-        BULL_AUTH_KEY             = var.firecrawl_api_key
-        TEST_API_KEY              = var.firecrawl_api_key
-        # Note: BULL_AUTH_KEY_FILE and TEST_API_KEY_FILE would require secrets support
+        BULL_AUTH_KEY_FILE        = "/run/secrets/firecrawl-api-key.txt"
+        TEST_API_KEY_FILE         = "/run/secrets/firecrawl-api-key.txt"
         SEARXNG_ENDPOINT          = "https://searxng.${var.domain}"
         HOST                      = "0.0.0.0"
         PORT                      = "3002"
@@ -3293,7 +3323,7 @@ EOF
       }
 
       resources {
-        cpu        = 2000
+        cpu        = 4000
         memory     = 4096
         memory_max = 8192
       
