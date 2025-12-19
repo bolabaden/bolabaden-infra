@@ -4406,7 +4406,7 @@ EOF
       }
 
       env {
-        IPADDRESS        = "0.0.0.0"
+        IPADDRESS        = "127.0.0.1"
         AUTO_SERVER_URL  = "1"
         SERVER_URL       = "https://stremio.${var.domain}/"
         WEBUI_LOCATION   = "https://stremio.${var.domain}/shell/"
@@ -4416,8 +4416,8 @@ EOF
 
       resources {
         cpu        = 2000
-        memory     = 1024
-        memory_max = 2048
+        memory     = 2048
+        memory_max = 0
       
       }
 
@@ -4447,7 +4447,6 @@ EOF
           "traefik.http.routers.stremio.middlewares=stremio-web-redirect@consulcatalog,stremio-shell-redirect@consulcatalog,stremio-streaming-server-redirect@consulcatalog",
           "traefik.http.services.stremio.loadbalancer.server.scheme=https",
           "traefik.http.services.stremio.loadbalancer.server.port=8080",
-          "traefik.http.services.stremio.loadbalancer.passhostheader=false",
           # Stremio HTTP Streaming Server (port 11470)
           "traefik.http.routers.stremio-http11470.service=stremio-http11470@consulcatalog",
           "traefik.http.services.stremio-http11470.loadbalancer.server.scheme=http",
@@ -4473,9 +4472,9 @@ EOF
         check {
           type     = "script"
           command  = "/bin/sh"
-          args     = ["-c", "(curl -fs http://127.0.0.1:11470 > /dev/null 2>&1 || curl -fs https://127.0.0.1:12470 > /dev/null 2>&1) || exit 1"]
-          interval = "60s"
-          timeout  = "5s"
+          args     = ["-c", "command -v curl >/dev/null || (apk add --no-cache curl >/dev/null 2>&1 || apt-get update >/dev/null 2>&1 && apt-get install -y curl >/dev/null 2>&1); (curl -fs http://127.0.0.1:11470/ >/dev/null 2>&1 || curl -fsk https://127.0.0.1:12470/ >/dev/null 2>&1) || exit 1"]
+          interval = "30s"
+          timeout  = "10s"
         }
       }
     }
