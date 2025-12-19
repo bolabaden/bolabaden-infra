@@ -396,7 +396,23 @@ job "docker-compose-stack" {
 
   # Mongodb Group
   group "mongodb-group" {
-    count = 1
+    count = 1  # MongoDB: Single instance (replication handled at DB level if needed)
+
+    update {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "3m"
+      auto_revert      = true
+      canary           = 0
+    }
+
+    migrate {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "5m"
+    }
 
     network {
       mode = "bridge"
@@ -468,7 +484,27 @@ job "docker-compose-stack" {
 
   # Searxng Group
   group "searxng-group" {
-    count = 1
+    count = 2  # HA: Run on multiple nodes for failover
+
+    spread {
+      attribute = "${node.unique.name}"
+    }
+
+    update {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "3m"
+      auto_revert      = true
+      canary           = 0
+    }
+
+    migrate {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "5m"
+    }
 
     network {
       mode = "bridge"
@@ -669,7 +705,27 @@ EOF
 
   # Bolabaden Nextjs Group
   group "bolabaden-nextjs-group" {
-    count = 1
+    count = 2  # HA: Run on multiple nodes for failover
+
+    spread {
+      attribute = "${node.unique.name}"
+    }
+
+    update {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "3m"
+      auto_revert      = true
+      canary           = 0
+    }
+
+    migrate {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "5m"
+    }
 
     network {
       mode = "bridge"
@@ -850,7 +906,27 @@ EOF
 
   # Homepage Group
   group "homepage-group" {
-    count = 1
+    count = 2  # HA: Run on multiple nodes for failover
+
+    spread {
+      attribute = "${node.unique.name}"
+    }
+
+    update {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "3m"
+      auto_revert      = true
+      canary           = 0
+    }
+
+    migrate {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "5m"
+    }
 
     network {
       mode = "bridge"
@@ -938,7 +1014,23 @@ EOF
 
   # Redis Group
   group "redis-group" {
-    count = 1
+    count = 1  # Single instance (static port 6379) - HA via node-level failover
+
+    update {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "3m"
+      auto_revert      = true
+      canary           = 0
+    }
+
+    migrate {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "5m"
+    }
 
     network {
       mode = "bridge"
@@ -2482,7 +2574,28 @@ EOF
   }
 
   group "traefik-group" {
-    count = 1
+    count = 3  # HA: Run on multiple nodes for failover
+
+
+    spread {
+      attribute = "${node.unique.name}"
+    }
+
+    update {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "3m"
+      auto_revert      = true
+      canary           = 0
+    }
+
+    migrate {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "5m"
+    }
 
     network {
       mode = "bridge"
@@ -2880,8 +2993,8 @@ EOF
 
         check {
           type     = "script"
-          command  = "/usr/local/bin/traefik"
-          args     = ["healthcheck", "--ping"]
+          command  = "/bin/sh"
+          args     = ["-c", "traefik healthcheck --ping > /dev/null 2>&1 || exit 1"]
           interval = "10s"
           timeout  = "3s"
         }
@@ -3096,12 +3209,28 @@ EOF
 
   # Nuq Postgres Group
   group "nuq-postgres-group" {
-    count = 1
+    count = 1  # Single instance (static port, DB replication handled at DB level if needed)
 
     constraint {
       attribute = "${node.unique.name}"
       operator  = "="
       value     = "micklethefickle"
+    }
+
+    update {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "3m"
+      auto_revert      = true
+      canary           = 0
+    }
+
+    migrate {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "5m"
     }
 
     network {
@@ -3165,11 +3294,28 @@ EOF
   # Playwright Service Group
   group "playwright-service-group" {
     count = 1  # ENABLED: Builds locally for ARM64 compatibility
+    # Note: Constraint for ARM64 compatibility - consider removing if image available for all archs
 
     constraint {
       attribute = "${node.unique.name}"
       operator  = "="
       value     = "micklethefickle"
+    }
+
+    update {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "3m"
+      auto_revert      = true
+      canary           = 0
+    }
+
+    migrate {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "5m"
     }
 
     network {
@@ -3214,11 +3360,22 @@ EOF
   # Firecrawl Group
   group "firecrawl-group" {
     count = 1  # ENABLED: Builds locally for ARM64 compatibility
+    # Note: Constraint removed for HA - if ARM64 build needed, use node class constraint instead
 
-    constraint {
-      attribute = "${node.unique.name}"
-      operator  = "="
-      value     = "micklethefickle"
+    update {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "3m"
+      auto_revert      = true
+      canary           = 0
+    }
+
+    migrate {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "5m"
     }
 
     network {
@@ -3291,6 +3448,14 @@ EOF
           "traefik.http.routers.firecrawl.rule=Host(`firecrawl-api.${var.domain}`) || Host(`firecrawl-api.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.firecrawl.loadbalancer.server.port=3002"
         ]
+
+        check {
+          type     = "script"
+          command  = "/bin/sh"
+          args     = ["-c", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3002/health > /dev/null 2>&1 || curl -fs http://127.0.0.1:3002/health > /dev/null 2>&1 || exit 1"]
+          interval = "30s"
+          timeout  = "15s"
+        }
       }
     }
   }
@@ -3801,7 +3966,27 @@ EOF
 
   # Litellm Group
   group "litellm-group" {
-    count = 1
+    count = 2  # HA: Run on multiple nodes for failover
+
+    spread {
+      attribute = "${node.unique.name}"
+    }
+
+    update {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "3m"
+      auto_revert      = true
+      canary           = 0
+    }
+
+    migrate {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "5m"
+    }
 
     network {
       mode = "bridge"
@@ -4344,7 +4529,27 @@ EOF
 
   # Stremio Group
   group "stremio-group" {
-    count = 1
+    count = 2  # HA: Run on multiple nodes for failover
+
+    spread {
+      attribute = "${node.unique.name}"
+    }
+
+    update {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "3m"
+      auto_revert      = true
+      canary           = 0
+    }
+
+    migrate {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "5m"
+    }
 
     network {
       mode = "bridge"
@@ -4675,7 +4880,27 @@ EOF
 
   # Aiostreams Group
   group "aiostreams-group" {
-    count = 1
+    count = 2  # HA: Run on multiple nodes for failover
+
+    spread {
+      attribute = "${node.unique.name}"
+    }
+
+    update {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "3m"
+      auto_revert      = true
+      canary           = 0
+    }
+
+    migrate {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "5m"
+    }
 
     network {
       mode = "bridge"
@@ -4878,6 +5103,14 @@ EOF
           "homepage.href=https://aiostreams.${var.domain}/",
           "homepage.description=Stremio add-on that aggregates multiple sources into a single unified stream catalog"
         ]
+
+        check {
+          type     = "script"
+          command  = "/bin/sh"
+          args     = ["-c", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/manifest.json > /dev/null 2>&1 || exit 1"]
+          interval = "30s"
+          timeout  = "10s"
+        }
       }
     }
   }
