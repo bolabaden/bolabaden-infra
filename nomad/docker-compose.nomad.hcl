@@ -785,22 +785,11 @@ EOF
         name = "bolabaden-nextjs"
         port = "bolabaden_nextjs"
         tags = [
-          "traefik.enable=true",
-          # Error pages
-          "traefik.http.middlewares.error-mw.errors.status=400-599",
-          "traefik.http.middlewares.error-mw.errors.service=error-service",
-          "traefik.http.middlewares.error-mw.errors.query=/api/error/{status}.html",
-          "traefik.http.services.error-service.loadbalancer.server.port=3000",
-          "traefik.http.routers.error-router.rule=Host(`errors.${var.domain}`) || Host(`errors.${node.unique.name}.${var.domain}`)",
-          "traefik.http.routers.error-router.service=error-service",
-          # Router for bolabaden-nextjs
-          "traefik.http.routers.bolabaden-nextjs.rule=Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`)",
-          "traefik.http.routers.bolabaden-nextjs.service=bolabaden-nextjs",
-          # bolabaden-nextjs Service definition
-          # Port is automatically detected from Consul ServicePort
-          # Iframe embed service
-          "traefik.http.routers.bolabaden-embed.rule=Host(`embed.${var.domain}`) || Host(`embed.${node.unique.name}.${var.domain}`)",
-          "traefik.http.routers.bolabaden-embed.service=bolabaden-nextjs"
+          # Traefik configuration is handled by file provider in traefik-group
+          # Service is still registered in Consul for service discovery
+          "kuma.bolabaden-nextjs.http.name=${node.unique.name}.${var.domain}",
+          "kuma.bolabaden-nextjs.http.url=https://${var.domain}",
+          "kuma.bolabaden-nextjs.http.interval=30"
         ]
 
         check {
