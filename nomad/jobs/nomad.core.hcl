@@ -505,28 +505,17 @@ EOF
       }
 
       service {
-
+        # Service registered in Consul for service discovery only
+        # Traefik configuration is handled by file provider (matches docker-compose.coolify-proxy.yml)
+        # This ensures 1:1 parity - no Consul Catalog registration, only file provider
         name = "bolabaden-nextjs"
         port = "bolabaden_nextjs"
         tags = [
-          "traefik.enable=true",
-          # Error pages
-          "traefik.http.middlewares.error-mw.errors.status=400-599",
-          "traefik.http.middlewares.error-mw.errors.service=error-service",
-          "traefik.http.middlewares.error-mw.errors.query=/api/error/{status}.html",
-          "traefik.http.services.error-service.loadbalancer.server.port=3000",
-          "traefik.http.routers.error-router.rule=Host(`errors.${var.domain}`) || Host(`errors.${node.unique.name}.${var.domain}`)",
-          "traefik.http.routers.error-router.service=error-service",
-          "traefik.http.routers.error-router.middlewares=error-mw@docker",
-          # Router for bolabaden-nextjs
-          "traefik.http.routers.bolabaden-nextjs.rule=Host(`${var.domain}`) || Host(`${node.unique.name}.${var.domain}`)",
-          "traefik.http.routers.bolabaden-nextjs.service=bolabaden-nextjs",
-          "traefik.http.routers.bolabaden-nextjs.middlewares=error-mw@docker",
-          # bolabaden-nextjs Service definition
-          "traefik.http.services.bolabaden-nextjs.loadbalancer.server.port=3000",
-          # Iframe embed service
-          "traefik.http.routers.bolabaden-embed.rule=Host(`embed.${var.domain}`) || Host(`embed.${node.unique.name}.${var.domain}`)",
-          "traefik.http.routers.bolabaden-embed.service=bolabaden-nextjs"
+          # Only non-Traefik labels to avoid Consul Catalog registration
+          # Traefik router/service defined in file provider (nomad.coolify-proxy.hcl)
+          "kuma.bolabaden-nextjs.http.name=${node.unique.name}.${var.domain}",
+          "kuma.bolabaden-nextjs.http.url=https://${var.domain}",
+          "kuma.bolabaden-nextjs.http.interval=30"
         ]
 
         check {
