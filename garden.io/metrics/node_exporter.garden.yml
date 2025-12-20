@@ -1,6 +1,6 @@
 kind: Deploy
 apiVersion: garden.io/v2
-name: node-exporter
+name: node_exporter
 description: Node Exporter for system metrics
 type: container
 

@@ -1,6 +1,6 @@
 kind: Deploy
 apiVersion: garden.io/v2
-name: headscale-ui
+name: headscale
 description: Headscale UI web interface
 type: container
 dependencies:

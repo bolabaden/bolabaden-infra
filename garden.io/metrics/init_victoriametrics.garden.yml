@@ -1,6 +1,6 @@
 kind: Run
 apiVersion: garden.io/v2
-name: victoriametrics-init
+name: init_victoriametrics
 description: VictoriaMetrics storage initialization
 type: container
 

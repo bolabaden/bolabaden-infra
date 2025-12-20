@@ -1,6 +1,6 @@
 kind: Build
 apiVersion: garden.io/v2
-name: warp-router
+name: warp_router
 description: WARP router for NAT routing setup
 type: container
 
@@ -14,7 +14,7 @@ spec:
 ---
 kind: Deploy
 apiVersion: garden.io/v2
-name: warp-router
+name: warp_router
 description: WARP router container for NAT setup
 type: container
 dependencies:

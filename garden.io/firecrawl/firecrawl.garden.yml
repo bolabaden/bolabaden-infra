@@ -1,6 +1,6 @@
 kind: Build
 apiVersion: garden.io/v2
-name: firecrawl-api
+name: firecrawl
 description: Firecrawl API service
 type: container
 source:
@@ -10,7 +10,7 @@ source:
 ---
 kind: Deploy
 apiVersion: garden.io/v2
-name: firecrawl-api
+name: firecrawl
 description: Firecrawl API container
 type: container
 dependencies:
@@ -56,5 +56,5 @@ spec:
   ingresses:
     - path: /
       port: http
-      hostname: firecrawl-api.${var.domain}
+      hostname: firecrawl.${var.domain}
   restartPolicy: always
