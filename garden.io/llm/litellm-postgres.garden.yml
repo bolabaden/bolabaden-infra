@@ -5,7 +5,9 @@ description: PostgreSQL database for LiteLLM
 type: container
 
 spec:
-  image: docker.io/postgres:16.3-alpine3.20
+  image: docker.io/postgres:16-alpine
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     POSTGRES_DB: ${var.LITELLM_POSTGRES_DB || "litellm"}
     POSTGRES_PASSWORD: ${var.LITELLM_POSTGRES_PASSWORD || "litellm"}
@@ -19,12 +21,9 @@ spec:
       sourcePath: ${var.config-path}/litellm/pgdata
   healthCheck:
     exec:
-      command:
-        - pg_isready
-        - -h
-        - localhost
-        - -U
-        - "${var.LITELLM_POSTGRES_USER || \"litellm\"}"
-        - -d
-        - "${var.LITELLM_POSTGRES_DB || \"litellm\"}"
+      command: [sh, -c, "pg_isready -h localhost -U ${var.LITELLM_POSTGRES_USER || "litellm"} -d ${var.LITELLM_POSTGRES_DB || "litellm"}"]
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 3
   restartPolicy: always

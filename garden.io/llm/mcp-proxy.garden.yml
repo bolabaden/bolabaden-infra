@@ -6,8 +6,8 @@ type: container
 
 spec:
   image: ghcr.io/tbxark/mcp-proxy
-  env:
-    TZ: ${var.tz}
+  extraHosts:
+    - host.docker.internal:host-gateway
   ports:
     - name: http
       containerPort: ${var.MCP_PROXY_PORT || "9090"}
@@ -15,6 +15,7 @@ spec:
     - name: config
       containerPath: /config.json
       sourcePath: ${var.config-path}/mcp-proxy/config.json
+      readOnly: true
   command:
     - --config
     - config.json
@@ -23,5 +24,8 @@ spec:
     - path: /
       port: http
       hostname: mcp.${var.domain}
+    - path: /
+      port: http
+      hostname: mcp.${var.ts-hostname}.${var.domain}
   restartPolicy: always
 

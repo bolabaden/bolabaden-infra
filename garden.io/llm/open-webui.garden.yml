@@ -9,6 +9,8 @@ dependencies:
 
 spec:
   image: ghcr.io/open-webui/open-webui:main
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     ENABLE_ADMIN_EXPORT: True
     ENABLE_ADMIN_CHAT_ACCESS: True
@@ -33,7 +35,7 @@ spec:
     WEBUI_AUTH_COOKIE_SAME_SITE: lax
     WEBUI_AUTH_COOKIE_SECURE: False
     WEBUI_AUTH: ${var.WEBUI_AUTH || "True"}
-    WEBUI_SECRET_KEY: ${var.OPEN_WEBUI_SECRET_KEY}
+    WEBUI_SECRET_KEY_FILE: /run/secrets/open-webui-secret-key
     ENABLE_VERSION_UPDATE_CHECK: True
     OFFLINE_MODE: False
     RESET_CONFIG_ON_START: False
@@ -68,12 +70,24 @@ spec:
     - name: webui-db
       containerPath: /app/backend/data/webui.db
       sourcePath: ${var.config-path}/open-webui/webui.db
+    - name: open-webui-secret-key
+      containerPath: /run/secrets/open-webui-secret-key
+      sourcePath: ${var.config-path}/secrets/open-webui-secret-key.txt
+      readOnly: true
+  command: [bash, start.sh]
+  workingDir: /app/backend
   ingresses:
     - path: /
       port: http
       hostname: open-webui.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /
+    - path: /
       port: http
+      hostname: open-webui.${var.ts-hostname}.${var.domain}
+  healthCheck:
+    exec:
+      command: [sh, -c, "curl -f http://127.0.0.1:8080"]
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 30
+    failureThreshold: 10
   restartPolicy: always

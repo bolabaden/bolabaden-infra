@@ -6,44 +6,45 @@ type: container
 
 spec:
   image: docker.io/bolabaden/ai-researchwizard-aio-fullstack:master
+  extraHosts:
+    - host.docker.internal:host-gateway
+  stdinOpen: true
   env:
-    ANTHROPIC_API_KEY: ${var.ANTHROPIC_API_KEY}
-    BRAVE_API_KEY: ${var.BRAVE_API_KEY}
-    DEEPSEEK_API_KEY: ${var.DEEPSEEK_API_KEY}
-    EXA_API_KEY: ${var.EXA_API_KEY}
-    FIRECRAWL_API_KEY: ${var.FIRECRAWL_API_KEY}
-    FIRE_CRAWL_API_KEY: ${var.FIRE_CRAWL_API_KEY}
-    GEMINI_API_KEY: ${var.GEMINI_API_KEY}
-    GLAMA_API_KEY: ${var.GLAMA_API_KEY}
-    GROQ_API_KEY: ${var.GROQ_API_KEY}
-    HF_TOKEN: ${var.HF_TOKEN}
-    HUGGINGFACE_ACCESS_TOKEN: ${var.HUGGINGFACE_ACCESS_TOKEN}
-    HUGGINGFACE_API_TOKEN: ${var.HUGGINGFACE_API_TOKEN}
-    LANGCHAIN_API_KEY: ${var.LANGCHAIN_API_KEY}
-    MISTRAL_API_KEY: ${var.MISTRAL_API_KEY}
-    MISTRALAI_API_KEY: ${var.MISTRALAI_API_KEY}
-    OPENAI_API_KEY: ${var.OPENAI_API_KEY}
-    OPENROUTER_API_KEY: ${var.OPENROUTER_API_KEY}
-    PERPLEXITY_API_KEY: ${var.PERPLEXITY_API_KEY}
-    PERPLEXITYAI_API_KEY: ${var.PERPLEXITYAI_API_KEY}
-    REPLICATE_API_KEY: ${var.REPLICATE_API_KEY}
-    REVID_API_KEY: ${var.REVID_API_KEY}
-    SAMBANOVA_API_KEY: ${var.SAMBANOVA_API_KEY}
-    SEARCH1API_KEY: ${var.SEARCH1API_KEY}
-    SERPAPI_API_KEY: ${var.SERPAPI_API_KEY}
-    TAVILY_API_KEY: ${var.TAVILY_API_KEY}
-    TOGETHERAI_API_KEY: ${var.TOGETHERAI_API_KEY}
-    UNIFY_API_KEY: ${var.UNIFY_API_KEY}
-    UPSTAGE_API_KEY: ${var.UPSTAGE_API_KEY}
-    UPSTAGEAI_API_KEY: ${var.UPSTAGEAI_API_KEY}
-    YOU_API_KEY: ${var.YOU_API_KEY}
+    ANTHROPIC_API_KEY_FILE: /run/secrets/anthropic-api-key
+    BRAVE_API_KEY_FILE: /run/secrets/brave-api-key
+    DEEPSEEK_API_KEY_FILE: /run/secrets/deepseek-api-key
+    EXA_API_KEY_FILE: /run/secrets/exa-api-key
+    FIRECRAWL_API_KEY_FILE: /run/secrets/firecrawl-api-key
+    FIRE_CRAWL_API_KEY_FILE: /run/secrets/firecrawl-api-key
+    GEMINI_API_KEY_FILE: /run/secrets/gemini-api-key
+    GLAMA_API_KEY_FILE: /run/secrets/glama-api-key
+    GROQ_API_KEY_FILE: /run/secrets/groq-api-key
+    HF_TOKEN_FILE: /run/secrets/hf-token
+    HUGGINGFACE_ACCESS_TOKEN_FILE: /run/secrets/hf-token
+    HUGGINGFACE_API_TOKEN_FILE: /run/secrets/hf-token
+    LANGCHAIN_API_KEY_FILE: /run/secrets/langchain-api-key
+    MISTRAL_API_KEY_FILE: /run/secrets/mistral-api-key
+    MISTRALAI_API_KEY_FILE: /run/secrets/mistral-api-key
+    OPENAI_API_KEY_FILE: /run/secrets/openai-api-key
+    OPENROUTER_API_KEY_FILE: /run/secrets/openrouter-api-key
+    PERPLEXITY_API_KEY_FILE: /run/secrets/perplexity-api-key
+    PERPLEXITYAI_API_KEY_FILE: /run/secrets/perplexity-api-key
+    REPLICATE_API_KEY_FILE: /run/secrets/replicate-api-key
+    REVID_API_KEY_FILE: /run/secrets/revid-api-key
+    SAMBANOVA_API_KEY_FILE: /run/secrets/sambanova-api-key
+    SEARCH1API_KEY_FILE: /run/secrets/search1api-key
+    SERPAPI_API_KEY_FILE: /run/secrets/serpapi-api-key
+    TAVILY_API_KEY_FILE: /run/secrets/tavily-api-key
+    TOGETHERAI_API_KEY_FILE: /run/secrets/togetherai-api-key
+    UPSTAGE_API_KEY_FILE: /run/secrets/upstage-api-key
+    UPSTAGEAI_API_KEY_FILE: /run/secrets/upstage-api-key
+    LANGSMITH_API_KEY_FILE: /run/secrets/langchain-api-key
     CHOKIDAR_USEPOLLING: ${var.CHOKIDAR_USEPOLLING || "true"}
     LOGGING_LEVEL: ${var.GPTR_LOGGING_LEVEL || "DEBUG"}
     NEXT_PUBLIC_GA_MEASUREMENT_ID: ${var.NEXT_PUBLIC_GA_MEASUREMENT_ID}
     NEXT_PUBLIC_GPTR_API_URL: https://gptr.${var.domain}
     LANGSMITH_TRACING: ${var.LANGSMITH_TRACING || "true"}
     LANGSMITH_ENDPOINT: ${var.LANGSMITH_ENDPOINT || "https://api.smith.langchain.com"}
-    LANGSMITH_API_KEY: ${var.LANGSMITH_API_KEY}
   ports:
     - name: nginx
       containerPort: 3000
@@ -63,17 +64,118 @@ spec:
     - name: reports
       containerPath: /usr/src/app/reports
       sourcePath: ${var.config-path}/gptr/reports
+    - name: anthropic-api-key
+      containerPath: /run/secrets/anthropic-api-key
+      sourcePath: ${var.config-path}/secrets/anthropic-api-key.txt
+      readOnly: true
+    - name: brave-api-key
+      containerPath: /run/secrets/brave-api-key
+      sourcePath: ${var.config-path}/secrets/brave-api-key.txt
+      readOnly: true
+    - name: deepseek-api-key
+      containerPath: /run/secrets/deepseek-api-key
+      sourcePath: ${var.config-path}/secrets/deepseek-api-key.txt
+      readOnly: true
+    - name: exa-api-key
+      containerPath: /run/secrets/exa-api-key
+      sourcePath: ${var.config-path}/secrets/exa-api-key.txt
+      readOnly: true
+    - name: firecrawl-api-key
+      containerPath: /run/secrets/firecrawl-api-key
+      sourcePath: ${var.config-path}/secrets/firecrawl-api-key.txt
+      readOnly: true
+    - name: gemini-api-key
+      containerPath: /run/secrets/gemini-api-key
+      sourcePath: ${var.config-path}/secrets/gemini-api-key.txt
+      readOnly: true
+    - name: glama-api-key
+      containerPath: /run/secrets/glama-api-key
+      sourcePath: ${var.config-path}/secrets/glama-api-key.txt
+      readOnly: true
+    - name: groq-api-key
+      containerPath: /run/secrets/groq-api-key
+      sourcePath: ${var.config-path}/secrets/groq-api-key.txt
+      readOnly: true
+    - name: hf-token
+      containerPath: /run/secrets/hf-token
+      sourcePath: ${var.config-path}/secrets/hf-token.txt
+      readOnly: true
+    - name: langchain-api-key
+      containerPath: /run/secrets/langchain-api-key
+      sourcePath: ${var.config-path}/secrets/langchain-api-key.txt
+      readOnly: true
+    - name: mistral-api-key
+      containerPath: /run/secrets/mistral-api-key
+      sourcePath: ${var.config-path}/secrets/mistral-api-key.txt
+      readOnly: true
+    - name: openai-api-key
+      containerPath: /run/secrets/openai-api-key
+      sourcePath: ${var.config-path}/secrets/openai-api-key.txt
+      readOnly: true
+    - name: openrouter-api-key
+      containerPath: /run/secrets/openrouter-api-key
+      sourcePath: ${var.config-path}/secrets/openrouter-api-key.txt
+      readOnly: true
+    - name: perplexity-api-key
+      containerPath: /run/secrets/perplexity-api-key
+      sourcePath: ${var.config-path}/secrets/perplexity-api-key.txt
+      readOnly: true
+    - name: replicate-api-key
+      containerPath: /run/secrets/replicate-api-key
+      sourcePath: ${var.config-path}/secrets/replicate-api-key.txt
+      readOnly: true
+    - name: revid-api-key
+      containerPath: /run/secrets/revid-api-key
+      sourcePath: ${var.config-path}/secrets/revid-api-key.txt
+      readOnly: true
+    - name: sambanova-api-key
+      containerPath: /run/secrets/sambanova-api-key
+      sourcePath: ${var.config-path}/secrets/sambanova-api-key.txt
+      readOnly: true
+    - name: search1api-key
+      containerPath: /run/secrets/search1api-key
+      sourcePath: ${var.config-path}/secrets/search1api-key.txt
+      readOnly: true
+    - name: serpapi-api-key
+      containerPath: /run/secrets/serpapi-api-key
+      sourcePath: ${var.config-path}/secrets/serpapi-api-key.txt
+      readOnly: true
+    - name: tavily-api-key
+      containerPath: /run/secrets/tavily-api-key
+      sourcePath: ${var.config-path}/secrets/tavily-api-key.txt
+      readOnly: true
+    - name: togetherai-api-key
+      containerPath: /run/secrets/togetherai-api-key
+      sourcePath: ${var.config-path}/secrets/togetherai-api-key.txt
+      readOnly: true
+    - name: upstage-api-key
+      containerPath: /run/secrets/upstage-api-key
+      sourcePath: ${var.config-path}/secrets/upstage-api-key.txt
+      readOnly: true
   ingresses:
     - path: /
       port: nginx
       hostname: gptr-nextjs.${var.domain}
     - path: /
+      port: nginx
+      hostname: gptr-nextjs.${var.ts-hostname}.${var.domain}
+    - path: /
       port: static
       hostname: gptr.${var.domain}
     - path: /
+      port: static
+      hostname: gptr.${var.ts-hostname}.${var.domain}
+    - path: /
       port: mcp
       hostname: gptr-mcp.${var.domain}
+    - path: /
+      port: mcp
+      hostname: gptr-mcp.${var.ts-hostname}.${var.domain}
   healthCheck:
     exec:
       command: [sh, -c, "(wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 && wget -qO- http://127.0.0.1:8000 > /dev/null 2>&1) || exit 1"]
+    initialDelaySeconds: 120
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
   restartPolicy: always

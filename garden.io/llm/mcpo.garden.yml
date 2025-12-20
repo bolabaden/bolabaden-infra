@@ -6,22 +6,30 @@ type: container
 
 spec:
   image: ghcr.io/open-webui/mcpo:main
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     MCPO_API_KEY: ${var.MCPO_API_KEY}
   ports:
     - name: http
-      containerPort: 8000
+      containerPort: ${var.MCPO_PORT || "8000"}
   volumes:
     - name: config
       containerPath: /app/config/mcp_servers.json
       sourcePath: ${var.config-path}/mcpo/mcp_servers.json
-  command: [--api-key, "${var.MCPO_API_KEY}", --host, 0.0.0.0, --port, 8000, --cors-allow-origins, "*", --config, /app/config/mcp_servers.json]
+      readOnly: true
+  command: [--api-key, "${var.MCPO_API_KEY}", --host, 0.0.0.0, --port, ${var.MCPO_PORT || "8000"}, --cors-allow-origins, "*", --config, /app/config/mcp_servers.json]
+  workingDir: /app
   ingresses:
     - path: /
       port: http
       hostname: mcpo.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /openapi.json
+    - path: /
       port: http
+      hostname: mcpo.${var.ts-hostname}.${var.domain}
+  healthCheck:
+    exec:
+      command: [sh, -c, "curl -f http://127.0.0.1:${var.MCPO_PORT || "8000"}/openapi.json"]
+    initialDelaySeconds: 40
+    timeoutSeconds: 10
   restartPolicy: always
