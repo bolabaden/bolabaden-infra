@@ -3,11 +3,13 @@ apiVersion: garden.io/v2
 name: homepage
 description: Homepage dashboard for service overview
 type: container
+dependencies:
+  - deploy.dockerproxy-ro
 
 spec:
   image: ghcr.io/gethomepage/homepage
   env:
-    TZ: ${var.tz}
+    DOCKER_HOST: tcp://dockerproxy-ro:2375
     HOMEPAGE_ALLOWED_HOSTS: "*"
     HOMEPAGE_VAR_TITLE: Bolabaden
     HOMEPAGE_VAR_SEARCH_PROVIDER: duckduckgo
@@ -23,13 +25,27 @@ spec:
     - name: http
       containerPort: 3000
   volumes:
-    - name: docker-sock
-      containerPath: /var/run/docker.sock
-      sourcePath: ${var.docker-socket}
-      readOnly: true
     - name: config
       containerPath: /app/config
       sourcePath: ${var.config-path}/homepage
+    - name: custom-css
+      containerPath: /app/config/custom.css
+      sourcePath: ${var.config-path}/homepage/custom.css
+    - name: custom-js
+      containerPath: /app/config/custom.js
+      sourcePath: ${var.config-path}/homepage/custom.js
+    - name: docker-yaml
+      containerPath: /app/config/docker.yaml
+      sourcePath: ${var.config-path}/homepage/docker.yaml
+    - name: widgets-yaml
+      containerPath: /app/config/widgets.yaml
+      sourcePath: ${var.config-path}/homepage/widgets.yaml
+    - name: settings-yaml
+      containerPath: /app/config/settings.yaml
+      sourcePath: ${var.config-path}/homepage/settings.yaml
+    - name: bookmarks-yaml
+      containerPath: /app/config/bookmarks.yaml
+      sourcePath: ${var.config-path}/homepage/bookmarks.yaml
   resources:
     limits:
       cpu: 250m
@@ -41,7 +57,10 @@ spec:
       port: http
       hostname: homepage.${var.domain}
   healthCheck:
-    httpGet:
-      path: /
-      port: http
+    exec:
+      command: [sh, -c, "wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 15
+    failureThreshold: 3
   restartPolicy: always

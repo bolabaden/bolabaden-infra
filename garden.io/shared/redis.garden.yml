@@ -6,14 +6,42 @@ type: container
 
 spec:
   image: docker.io/redis:alpine
+  privileged: true
+  env:
+    REDIS_HOST: ${var.REDIS_HOSTNAME || "redis"}
+    REDIS_PORT: ${var.REDIS_PORT || "6379"}
+    REDIS_DATABASE: ${var.REDIS_DATABASE || "0"}
+    REDIS_USERNAME: ${var.REDIS_USERNAME || "default"}
+    REDIS_PASSWORD: ${var.REDIS_PASSWORD || "redis"}
   ports:
     - name: redis
-      containerPort: 6379
+      containerPort: ${var.REDIS_PORT || "6379"}
+      hostPort: ${var.REDIS_PORT || "6379"}
   volumes:
     - name: data
       containerPath: /data
       sourcePath: ${var.config-path}/redis/data
+  command:
+    - sh
+    - -c
+    - |
+      sysctl vm.overcommit_memory=1 &> /dev/null &&
+      redis-server
+      --appendonly yes
+      --save 60 1
+      --bind 0.0.0.0
+      --port ${var.REDIS_PORT || "6379"}
+      --requirepass ${var.REDIS_PASSWORD || "redis"}
+  resources:
+    limits:
+      memory: 4Gi
+    requests:
+      memory: 200Mi
+    cpu: 500m
   healthCheck:
     exec:
-      command: [redis-cli, ping]
+      command: [sh, -c, "redis-cli ping > /dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
   restartPolicy: always

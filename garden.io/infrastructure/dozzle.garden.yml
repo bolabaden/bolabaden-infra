@@ -3,19 +3,27 @@ apiVersion: garden.io/v2
 name: dozzle
 description: Real-time Docker container logs viewer
 type: container
+dependencies:
+  - deploy.dockerproxy-ro
 
 spec:
   image: docker.io/amir20/dozzle
   env:
-    TZ: ${var.tz}
+    DOZZLE_NO_ANALYTICS: ${var.DOZZLE_NO_ANALYTICS || "true"}
+    DOZZLE_FILTER: ${var.DOZZLE_FILTER || ""}
+    DOZZLE_ENABLE_ACTIONS: ${var.DOZZLE_ENABLE_ACTIONS || "false"}
+    DOZZLE_AUTH_HEADER_NAME: ${var.DOZZLE_AUTH_HEADER_NAME || ""}
+    DOZZLE_AUTH_HEADER_USER: ${var.DOZZLE_AUTH_USER || ""}
+    DOZZLE_AUTH_HEADER_EMAIL: ${var.DOZZLE_AUTH_EMAIL || ""}
+    DOZZLE_AUTH_PROVIDER: ${var.DOZZLE_AUTH_PROVIDER || "none"}
+    DOZZLE_LEVEL: ${var.DOZZLE_LEVEL || "info"}
+    DOZZLE_HOSTNAME: ${var.DOZZLE_HOSTNAME || ""}
+    DOZZLE_BASE: ${var.DOZZLE_BASE || "/"}
+    DOZZLE_ADDR: :${var.DOZZLE_PORT || "8080"}
+    DOZZLE_REMOTE_HOST: tcp://dockerproxy-ro:2375
   ports:
     - name: http
-      containerPort: 8080
-  volumes:
-    - name: docker-sock
-      containerPath: /var/run/docker.sock
-      sourcePath: ${var.docker-socket}
-      readOnly: true
+      containerPort: ${var.DOZZLE_PORT || "8080"}
   ingresses:
     - path: /
       port: http

@@ -1,0 +1,34 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: dockerproxy-ro
+description: Docker Socket Proxy with read-only access
+type: container
+
+spec:
+  image: docker.io/tecnativa/docker-socket-proxy
+  privileged: true
+  runAsUser: 0
+  runAsGroup: 0
+  env:
+    TZ: ${var.tz}
+    PUID: ${var.PUID || "1001"}
+    PGID: ${var.PGID || "999"}
+    UMASK: ${var.UMASK || "002"}
+    CONTAINERS: 1
+    EVENTS: 1
+    INFO: 1
+    DOCKER_API_VERSION: ${var.DOCKER_API_VERSION_OVERRIDE || "1.52"}
+    DISABLE_IPV6: ${var.DISABLE_IPV6 || "0"}
+  volumes:
+    - name: docker-sock
+      containerPath: /var/run/docker.sock
+      sourcePath: ${var.docker-socket}
+  healthCheck:
+    exec:
+      command: [sh, -c, "wget -qO- http://127.0.0.1:2375/_ping > /dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 10
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+  restartPolicy: always
+

@@ -17,6 +17,10 @@ spec:
       sourcePath: ${var.config-path}/mongodb/data
   healthCheck:
     exec:
-      command: [mongosh, "127.0.0.1:27017/test", "--quiet", "--eval", "db.runCommand(\"ping\").ok"]
+      command: [sh, -c, "mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand(\"ping\").ok' > /dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 40
+    periodSeconds: 10
+    timeoutSeconds: 10
+    failureThreshold: 5
   restartPolicy: always
 

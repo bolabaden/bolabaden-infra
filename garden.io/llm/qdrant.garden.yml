@@ -1,0 +1,26 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: qdrant
+description: Qdrant vector database
+type: container
+
+spec:
+  image: qdrant/qdrant
+  env:
+    QDRANT_STORAGE_PATH: /qdrant/storage
+    QDRANT_STORAGE_TYPE: disk
+    QDRANT_STORAGE_DISK_PATH: /qdrant/storage
+    QDRANT_STORAGE_DISK_TYPE: disk
+  ports:
+    - name: http
+      containerPort: 6333
+  volumes:
+    - name: storage
+      containerPath: /qdrant/storage
+      sourcePath: ${var.config-path}/qdrant/storage
+  ingresses:
+    - path: /
+      port: http
+      hostname: qdrant.${var.domain}
+  restartPolicy: always
+

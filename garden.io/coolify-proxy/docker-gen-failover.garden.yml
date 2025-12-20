@@ -1,0 +1,41 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: docker-gen-failover
+description: Docker-gen for Traefik failover configuration
+type: container
+dependencies:
+  - deploy.dockerproxy-rw
+
+spec:
+  image: docker.io/nginxproxy/docker-gen
+  volumes:
+    - name: template
+      containerPath: /templates/traefik-failover-dynamic.conf.tmpl
+      sourcePath: ${var.config-path}/traefik/docker-gen/traefik-failover-dynamic.conf.tmpl
+    - name: dynamic
+      containerPath: /traefik/dynamic
+      sourcePath: ${var.config-path}/traefik/dynamic
+  command:
+    - -endpoint
+    - tcp://dockerproxy-rw:2375
+    - -only-exposed
+    - -include-stopped
+    - -event-filter
+    - event=start
+    - -event-filter
+    - event=create
+    - -event-filter
+    - event=expose
+    - -event-filter
+    - event=update
+    - -event-filter
+    - event=connect
+    - -event-filter
+    - label=traefik.enable=true
+    - -container-filter
+    - label=traefik.enable=true
+    - -watch
+    - /templates/traefik-failover-dynamic.conf.tmpl
+    - /traefik/dynamic/failover-fallbacks.yaml
+  restartPolicy: never
+

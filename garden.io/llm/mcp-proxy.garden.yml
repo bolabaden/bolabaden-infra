@@ -1,0 +1,27 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: mcp-proxy
+description: MCP Proxy for proxying MCP servers
+type: container
+
+spec:
+  image: ghcr.io/tbxark/mcp-proxy
+  env:
+    TZ: ${var.tz}
+  ports:
+    - name: http
+      containerPort: ${var.MCP_PROXY_PORT || "9090"}
+  volumes:
+    - name: config
+      containerPath: /config.json
+      sourcePath: ${var.config-path}/mcp-proxy/config.json
+  command:
+    - --config
+    - config.json
+    - -expand-env
+  ingresses:
+    - path: /
+      port: http
+      hostname: mcp.${var.domain}
+  restartPolicy: always
+

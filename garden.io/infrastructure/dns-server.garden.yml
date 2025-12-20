@@ -1,0 +1,42 @@
+kind: Deploy
+apiVersion: garden.io/v2
+name: dns-server
+description: Technitium DNS Server
+type: container
+
+spec:
+  image: docker.io/technitium/dns-server
+  env:
+    TZ: ${var.tz}
+  ports:
+    - name: dns-udp
+      containerPort: 53
+      protocol: UDP
+      hostPort: 53
+    - name: dns-http
+      containerPort: 80
+    - name: dns-https
+      containerPort: 443
+    - name: dns-tcp-proxy
+      containerPort: 538
+    - name: dns-tls
+      containerPort: 853
+    - name: dns-quic
+      containerPort: 853
+      protocol: UDP
+    - name: dns-https-alt
+      containerPort: 8053
+    - name: console-http
+      containerPort: 5380
+    - name: console-https
+      containerPort: 53443
+  volumes:
+    - name: config
+      containerPath: /etc/dns
+      sourcePath: ${var.config-path}/dns-server/config
+  ingresses:
+    - path: /
+      port: console-http
+      hostname: dns-server.${var.domain}
+  restartPolicy: always
+
