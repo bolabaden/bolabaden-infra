@@ -846,9 +846,7 @@ EOF
       template {
         data = <<EOF
 {{- if service "dockerproxy-ro" }}
-{{- range service "dockerproxy-ro" }}
-DOZZLE_REMOTE_HOST="tcp://{{ .Address }}:{{ .Port }}"
-{{- end }}
+DOZZLE_REMOTE_HOST="tcp://dockerproxy-ro:2375"
 {{- else }}
 DOZZLE_REMOTE_HOST=""
 {{- end }}
