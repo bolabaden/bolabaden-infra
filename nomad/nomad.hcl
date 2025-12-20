@@ -3344,13 +3344,7 @@ EOF
   # Firecrawl Group
   group "firecrawl-group" {
     count = 1  # ENABLED: Builds locally for ARM64 compatibility
-    # Constraint required: depends on playwright-service and nuq-postgres which are on micklethefickle
-
-    constraint {
-      attribute = "${node.unique.name}"
-      operator  = "="
-      value     = "micklethefickle"
-    }
+    # Note: Can run on any node - uses service discovery to connect to playwright-service and nuq-postgres
 
     update {
       max_parallel     = 1
