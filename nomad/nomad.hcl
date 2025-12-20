@@ -2593,14 +2593,8 @@ EOF
       mode = "bridge"
       
       port "traefik_api" { to = 8080 }
-      port "traefik_http" {
-        static = 80
-        to = 80
-      }
-      port "traefik_https" {
-        static = 443
-        to = 443
-      }
+      port "traefik_http" { to = 80 }
+      port "traefik_https" { to = 443 }
     }
 
     # https://doc.traefik.io
@@ -4553,14 +4547,8 @@ EOF
       mode = "bridge"
       
       port "stremio_webui" { to = 8080 }
-      port "stremio_http" {
-        static = 11470
-        to = 11470
-      }
-      port "stremio_https" {
-        static = 12470
-        to = 12470
-      }
+      port "stremio_http" { to = 11470 }
+      port "stremio_https" { to = 12470 }
     }
 
     # Stream Movies/TV over debrid instantly.
