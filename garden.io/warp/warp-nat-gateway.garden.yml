@@ -3,10 +3,16 @@ apiVersion: garden.io/v2
 name: warp-nat-gateway
 description: WARP in Docker with NAT routing
 type: container
+dependencies:
+  - deploy.warp-net-init
 
 spec:
   image: docker.io/caomingjun/warp
+  extraHosts:
+    - host.docker.internal:host-gateway
   privileged: true
+  deviceCgroupRules:
+    - "c 10:200 rwm"
   capAdd:
     - MKNOD
     - AUDIT_WRITE
@@ -21,16 +27,24 @@ spec:
     BETA_FIX_HOST_CONNECTIVITY: false
     GOST_ARGS: ${var.GOST_ARGS || "-L :${var.GOST_SOCKS5_PORT || \"1080\"}"}
     WARP_ENABLE_NAT: false
-    WARP_LICENSE_KEY: ${var.WARP_LICENSE_KEY}
+    WARP_LICENSE_KEY_FILE: /run/secrets/warp-license-key
     WARP_SLEEP: 2
   ports:
     - name: socks5
-      containerPort: 1080
+      containerPort: ${var.GOST_SOCKS5_PORT || "1080"}
   volumes:
     - name: warp-config
       containerPath: /var/lib/cloudflare-warp
       sourcePath: ${var.config-path}/warp/config
+    - name: warp-license-key
+      containerPath: /run/secrets/warp-license-key
+      sourcePath: ${var.config-path}/secrets/warp-license-key.txt
+      readOnly: true
   healthCheck:
     exec:
-      command: [sh, -c, "if curl -s https://cloudflare.com/cdn-cgi/trace | grep -qE '^warp=on|warp=plus$'; then echo \"Cloudflare WARP is active.\" && exit 0; else echo \"Cloudflare WARP is not active.\" && exit 1; fi"]
+      command: [sh, -c, "sh -c \"if curl -s https://cloudflare.com/cdn-cgi/trace | grep -qE '^warp=on|warp=plus$'; then echo \\\"Cloudflare WARP is active.\\\" && exit 0; else echo \\\"Cloudflare WARP is not active.\\\" && exit 1; fi\""]
+    initialDelaySeconds: 60
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 10
   restartPolicy: always

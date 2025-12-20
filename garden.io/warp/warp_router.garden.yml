@@ -8,7 +8,7 @@ spec:
   dockerfile: |
     FROM alpine
     RUN apk update && apk add \
-        bash bc docker-cli ipcalc iproute2 iptables jq util-linux && \
+        bash bc curl docker-cli ipcalc iproute2 iptables jq util-linux && \
         rm -rf /var/cache/apk/*
 
 ---
@@ -32,7 +32,11 @@ spec:
     CONT_VETH_IP: ${var.CONT_VETH_IP || "169.254.100.2"}
     ROUTING_TABLE: ${var.ROUTING_TABLE || "warp-nat-routing"}
     VETH_HOST: ${var.VETH_HOST || "veth-warp"}
-    CONTAINER_NAME: warp_router
+    ROUTER_CONTAINER_NAME: ${var.ROUTER_CONTAINER_NAME || "warp_router"}
+    WARP_NAT_NET_SUBNET: ${var.WARP_NAT_NET_SUBNET || "10.0.2.0/24"}
+    WARP_NAT_NET_GATEWAY: ${var.WARP_NAT_NET_GATEWAY || "10.0.2.1"}
+    RETRY_SETUP_AFTER: ${var.RETRY_SETUP_AFTER || "12"}
+    SLEEP_INTERVAL: ${var.SLEEP_INTERVAL || "5"}
   command:
     - /bin/bash
     - /usr/local/bin/warp-monitor.sh
@@ -42,15 +46,24 @@ spec:
       sourcePath: ${var.docker-socket}
     - name: rt-tables
       containerPath: /etc/iproute2/rt_tables
-      hostPath: /etc/iproute2/rt_tables
+      sourcePath: /etc/iproute2/rt_tables
     - name: proc
       containerPath: /proc
-      hostPath: /proc
+      sourcePath: /proc
     - name: warp-nat-setup
       containerPath: /usr/local/bin/warp-nat-setup.sh
       sourcePath: ${var.config-path}/warp/scripts/warp-nat-setup.sh
+      readOnly: true
     - name: warp-monitor
       containerPath: /usr/local/bin/warp-monitor.sh
       sourcePath: ${var.config-path}/warp/scripts/warp-monitor.sh
+      readOnly: true
+  healthCheck:
+    exec:
+      command: [sh, -c, "docker run --rm --network ${var.DOCKER_NETWORK_NAME || \"warp-nat-net\"} --entrypoint sh curlimages/curl -c 'if curl -s --max-time 4 https://cloudflare.com/cdn-cgi/trace | grep -qE \"^warp=on|warp=plus$\"; then exit 0; else exit 1; fi'"]
+    initialDelaySeconds: 20
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
   restartPolicy: always
 
