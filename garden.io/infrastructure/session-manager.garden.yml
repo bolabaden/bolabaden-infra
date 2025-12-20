@@ -6,8 +6,9 @@ type: container
 
 spec:
   image: alpine
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
-    TZ: ${var.tz}
     DOMAIN: ${var.domain}
     SESSION_MANAGER_PORT: ${var.SESSION_MANAGER_PORT || "8080"}
     INACTIVITY_TIMEOUT: 3600
@@ -15,7 +16,7 @@ spec:
     EXT_PATH: ${var.config-path}/extensions/holo-lsp-1.0.0.vsix
   ports:
     - name: http
-      containerPort: 8080
+      containerPort: ${var.KOTORSCRIPT_SESSION_MANAGER_PORT || "8080"}
   volumes:
     - name: docker-sock
       containerPath: /var/run/docker.sock
@@ -26,12 +27,15 @@ spec:
     - name: session-manager-py
       containerPath: /session_manager.py
       sourcePath: ${var.root-path}/projects/kotor/kotorscript-session-manager/session_manager.py
+      readOnly: true
     - name: index-html
       containerPath: /tmp/templates/index.html
       sourcePath: ${var.root-path}/projects/kotor/kotorscript-session-manager/index.html
+      readOnly: true
     - name: waiting-html
       containerPath: /tmp/templates/waiting.html
       sourcePath: ${var.root-path}/projects/kotor/kotorscript-session-manager/waiting.html
+      readOnly: true
   command:
     - sh
     - -c
@@ -44,8 +48,12 @@ spec:
     - path: /
       port: http
       hostname: holoscript.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /health
+    - path: /
       port: http
+      hostname: holoscript.${var.ts-hostname}.${var.domain}
+  healthCheck:
+    exec:
+      command: [sh, -c, "wget -qO- http://127.0.0.1:${var.KOTORSCRIPT_SESSION_MANAGER_PORT || "8080"}/health > /dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 30
+    timeoutSeconds: 10
   restartPolicy: always
