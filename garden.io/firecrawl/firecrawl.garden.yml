@@ -14,47 +14,74 @@ name: firecrawl
 description: Firecrawl API container
 type: container
 dependencies:
-  - build.firecrawl-api
+  - build.firecrawl
   - deploy.redis
   - deploy.playwright-service
   - deploy.nuq-postgres
 
 spec:
-  image: ${actions.build.firecrawl-api.outputs.deploymentImageId}
+  image: ${actions.build.firecrawl.outputs.deploymentImageId}
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
-    REDIS_URL: ${var.REDIS_HOST || "redis://redis:6379"}
-    REDIS_RATE_LIMIT_URL: ${var.REDIS_HOST || "redis://redis:6379"}
-    PLAYWRIGHT_MICROSERVICE_URL: ${var.PLAYWRIGHT_HOST || "http://playwright-service:3000"}/scrape
-    NUQ_DATABASE_URL: ${var.FIRECRAWL_NUQ_DATABASE_URL || "postgres://postgres:postgres@nuq-postgres:5432/postgres"}
-    USE_DB_AUTHENTICATION: ${var.FIRECRAWL_USE_DB_AUTHENTICATION || "false"}
+    REDIS_URL: redis://redis:6379
+    REDIS_RATE_LIMIT_URL: redis://redis:6379
+    PLAYWRIGHT_MICROSERVICE_URL: ${var.PLAYWRIGHT_HOST || "http://playwright-service:3000/scrape"}
+    NUQ_DATABASE_URL: postgres://postgres:postgres@nuq-postgres:5432/postgres
+    EXTRACT_WORKER_PORT: ${var.FIRECRAWL_EXTRACT_WORKER_PORT || "3004"}
+    USE_DB_AUTHENTICATION: ${var.FIRECRAWL_USE_DB_AUTHENTICATION || ""}
+    OPENAI_API_KEY_FILE: /run/secrets/openai-api-key
+    OPENAI_BASE_URL: ${var.OPENAI_BASE_URL || ""}
+    MODEL_NAME: ${var.FIRECRAWL_MODEL_NAME || ""}
+    MODEL_EMBEDDING_NAME: ${var.FIRECRAWL_MODEL_EMBEDDING_NAME || ""}
     OLLAMA_BASE_URL: ${var.FIRECRAWL_OLLAMA_BASE_URL || ""}
     SLACK_WEBHOOK_URL: ${var.SLACK_WEBHOOK_URL || ""}
-    BULL_AUTH_KEY: ${var.FIRECRAWL_BULL_AUTH_KEY}
-    TEST_API_KEY: ${var.FIRECRAWL_TEST_API_KEY}
+    BULL_AUTH_KEY_FILE: /run/secrets/firecrawl-api-key
+    TEST_API_KEY_FILE: /run/secrets/firecrawl-api-key
     POSTHOG_API_KEY: ${var.POSTHOG_API_KEY || ""}
     POSTHOG_HOST: ${var.POSTHOG_HOST || ""}
-    SUPABASE_ANON_TOKEN: ${var.FIRECRAWL_SUPABASE_ANON_TOKEN || ""}
-    SUPABASE_URL: ${var.FIRECRAWL_SUPABASE_URL || ""}
+    SUPABASE_ANON_TOKEN: ${var.SUPABASE_ANON_TOKEN || ""}
+    SUPABASE_URL: ${var.SUPABASE_URL || ""}
     SUPABASE_SERVICE_TOKEN: ${var.FIRECRAWL_SUPABASE_SERVICE_TOKEN || ""}
     SELF_HOSTED_WEBHOOK_URL: ${var.FIRECRAWL_SELF_HOSTED_WEBHOOK_URL || ""}
-    SERPER_API_KEY: ${var.FIRECRAWL_SERPER_API_KEY || ""}
-    SEARCHAPI_API_KEY: ${var.FIRECRAWL_SEARCHAPI_API_KEY || ""}
-    SEARXNG_ENDPOINT: ${var.FIRECRAWL_SEARXNG_ENDPOINT || "https://searxng.bolabaden.org"}
+    SERPER_API_KEY: ${var.SERPER_API_KEY || ""}
+    SEARCHAPI_API_KEY: ${var.SEARCHAPI_API_KEY || ""}
+    SEARXNG_ENDPOINT: ${var.SEARXNG_ENDPOINT || "https://searxng.${var.domain}"}
     HOST: 0.0.0.0
     PORT: ${var.FIRECRAWL_INTERNAL_PORT || "3002"}
     WORKER_PORT: ${var.FIRECRAWL_WORKER_PORT || "3005"}
     ENV: ${var.FIRECRAWL_ENV || "local"}
   ports:
     - name: http
-      containerPort: 3002
+      containerPort: ${var.FIRECRAWL_INTERNAL_PORT || "3002"}
+    - name: extract-worker
+      containerPort: ${var.FIRECRAWL_EXTRACT_WORKER_PORT || "3004"}
+    - name: worker
+      containerPort: ${var.FIRECRAWL_WORKER_PORT || "3005"}
+  volumes:
+    - name: openai-api-key
+      containerPath: /run/secrets/openai-api-key
+      sourcePath: ${var.config-path}/secrets/openai-api-key.txt
+      readOnly: true
+    - name: firecrawl-api-key
+      containerPath: /run/secrets/firecrawl-api-key
+      sourcePath: ${var.config-path}/secrets/firecrawl-api-key.txt
+      readOnly: true
   resources:
     limits:
       cpu: 4000m
       memory: 4Gi
     requests:
-      memory: 4G
+      memory: 4Gi
+  command:
+    - node
+    - dist/src/harness.js
+    - --start-docker
   ingresses:
     - path: /
       port: http
-      hostname: firecrawl.${var.domain}
+      hostname: firecrawl-api.${var.domain}
+    - path: /
+      port: http
+      hostname: firecrawl-api.${var.ts-hostname}.${var.domain}
   restartPolicy: always
