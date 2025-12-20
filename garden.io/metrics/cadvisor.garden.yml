@@ -13,23 +13,23 @@ spec:
   volumes:
     - name: rootfs
       containerPath: /rootfs
-      hostPath: /
+      sourcePath: /
       readOnly: true
     - name: var-run
       containerPath: /var/run
-      hostPath: /var/run
+      sourcePath: /var/run
       readOnly: true
     - name: sys
       containerPath: /sys
-      hostPath: /sys
+      sourcePath: /sys
       readOnly: true
     - name: docker
       containerPath: /var/lib/docker
-      hostPath: /var/lib/docker
+      sourcePath: /var/lib/docker
       readOnly: true
     - name: dev-disk
       containerPath: /dev/disk
-      hostPath: /dev/disk
+      sourcePath: /dev/disk
       readOnly: true
   devices:
     - name: kmsg
@@ -40,12 +40,18 @@ spec:
     - '--docker_only=${var.CADVISOR_DOCKER_ONLY || "true"}'
     - '--disable_metrics=${var.CADVISOR_DISABLE_METRICS || "cpu_topology,disk,memory_numa,tcp,udp,percpu,sched,process,hugetlb,referenced_memory,resctrl,cpuset,advtcp"}'
     - '--store_container_labels=${var.CADVISOR_STORE_CONTAINER_LABELS || "false"}'
-  labels:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "8080"
-    prometheus.io/path: "metrics"
   ingresses:
     - path: /
       port: http
       hostname: cadvisor.${var.domain}
+    - path: /
+      port: http
+      hostname: cadvisor.${var.ts-hostname}.${var.domain}
+  healthCheck:
+    exec:
+      command: [sh, -c, "command -v wget >/dev/null || (apt-get update >/dev/null 2>&1 && apt-get install -y wget >/dev/null 2>&1); wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/metrics || exit 1"]
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
   restartPolicy: always
