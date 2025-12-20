@@ -8,6 +8,8 @@ dependencies:
 
 spec:
   image: docker.io/muniftanjim/stremthru
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}
@@ -18,21 +20,21 @@ spec:
     STREMTHRU_BASE_URL: https://stremthru.${var.domain}
     
     # Logging configuration
-    STREMTHRU_LOG_LEVEL: DEBUG
+    STREMTHRU_LOG_LEVEL: INFO
     STREMTHRU_LOG_FORMAT: text
     
     # Proxy configuration
-    STREMTHRU_PROXY_AUTH: "${var.main-username}:${var.sudo-password},bolabaden:duckdns,bolabaden.duckdns@gmail.com:Hilogirl80"
-    STREMTHRU_AUTH_ADMIN: ${var.main-username}
-    STREMTHRU_STORE_AUTH: "*:realdebrid:${var.REALDEBRID_TOKEN},*:premiumize:${var.PREMIUMIZE_API_KEY},*:alldebrid:${var.ALLDEBRID_API_KEY},*:debridlink:${var.DEBRIDLINK_API_KEY},*:torbox:${var.TORBOX_API_KEY}"
+    STREMTHRU_PROXY_AUTH_FILE: /run/secrets/stremthru-proxy-auth
+    STREMTHRU_AUTH_ADMIN: ${var.MAIN_USERNAME}
+    STREMTHRU_STORE_AUTH_FILE: /run/secrets/stremthru-store-auth
     STREMTHRU_STORE_CONTENT_PROXY: "*:true,premiumize:false"
     STREMTHRU_CONTENT_PROXY_CONNECTION_LIMIT: "*:10"
     
     # Integration configuration
-    STREMTHRU_INTEGRATION_TRAKT_CLIENT_ID: ${var.TRAKT_CLIENT_ID || "052d735c61c723ed670991aee9d6322822ed6766702d66910be63a1e1a511fd0"}
-    STREMTHRU_INTEGRATION_TRAKT_CLIENT_SECRET: ${var.TRAKT_CLIENT_SECRET || "1d5701574cae67023c25a3743f07669bb84ee74628fd8f0a3fc0c9cca51535c3"}
+    STREMTHRU_INTEGRATION_TRAKT_CLIENT_ID: ${var.TRAKT_CLIENT_ID}
+    STREMTHRU_INTEGRATION_TRAKT_CLIENT_SECRET: ${var.TRAKT_CLIENT_SECRET}
     STREMTHRU_INTEGRATION_TRAKT_LIST_STALE_TIME: 12h
-    STREMTHRU_INTEGRATION_TMDB_ACCESS_TOKEN: ${var.TMDB_ACCESS_TOKEN || "cec876f852b9c15d2c1b436b1117dff7"}
+    STREMTHRU_INTEGRATION_TMDB_ACCESS_TOKEN: ${var.TMDB_ACCESS_TOKEN}
     STREMTHRU_INTEGRATION_TMDB_LIST_STALE_TIME: 12h
     STREMTHRU_INTEGRATION_MDBLIST_LIST_STALE_TIME: 
     STREMTHRU_INTEGRATION_GITHUB_USER: th3w1zard1
@@ -51,14 +53,28 @@ spec:
   volumes:
     - name: data
       containerPath: /app/data
-      hostPath: ${var.config-path}/stremio/addons/stremthru/app/data
+      sourcePath: ${var.config-path}/stremio/addons/stremthru/app/data
+    - name: stremthru-proxy-auth
+      containerPath: /run/secrets/stremthru-proxy-auth
+      sourcePath: ${var.config-path}/secrets/stremthru-proxy-auth.txt
+      readOnly: true
+    - name: stremthru-store-auth
+      containerPath: /run/secrets/stremthru-store-auth
+      sourcePath: ${var.config-path}/secrets/stremthru-store-auth.txt
+      readOnly: true
   ingresses:
     - path: /
       port: http
       hostname: stremthru.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /
+    - path: /
       port: http
+      hostname: stremthru.${var.ts-hostname}.${var.domain}
+  healthCheck:
+    exec:
+      command: [sh, -c, "wget -qO- http://127.0.0.1:8080 > /dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 15
+    periodSeconds: 60
+    timeoutSeconds: 5
+    failureThreshold: 3
   restartPolicy: always
 

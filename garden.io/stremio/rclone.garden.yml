@@ -6,6 +6,8 @@ type: container
 
 spec:
   image: docker.io/rclone/rclone:1.71
+  extraHosts:
+    - host.docker.internal:host-gateway
   capAdd:
     - SYS_ADMIN
   securityOpt:
@@ -14,22 +16,23 @@ spec:
     TZ: ${var.tz}
   ports:
     - name: http
-      containerPort: 5572
+      containerPort: ${var.RCLONE_PORT || "5572"}
   volumes:
     - name: hostfs
       containerPath: /hostfs
-      hostPath: /
+      sourcePath: /
+      readOnly: true
     - name: etc-group
       containerPath: /etc/group
-      hostPath: /etc/group
+      sourcePath: /etc/group
       readOnly: true
     - name: etc-passwd
       containerPath: /etc/passwd
-      hostPath: /etc/passwd
+      sourcePath: /etc/passwd
       readOnly: true
     - name: remote-mounts
       containerPath: /mnt/remote
-      hostPath: /mnt/remote
+      sourcePath: /mnt/remote
     - name: cache
       containerPath: /.cache
       sourcePath: ${var.config-path}/rclone/.cache
@@ -42,9 +45,10 @@ spec:
     - name: rclone-conf
       containerPath: /config/rclone/rclone.conf
       sourcePath: ${var.config-path}/rclone/rclone.conf
+      readOnly: true
     - name: fuse-conf
       containerPath: /etc/fuse.conf
-      hostPath: /etc/fuse.conf
+      sourcePath: /etc/fuse.conf
       readOnly: true
   devices:
     - name: fuse
@@ -69,8 +73,15 @@ spec:
     - path: /
       port: http
       hostname: rclone.${var.domain}
+    - path: /
+      port: http
+      hostname: rclone.${var.ts-hostname}.${var.domain}
   healthCheck:
     exec:
       command: [mountpoint, -q, /mnt/remote]
+    initialDelaySeconds: 15
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 2
   restartPolicy: always
 

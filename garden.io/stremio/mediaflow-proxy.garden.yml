@@ -6,25 +6,39 @@ type: container
 
 spec:
   image: docker.io/mhdzumair/mediaflow-proxy
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}
     PGID: ${var.PGID || "988"}
     UMASK: ${var.UMASK || "002"}
     PORT: ${var.MEDIAFLOW_PROXY_PORT || "8888"}
-    API_PASSWORD: ${var.MEDIAFLOW_PROXY_API_PASSWORD}
+    API_PASSWORD_FILE: /run/secrets/mediaflow-proxy-api-password
     ENABLE_STREAMING_PROGRESS: ${var.MEDIAFLOW_PROXY_ENABLE_STREAMING_PROGRESS || "true"}
   ports:
     - name: http
-      containerPort: 8888
-      hostPort: 8888
+      containerPort: ${var.MEDIAFLOW_PROXY_PORT || "8888"}
+      hostPort: ${var.MEDIAFLOW_PROXY_PORT || "8888"}
       hostIp: 127.0.0.1
+  volumes:
+    - name: mediaflow-proxy-api-password
+      containerPath: /run/secrets/mediaflow-proxy-api-password
+      sourcePath: ${var.config-path}/secrets/mediaflow-proxy-api-password.txt
+      readOnly: true
   ingresses:
     - path: /
       port: http
       hostname: mediaflow-proxy.${var.domain}
+    - path: /
+      port: http
+      hostname: mediaflow-proxy.${var.ts-hostname}.${var.domain}
   healthCheck:
     exec:
-      command: [python3, -c, "import socket; s=socket.socket(); s.connect(('127.0.0.1', \"${var.MEDIAFLOW_PROXY_PORT || 8888}\")); print('Healthcheck passed')"]
+      command: [python3, -c, "import socket; s=socket.socket(); s.connect(('127.0.0.1', ${var.MEDIAFLOW_PROXY_PORT || 8888})); print('Healthcheck passed')"]
+    initialDelaySeconds: 10
+    periodSeconds: 60
+    timeoutSeconds: 10
+    failureThreshold: 5
   restartPolicy: always
 

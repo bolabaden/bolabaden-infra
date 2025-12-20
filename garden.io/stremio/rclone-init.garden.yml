@@ -8,6 +8,8 @@ dependencies:
 
 spec:
   image: ghcr.io/coanghel/rclone-docker-automount/rclone-init
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     RCLONE_USERNAME: ""
     RCLONE_PASSWORD: ""
@@ -16,12 +18,17 @@ spec:
   volumes:
     - name: remote-mounts
       containerPath: /mnt/remote
-      hostPath: /mnt/remote
+      sourcePath: /mnt/remote
     - name: mounts-config
       containerPath: /app/mounts.json
       sourcePath: ${var.config-path}/rclone/mounts.json
+      readOnly: true
   healthCheck:
     exec:
       command: [mountpoint, -q, /mnt/remote]
+    initialDelaySeconds: 15
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 2
   restartPolicy: always
 

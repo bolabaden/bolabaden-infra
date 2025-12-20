@@ -10,6 +10,8 @@ dependencies:
 
 spec:
   image: docker.io/mhdzumair/mediafusion
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}
@@ -24,8 +26,8 @@ spec:
     CONTACT_EMAIL: "webmaster@${var.domain}"
     HOST_URL: "https://mediafusion.${var.domain}"
     POSTER_HOST_URL: "https://mediafusion.${var.domain}"
-    SECRET_KEY: c75ac92df70c4383c8d1bb37f65454f9
-    API_PASSWORD: ${var.sudo-password}
+    SECRET_KEY_FILE: /run/secrets/mediafusion-secret-key
+    API_PASSWORD_FILE: /run/secrets/sudo-password
     LOGGING_LEVEL: DEBUG
     LOGO_URL: "https://mediafusion.${var.domain}/static/logo.png"
     IS_PUBLIC_INSTANCE: false
@@ -146,6 +148,15 @@ spec:
       hostIp: 127.0.0.1
     - name: flaresolverr
       containerPort: 9191
+  volumes:
+    - name: mediafusion-secret-key
+      containerPath: /run/secrets/mediafusion-secret-key
+      sourcePath: ${var.config-path}/secrets/mediafusion-secret-key.txt
+      readOnly: true
+    - name: sudo-password
+      containerPath: /run/secrets/sudo-password
+      sourcePath: ${var.config-path}/secrets/sudo-password.txt
+      readOnly: true
   resources:
     limits:
       cpu: 330m
@@ -156,9 +167,15 @@ spec:
     - path: /
       port: http
       hostname: mediafusion.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /health
+    - path: /
       port: http
+      hostname: mediafusion.${var.ts-hostname}.${var.domain}
+  healthCheck:
+    exec:
+      command: [sh, -c, "curl -f http://127.0.0.1:8000/health > /dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 120
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
   restartPolicy: always
 
