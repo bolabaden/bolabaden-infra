@@ -8,6 +8,8 @@ dependencies:
 
 spec:
   image: ghcr.io/gurucomputing/headscale-ui
+  extraHosts:
+    - host.docker.internal:host-gateway
   dns:
     - 1.1.1.1
     - 1.0.0.1
@@ -23,6 +25,21 @@ spec:
       containerPort: 8080
   ingresses:
     - path: /web
+      port: http
+      hostname: headscale.${var.domain}
+    - path: /web
+      port: http
+      hostname: headscale.${var.ts-hostname}.${var.domain}
+    - path: /web/users.html
+      port: http
+      hostname: headscale.${var.domain}
+    - path: /web/groups.html
+      port: http
+      hostname: headscale.${var.domain}
+    - path: /web/devices.html
+      port: http
+      hostname: headscale.${var.domain}
+    - path: /web/settings.html
       port: http
       hostname: headscale.${var.domain}
   restartPolicy: always

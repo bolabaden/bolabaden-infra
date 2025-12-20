@@ -6,24 +6,29 @@ type: container
 
 spec:
   image: docker.io/headscale/headscale
-  env:
-    TZ: ${var.tz}
+  extraHosts:
+    - host.docker.internal:host-gateway
   ports:
     - name: stun
-      containerPort: 3478
+      containerPort: ${var.HEADSCALE_STUN_PORT || "3478"}
     - name: http
-      containerPort: 8081
+      containerPort: ${var.HEADSCALE_HTTP_PORT || "8081"}
     - name: metrics
-      containerPort: 8080
+      containerPort: ${var.HEADSCALE_METRICS_PORT || "8080"}
     - name: grpc
-      containerPort: 9090
+      containerPort: ${var.HEADSCALE_GRPC_PORT || "50443"}
   volumes:
     - name: private-key
       containerPath: /var/lib/headscale/private.key
       sourcePath: ${var.certs-path}/private/${var.domain}.key
+      readOnly: true
     - name: config
       containerPath: /etc/headscale
       sourcePath: ${var.config-path}/headscale/config
+    - name: config-yaml
+      containerPath: /etc/headscale/config.yaml
+      sourcePath: ${var.config-path}/headscale/config.yaml
+      readOnly: true
     - name: lib
       containerPath: /var/lib/headscale
       sourcePath: ${var.config-path}/headscale/lib
@@ -35,7 +40,13 @@ spec:
     - path: /
       port: http
       hostname: headscale.${var.domain}
+    - path: /
+      port: http
+      hostname: headscale.${var.ts-hostname}.${var.domain}
     - path: /metrics
       port: metrics
       hostname: headscale.${var.domain}
+    - path: /metrics
+      port: metrics
+      hostname: headscale.${var.ts-hostname}.${var.domain}
   restartPolicy: always

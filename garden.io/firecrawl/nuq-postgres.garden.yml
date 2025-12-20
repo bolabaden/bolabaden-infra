@@ -18,6 +18,8 @@ dependencies:
 
 spec:
   image: ${actions.build.nuq-postgres.outputs.deploymentImageId}
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     POSTGRES_USER: ${var.FIRECRAWL_POSTGRES_USER || "postgres"}
     POSTGRES_PASSWORD: ${var.FIRECRAWL_POSTGRES_PASSWORD || "postgres"}
@@ -25,12 +27,15 @@ spec:
   ports:
     - name: db
       containerPort: 5432
+  volumes:
+    - name: data
+      containerPath: /var/lib/postgresql/data
+      sourcePath: ${var.config-path}/nuq-postgres/data
   healthCheck:
     exec:
-      command:
-        - pg_isready
-        - -U
-        - ${var.FIRECRAWL_POSTGRES_USER || "postgres"}
-        - -d
-        - ${var.FIRECRAWL_POSTGRES_DB || "postgres"}
-  restartPolicy: Always
+      command: [sh, -c, "pg_isready -U ${var.FIRECRAWL_POSTGRES_USER || "postgres"} -d ${var.FIRECRAWL_POSTGRES_DB || "postgres"}"]
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 5
+  restartPolicy: always
