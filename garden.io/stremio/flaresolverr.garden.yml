@@ -6,6 +6,8 @@ type: container
 
 spec:
   image: ghcr.io/flaresolverr/flaresolverr
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}
@@ -23,7 +25,7 @@ spec:
     PROMETHEUS_PORT: ${var.PROMETHEUS_PORT || "9090"}
   ports:
     - name: http
-      containerPort: 8191
+      containerPort: ${var.FLARESOLVERR_PORT || "8191"}
   resources:
     limits:
       cpu: 600m
@@ -34,8 +36,14 @@ spec:
     - path: /
       port: http
       hostname: flaresolverr.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /health
+    - path: /
       port: http
+      hostname: flaresolverr.${var.ts-hostname}.${var.domain}
+  healthCheck:
+    exec:
+      command: [sh, -c, "curl -f http://127.0.0.1:${var.FLARESOLVERR_PORT || "8191"}/health > /dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 15
+    failureThreshold: 3
   restartPolicy: always

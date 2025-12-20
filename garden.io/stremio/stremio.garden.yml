@@ -18,8 +18,10 @@ spec:
       containerPort: 8080
     - name: streaming-http
       containerPort: 11470
+      hostPort: 11470
     - name: streaming-https
       containerPort: 12470
+      hostPort: 12470
   volumes:
     - name: config
       containerPath: /root/.stremio-server
@@ -34,22 +36,14 @@ spec:
     - path: /
       port: http
       hostname: stremio.${var.domain}
-    - path: /hlsv2
-      port: streaming-http
-      hostname: stremio.${var.domain}
-    - path: /casting
-      port: streaming-http
-      hostname: stremio.${var.domain}
-    - path: /local-addon
-      port: streaming-http
-      hostname: stremio.${var.domain}
-    - path: /proxy
-      port: streaming-http
-      hostname: stremio.${var.domain}
-    - path: /stream
-      port: streaming-http
-      hostname: stremio.${var.domain}
+    - path: /
+      port: http
+      hostname: stremio.${var.ts-hostname}.${var.domain}
   healthCheck:
     exec:
-      command: [sh, -c, "(curl -fs http://127.0.0.1:11470 > /dev/null 2>&1 || curl -fs https://127.0.0.1:12470 > /dev/null 2>&1) || exit 1"]
+      command: [sh, -c, "command -v curl >/dev/null || (apk add --no-cache curl >/dev/null 2>&1 || apt-get update >/dev/null 2>&1 && apt-get install -y curl >/dev/null 2>&1); (curl -fs http://127.0.0.1:11470/ >/dev/null 2>&1 || curl -fsk https://127.0.0.1:12470/ >/dev/null 2>&1) || exit 1"]
+    initialDelaySeconds: 90
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
   restartPolicy: always

@@ -8,6 +8,8 @@ dependencies:
 
 spec:
   image: lscr.io/linuxserver/jackett
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}
@@ -25,19 +27,36 @@ spec:
       sourcePath: ${var.config-path}/jackett/config
     - name: blackhole
       containerPath: /blackhole
-      hostPath: /mnt/remote/blackhole
+      sourcePath: /mnt/remote/blackhole
+    - name: serverconfig
+      containerPath: /defaults/ServerConfig.json
+      sourcePath: ${var.config-path}/jackett/ServerConfig.json
+      readOnly: true
+    - name: indexer-blacklist
+      containerPath: /indexer-blacklist.txt
+      sourcePath: ${var.config-path}/jackett/indexer-blacklist.txt
+      readOnly: true
+    - name: init-script
+      containerPath: /custom-cont-init.d/99-remove-slow-indexers
+      sourcePath: ${var.config-path}/jackett/99-remove-slow-indexers.sh
+      readOnly: true
   resources:
     limits:
       cpu: 1000m
-      memory: 1Gi
+      memory: 1024Mi
     requests:
       memory: 128Mi
   ingresses:
     - path: /
       port: http
       hostname: jackett.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /api/v2.0/indexers/all/results/torznab?t=indexers
+    - path: /
       port: http
+      hostname: jackett.${var.ts-hostname}.${var.domain}
+  healthCheck:
+    exec:
+      command: [sh, -c, "curl -fs http://127.0.0.1:9117/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=${var.JACKETT_API_KEY} > /dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 10
   restartPolicy: always

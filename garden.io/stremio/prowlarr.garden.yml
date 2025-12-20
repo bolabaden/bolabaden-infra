@@ -6,6 +6,8 @@ type: container
 
 spec:
   image: lscr.io/linuxserver/prowlarr
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}
@@ -29,12 +31,15 @@ spec:
     - path: /
       port: http
       hostname: prowlarr.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /api/v1/system/status
+    - path: /
       port: http
-      httpHeaders:
-        - name: Authorization
-          value: Bearer ${var.PROWLARR_API_KEY}
+      hostname: prowlarr.${var.ts-hostname}.${var.domain}
+  healthCheck:
+    exec:
+      command: [sh, -c, "curl -fs -H \"Authorization: Bearer ${var.PROWLARR_API_KEY}\" http://127.0.0.1:9696/api/v1/system/status || exit 1"]
+    initialDelaySeconds: 120
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
   restartPolicy: always
 
