@@ -119,9 +119,13 @@ environments:
 
 providers:
   - name: local-kubernetes
-    environments: [default]
+    environments: [k8s]
     buildMode: cluster-buildkit
     defaultHostname: ${var.base-hostname}
     copySecrets:
       - name: docker-config
         namespace: default
+  - name: local-docker
+    environments: [default]
+    buildMode: local-docker
+    defaultHostname: ${var.base-hostname}
