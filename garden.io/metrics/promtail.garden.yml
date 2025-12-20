@@ -9,6 +9,8 @@ dependencies:
 
 spec:
   image: docker.io/grafana/promtail
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     DOCKER_HOST: tcp://dockerproxy-ro:9323
   ports:

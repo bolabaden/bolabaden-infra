@@ -9,6 +9,8 @@ dependencies:
 
 spec:
   image: docker.io/prom/prometheus
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     PROMETHEUS_RETENTION_TIME: ${var.PROMETHEUS_RETENTION_TIME || "15d"}
     PROMETHEUS_RETENTION_SIZE: ${var.PROMETHEUS_RETENTION_SIZE || "0"}
@@ -33,36 +35,29 @@ spec:
     - '--config.file=/etc/prometheus/prometheus.yml'
     - '--log.format=${var.PROMETHEUS_LOG_FORMAT || "logfmt"}'
     - '--log.level=${var.PROMETHEUS_LOG_LEVEL || "info"}'
-    - '--query.lookback-delta=${var.PROMETHEUS_QUERY_LOOKBACK_DELTA || "5m"}'
     - '--query.max-concurrency=${var.PROMETHEUS_QUERY_MAX_CONCURRENCY || "20"}'
     - '--query.max-samples=${var.PROMETHEUS_QUERY_MAX_SAMPLES || "50000000"}'
     - '--query.timeout=${var.PROMETHEUS_QUERY_TIMEOUT || "2m"}'
-    - '--rules.alert.for-grace-period=${var.PROMETHEUS_RULES_ALERT_FOR_GRACE_PERIOD || "10m"}'
-    - '--rules.alert.for-outage-tolerance=${var.PROMETHEUS_RULES_ALERT_FOR_OUTAGE_TOLERANCE || "1h"}'
-    - '--rules.alert.resend-delay=${var.PROMETHEUS_RULES_ALERT_RESEND_DELAY || "1m"}'
-    - '--storage.tsdb.max-block-duration=${var.PROMETHEUS_STORAGE_TSDB_MAX_BLOCK_DURATION || "36h"}'
-    - '--storage.tsdb.min-block-duration=${var.PROMETHEUS_STORAGE_TSDB_MIN_BLOCK_DURATION || "2h"}'
-    - '--storage.tsdb.no-lockfile=${var.PROMETHEUS_STORAGE_TSDB_NO_LOCKFILE || "false"}'
     - '--storage.tsdb.path=/prometheus'
     - '--storage.tsdb.retention.size=${var.PROMETHEUS_RETENTION_SIZE || "0"}'
     - '--storage.tsdb.retention.time=${var.PROMETHEUS_RETENTION_TIME || "15d"}'
-    - '--storage.tsdb.wal-compression=${var.PROMETHEUS_STORAGE_TSDB_WAL_COMPRESSION || "true"}'
-    - '--web.console.libraries=/etc/prometheus/console_libraries'
-    - '--web.console.templates=/etc/prometheus/consoles'
-    - '--web.enable-lifecycle=${var.PROMETHEUS_WEB_ENABLE_LIFECYCLE || "false"}'
-    - '--web.external-url=${var.PROMETHEUS_WEB_EXTERNAL_URL || ""}'
-    - '--web.listen-address=0.0.0.0:9090'
+    - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+    - '--web.console.templates=/usr/share/prometheus/consoles'
+    - '--web.enable-admin-api'
+    - '--web.enable-lifecycle'
     - '--web.max-connections=${var.PROMETHEUS_WEB_MAX_CONNECTIONS || "512"}'
-    - '--web.page-title=${var.PROMETHEUS_WEB_PAGE_TITLE || "Prometheus Time Series Collection and Processing Server"}'
-    - '--web.read-timeout=${var.PROMETHEUS_WEB_READ_TIMEOUT || "5m"}'
-    - '--web.route-prefix=/'
-    - '--web.user-assets=${var.PROMETHEUS_WEB_USER_ASSETS || ""}'
   ingresses:
     - path: /
       port: http
       hostname: prometheus.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /-/healthy
+    - path: /
       port: http
+      hostname: prometheus.${var.ts-hostname}.${var.domain}
+  healthCheck:
+    exec:
+      command: [sh, -c, "wget --no-verbose --tries=1 --spider http://127.0.0.1:9090/-/healthy || exit 1"]
+    initialDelaySeconds: 40
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
   restartPolicy: always
