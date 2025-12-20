@@ -6,8 +6,8 @@ type: container
 
 spec:
   image: docker.io/portainer/portainer-ce
-  env:
-    TZ: ${var.tz}
+  extraHosts:
+    - host.docker.internal:host-gateway
   ports:
     - name: api
       containerPort: 8000

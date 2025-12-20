@@ -6,13 +6,14 @@ type: container
 
 spec:
   image: docker.io/searxng/searxng
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
-    TZ: ${var.tz}
-    SEARXNG_BASE_URL: http://searxng:${var.SEARXNG_PORT || "8080"}
+    SEARXNG_BASE_URL: ${var.SEARXNG_INTERNAL_URL || "http://searxng:${var.SEARXNG_PORT || "8080"}"}
     SEARXNG_SECRET: ${var.SEARXNG_SECRET}
   ports:
     - name: http
-      containerPort: 8080
+      containerPort: ${var.SEARXNG_PORT || "8080"}
   volumes:
     - name: config
       containerPath: /etc/searxng
@@ -25,7 +26,10 @@ spec:
       port: http
       hostname: searxng.${var.domain}
   healthCheck:
-    httpGet:
-      path: /
-      port: http
+    exec:
+      command: [sh, -c, "wget --no-verbose --tries=1 --spider http://127.0.0.1:${var.SEARXNG_PORT || "8080"}/ || exit 1"]
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
   restartPolicy: always
