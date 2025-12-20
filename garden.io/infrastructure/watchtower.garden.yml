@@ -6,6 +6,8 @@ type: container
 
 spec:
   image: docker.io/containrrr/watchtower
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
     DOCKER_HOST: ${var.DOCKER_HOST || "unix:///var/run/docker.sock"}
@@ -69,7 +71,7 @@ spec:
       sourcePath: ${var.docker-socket}
     - name: docker-config
       containerPath: /config.json
-      sourcePath: ~/.docker/config.json
+      sourcePath: ${var.HOME || "~"}/.docker/config.json
       readOnly: true
   restartPolicy: always
 
