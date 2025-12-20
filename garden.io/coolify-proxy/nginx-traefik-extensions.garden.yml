@@ -6,6 +6,8 @@ type: container
 
 spec:
   image: docker.io/nginx:alpine
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
     NGINX_ACCESS_LOG: /dev/stdout
@@ -15,9 +17,14 @@ spec:
     - name: http
       containerPort: 80
   volumes:
+    - name: nginx-config
+      containerPath: /etc/nginx/nginx.conf
+      sourcePath: ${var.config-path}/traefik/nginx-middlewares/nginx.conf
+      readOnly: true
     - name: auth-config
       containerPath: /etc/nginx/auth
       sourcePath: ${var.config-path}/traefik/nginx-middlewares/auth
+      readOnly: true
   resources:
     limits:
       cpu: 1000m
@@ -28,4 +35,8 @@ spec:
     httpGet:
       path: /health
       port: http
+    initialDelaySeconds: 20
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
   restartPolicy: always

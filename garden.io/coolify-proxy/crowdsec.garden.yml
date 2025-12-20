@@ -5,18 +5,20 @@ description: CrowdSec security engine
 type: container
 
 spec:
-  image: docker.io/crowdsecurity/crowdsec
+  image: docker.io/crowdsecurity/crowdsec:latest
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     UID: ${var.PUID || "1001"}
     GID: ${var.PGID || "999"}
     COLLECTIONS: crowdsecurity/appsec-crs crowdsecurity/appsec-generic-rules crowdsecurity/appsec-virtual-patching crowdsecurity/whitelist-good-actors crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/linux crowdsecurity/sshd
   ports:
     - name: lapi
-      containerPort: 8080
+      containerPort: ${var.CROWDSEC_LAPI_PORT || "8080"}
     - name: appsec
-      containerPort: 7422
+      containerPort: ${var.CROWDSEC_APPSEC_PORT || "7422"}
     - name: metrics
-      containerPort: 6060
+      containerPort: ${var.PROMETHEUS_PORT || "6060"}
   volumes:
     - name: data
       containerPath: /var/lib/crowdsec/data
@@ -30,4 +32,20 @@ spec:
     - name: logs
       containerPath: /var/log/traefik
       sourcePath: ${var.config-path}/traefik/logs
+      readOnly: true
+    - name: auth-log
+      containerPath: /var/log/auth.log
+      sourcePath: ${var.config-path}/traefik/crowdsec/var/log/auth.log
+      readOnly: true
+    - name: syslog
+      containerPath: /var/log/syslog
+      sourcePath: ${var.config-path}/traefik/crowdsec/var/log/syslog
+      readOnly: true
+  healthCheck:
+    exec:
+      command: [cscli, version]
+    initialDelaySeconds: 10
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
   restartPolicy: always
