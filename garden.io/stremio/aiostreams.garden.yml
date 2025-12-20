@@ -5,7 +5,7 @@ description: AIOStreams addon for Stremio
 type: container
 
 spec:
-  image: ghcr.io/viren070/aiostreams
+  image: ghcr.io/viren070/aiostreams:v2.12.2
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}
@@ -19,6 +19,16 @@ spec:
     BASE_URL: https://aiostreams.${var.domain}
     SECRET_KEY: ${var.AIOSTREAMS_SECRET_KEY}
     ADDON_PASSWORD: ${var.AIOSTREAMS_ADDON_PASSWORD}
+    TMDB_ACCESS_TOKEN_FILE: /run/secrets/tmdb-access-token
+    TMDB_API_KEY_FILE: /run/secrets/tmdb-api-key
+    DEFAULT_REALDEBRID_API_KEY_FILE: /run/secrets/realdebrid-api-key
+    DEFAULT_ALLDEBRID_API_KEY_FILE: /run/secrets/alldebrid-api-key
+    DEFAULT_PREMIUMIZE_API_KEY_FILE: /run/secrets/premiumize-api-key
+    DEFAULT_DEBRIDLINK_API_KEY_FILE: /run/secrets/debridlink-api-key
+    DEFAULT_TORBOX_API_KEY_FILE: /run/secrets/torbox-api-key
+    DEFAULT_OFFCLOUD_API_KEY_FILE: /run/secrets/offcloud-api-key
+    DEFAULT_OFFCLOUD_PASSWORD_FILE: /run/secrets/offcloud-password
+    MEDIAFUSION_API_PASSWORD_FILE: /run/secrets/sudo-password
     DATABASE_URI: sqlite://./data/db.sqlite
     
     # Built-in addon configuration
@@ -32,19 +42,10 @@ spec:
     BUILTIN_PROWLARR_INDEXERS_CACHE_TTL: 1209600
     
     # TMDB and Trakt API
-    TMDB_ACCESS_TOKEN: ${var.TMDB_ACCESS_TOKEN}
-    TMDB_API_KEY: ${var.TMDB_API_KEY}
     TRAKT_CLIENT_ID: 
     
     # Debrid service API keys
-    DEFAULT_REALDEBRID_API_KEY: ${var.REALDEBRID_API_KEY}
-    DEFAULT_ALLDEBRID_API_KEY: ${var.ALLDEBRID_API_KEY}
-    DEFAULT_PREMIUMIZE_API_KEY: ${var.PREMIUMIZE_API_KEY}
-    DEFAULT_DEBRIDLINK_API_KEY: ${var.DEBRIDLINK_API_KEY}
-    DEFAULT_TORBOX_API_KEY: ${var.TORBOX_API_KEY}
-    DEFAULT_OFFCLOUD_API_KEY: ${var.OFFCLOUD_API_KEY}
     DEFAULT_OFFCLOUD_EMAIL: ${var.OFFCLOUD_EMAIL}
-    DEFAULT_OFFCLOUD_PASSWORD: ${var.OFFCLOUD_PASSWORD}
     DEFAULT_PUTIO_CLIENT_ID: ${var.PUTIO_CLIENT_ID}
     DEFAULT_PUTIO_CLIENT_SECRET: ${var.PUTIO_CLIENT_SECRET}
     DEFAULT_EASYNEWS_USERNAME: ${var.EASYNEWS_USERNAME || ""}
@@ -138,23 +139,73 @@ spec:
     
     # Feature control
     DISABLE_SELF_SCRAPING: true
-    MEDIAFUSION_API_PASSWORD: ${var.sudo-password}
   ports:
     - name: http
-      containerPort: 3000
+      containerPort: ${var.AIOSTREAMS_PORT || "3000"}
   volumes:
     - name: data
       containerPath: /app/data
       sourcePath: ${var.config-path}/stremio/addons/aiostreams/data
+    - name: aiostreams-secret-key
+      containerPath: /run/secrets/aiostreams-secret-key
+      sourcePath: ${var.config-path}/secrets/aiostreams-secret-key.txt
+      readOnly: true
+    - name: aiostreams-addon-password
+      containerPath: /run/secrets/aiostreams-addon-password
+      sourcePath: ${var.config-path}/secrets/aiostreams-addon-password.txt
+      readOnly: true
+    - name: tmdb-access-token
+      containerPath: /run/secrets/tmdb-access-token
+      sourcePath: ${var.config-path}/secrets/tmdb-access-token.txt
+      readOnly: true
+    - name: tmdb-api-key
+      containerPath: /run/secrets/tmdb-api-key
+      sourcePath: ${var.config-path}/secrets/tmdb-api-key.txt
+      readOnly: true
+    - name: realdebrid-api-key
+      containerPath: /run/secrets/realdebrid-api-key
+      sourcePath: ${var.config-path}/secrets/realdebrid-api-key.txt
+      readOnly: true
+    - name: alldebrid-api-key
+      containerPath: /run/secrets/alldebrid-api-key
+      sourcePath: ${var.config-path}/secrets/alldebrid-api-key.txt
+      readOnly: true
+    - name: premiumize-api-key
+      containerPath: /run/secrets/premiumize-api-key
+      sourcePath: ${var.config-path}/secrets/premiumize-api-key.txt
+      readOnly: true
+    - name: debridlink-api-key
+      containerPath: /run/secrets/debridlink-api-key
+      sourcePath: ${var.config-path}/secrets/debridlink-api-key.txt
+      readOnly: true
+    - name: torbox-api-key
+      containerPath: /run/secrets/torbox-api-key
+      sourcePath: ${var.config-path}/secrets/torbox-api-key.txt
+      readOnly: true
+    - name: offcloud-api-key
+      containerPath: /run/secrets/offcloud-api-key
+      sourcePath: ${var.config-path}/secrets/offcloud-api-key.txt
+      readOnly: true
+    - name: offcloud-password
+      containerPath: /run/secrets/offcloud-password
+      sourcePath: ${var.config-path}/secrets/offcloud-password.txt
+      readOnly: true
+    - name: sudo-password
+      containerPath: /run/secrets/sudo-password
+      sourcePath: ${var.config-path}/secrets/sudo-password.txt
+      readOnly: true
   resources:
     limits:
       cpu: 1000m
-      memory: 1Gi
+      memory: 1024Mi
     requests:
       memory: 50Mi
   ingresses:
     - path: /
       port: http
       hostname: aiostreams.${var.domain}
+    - path: /
+      port: http
+      hostname: aiostreams.${var.ts-hostname}.${var.domain}
   restartPolicy: always
 
