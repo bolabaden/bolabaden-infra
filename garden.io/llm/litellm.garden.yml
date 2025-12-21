@@ -134,7 +134,13 @@ spec:
       containerPath: /run/secrets/glama-api-key
       sourcePath: ${var.config-path}/secrets/glama-api-key.txt
       readOnly: true
-  command: [--config, /app/config/litellm_config.yaml, --port, ${var.LITELLM_PORT || "4000"}, --host, 0.0.0.0]
+  command:
+    - --config
+    - /app/config/litellm_config.yaml
+    - --port
+    - ${var.LITELLM_PORT || "4000"}
+    - --host
+    - 0.0.0.0
   ingresses:
     - path: /
       port: http
