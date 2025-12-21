@@ -38,7 +38,10 @@ spec:
       hostname: ${var.ts-hostname}.${var.domain}
   healthCheck:
     exec:
-      command: [sh, -c, "wget -qO- http://127.0.0.1:${var.PORT || "3000"} > /dev/null 2>&1 || exit 1"]
+      command:
+      - sh
+      - -c
+      - 'wget -qO- http://127.0.0.1:${var.PORT || "3000"} > /dev/null 2>&1 || exit 1'
     initialDelaySeconds: 30
     timeoutSeconds: 10
   restartPolicy: always

@@ -96,7 +96,10 @@ spec:
       hostname: comet.${var.ts-hostname}.${var.domain}
   healthCheck:
     exec:
-      command: [sh, -c, "wget -qO- http://127.0.0.1:${var.COMET_PORT || "2020"}/health > /dev/null 2>&1 || exit 1"]
+      command:
+      - sh
+      - -c
+      - 'wget -qO- http://127.0.0.1:${var.COMET_PORT || "2020"}/health > /dev/null 2>&1 || exit 1'
     initialDelaySeconds: 15
     periodSeconds: 60
     timeoutSeconds: 5
