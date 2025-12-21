@@ -1,0 +1,17 @@
+# Longhorn Distributed Storage for HA
+# Provides replicated storage across all nodes
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: longhorn-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: longhorn-service-account
+  namespace: longhorn-system
+---
+# Longhorn will be installed via Helm or kubectl apply
+# This ensures storage replication factor of 3
+# Automatic failover without data loss

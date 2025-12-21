@@ -13,9 +13,9 @@ NODES=(
 
 prepare_node() {
   local node=$1
-  echo "=== Preparing $node ==="
+  echo "=== Preparing ${node} ==="
   
-  ssh -o StrictHostKeyChecking=no "$node" bash << 'REMOTE_SCRIPT'
+  ssh -o StrictHostKeyChecking=no "${node}" bash << 'REMOTE_SCRIPT'
     set -euo pipefail
     
     # Detect OS
@@ -71,15 +71,15 @@ MODULES
     sudo modprobe overlay
     sudo modprobe br_netfilter
     
-    echo "✅ $node prepared"
+    echo "✅ ${node} prepared"
 REMOTE_SCRIPT
 }
 
 for node in "${NODES[@]}"; do
-  if timeout 10 ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no "$node" "echo 'OK'" &>/dev/null; then
-    prepare_node "$node" || echo "⚠️  Failed to prepare $node"
+  if timeout 10 ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no "${node}" "echo 'OK'" &>/dev/null; then
+    prepare_node "${node}" || echo "⚠️  Failed to prepare ${node}"
   else
-    echo "⚠️  Cannot access $node, skipping"
+    echo "⚠️  Cannot access ${node}, skipping"
   fi
 done
 

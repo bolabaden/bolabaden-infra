@@ -1,0 +1,66 @@
+# High Availability Service Template
+# Use this template for all services to ensure zero SPOF
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: SERVICE_NAME
+spec:
+  replicas: 3  # Minimum 3 for HA
+  selector:
+    matchLabels:
+      app: SERVICE_NAME
+  template:
+    metadata:
+      labels:
+        app: SERVICE_NAME
+    spec:
+      # Anti-affinity: spread pods across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - SERVICE_NAME
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: SERVICE_NAME
+        image: SERVICE_IMAGE
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: SERVICE_NAME-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: SERVICE_NAME

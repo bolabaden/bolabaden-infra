@@ -1,0 +1,33 @@
+# Garden.io HA Service Configuration
+# All services deployed with HA configuration
+
+kind: Deploy
+apiVersion: garden.io/v0
+name: ha-service-template
+description: High Availability service template
+type: container
+
+spec:
+  replicas: 3  # Minimum 3 for HA
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # Zero downtime
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - ${service-name}
+          topologyKey: kubernetes.io/hostname
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

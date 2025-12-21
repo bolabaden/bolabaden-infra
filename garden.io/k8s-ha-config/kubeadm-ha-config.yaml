@@ -1,0 +1,40 @@
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+kubernetesVersion: v1.27.3
+controlPlaneEndpoint: "micklethefickle.bolabaden.org:6443"
+etcd:
+  external:
+    endpoints:
+      - "https://micklethefickle.bolabaden.org:2379"
+      - "https://cloudserver1.bolabaden.org:2379"
+      - "https://cloudserver2.bolabaden.org:2379"
+    caFile: /etc/kubernetes/pki/etcd/ca.crt
+    certFile: /etc/kubernetes/pki/apiserver-etcd-client.crt
+    keyFile: /etc/kubernetes/pki/apiserver-etcd-client.key
+networking:
+  podSubnet: "10.244.0.0/16"
+  serviceSubnet: "10.96.0.0/12"
+apiServer:
+  certSANs:
+    - "micklethefickle.bolabaden.org"
+    - "cloudserver1.bolabaden.org"
+    - "cloudserver2.bolabaden.org"
+    - "cloudserver3.bolabaden.org"
+    - "blackboar.bolabaden.org"
+    - "127.0.0.1"
+    - "10.96.0.1"
+    - "10.16.1.78"
+    - "10.16.1.79"
+    - "10.16.1.80"
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: "10.16.1.78"
+  bindPort: 6443
+nodeRegistration:
+  criSocket: unix:///var/run/containerd/containerd.sock
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+cgroupDriver: systemd
