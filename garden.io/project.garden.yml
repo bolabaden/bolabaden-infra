@@ -127,6 +127,21 @@ providers:
     copySecrets:
       - name: docker-config
         namespace: default
+    context: ${var.k8s-context || "kind-my-media-stack"}
+    namespace: ${var.k8s-namespace || "my-media-stack-default"}
+    setupIngressController: true
+    ingressClass: nginx
+    createSystemNamespace: true
+  - name: ha-kubernetes
+    environments: [ha-k8s]
+    buildMode: cluster-buildkit
+    defaultHostname: ${var.base-hostname}
+    context: ${var.ha-k8s-context || "ha-cluster"}
+    namespace: ${var.ha-k8s-namespace || "my-media-stack-ha"}
+    setupIngressController: true
+    ingressClass: nginx
+    createSystemNamespace: true
+    kubeconfig: ${var.ha-k8s-kubeconfig || "~/.kube/config"}
   - name: local-docker
     environments: [default]
     buildMode: local-docker
