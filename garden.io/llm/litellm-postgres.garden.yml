@@ -21,7 +21,10 @@ spec:
       sourcePath: ${var.config-path}/litellm/pgdata
   healthCheck:
     exec:
-      command: [sh, -c, "pg_isready -h localhost -U ${var.LITELLM_POSTGRES_USER || "litellm"} -d ${var.LITELLM_POSTGRES_DB || "litellm"}"]
+      command:
+        - sh
+        - -c
+        - 'pg_isready -h localhost -U ${var.LITELLM_POSTGRES_USER || "litellm"} -d ${var.LITELLM_POSTGRES_DB || "litellm"}'
     initialDelaySeconds: 5
     periodSeconds: 5
     timeoutSeconds: 5
