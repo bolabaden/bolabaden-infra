@@ -41,19 +41,6 @@ environments:
         antiAffinity: true
         podDisruptionBudget:
           minAvailable: 1
-      base-hostname: my-media-stack.local.demo.garden
-      domain: ${var.base-hostname}
-      ts-hostname: ${local.hostname}
-      config-path: ./volumes
-      certs-path: ./certs
-      docker-socket: /var/run/docker.sock
-      root-path: .
-      src-path: ./src
-      tz: America/Chicago
-      stack-name: my-media-stack
-      PUID: 1001
-      PGID: 999
-      UMASK: "002"
       
       # Common system variables
       sudo-password: ${env.SUDO_PASSWORD}
