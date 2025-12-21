@@ -4,12 +4,8 @@ name: my-media-stack
 
 environments:
   - name: default
-    providers:
-      - name: local-docker
     variables:
   - name: k8s
-    providers:
-      - name: local-kubernetes
     variables:
       base-hostname: my-media-stack.local.demo.garden
       domain: ${var.base-hostname}
