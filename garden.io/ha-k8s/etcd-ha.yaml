@@ -1,0 +1,32 @@
+# etcd High Availability Configuration
+# External etcd cluster for HA control plane
+
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: etcd-client
+  namespace: kube-system
+subsets:
+  - addresses:
+      - ip: <PRIMARY_NODE_IP>
+      - ip: <FALLBACK_NODE1_IP>
+      - ip: <FALLBACK_NODE2_IP>
+    ports:
+      - port: 2379
+        name: client
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd-client
+  namespace: kube-system
+spec:
+  type: ClusterIP
+  ports:
+    - port: 2379
+      targetPort: 2379
+      protocol: TCP
+---
+# etcd cluster configuration for external setup
+# This should be configured on each etcd node
+# /etc/etcd/etcd.conf
