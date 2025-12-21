@@ -147,7 +147,10 @@ spec:
       hostname: litellm.${var.domain}
   healthCheck:
     exec:
-      command: [sh, -c, "wget -qO- http://127.0.0.1:${var.LITELLM_PORT || "4000"}/health/liveliness"]
+      command:
+        - sh
+        - -c
+        - 'wget -qO- http://127.0.0.1:${var.LITELLM_PORT || "4000"}/health/liveliness'
     initialDelaySeconds: 30
     periodSeconds: 15
     timeoutSeconds: 15

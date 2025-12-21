@@ -26,11 +26,6 @@ spec:
     GF_SERVER_SERVE_FROM_SUB_PATH: ${var.GF_SERVE_FROM_SUB_PATH || "false"}
     GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ${var.GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS || "victoriametrics-datasource"}
     GF_PLUGINS_PREINSTALL: grafana-piechart-panel,grafana-worldmap-panel,natel-discrete-panel,flant-statusmap-panel,vonage-status-panel,michaeldmoore-multistat-panel,grafana-polystat-panel,marcusolsson-dynamictext-panel,yesoreyeram-boomtable-panel,grafana-clock-panel,grafana-simple-json-datasource,btplc-status-dot-panel,camptocamp-prometheus-alertmanager-datasource
-    GF_SERVER_DOMAIN: ${var.GF_FQDN || "grafana.${var.domain}"}
-    GF_SERVER_ROOT_URL: ${var.GF_URL || "https://grafana.${var.domain}"}
-    GF_SERVER_SERVE_FROM_SUB_PATH: ${var.GF_SERVE_FROM_SUB_PATH || "false"}
-    GF_FEATURE_TOGGLES_ENABLE: ${var.GF_FEATURE_TOGGLES_ENABLE || ""}
-    GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ${var.GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS || "victoriametrics-datasource"}
     GF_SECURITY_COOKIE_SECURE: ${var.GF_SECURITY_COOKIE_SECURE || "true"}
     GF_SECURITY_COOKIE_SAMESITE: ${var.GF_SECURITY_COOKIE_SAMESITE || "lax"}
     GF_SECURITY_CONTENT_TYPE_PROTECTION: ${var.GF_SECURITY_CONTENT_TYPE_PROTECTION || "true"}
