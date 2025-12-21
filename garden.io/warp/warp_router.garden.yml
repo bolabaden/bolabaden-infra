@@ -5,6 +5,7 @@ description: WARP router for NAT routing setup
 type: container
 
 spec:
+  replicas: 3
   dockerfile: |
     FROM alpine
     RUN apk update && apk add \
@@ -22,6 +23,7 @@ dependencies:
   - deploy.warp-nat-gateway
 
 spec:
+  replicas: 3
   image: ${actions.build.warp-router.outputs.deploymentImageId}
   privileged: true
   networkMode: host

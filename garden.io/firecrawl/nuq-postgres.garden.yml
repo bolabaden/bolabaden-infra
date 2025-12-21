@@ -17,6 +17,7 @@ dependencies:
   - build.nuq-postgres
 
 spec:
+  replicas: 3
   image: ${actions.build.nuq-postgres.outputs.deploymentImageId}
   extraHosts:
     - host.docker.internal:host-gateway

@@ -5,6 +5,7 @@ description: TinyAuth authentication service
 type: container
 
 spec:
+  replicas: 3
   image: ghcr.io/steveiliop56/tinyauth:latest
   extraHosts:
     - host.docker.internal:host-gateway

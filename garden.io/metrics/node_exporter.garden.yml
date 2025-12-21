@@ -5,6 +5,7 @@ description: Node Exporter for system metrics
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/prom/node-exporter
   env:
     DBUS_SESSION_BUS_ADDRESS: unix:path=/var/run/dbus/system_bus_socket

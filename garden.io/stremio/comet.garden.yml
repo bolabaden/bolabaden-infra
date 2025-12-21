@@ -5,6 +5,7 @@ description: Comet Stremio addon for torrent indexing
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/g0ldyy/comet
   extraHosts:
     - host.docker.internal:host-gateway

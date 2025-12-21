@@ -5,6 +5,7 @@ description: Nginx Authentication Middleware for Traefik
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/nginx:alpine
   extraHosts:
     - host.docker.internal:host-gateway

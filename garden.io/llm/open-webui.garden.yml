@@ -8,6 +8,7 @@ dependencies:
   - deploy.litellm
 
 spec:
+  replicas: 3
   image: ghcr.io/open-webui/open-webui:main
   extraHosts:
     - host.docker.internal:host-gateway

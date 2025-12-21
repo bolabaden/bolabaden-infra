@@ -7,6 +7,7 @@ dependencies:
   - deploy.dockerproxy-ro
 
 spec:
+  replicas: 3
   image: ghcr.io/gethomepage/homepage
   env:
     DOCKER_HOST: tcp://dockerproxy-ro:2375

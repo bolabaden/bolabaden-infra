@@ -20,6 +20,7 @@ dependencies:
   - deploy.nuq-postgres
 
 spec:
+  replicas: 3
   image: ${actions.build.firecrawl.outputs.deploymentImageId}
   extraHosts:
     - host.docker.internal:host-gateway

@@ -5,6 +5,7 @@ description: Stremio streaming server
 type: container
 
 spec:
+  replicas: 3
   image: ghcr.io/tsaridas/stremio-docker:main
   env:
     IPADDRESS: 127.0.0.1

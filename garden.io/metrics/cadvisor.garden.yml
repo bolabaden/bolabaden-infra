@@ -5,6 +5,7 @@ description: cAdvisor for container metrics
 type: container
 
 spec:
+  replicas: 3
   image: gcr.io/cadvisor/cadvisor
   privileged: true
   ports:

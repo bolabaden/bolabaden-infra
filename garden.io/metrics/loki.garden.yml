@@ -5,6 +5,7 @@ description: Loki log aggregation system
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/grafana/loki
   ports:
     - name: http

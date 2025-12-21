@@ -8,6 +8,7 @@ dependencies:
   - deploy.redis
 
 spec:
+  replicas: 3
   image: ghcr.io/goauthentik/server:${var.AUTHENTIK_TAG || "2025.6.4"}
   env:
     AUTHENTIK_REDIS__HOST: redis

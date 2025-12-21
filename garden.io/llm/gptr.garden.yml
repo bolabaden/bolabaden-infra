@@ -5,6 +5,7 @@ description: AI Research Wizard full-stack application
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/bolabaden/ai-researchwizard-aio-fullstack:master
   extraHosts:
     - host.docker.internal:host-gateway

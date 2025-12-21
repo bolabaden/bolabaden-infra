@@ -16,6 +16,7 @@ dependencies:
   - build.logrotate-traefik
 
 spec:
+  replicas: 3
   image: ${actions.build.logrotate-traefik.outputs.deploymentImageId}
   networkMode: none
   env:

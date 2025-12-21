@@ -5,6 +5,7 @@ description: Headscale server for Tailscale
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/headscale/headscale
   extraHosts:
     - host.docker.internal:host-gateway

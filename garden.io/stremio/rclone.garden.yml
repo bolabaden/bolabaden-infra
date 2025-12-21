@@ -5,6 +5,7 @@ description: Rclone cloud storage mount service
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/rclone/rclone:1.71
   extraHosts:
     - host.docker.internal:host-gateway

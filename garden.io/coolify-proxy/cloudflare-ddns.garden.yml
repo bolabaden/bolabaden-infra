@@ -5,6 +5,7 @@ description: Cloudflare DDNS service for dynamic DNS updates
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/favonia/cloudflare-ddns:1
   networkMode: host
   readOnly: true

@@ -5,6 +5,7 @@ description: IP checker service using WARP network
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/alpine
   command:
     - /bin/sh

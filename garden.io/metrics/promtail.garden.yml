@@ -8,6 +8,7 @@ dependencies:
   - deploy.dockerproxy-ro
 
 spec:
+  replicas: 3
   image: docker.io/grafana/promtail
   extraHosts:
     - host.docker.internal:host-gateway

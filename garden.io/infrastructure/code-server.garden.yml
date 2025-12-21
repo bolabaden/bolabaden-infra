@@ -5,6 +5,7 @@ description: VS Code server for browser-based development
 type: container
 
 spec:
+  replicas: 3
   image: lscr.io/linuxserver/code-server
   extraHosts:
     - host.docker.internal:host-gateway

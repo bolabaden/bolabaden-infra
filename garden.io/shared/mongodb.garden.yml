@@ -5,6 +5,7 @@ description: MongoDB database
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/mongo
   env:
     TZ: ${var.tz}

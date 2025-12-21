@@ -146,3 +146,11 @@ providers:
     environments: [default]
     buildMode: local-docker
     defaultHostname: ${var.base-hostname}
+
+# High Availability Configuration
+ha:
+  enabled: true
+  minReplicas: 3
+  antiAffinity: true
+  podDisruptionBudget:
+    minAvailable: 1

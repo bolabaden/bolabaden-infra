@@ -5,6 +5,7 @@ description: Initialize warp-nat-net network
 type: container
 
 spec:
+  replicas: 3
   image: docker:cli
   hostNetwork: true
   volumes:

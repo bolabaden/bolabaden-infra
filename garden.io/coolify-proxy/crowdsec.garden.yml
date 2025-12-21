@@ -5,6 +5,7 @@ description: CrowdSec security engine
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/crowdsecurity/crowdsec:latest
   extraHosts:
     - host.docker.internal:host-gateway

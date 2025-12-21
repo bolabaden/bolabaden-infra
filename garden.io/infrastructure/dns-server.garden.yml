@@ -5,6 +5,7 @@ description: Technitium DNS Server
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/technitium/dns-server
   extraHosts:
     - host.docker.internal:host-gateway

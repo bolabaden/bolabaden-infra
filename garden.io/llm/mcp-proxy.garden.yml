@@ -5,6 +5,7 @@ description: MCP Proxy for proxying MCP servers
 type: container
 
 spec:
+  replicas: 3
   image: ghcr.io/tbxark/mcp-proxy
   extraHosts:
     - host.docker.internal:host-gateway

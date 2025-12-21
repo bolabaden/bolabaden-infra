@@ -16,6 +16,7 @@ dependencies:
   - build.bolabaden-nextjs
 
 spec:
+  replicas: 3
   image: ${actions.build.bolabaden-nextjs.outputs.deploymentImageId}
   env:
     TZ: ${var.tz}

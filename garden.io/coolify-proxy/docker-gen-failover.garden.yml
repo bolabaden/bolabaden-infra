@@ -9,6 +9,7 @@ dependencies:
   - deploy.dockerproxy-rw
 
 spec:
+  replicas: 3
   image: docker.io/nginxproxy/docker-gen
   volumes:
     - name: dynamic

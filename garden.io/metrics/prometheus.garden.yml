@@ -8,6 +8,7 @@ dependencies:
   - deploy.victoriametrics
 
 spec:
+  replicas: 3
   image: docker.io/prom/prometheus
   extraHosts:
     - host.docker.internal:host-gateway

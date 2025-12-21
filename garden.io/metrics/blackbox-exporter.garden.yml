@@ -5,6 +5,7 @@ description: Blackbox Exporter for endpoint monitoring
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/prom/blackbox-exporter
   extraHosts:
     - host.docker.internal:host-gateway

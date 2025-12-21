@@ -5,6 +5,7 @@ description: PostgreSQL database for Authentik
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/postgres:16.3-alpine
   env:
     POSTGRES_PASSWORD: authentik

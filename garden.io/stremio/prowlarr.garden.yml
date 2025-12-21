@@ -5,6 +5,7 @@ description: Prowlarr indexer proxy and manager
 type: container
 
 spec:
+  replicas: 3
   image: lscr.io/linuxserver/prowlarr
   extraHosts:
     - host.docker.internal:host-gateway

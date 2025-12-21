@@ -5,6 +5,7 @@ description: Whoami test service
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/traefik/whoami:latest
   extraHosts:
     - host.docker.internal:host-gateway

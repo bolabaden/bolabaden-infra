@@ -9,6 +9,7 @@ dependencies:
   - deploy.playwright-service
 
 spec:
+  replicas: 3
   image: docker.io/mhdzumair/mediafusion
   extraHosts:
     - host.docker.internal:host-gateway

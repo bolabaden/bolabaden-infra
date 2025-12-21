@@ -5,6 +5,7 @@ description: MCP Orchestrator
 type: container
 
 spec:
+  replicas: 3
   image: ghcr.io/open-webui/mcpo:main
   extraHosts:
     - host.docker.internal:host-gateway

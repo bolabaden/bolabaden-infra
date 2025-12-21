@@ -17,6 +17,7 @@ dependencies:
   - build.playwright-service
 
 spec:
+  replicas: 3
   image: ${actions.build.playwright-service.outputs.deploymentImageId}
   extraHosts:
     - host.docker.internal:host-gateway

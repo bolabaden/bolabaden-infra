@@ -5,6 +5,7 @@ description: FlareSolverr proxy for bypassing Cloudflare challenges
 type: container
 
 spec:
+  replicas: 3
   image: ghcr.io/flaresolverr/flaresolverr
   extraHosts:
     - host.docker.internal:host-gateway

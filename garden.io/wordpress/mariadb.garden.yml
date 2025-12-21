@@ -5,6 +5,7 @@ description: MariaDB database for WordPress
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/mariadb:11
   env:
     MYSQL_ROOT_PASSWORD: ${var.WORDPRESS_DB_ROOT_PASSWORD}

@@ -5,6 +5,7 @@ description: AIOStreams addon for Stremio
 type: container
 
 spec:
+  replicas: 3
   image: ghcr.io/viren070/aiostreams:v2.12.2
   env:
     TZ: ${var.tz}

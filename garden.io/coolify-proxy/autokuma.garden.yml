@@ -5,6 +5,7 @@ description: AutoKuma for automatic Uptime Kuma monitor creation
 type: container
 
 spec:
+  replicas: 3
   image: ghcr.io/bigboot/autokuma
   extraHosts:
     - host.docker.internal:host-gateway

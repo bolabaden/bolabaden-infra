@@ -5,6 +5,7 @@ description: Session manager for HoloScript development
 type: container
 
 spec:
+  replicas: 3
   image: alpine
   extraHosts:
     - host.docker.internal:host-gateway

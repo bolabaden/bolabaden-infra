@@ -16,6 +16,7 @@ dependencies:
   - build.telemetry-auth
 
 spec:
+  replicas: 3
   image: ${actions.build.telemetry-auth.outputs.deploymentImageId}
   runAsUser: 0
   runAsGroup: 0

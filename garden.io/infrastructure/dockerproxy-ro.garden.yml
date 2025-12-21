@@ -5,6 +5,7 @@ description: Docker Socket Proxy with read-only access
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/tecnativa/docker-socket-proxy
   privileged: true
   runAsUser: 0

@@ -5,6 +5,7 @@ description: Docker Socket Proxy with read/write access
 type: container
 
 spec:
+  replicas: 3
   image: lscr.io/linuxserver/socket-proxy
   privileged: true
   extraHosts:

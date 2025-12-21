@@ -7,6 +7,7 @@ dependencies:
   - run.victoriametrics-init
 
 spec:
+  replicas: 3
   image: docker.io/victoriametrics/victoria-metrics:latest
   extraHosts:
     - host.docker.internal:host-gateway

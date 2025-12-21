@@ -5,6 +5,7 @@ description: Qdrant vector database
 type: container
 
 spec:
+  replicas: 3
   image: qdrant/qdrant
   env:
     QDRANT_STORAGE_PATH: /qdrant/storage

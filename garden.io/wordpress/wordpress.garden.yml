@@ -7,6 +7,7 @@ dependencies:
   - deploy.mariadb
 
 spec:
+  replicas: 3
   image: docker.io/wordpress
   env:
     WORDPRESS_DB_HOST: mariadb

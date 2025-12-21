@@ -5,6 +5,7 @@ description: Docker container management UI
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/portainer/portainer-ce
   extraHosts:
     - host.docker.internal:host-gateway

@@ -5,6 +5,7 @@ description: SearxNG privacy-focused metasearch engine
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/searxng/searxng
   extraHosts:
     - host.docker.internal:host-gateway

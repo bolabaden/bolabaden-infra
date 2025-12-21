@@ -8,6 +8,7 @@ dependencies:
   - deploy.victoriametrics
 
 spec:
+  replicas: 3
   image: docker.io/grafana/grafana
   extraHosts:
     - host.docker.internal:host-gateway
