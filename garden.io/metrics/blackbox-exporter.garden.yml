@@ -1,5 +1,5 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: blackbox-exporter
 description: Blackbox Exporter for endpoint monitoring
 type: container

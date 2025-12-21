@@ -1,5 +1,5 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: warp-net-init
 description: Initialize warp-nat-net network
 type: container

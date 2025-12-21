@@ -1,5 +1,5 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: searxng
 description: SearxNG privacy-focused metasearch engine
 type: container

@@ -1,5 +1,5 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: mariadb
 description: MariaDB database for WordPress
 type: container

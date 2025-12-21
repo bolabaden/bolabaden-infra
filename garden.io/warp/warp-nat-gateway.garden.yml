@@ -1,5 +1,5 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: warp-nat-gateway
 description: WARP in Docker with NAT routing
 type: container

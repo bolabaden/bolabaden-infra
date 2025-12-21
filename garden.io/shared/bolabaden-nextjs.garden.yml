@@ -1,5 +1,5 @@
 kind: Build
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: bolabaden-nextjs
 description: Bolabaden NextJS main website build
 type: container
@@ -8,7 +8,7 @@ source:
 
 ---
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: bolabaden-nextjs
 description: Bolabaden NextJS main website container
 type: container

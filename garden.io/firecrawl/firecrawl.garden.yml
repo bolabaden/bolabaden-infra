@@ -1,5 +1,5 @@
 kind: Build
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: firecrawl
 description: Firecrawl API service
 type: container
@@ -9,7 +9,7 @@ source:
 
 ---
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: firecrawl
 description: Firecrawl API container
 type: container
