@@ -5,8 +5,42 @@ name: my-media-stack
 environments:
   - name: default
     variables:
+      base-hostname: my-media-stack.local.demo.garden
+      domain: ${var.base-hostname}
+      ts-hostname: ${local.hostname}
+      config-path: ./volumes
+      certs-path: ./certs
+      docker-socket: /var/run/docker.sock
+      root-path: .
+      src-path: ./src
+      tz: America/Chicago
+      stack-name: my-media-stack
+      PUID: 1001
+      PGID: 999
+      UMASK: "002"
   - name: k8s
     variables:
+      base-hostname: my-media-stack.local.demo.garden
+      domain: ${var.base-hostname}
+      ts-hostname: ${local.hostname}
+      config-path: ./volumes
+      certs-path: ./certs
+      docker-socket: /var/run/docker.sock
+      root-path: .
+      src-path: ./src
+      tz: America/Chicago
+      stack-name: my-media-stack
+      PUID: 1001
+      PGID: 999
+      UMASK: "002"
+      
+      # HA Configuration
+      ha:
+        enabled: true
+        minReplicas: 3
+        antiAffinity: true
+        podDisruptionBudget:
+          minAvailable: 1
       base-hostname: my-media-stack.local.demo.garden
       domain: ${var.base-hostname}
       ts-hostname: ${local.hostname}
@@ -146,11 +180,3 @@ providers:
     environments: [default]
     buildMode: local-docker
     defaultHostname: ${var.base-hostname}
-
-# High Availability Configuration
-ha:
-  enabled: true
-  minReplicas: 3
-  antiAffinity: true
-  podDisruptionBudget:
-    minAvailable: 1
