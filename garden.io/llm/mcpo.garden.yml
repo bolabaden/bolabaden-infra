@@ -39,7 +39,10 @@ spec:
       hostname: mcpo.${var.ts-hostname}.${var.domain}
   healthCheck:
     exec:
-      command: [sh, -c, "curl -f http://127.0.0.1:${var.MCPO_PORT || "8000"}/openapi.json"]
+      command:
+        - sh
+        - -c
+        - 'curl -f http://127.0.0.1:${var.MCPO_PORT || "8000"}/openapi.json'
     initialDelaySeconds: 40
     timeoutSeconds: 10
   restartPolicy: always
