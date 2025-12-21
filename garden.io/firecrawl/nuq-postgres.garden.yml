@@ -33,7 +33,10 @@ spec:
       sourcePath: ${var.config-path}/nuq-postgres/data
   healthCheck:
     exec:
-      command: [sh, -c, "pg_isready -U ${var.FIRECRAWL_POSTGRES_USER || "postgres"} -d ${var.FIRECRAWL_POSTGRES_DB || "postgres"}"]
+      command:
+        - sh
+        - -c
+        - 'pg_isready -U ${var.FIRECRAWL_POSTGRES_USER || "postgres"} -d ${var.FIRECRAWL_POSTGRES_DB || "postgres"}'
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
