@@ -89,4 +89,6 @@ echo "1. Verify all server nodes are Ready"
 echo "2. Verify etcd pods are running on multiple nodes"
 echo "3. Configure Longhorn for replication"
 echo "4. Scale all services to 3+ replicas"
+echo ""
+echo "NOTE: blackboar.bolabaden.org is excluded due to reliability issues"
 
