@@ -19,6 +19,16 @@
 - Fixed: Added explicit service-cidr (10.43.0.0/16) and cluster-cidr (10.42.0.0/16) to k3s config
 - Network: Pod networking functional, service networking functional
 
+### Tailscale Integration (In Progress)
+- ✅ **Primary Node Configured** - micklethefickle using Tailscale IP `100.98.182.207`
+- ✅ **k3s Config Updated** - Using `flannel-iface: tailscale0` for Tailscale integration
+- ✅ **DNS Configuration** - Tailscale DNS override disabled (`--accept-dns=false`)
+- ⚠️ **Worker Nodes** - Need Tailscale connection and k3s configuration
+  - blackboar.bolabaden.org - Needs Tailscale auth
+  - cloudserver1.bolabaden.org - Needs Tailscale auth
+  - cloudserver2.bolabaden.org - Needs Tailscale auth
+- See `TAILSCALE-K3S-SETUP.md` for complete setup guide
+
 ### DNS
 - ⚠️ **CoreDNS** - Multiple pods, some pending, running pod not ready
 - Issue: Readiness probe failing (503), duplicate deployments
