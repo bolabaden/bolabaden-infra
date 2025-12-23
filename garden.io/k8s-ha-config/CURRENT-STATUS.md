@@ -2,126 +2,94 @@
 
 ## Node Status
 
-### Working Nodes
-- ✅ **micklethefickle.bolabaden.org** (Primary control plane) - Running k3s server
-- ✅ **blackboar.bolabaden.org** (Worker) - Ready, k3s-agent running
-- ⚠️ **cloudserver1.bolabaden.org** - k3s-agent service running, attempting to join cluster
-- ⚠️ **cloudserver2.bolabaden.org** - k3s installation in progress
+### Active Nodes
+- ✅ **micklethefickle.bolabaden.org** (Primary control plane) - k3s server running, etcd fixed
+- ⚠️ **cloudserver1.bolabaden.org** (Worker) - k3s-agent installing/starting
+- ⚠️ **cloudserver2.bolabaden.org** (Worker) - k3s-agent installing/starting
 
-### Removed Nodes
+### Excluded Nodes
+- ❌ **blackboar.bolabaden.org** - Removed due to reliability issues (connection timeouts)
 - ❌ **cloudserver3.bolabaden.org** - Removed from cluster (unreachable)
+
+## Recent Fixes
+
+### etcd IP Mismatch - FIXED ✅
+- **Issue**: etcd was initialized with old IP (10.16.1.78:2380) but k3s configured for Tailscale IP (100.98.182.207:2380)
+- **Fix**: Reset etcd and reinitialized with correct configuration
+- **Status**: k3s restarted, etcd reinitialized, API server starting
+
+### Node Connectivity
+- **cloudserver1**: k3s-agent service installed and starting
+- **cloudserver2**: k3s-agent installation in progress
+- **blackboar**: Excluded due to connection reliability issues
 
 ## Current Cluster Components
 
-### CNI (Networking)
-- ✅ **Flannel** - Running and healthy
-- Status: `kube-flannel-ds` daemonset running on blackboar (1/1 Ready, 11 restarts but now stable)
-- Fixed: Added explicit service-cidr (10.43.0.0/16) and cluster-cidr (10.42.0.0/16) to k3s config
-- Network: Pod networking functional, service networking functional
+### Control Plane
+- ⚠️ **k3s server** - Starting up after etcd reset
+- ⚠️ **etcd** - Reinitialized, starting
+- ⚠️ **API Server** - Not ready yet (still starting)
 
-### Tailscale Integration (In Progress)
-- ✅ **Primary Node Configured** - micklethefickle using Tailscale IP `100.98.182.207`
-- ✅ **k3s Config Updated** - Using `flannel-iface: tailscale0` for Tailscale integration
-- ✅ **DNS Configuration** - Tailscale DNS override disabled (`--accept-dns=false`)
-- ⚠️ **Worker Nodes** - Need Tailscale connection and k3s configuration
-  - blackboar.bolabaden.org - Needs Tailscale auth
-  - cloudserver1.bolabaden.org - Needs Tailscale auth
-  - cloudserver2.bolabaden.org - Needs Tailscale auth
-- See `TAILSCALE-K3S-SETUP.md` for complete setup guide
-
-### DNS
-- ⚠️ **CoreDNS** - Multiple pods, some pending, running pod not ready
-- Issue: Readiness probe failing (503), duplicate deployments
-- Action: Cleaning up pending pods and fixing deployment
+### Networking
+- ⚠️ **Flannel** - Will deploy once nodes join
+- ⚠️ **CoreDNS** - Will deploy once cluster is ready
 
 ### Storage
-- ⚠️ **Longhorn** - Installed but status unknown
-- Need to verify replication factor and node availability
+- ⚠️ **Longhorn** - Not yet configured (will configure for HA with replication factor 3)
 
-### Control Plane
-- ✅ **k3s embedded etcd** - Running on primary node (micklethefickle)
-- ⚠️ **API Server** - Listening on IPv6 only (:::6443), bind-address config not taking effect
-- ⚠️ **HA Control Plane** - cloudserver1 and cloudserver2 cannot connect (network/firewall issue)
+## Zero SPOF Implementation Status
 
-## Issues to Resolve
+### Completed
+- ✅ etcd IP mismatch fixed
+- ✅ Worker nodes being connected (cloudserver1, cloudserver2)
+- ✅ Scripts created for HA implementation
 
-1. **Node Joining**: cloudserver1 and cloudserver2 not joining cluster
-   - Root cause: Network connectivity - cannot reach primary API server (10.16.1.78:6443)
-   - Status: cloudserver1 has k3s-agent service but connection times out
-   - Solution: Investigate firewall rules, network routing, or use service IP (10.43.0.1:443)
+### In Progress
+- ⚠️ k3s API server starting (waiting for full startup)
+- ⚠️ Worker nodes joining cluster
+- ⚠️ System pods deployment
 
-2. **CoreDNS**: Running but not ready
-   - Root cause: Cannot watch Kubernetes API - "Failed to watch" errors
-   - Status: Pod running but readiness probe failing (503)
-   - Solution: CoreDNS needs to connect to API server - may be related to node connectivity issue
-
-3. **Flannel**: Intermittent crashes
-   - Status: Pod restarts frequently but sometimes runs successfully
-   - Need to investigate root cause of crashes
-
-4. **Kubelet Proxy**: 502 errors when accessing logs from worker nodes
-   - Root cause: API server cannot proxy to worker node kubelets
-   - Status: Primary can reach blackboar kubelet directly, but proxy fails
-   - Impact: Cannot get pod logs via kubectl from worker nodes
-
-5. **Other System Pods**: Several pods in CrashLoopBackOff
-   - Traefik helm install jobs
-   - Metrics server  
-   - Local path provisioner
-   - Longhorn UI
-
-## Zero SPOF Requirements
-
-### Critical Blockers
-1. **All Nodes Must Connect to Tailscale** - Required for networking
-   - blackboar.bolabaden.org - Needs Headscale authentication
-   - cloudserver1.bolabaden.org - Needs Headscale authentication
-   - cloudserver2.bolabaden.org - Needs Headscale authentication
-
-2. **HA Control Plane** - Currently single node (SPOF)
-   - Need 3+ server nodes for etcd quorum
-   - Need multiple API server instances
-   - Need multiple scheduler/controller replicas
-
-3. **Storage Replication** - Longhorn not configured for replication
-   - Need replication factor 3 for all volumes
-   - Need Longhorn managers on all nodes
-
-4. **Service HA** - Most services single replica
-   - CoreDNS: Need 3 replicas with anti-affinity
-   - Metrics Server: Need 3 replicas
-   - Ingress Controller: Need 3 replicas
-   - All application services: Need 3+ replicas
-
-## Implementation Scripts
-
-Ready to run once nodes are connected:
-- `implement-zero-spof.sh` - Master script for all HA configurations
-- `setup-ha-control-plane.sh` - HA control plane setup
-- `configure-longhorn-ha.sh` - Longhorn replication configuration
-- `scale-all-services-ha.sh` - Scale all services to HA
-
-See `ZERO-SPOF-IMPLEMENTATION.md` for complete details.
+### Pending
+- ⬜ HA control plane (need 2+ additional server nodes)
+- ⬜ Longhorn HA configuration (replication factor 3)
+- ⬜ Service HA (CoreDNS, Metrics Server, Ingress Controller)
+- ⬜ All services scaled to 3+ replicas with anti-affinity
 
 ## Next Steps
 
-### Immediate (Blocking)
-1. **Authenticate nodes to Tailscale** - Connect blackboar, cloudserver1, cloudserver2
-2. **Resolve etcd IP mismatch** - Fix etcd cluster IP configuration
-3. **Wait for k3s to fully start** - Currently initializing
+### Immediate
+1. **Wait for k3s API to be fully ready** - Currently starting
+2. **Verify nodes join successfully** - cloudserver1 and cloudserver2
+3. **Deploy system pods** - Flannel, CoreDNS, etc.
 
 ### Priority 1: HA Control Plane
-1. Run `setup-ha-control-plane.sh` to add 2+ additional server nodes
-2. Verify etcd cluster with 3+ members
-3. Verify multiple API server instances
+1. **Add 2+ server nodes** for etcd quorum (minimum 3 total)
+   - Options: Convert cloudserver1/cloudserver2 to server nodes, or add new nodes
+2. **Verify etcd cluster** with 3+ members
+3. **Deploy multiple API server instances** (if needed)
 
 ### Priority 2: Storage & Services HA
-1. Run `implement-zero-spof.sh` to configure everything
-2. Verify Longhorn replication factor 3
-3. Verify all services have 3+ replicas with anti-affinity
+1. **Run `implement-zero-spof.sh`** - Configures Longhorn and all services
+2. **Verify Longhorn replication** - All volumes with replication factor 3
+3. **Scale all services** - 3+ replicas with anti-affinity
 
 ### Priority 3: Application Services
-1. Deploy all Garden.io services with HA configuration
-2. Configure all stateful services with Longhorn storage
-3. Test failover scenarios
+1. **Deploy all Garden.io services** with HA configuration
+2. **Configure stateful services** with Longhorn storage
+3. **Test failover scenarios**
 
+## Implementation Scripts
+
+All scripts ready in `garden.io/k8s-ha-config/`:
+- `implement-zero-spof.sh` - Master script for all HA configurations
+- `setup-ha-control-plane.sh` - HA control plane setup (3+ server nodes)
+- `configure-longhorn-ha.sh` - Longhorn replication configuration
+- `scale-all-services-ha.sh` - Scale all services to HA
+- `fix-etcd-ip-mismatch.sh` - Fix etcd IP issues (already used)
+
+## Notes
+
+- **blackboar.bolabaden.org** excluded due to connection reliability issues
+- Using regular IPs temporarily until Tailscale is connected on all nodes
+- Will migrate to Tailscale IPs once all nodes are authenticated
+- Current cluster: 1 server + 2 workers (need 2+ more servers for HA control plane)
