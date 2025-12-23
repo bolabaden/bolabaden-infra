@@ -86,11 +86,43 @@ Complete high-availability setup with zero single points of failure across all c
 - ⚠️ Flannel: Running but needs verification
 - ⚠️ Ingress: Not deployed or single replica
 
+## Implementation Scripts
+
+All scripts are in `garden.io/k8s-ha-config/`:
+
+1. **`implement-zero-spof.sh`** - Master script that runs all HA configurations
+2. **`setup-ha-control-plane.sh`** - Sets up HA control plane with multiple server nodes
+3. **`configure-longhorn-ha.sh`** - Configures Longhorn with replication factor 3
+4. **`scale-all-services-ha.sh`** - Scales all system services to 3+ replicas with anti-affinity
+5. **`configure-tailscale-k3s.sh`** - Configures individual nodes for Tailscale networking
+
 ## Next Actions
 
-1. **Immediate**: Get all nodes connected to Tailscale (requires auth)
-2. **Priority 1**: Set up HA etcd cluster (3 nodes minimum)
-3. **Priority 2**: Configure Longhorn replication
-4. **Priority 3**: Scale all services to 3+ replicas
-5. **Priority 4**: Deploy and configure Ingress Controller HA
+### Immediate (Blocking)
+1. **Connect all nodes to Tailscale** - Requires Headscale authentication
+   - blackboar.bolabaden.org
+   - cloudserver1.bolabaden.org
+   - cloudserver2.bolabaden.org
+   - cloudserver3.bolabaden.org (if available)
+
+### Priority 1: Fix Current Cluster
+1. **Resolve etcd IP mismatch** - etcd initialized with old IP, k3s using Tailscale IP
+   - Option A: Reset etcd (data loss, but clean)
+   - Option B: Migrate etcd cluster to Tailscale IPs
+   - Option C: Use dual IPs temporarily
+
+### Priority 2: HA Control Plane
+1. **Set up HA etcd cluster** - 3+ server nodes with etcd cluster mode
+2. **Deploy multiple API server instances** - Load balanced
+3. **Scale scheduler/controller** - Multiple replicas
+
+### Priority 3: Storage & Services HA
+1. **Run `implement-zero-spof.sh`** - Configures Longhorn and all services
+2. **Verify replication** - All volumes with replication factor 3
+3. **Verify service distribution** - All pods spread across nodes
+
+### Priority 4: Testing
+1. **Node failure tests** - Kill nodes, verify failover
+2. **Pod failure tests** - Kill pods, verify recreation
+3. **Storage failure tests** - Kill storage nodes, verify data availability
 
