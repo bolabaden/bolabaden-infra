@@ -35,16 +35,29 @@
 ## Issues to Resolve
 
 1. **Node Joining**: cloudserver1 and cloudserver2 not joining cluster
-   - Root cause: DNS resolution issues, service not starting properly
-   - Solution: Use IP addresses instead of hostnames, manually create systemd service
+   - Root cause: Network connectivity - cannot reach primary API server (10.16.1.78:6443)
+   - Status: cloudserver1 has k3s-agent service but connection times out
+   - Solution: Investigate firewall rules, network routing, or use service IP (10.43.0.1:443)
 
-2. **System Pods**: Several pods in CrashLoopBackOff
+2. **CoreDNS**: Running but not ready
+   - Root cause: Cannot watch Kubernetes API - "Failed to watch" errors
+   - Status: Pod running but readiness probe failing (503)
+   - Solution: CoreDNS needs to connect to API server - may be related to node connectivity issue
+
+3. **Flannel**: Intermittent crashes
+   - Status: Pod restarts frequently but sometimes runs successfully
+   - Need to investigate root cause of crashes
+
+4. **Kubelet Proxy**: 502 errors when accessing logs from worker nodes
+   - Root cause: API server cannot proxy to worker node kubelets
+   - Status: Primary can reach blackboar kubelet directly, but proxy fails
+   - Impact: Cannot get pod logs via kubectl from worker nodes
+
+5. **Other System Pods**: Several pods in CrashLoopBackOff
    - Traefik helm install jobs
-   - Metrics server
+   - Metrics server  
    - Local path provisioner
-
-3. **CoreDNS**: Too many replicas for available nodes
-   - Solution: Scale to match available nodes (2 replicas)
+   - Longhorn UI
 
 ## Next Steps
 
