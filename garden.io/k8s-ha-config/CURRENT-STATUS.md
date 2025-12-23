@@ -70,11 +70,58 @@
    - Local path provisioner
    - Longhorn UI
 
+## Zero SPOF Requirements
+
+### Critical Blockers
+1. **All Nodes Must Connect to Tailscale** - Required for networking
+   - blackboar.bolabaden.org - Needs Headscale authentication
+   - cloudserver1.bolabaden.org - Needs Headscale authentication
+   - cloudserver2.bolabaden.org - Needs Headscale authentication
+
+2. **HA Control Plane** - Currently single node (SPOF)
+   - Need 3+ server nodes for etcd quorum
+   - Need multiple API server instances
+   - Need multiple scheduler/controller replicas
+
+3. **Storage Replication** - Longhorn not configured for replication
+   - Need replication factor 3 for all volumes
+   - Need Longhorn managers on all nodes
+
+4. **Service HA** - Most services single replica
+   - CoreDNS: Need 3 replicas with anti-affinity
+   - Metrics Server: Need 3 replicas
+   - Ingress Controller: Need 3 replicas
+   - All application services: Need 3+ replicas
+
+## Implementation Scripts
+
+Ready to run once nodes are connected:
+- `implement-zero-spof.sh` - Master script for all HA configurations
+- `setup-ha-control-plane.sh` - HA control plane setup
+- `configure-longhorn-ha.sh` - Longhorn replication configuration
+- `scale-all-services-ha.sh` - Scale all services to HA
+
+See `ZERO-SPOF-IMPLEMENTATION.md` for complete details.
+
 ## Next Steps
 
-1. Fix CoreDNS scaling
-2. Verify and fix Longhorn storage
-3. Configure HA for all services
-4. Continue troubleshooting cloudserver1 and cloudserver2 node joining
-5. Deploy all Garden.io services with HA configuration
+### Immediate (Blocking)
+1. **Authenticate nodes to Tailscale** - Connect blackboar, cloudserver1, cloudserver2
+2. **Resolve etcd IP mismatch** - Fix etcd cluster IP configuration
+3. **Wait for k3s to fully start** - Currently initializing
+
+### Priority 1: HA Control Plane
+1. Run `setup-ha-control-plane.sh` to add 2+ additional server nodes
+2. Verify etcd cluster with 3+ members
+3. Verify multiple API server instances
+
+### Priority 2: Storage & Services HA
+1. Run `implement-zero-spof.sh` to configure everything
+2. Verify Longhorn replication factor 3
+3. Verify all services have 3+ replicas with anti-affinity
+
+### Priority 3: Application Services
+1. Deploy all Garden.io services with HA configuration
+2. Configure all stateful services with Longhorn storage
+3. Test failover scenarios
 
