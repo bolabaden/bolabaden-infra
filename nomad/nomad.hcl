@@ -4539,8 +4539,17 @@ EOF
       mode = "bridge"
       
       port "stremio_webui" { to = 8080 }
-      port "stremio_http" { to = 11470 }
-      port "stremio_https" { to = 12470 }
+      # Static ports for 1:1 parity with docker-compose
+      # Note: Only one instance can bind to these ports per node
+      # For HA, instances will be spread across different nodes
+      port "stremio_http" {
+        static = 11470
+        to     = 11470
+      }
+      port "stremio_https" {
+        static = 12470
+        to     = 12470
+      }
     }
 
     # Stream Movies/TV over debrid instantly.

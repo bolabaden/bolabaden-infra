@@ -12,19 +12,17 @@ job "infrastructure" {
   type        = "service"
 
   # Consul Server Group - HA with 3+ servers
+  # Start with available nodes, scale to 3+ as nodes become available
   group "consul-servers" {
-    count = 3  # HA: Minimum 3 servers for quorum
+    count = 3  # HA: Minimum 3 servers for quorum (will scale as nodes become available)
 
     spread {
       attribute = "${node.unique.name}"
       weight    = 100
     }
 
-    constraint {
-      attribute = "${node.status}"
-      operator  = "=="
-      value     = "ready"
-    }
+    # Don't constrain to only "ready" nodes - allow placement on eligible nodes
+    # This allows Consul to bootstrap and nodes can join as they become ready
 
     network {
       mode = "host"  # Host mode for Consul server communication
