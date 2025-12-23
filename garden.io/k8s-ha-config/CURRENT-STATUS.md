@@ -14,9 +14,9 @@
 ## Current Cluster Components
 
 ### CNI (Networking)
-- ⚠️ **Flannel** - Installed but pods in CrashLoopBackOff
-- Status: `kube-flannel-ds` daemonset running on blackboar, but container crashing
-- Issue: Need to investigate container logs
+- ✅ **Flannel** - Running and healthy
+- Status: `kube-flannel-ds` daemonset running on blackboar (1/1 Ready)
+- Fixed: Added explicit service-cidr and cluster-cidr to k3s config
 
 ### DNS
 - ⚠️ **CoreDNS** - Multiple pods, some pending, running pod not ready
