@@ -22,7 +22,7 @@ PRIMARY_TS_IP=$(ssh -o StrictHostKeyChecking=no "$PRIMARY_NODE" "tailscale ip -4
 TOKEN=$(ssh -o StrictHostKeyChecking=no "$PRIMARY_NODE" "sudo cat /var/lib/rancher/k3s/server/node-token" 2>&1 | head -1)
 
 echo "Primary Tailscale IP: $PRIMARY_TS_IP"
-echo "Token: ${TOKEN:0:20}..."
+echo "Token: ${TOKEN}"
 
 # Configure additional server nodes
 for node in "${SERVER_NODES[@]}"; do
