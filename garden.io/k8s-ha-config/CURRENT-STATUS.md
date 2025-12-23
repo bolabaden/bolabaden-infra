@@ -15,8 +15,9 @@
 
 ### CNI (Networking)
 - ✅ **Flannel** - Running and healthy
-- Status: `kube-flannel-ds` daemonset running on blackboar (1/1 Ready)
-- Fixed: Added explicit service-cidr and cluster-cidr to k3s config
+- Status: `kube-flannel-ds` daemonset running on blackboar (1/1 Ready, 11 restarts but now stable)
+- Fixed: Added explicit service-cidr (10.43.0.0/16) and cluster-cidr (10.42.0.0/16) to k3s config
+- Network: Pod networking functional, service networking functional
 
 ### DNS
 - ⚠️ **CoreDNS** - Multiple pods, some pending, running pod not ready
