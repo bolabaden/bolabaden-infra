@@ -2591,8 +2591,18 @@ EOF
       mode = "bridge"
       
       port "traefik_api" { to = 8080 }
-      port "traefik_http" { to = 80 }
-      port "traefik_https" { to = 443 }
+      # Static ports for 1:1 parity with docker-compose
+      # Note: Only one instance can bind to ports 80/443 per node
+      # For HA with count=3, instances will be spread across different nodes
+      # Each node can have one traefik instance binding to 80/443
+      port "traefik_http" {
+        static = 80
+        to     = 80
+      }
+      port "traefik_https" {
+        static = 443
+        to     = 443
+      }
     }
 
     # https://doc.traefik.io
