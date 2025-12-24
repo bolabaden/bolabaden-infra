@@ -29,28 +29,23 @@ job "infrastructure" {
       mode = "bridge"  # Bridge mode - will use dynamic ports initially
 
       port "consul_http" {
-        static = 8500
-        to     = 8500
+        to = 8500
       }
 
       port "consul_dns" {
-        static = 8600
-        to     = 8600
+        to = 8600
       }
 
       port "consul_server_rpc" {
-        static = 8300
-        to     = 8300
+        to = 8300
       }
 
       port "consul_serf_lan" {
-        static = 8301
-        to     = 8301
+        to = 8301
       }
 
       port "consul_serf_wan" {
-        static = 8302
-        to     = 8302
+        to = 8302
       }
     }
 
