@@ -25,7 +25,7 @@ job "infrastructure" {
     # This allows Consul to bootstrap and nodes can join as they become ready
 
     network {
-      mode = "host"  # Host mode for Consul server communication
+      mode = "bridge"  # Bridge mode - will use dynamic ports initially
 
       port "consul_http" {
         static = 8500
@@ -75,7 +75,7 @@ job "infrastructure" {
 
       config {
         image = "docker.io/hashicorp/consul:latest"
-        network_mode = "host"
+        ports = ["consul_http", "consul_dns", "consul_server_rpc", "consul_serf_lan", "consul_serf_wan"]
         volumes = [
           "${var.config_path}/consul/data:/consul/data"
         ]
