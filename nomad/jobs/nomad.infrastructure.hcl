@@ -14,7 +14,7 @@ job "infrastructure" {
   # Consul Server Group - HA with 3+ servers
   # Start with 1 for single node, scale to 3+ as nodes become available
   group "consul-servers" {
-    count = 2  # HA: 2 servers (will scale to 3+ when third node available)
+    count = 1  # Single server (beatapostapita removed from cluster)
 
     spread {
       attribute = "${node.unique.name}"
@@ -82,7 +82,7 @@ job "infrastructure" {
           "-client=0.0.0.0",
           "-bind=0.0.0.0",
           "-data-dir=/consul/data",
-          "-bootstrap-expect=2"
+          "-bootstrap-expect=1"
         ]
       }
 
