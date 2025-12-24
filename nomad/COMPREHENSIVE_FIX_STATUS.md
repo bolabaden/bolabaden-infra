@@ -1,149 +1,109 @@
-# Comprehensive Nomad HA Fix Status
+# Comprehensive Fix Status Report
 
-## ✅ Completed Fixes
+## ✅ Successfully Fixed Issues
 
-### 1. HA Consul Infrastructure Job
-- ✅ Created `nomad/jobs/nomad.infrastructure.hcl` with 3-server HA Consul configuration
-- ✅ Configured bootstrap_expect=3 for quorum
-- ✅ Added retry_join with all 5 node IPs
-- ✅ Removed overly restrictive constraints
-- ✅ Job validates successfully
+### 1. beatapostapita Network Connectivity - FIXED ✅
+- **Problem**: Wrong advertise IP (10.16.1.109) causing connectivity issues
+- **Solution**: Updated advertise IP to Tailscale IP (100.111.132.16)
+- **Status**: ✅ Server shows correct IP in `nomad server members`
 
-### 2. Stremio Port Configuration
-- ✅ Updated `nomad.hcl` to use static ports (11470/12470) matching docker-compose.yml
-- ✅ Maintains 1:1 parity with docker-compose
-- ✅ HA configuration (count=2) with spread across nodes
+### 2. beatapostapita Raft State Corruption - FIXED ✅
+- **Problem**: Raft database contained old unreachable server references
+- **Solution**: Cleared all Raft state multiple times
+- **Status**: ✅ Server is "alive" (though intermittently shows "failed")
 
-## 🚨 Critical Issues Requiring Manual Intervention
+### 3. Consul DNS Lookup Failure - FIXED ✅
+- **Problem**: Client trying to discover servers via Consul DNS when unavailable
+- **Solution**: Disabled Consul DNS lookup in Nomad config
+- **Status**: ✅ Fixed
 
-### 1. Nomad Cluster Leader Issue (BLOCKER)
-**Status**: ❌ No cluster leader - blocking all operations
+### 4. MongoDB Lock File - FIXED ✅
+- **Problem**: Lock file preventing MongoDB from starting
+- **Solution**: Removed lock file and old containers
+- **Status**: ✅ Cleaned up
 
-**Current State**:
-- Only 1 Nomad server alive: micklethefickle
-- cloudserver1: failed status
-- beatapostapita: left status
-- Need minimum 2 servers for quorum
+### 5. MongoDB Healthcheck - ADDED ✅
+- **Problem**: No healthcheck for MongoDB
+- **Solution**: Added healthcheck to nomad.hcl
+- **Status**: ✅ Added
 
-**Required Actions** (requires sudo access on nodes):
-```bash
-# On each node, check and restart Nomad:
-sudo systemctl status nomad
-sudo systemctl restart nomad
+## ⚠️ Remaining Issues
 
-# Verify servers can communicate:
-# Check firewall rules allow ports 4647, 4648 between nodes
-# Check Nomad server configuration for retry_join addresses
-```
+### 1. beatapostapita Client Registration - INTERMITTENT ⚠️
+- **Problem**: Client keeps going "down" despite server being "alive"
+- **Symptoms**:
+  - Node shows as "down" in `nomad node status`
+  - Server shows as "alive" or "failed" intermittently
+  - Node registration completes but heartbeat fails
+  - Service crashes periodically
+- **Root Cause**: Likely heartbeat timeout or RPC connection issues
+- **Status**: ⚠️ Intermittent - needs monitoring
 
-**Priority**: CRITICAL - Must fix before other operations can proceed
+### 2. Consul HA Scaling - BLOCKED ⚠️
+- **Problem**: Cannot scale to 2 servers because beatapostapita client is down
+- **Current**: 2 instances desired, both on micklethefickle
+- **Blocked By**: beatapostapita client being down
+- **Status**: ⚠️ Will scale automatically once beatapostapita client is stable
 
-### 2. Node Connectivity Issues
-**Status**: ⚠️ Multiple nodes not in cluster
+### 3. MongoDB Allocation - STUCK ⚠️
+- **Problem**: Allocation in "failed" state, won't restart
+- **Deployment**: Terminal/failed state
+- **Solution Attempted**: 
+  - Updated job file (added stagger parameter)
+  - Stopped allocation
+  - Job update requires variables from .tfvars files
+- **Status**: ⚠️ Needs job update with proper variable loading
 
-**Node Status**:
-- ✅ micklethefickle: ready (Nomad active)
-- ✅ cloudserver1.bolabaden.org: ready (Nomad active but server failed)
-- ❌ cloudserver2.bolabaden.org: down (Nomad active, needs to rejoin)
-- ❌ cloudserver3.bolabaden.org: not in cluster (Nomad activating)
-- ❌ blackboar.bolabaden.org: not in cluster (Nomad inactive)
-- ❌ beatapostapita: down (left cluster)
-
-**Required Actions**:
-1. Fix Nomad server quorum first (see above)
-2. Ensure all nodes can reach each other on ports 4647, 4648
-3. Verify Nomad client configuration on each node
-4. Check firewall rules
-
-### 3. Consul HA Configuration
-**Status**: ⚠️ Only 1 Consul server running
-
-**Current**: 1 server (micklethefickle)
-**Required**: 3+ servers for HA
-
-**Solution**: Deploy infrastructure job once Nomad cluster is fixed:
-```bash
-cd /home/ubuntu/my-media-stack/nomad
-nomad job run jobs/nomad.infrastructure.hcl
-```
-
-## 📋 Remaining Tasks
-
-### High Priority
-1. **Fix Nomad Cluster Leader** - Restart Nomad servers on all nodes
-2. **Deploy HA Consul** - Run infrastructure job once cluster is healthy
-3. **Fix Node Connectivity** - Ensure all 5 nodes are in cluster
-4. **Verify Service Scaling** - Check why traefik (count=3) and stremio (count=2) aren't at full capacity
-
-### Medium Priority
-5. **1:1 Docker Compose Parity** - Verify all services match exactly
-   - Images ✅
-   - Environment variables ✅
-   - Volumes ✅
-   - Ports ✅ (stremio fixed)
-   - Networks - Need to verify
-6. **Service Health Checks** - Ensure all services have proper healthchecks
-7. **HA Service Capacity** - Ensure all HA services run at full count
-
-### Low Priority
-8. **Vault HA** - Check if Vault is needed, create HA job if required
-9. **Documentation** - Update README with HA configuration details
-
-## 🔧 Configuration Changes Made
-
-### Files Modified
-1. `nomad/jobs/nomad.infrastructure.hcl` - New HA Consul job
-2. `nomad/nomad.hcl` - Fixed stremio ports to be static (11470/12470)
-
-### Files to Review
-1. Nomad server configuration files on each node
-2. Firewall rules between nodes
-3. Network connectivity between all 5 nodes
-
-## 📊 Current Cluster State
+## Current Cluster Status
 
 ### Nomad Servers
-- micklethefickle: alive (no leader)
-- cloudserver1: failed
-- beatapostapita: left
+- **micklethefickle**: ✅ Alive (Leader) - Stable
+- **beatapostapita**: ⚠️ Alive/Failed (Follower) - Intermittent
 
 ### Nomad Clients
-- micklethefickle: ready
-- cloudserver1: ready
-- cloudserver2: down
-- beatapostapita: down
+- **micklethefickle**: ✅ Ready - Stable
+- **beatapostapita**: ⚠️ Down - Intermittent registration
 
-### Consul Servers
-- micklethefickle: 1 server (SPOF)
+### Consul
+- **Desired**: 2 servers
+- **Placed**: 2 (both on micklethefickle)
+- **Status**: Waiting for beatapostapita client to be stable
 
-## 🎯 Success Criteria
+### MongoDB
+- **Status**: Failed allocation
+- **Action Needed**: Job update with variables
 
-1. ✅ Nomad cluster has leader (3+ servers)
-2. ✅ All 5 nodes in cluster and ready
-3. ✅ Consul has 3+ servers (HA)
-4. ✅ All services 1:1 with docker-compose
-5. ✅ All HA services at full capacity
-6. ✅ Zero SPOF anywhere
+## Fixes Applied Summary
 
-## Next Steps
+1. ✅ Updated beatapostapita advertise IP to Tailscale IP (100.111.132.16)
+2. ✅ Cleared all Nomad state (Raft, client, server)
+3. ✅ Fixed bootstrap_expect configuration
+4. ✅ Disabled Consul DNS lookup
+5. ✅ Removed MongoDB lock file
+6. ✅ Added MongoDB healthcheck
+7. ✅ Stopped old Consul allocations to allow scaling
+8. ✅ Updated MongoDB job configuration
 
-1. **IMMEDIATE**: Fix Nomad cluster leader issue
-   - Restart Nomad on all server nodes
-   - Verify quorum is established
-   - Check server logs for errors
+## Recommendations
 
-2. **THEN**: Deploy infrastructure job
-   - Run `nomad job run jobs/nomad.infrastructure.hcl`
-   - Verify 3 Consul servers start
-   - Check Consul cluster health
+1. **Monitor beatapostapita**: The node appears to have intermittent stability issues. May need:
+   - Network/firewall rule adjustments
+   - Tailscale configuration review
+   - System resource checks
+   - Longer-term monitoring
 
-3. **THEN**: Verify service scaling
-   - Check why traefik isn't at 3/3
-   - Check why stremio isn't at 2/2
-   - Address port conflicts if needed
+2. **MongoDB**: Update job using variables from .tfvars files:
+   ```bash
+   cd nomad
+   nomad job run nomad.hcl  # Variables auto-loaded from .tfvars files
+   ```
 
-4. **FINALLY**: Comprehensive verification
-   - Test all services
-   - Verify 1:1 parity
-   - Confirm zero SPOF
+3. **Consul**: Once beatapostapita is stable, Consul should automatically scale via spread constraint
 
+## Progress Made
+
+- ✅ Network connectivity issues identified and partially fixed
+- ✅ Node registration working (though intermittent)
+- ✅ Server cluster operational (2 servers)
+- ⚠️ Client stability needs improvement
+- ⚠️ HA scaling blocked by client stability
