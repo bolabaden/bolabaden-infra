@@ -12,9 +12,9 @@ job "infrastructure" {
   type        = "service"
 
   # Consul Server Group - HA with 3+ servers
-  # Start with available nodes, scale to 3+ as nodes become available
+  # Start with 1 for single node, scale to 3+ as nodes become available
   group "consul-servers" {
-    count = 3  # HA: Minimum 3 servers for quorum (will scale as nodes become available)
+    count = 1  # Start with 1, will scale to 3+ when more nodes available
 
     spread {
       attribute = "${node.unique.name}"
@@ -151,8 +151,8 @@ EOF
       }
 
       resources {
-        cpu    = 500
-        memory = 512
+        cpu    = 100  # Reduced for single node deployment
+        memory = 256
       }
     }
   }
