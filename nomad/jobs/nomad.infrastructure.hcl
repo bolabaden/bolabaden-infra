@@ -77,8 +77,7 @@ job "infrastructure" {
         image = "docker.io/hashicorp/consul:latest"
         network_mode = "host"
         volumes = [
-          "${var.config_path}/consul/data:/consul/data",
-          "local/consul-config.json:/consul/config/consul.json:ro"
+          "${var.config_path}/consul/data:/consul/data"
         ]
         command = "agent"
         args = [
@@ -87,52 +86,11 @@ job "infrastructure" {
           "-client=0.0.0.0",
           "-bind=0.0.0.0",
           "-data-dir=/consul/data",
-          "-config-dir=/consul/config"
+          "-bootstrap-expect=1"
         ]
       }
 
-      template {
-        data = <<EOF
-{
-  "datacenter": "dc1",
-  "data_dir": "/consul/data",
-  "log_level": "INFO",
-  "ui": true,
-  "server": true,
-  "bootstrap_expect": 3,
-  "client_addr": "0.0.0.0",
-  "bind_addr": "0.0.0.0",
-  "addresses": {
-    "http": "0.0.0.0",
-    "dns": "0.0.0.0"
-  },
-  "ports": {
-    "http": 8500,
-    "dns": 8600,
-    "server": 8300,
-    "serf_lan": 8301,
-    "serf_wan": 8302
-  },
-  "retry_join": [
-    "172.245.88.16:8301",
-    "172.245.88.15:8301",
-    "172.245.88.17:8301",
-    "170.9.225.137:8301",
-    "209.54.102.83:8301"
-  ],
-  "retry_join_wan": [],
-  "retry_interval": "30s",
-  "retry_max": 0,
-  "rejoin_after_leave": true,
-  "leave_on_terminate": false,
-  "skip_leave_on_interrupt": true,
-  "disable_update_check": true,
-  "enable_script_checks": true,
-  "enable_local_script_checks": true
-}
-EOF
-        destination = "local/consul-config.json"
-      }
+      # Using command-line args instead of config file for simplicity
 
       # Consul reads config from file, not env var when using -config-dir
       # We'll use command args instead
