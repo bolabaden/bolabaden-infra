@@ -21,6 +21,7 @@ job "infrastructure" {
       weight    = 100
     }
 
+    # Allow placement on any eligible node (including balanced class)
     # Don't constrain to only "ready" nodes - allow placement on eligible nodes
     # This allows Consul to bootstrap and nodes can join as they become ready
 
