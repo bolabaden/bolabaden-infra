@@ -402,6 +402,7 @@ job "docker-compose-stack" {
       healthy_deadline = "3m"
       auto_revert      = true
       canary           = 0
+      stagger          = "30s"
     }
 
     migrate {
