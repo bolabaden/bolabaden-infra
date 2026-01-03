@@ -25,6 +25,3 @@
 [submodule "projects/cloud/cloudcradle"]
 	path = projects/cloud/cloudcradle
 	url = https://github.com/bolabaden/cloudcradle
-[submodule "reference/coolify/coolify-community-templates"]
-	path = reference/coolify/coolify-community-templates
-	url = https://github.com/inluxc/coolify-community-templates
