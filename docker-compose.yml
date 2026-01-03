@@ -281,6 +281,8 @@ services:
     restart: always
 
   session-manager:
+    profiles:
+      - fixme  # TODO: need to create session_manager_index.html and the waiting.html. Do NOT remove this profile until those files are exhaustively created and fully functional to spec.
     image: alpine
     container_name: session-manager
     hostname: session-manager
