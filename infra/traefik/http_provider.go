@@ -246,15 +246,5 @@ func (s *HTTPProviderServer) computeConfig() *TraefikDynamicConfig {
 	return config
 }
 
-// computeHTTPConfig computes HTTP/HTTPS routers and services
-func (s *HTTPProviderServer) computeHTTPConfig() *HTTPConfig {
-	// This will be implemented in routers.go and services.go
-	// For now, return empty config
-	return &HTTPConfig{
-		Routers:     make(map[string]*Router),
-		Services:    make(map[string]*Service),
-		Middlewares: make(map[string]*Middleware),
-	}
-}
-
+// computeHTTPConfig is implemented in routers.go
 // computeTCPConfig and computeUDPConfig are implemented in tcp_udp.go

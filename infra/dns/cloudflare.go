@@ -106,7 +106,8 @@ func (dr *DNSReconciler) updateRecord(name, recordType, content string, ttl int,
 	name = strings.TrimSuffix(name, ".")
 
 	// Get existing records
-	records, err := dr.api.DNSRecords(ctx, dr.zoneID, cloudflare.DNSRecord{
+	rc := cloudflare.ZoneIdentifier(dr.zoneID)
+	records, _, err := dr.api.ListDNSRecords(ctx, rc, cloudflare.ListDNSRecordsParams{
 		Name: name,
 		Type: recordType,
 	})
@@ -117,15 +118,20 @@ func (dr *DNSReconciler) updateRecord(name, recordType, content string, ttl int,
 	// Find matching record
 	var existingRecord *cloudflare.DNSRecord
 	for i := range records {
-		if records[i].Name == name && records[i].Type == recordType {
+		if records[i].Name == name && string(records[i].Type) == recordType {
 			existingRecord = &records[i]
 			break
 		}
 	}
 
 	// Check if update is needed
+	proxiedPtr := &proxied
 	if existingRecord != nil {
-		if existingRecord.Content == content && existingRecord.Proxied == proxied {
+		existingProxied := false
+		if existingRecord.Proxied != nil {
+			existingProxied = *existingRecord.Proxied
+		}
+		if existingRecord.Content == content && existingProxied == proxied {
 			log.Printf("DNS record %s already correct, skipping update", name)
 			dr.mu.Lock()
 			dr.lastUpdate[name] = time.Now()
@@ -134,26 +140,28 @@ func (dr *DNSReconciler) updateRecord(name, recordType, content string, ttl int,
 		}
 
 		// Update existing record
-		existingRecord.Content = content
-		existingRecord.TTL = ttl
-		existingRecord.Proxied = proxied
-
-		if err := dr.api.UpdateDNSRecord(ctx, dr.zoneID, existingRecord.ID, *existingRecord); err != nil {
+		_, err := dr.api.UpdateDNSRecord(ctx, rc, cloudflare.UpdateDNSRecordParams{
+			ID:      existingRecord.ID,
+			Type:    recordType,
+			Name:    name,
+			Content: content,
+			TTL:     ttl,
+			Proxied: proxiedPtr,
+		})
+		if err != nil {
 			return fmt.Errorf("failed to update DNS record: %w", err)
 		}
 
 		log.Printf("Updated DNS record %s -> %s", name, content)
 	} else {
 		// Create new record
-		newRecord := cloudflare.DNSRecord{
+		_, err := dr.api.CreateDNSRecord(ctx, rc, cloudflare.CreateDNSRecordParams{
 			Type:    recordType,
 			Name:    name,
 			Content: content,
 			TTL:     ttl,
-			Proxied: proxied,
-		}
-
-		_, err := dr.api.CreateDNSRecord(ctx, dr.zoneID, newRecord)
+			Proxied: proxiedPtr,
+		})
 		if err != nil {
 			return fmt.Errorf("failed to create DNS record: %w", err)
 		}
@@ -195,7 +203,8 @@ func (dr *DNSReconciler) GetCurrentRecord(name, recordType string) (string, erro
 
 	name = strings.TrimSuffix(name, ".")
 
-	records, err := dr.api.DNSRecords(ctx, dr.zoneID, cloudflare.DNSRecord{
+	rc := cloudflare.ZoneIdentifier(dr.zoneID)
+	records, _, err := dr.api.ListDNSRecords(ctx, rc, cloudflare.ListDNSRecordsParams{
 		Name: name,
 		Type: recordType,
 	})
@@ -204,7 +213,7 @@ func (dr *DNSReconciler) GetCurrentRecord(name, recordType string) (string, erro
 	}
 
 	for _, record := range records {
-		if record.Name == name && record.Type == recordType {
+		if record.Name == name && string(record.Type) == recordType {
 			return record.Content, nil
 		}
 	}

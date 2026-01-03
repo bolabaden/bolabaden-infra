@@ -12,13 +12,12 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 
-	"github.com/bolabaden/my-media-stack/infra"
 	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
 	"github.com/bolabaden/my-media-stack/infra/cluster/raft"
 	"github.com/bolabaden/my-media-stack/infra/dns"
+	"github.com/bolabaden/my-media-stack/infra/monitoring"
 	"github.com/bolabaden/my-media-stack/infra/tailscale"
 	"github.com/bolabaden/my-media-stack/infra/traefik"
 )
@@ -166,7 +165,7 @@ func main() {
 	go monitorServiceHealth(ctx, dockerClient, gossipCluster, *nodeName)
 
 	// Start WARP health monitoring
-	warpMonitor := infra.NewWarpMonitor(dockerClient, func(healthy bool) {
+	warpMonitor := monitoring.NewWarpMonitor(dockerClient, func(healthy bool) {
 		// Broadcast WARP health to gossip
 		gossipCluster.BroadcastWARPHealth(healthy)
 	})
