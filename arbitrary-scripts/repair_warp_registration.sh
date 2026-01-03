@@ -69,7 +69,7 @@ fi
 echo "warp-fix: validating WARP from network '${NETWORK_NAME}'..."
 
 docker run --rm --network "${NETWORK_NAME}" --entrypoint sh "${CHECK_IMAGE}" -c \
-  "curl -sS --max-time 8 https://cloudflare.com/cdn-cgi/trace | grep -qE '^warp=on|warp=plus$'"
+  "curl -sS --max-time 8 https://cloudflare.com/cdn-cgi/trace | grep -qE '^warp=(on|plus)$'"
 
 docker run --rm --network "${NETWORK_NAME}" --entrypoint sh "${CHECK_IMAGE}" -c \
   "curl -sS --max-time 12 https://registry.npmjs.org/pnpm/latest >/dev/null"
