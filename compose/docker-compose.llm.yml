@@ -260,6 +260,8 @@ configs:
 
 services:
   open-webui:
+    profiles:
+      - fixme
     # 🔹🔹 Open WebUI 🔹🔹
     depends_on:
       mcpo:
@@ -520,6 +522,8 @@ services:
     restart: no
 
   litellm:
+    profiles:
+      - fixme
     image: ghcr.io/berriai/litellm-database:main-stable
 #    image: ghcr.io/berriai/litellm:main-stable
     container_name: litellm

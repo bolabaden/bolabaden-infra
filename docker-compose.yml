@@ -35,7 +35,7 @@ networks:  # https://docs.docker.com/engine/network/drivers/bridge/#differences-
         - subnet: ${PUBLICNET_SUBNET:-10.76.0.0/16}
           gateway: ${PUBLICNET_GATEWAY:-10.76.0.1}
   backend:
-    #external: true  # docker network create backend -o com.docker.network.bridge.name=br_backend --subnet=${BACKEND_SUBNET:-10.0.7.0/16} --gateway=${BACKEND_GATEWAY:-10.0.7.1}
+    #external: true  # docker network create backend -o com.docker.network.bridge.name=br_backend --subnet=${BACKEND_SUBNET:-10.0.7.0/24} --gateway=${BACKEND_GATEWAY:-10.0.7.0}
     attachable: true
     driver_opts:
       com.docker.network.bridge.name: br_backend
@@ -53,7 +53,6 @@ include:
   - compose/docker-compose.headscale.yml
   - compose/docker-compose.llm.yml
   - compose/docker-compose.metrics.yml
-#  - compose/docker-compose.plex.yml
 #  - compose/docker-compose.unsend.yml
   - compose/docker-compose.stremio-group.yml
   - compose/docker-compose.warp-nat-routing.yml
@@ -263,11 +262,11 @@ services:
     environment:
       SEARXNG_BASE_URL: ${SEARXNG_INTERNAL_URL:-http://searxng:${SEARXNG_PORT:-8080}}
       SEARXNG_SECRET: ${SEARXNG_SECRET:?}
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    #logging:
+    #  driver: "json-file"
+    #  options:
+    #    max-size: "10m"
+    #    max-file: "3"
     labels:
       # Auto-restart on unhealthy state
       deunhealth.restart.on.unhealthy: "true"
@@ -486,7 +485,6 @@ services:
       CONTAINERS: 1
       EVENTS: 1
       INFO: 1
-      DOCKER_API_VERSION: ${DOCKER_API_VERSION_OVERRIDE:-1.52}
       DISABLE_IPV6: ${DISABLE_IPV6:-0}
     labels:
       # Auto-restart on unhealthy state (requires deunhealth or autoheal container)
@@ -841,7 +839,6 @@ services:
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
     environment:
       <<: *common-env
-      DOCKER_API_VERSION: ${DOCKER_API_VERSION_OVERRIDE:-1.52}
 
       # Controls /containers/{id}/start (POST).
       # Set 1 to allow starting containers even if POST=0.
@@ -1030,11 +1027,11 @@ services:
       traefik.tcp.routers.redis.tls.passthrough: true
       traefik.tcp.services.redis.loadbalancer.server.port: ${REDIS_PORT:-6379}
       traefik.tcp.services.redis.loadbalancer.server.tls: true
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1m"
-        max-file: "1"
+    #logging:
+    #  driver: "json-file"
+    #  options:
+    #    max-size: "1m"
+    #    max-file: "1"
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping > /dev/null 2>&1 || exit 1"]
       interval: 10s

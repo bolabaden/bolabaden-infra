@@ -482,7 +482,7 @@ services:
     restart: always
   aiostreams:
     # 🔹🔹 AIOStreams 🔹🔹
-    image: ghcr.io/viren070/aiostreams:v2.12.2
+    image: ghcr.io/viren070/aiostreams
     container_name: aiostreams
     hostname: aiostreams
     networks:
@@ -1670,7 +1670,10 @@ services:
       kuma.mediaflow-proxy.http.url: "https://mediaflow-proxy.$DOMAIN"
       kuma.mediaflow-proxy.http.interval: "60"
     healthcheck:
-      test: ["CMD-SHELL", "python3 -c \"import socket; s=socket.socket(); s.connect(('127.0.0.1', ${MEDIAFLOW_PROXY_PORT:-8888})); print('Healthcheck passed')\""]
+      test: [
+        "CMD-SHELL",
+        "python3 -c \"import socket; s=socket.socket(); s.connect(('127.0.0.1', ${MEDIAFLOW_PROXY_PORT:-8888})); print('Healthcheck passed')\""
+      ]
       interval: 1m
       timeout: 10s
       retries: 5
@@ -1925,7 +1928,7 @@ services:
       start_period: 15s
     restart: always
   rclone:
-    image: docker.io/rclone/rclone:1.71  # supports 1 for 1.x.x, 1.71 for 1.71.x etc. `beta` for latest commit.
+    image: docker.io/rclone/rclone  # supports 1 for 1.x.x, 1.71 for 1.71.x etc. `beta` for latest commit.
     container_name: rclone
     hostname: rclone
     extra_hosts:
