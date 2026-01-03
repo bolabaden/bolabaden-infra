@@ -44,6 +44,9 @@ func defineServicesFromConfig(config *Config) []Service {
 	// Aggregate services from stremio stack
 	services = append(services, defineServicesStremio(config)...)
 
+	// Aggregate services from elfhosted K8s templates
+	services = append(services, defineServicesElfhosted(config)...)
+
 	// MongoDB
 	services = append(services, Service{
 		Name:          "mongodb",
