@@ -17,6 +17,9 @@ func defineServicesFromConfig(config *Config) []Service {
 	// Aggregate services from coolify-proxy stack
 	services = append(services, defineServicesCoolifyProxy(config)...)
 
+	// Aggregate services from WARP NAT routing stack
+	services = append(services, defineServicesWarp(config)...)
+
 	// MongoDB
 	services = append(services, Service{
 		Name:          "mongodb",
