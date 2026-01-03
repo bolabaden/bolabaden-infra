@@ -139,6 +139,7 @@ func NewInfrastructure(config *Config) (*Infrastructure, error) {
 
 // EnsureNetworks creates all required Docker networks
 func (infra *Infrastructure) EnsureNetworks() error {
+	ensureDefaultNetworks(infra.config)
 	for name, netConfig := range infra.config.Networks {
 		networkName := netConfig.Name
 		if networkName == "" {
@@ -204,6 +205,9 @@ func (infra *Infrastructure) EnsureNetworks() error {
 // DeployService deploys a single service
 func (infra *Infrastructure) DeployService(svc Service) error {
 	log.Printf("Deploying service: %s", svc.Name)
+
+	// Ensure networks based on labels if not explicitly set
+	svc.Networks = assignNetworks(svc)
 
 	// Check if container exists
 	containers, err := infra.client.ContainerList(infra.ctx, types.ContainerListOptions{
@@ -275,9 +279,12 @@ func (infra *Infrastructure) DeployService(svc Service) error {
 
 	// Connect to networks
 	for _, netName := range svc.Networks {
-		fullNetName := infra.config.StackName + "_" + netName
-		if netName == "default" {
-			fullNetName = infra.config.StackName + "_default"
+		fullNetName := netName
+		if infra.config.StackName != "" {
+			fullNetName = infra.config.StackName + "_" + netName
+			if netName == "default" {
+				fullNetName = infra.config.StackName + "_default"
+			}
 		}
 
 		err = infra.client.NetworkConnect(infra.ctx, fullNetName, resp.ID, nil)
