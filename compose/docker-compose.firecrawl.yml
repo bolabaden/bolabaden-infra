@@ -39,10 +39,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    build:
-      context: /tmp/firecrawl-repo/apps/api
-      dockerfile: Dockerfile
-    image: firecrawl-test-pr2632:latest
+    build: https://github.com/firecrawl/firecrawl.git#main:/apps/api
+    image: ghcr.io/firecrawl/firecrawl
     container_name: firecrawl
     hostname: api
     networks:
