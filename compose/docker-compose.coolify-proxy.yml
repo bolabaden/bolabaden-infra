@@ -1096,7 +1096,7 @@ services:
       - '--providers.file.directory=/traefik/dynamic/'
       - '--providers.file.watch=true'
       - '--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin'
-      - '--experimental.plugins.bouncer.version=v1.4.5'
+      - '--experimental.plugins.bouncer.version=v1.4.6'
       - '--experimental.plugins.traefikerrorreplace.modulename=github.com/PseudoResonance/traefikerrorreplace'
       - '--experimental.plugins.traefikerrorreplace.version=v1.0.1'
       # TLS-specific option within the ServersTransport configuration.
