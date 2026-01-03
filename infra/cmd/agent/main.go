@@ -1,0 +1,273 @@
+package main
+
+import (
+	"context"
+	"flag"
+	"fmt"
+	"log"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
+	"time"
+
+	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
+	"github.com/bolabaden/my-media-stack/infra/cluster/raft"
+	"github.com/bolabaden/my-media-stack/infra/dns"
+	"github.com/bolabaden/my-media-stack/infra/tailscale"
+	"github.com/bolabaden/my-media-stack/infra/traefik"
+)
+
+var (
+	domain           = flag.String("domain", getEnv("DOMAIN", "bolabaden.org"), "Domain name")
+	nodeName         = flag.String("node-name", getEnv("TS_HOSTNAME", ""), "Node name (from TS_HOSTNAME)")
+	bindAddr         = flag.String("bind-addr", "", "Address to bind to (Tailscale IP)")
+	bindPort         = flag.Int("bind-port", 7946, "Port for gossip protocol")
+	raftPort         = flag.Int("raft-port", 8300, "Port for Raft consensus")
+	dataDir          = flag.String("data-dir", getEnv("DATA_DIR", "/opt/constellation/data"), "Data directory for Raft")
+	configPath       = flag.String("config-path", getEnv("CONFIG_PATH", "/opt/constellation/volumes"), "Configuration path")
+	secretsPath      = flag.String("secrets-path", getEnv("SECRETS_PATH", "/opt/constellation/secrets"), "Secrets path")
+	httpProviderPort = flag.Int("http-provider-port", 8081, "Port for Traefik HTTP provider API")
+)
+
+func main() {
+	flag.Parse()
+
+	// Validate required parameters
+	if *nodeName == "" {
+		hostname, _ := os.Hostname()
+		*nodeName = hostname
+		log.Printf("Node name not provided, using hostname: %s", *nodeName)
+	}
+
+	// Get Tailscale IP
+	tailscaleIP, err := tailscale.GetTailscaleIP()
+	if err != nil {
+		log.Fatalf("Failed to get Tailscale IP: %v", err)
+	}
+
+	if *bindAddr == "" {
+		*bindAddr = tailscaleIP
+	}
+
+	// Get public IP (for DNS updates)
+	publicIP := getPublicIP()
+
+	// Get node priority (from environment or default)
+	priority := getNodePriority(*nodeName)
+
+	// Discover seed nodes via Tailscale
+	seedNodes, err := tailscale.DiscoverPeers()
+	if err != nil {
+		log.Printf("Warning: failed to discover peers: %v", err)
+		seedNodes = []string{}
+	}
+
+	// Initialize gossip cluster
+	log.Printf("Initializing gossip cluster...")
+	gossipConfig := &gossip.Config{
+		NodeName:     *nodeName,
+		BindAddr:     *bindAddr,
+		BindPort:     *bindPort,
+		PublicIP:     publicIP,
+		TailscaleIP:  tailscaleIP,
+		Priority:     priority,
+		Capabilities: []string{},
+		SeedNodes:    seedNodes,
+	}
+
+	gossipCluster, err := gossip.NewGossipCluster(gossipConfig)
+	if err != nil {
+		log.Fatalf("Failed to create gossip cluster: %v", err)
+	}
+	defer gossipCluster.Shutdown()
+
+	// Initialize Raft consensus
+	log.Printf("Initializing Raft consensus...")
+	raftConfig := &raft.Config{
+		NodeName:  *nodeName,
+		DataDir:   *dataDir,
+		BindAddr:  *bindAddr,
+		BindPort:  *raftPort,
+		SeedNodes: buildRaftSeedNodes(seedNodes, *raftPort),
+		LogLevel:  "info",
+	}
+
+	consensusManager, err := raft.NewConsensusManager(raftConfig)
+	if err != nil {
+		log.Fatalf("Failed to create consensus manager: %v", err)
+	}
+	defer consensusManager.Shutdown()
+
+	// Initialize lease manager
+	leaseManager := raft.NewLeaseManager(consensusManager, *nodeName)
+	defer leaseManager.Shutdown()
+
+	// Initialize Cloudflare DNS reconciler
+	log.Printf("Initializing Cloudflare DNS reconciler...")
+	cfAPIToken := readSecret(*secretsPath, "cf-api-token.txt")
+	cfZoneID := getEnv("CLOUDFLARE_ZONE_ID", "")
+
+	dnsReconciler, err := dns.NewDNSReconciler(&dns.Config{
+		APIToken:   cfAPIToken,
+		ZoneID:     cfZoneID,
+		Domain:     *domain,
+		RateLimit:  4,
+		BurstLimit: 10,
+	})
+	if err != nil {
+		log.Fatalf("Failed to create DNS reconciler: %v", err)
+	}
+
+	dnsController := dns.NewController(dnsReconciler)
+
+	// Register DNS lease callback
+	leaseManager.RegisterLeaseCallback(raft.LeaseTypeDNSWriter, func(hasLease bool) {
+		dnsController.SetLeaseOwnership(hasLease)
+		if hasLease {
+			// Update DNS records
+			dnsController.UpdateLBLeaderRecord(publicIP)
+			// TODO: Update per-node records from gossip state
+		}
+	})
+
+	// Initialize Traefik HTTP provider
+	log.Printf("Initializing Traefik HTTP provider...")
+	httpProvider := traefik.NewHTTPProviderServer(
+		gossipCluster.GetState(),
+		*httpProviderPort,
+		*domain,
+		*nodeName,
+	)
+
+	// Start HTTP provider server
+	go func() {
+		if err := httpProvider.Start(); err != nil {
+			log.Fatalf("HTTP provider server failed: %v", err)
+		}
+	}()
+
+	// Main agent loop
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Start service health monitoring
+	go monitorServiceHealth(ctx, gossipCluster)
+
+	// Start WARP health monitoring
+	go monitorWARPHealth(ctx, gossipCluster)
+
+	// Start LB leader management
+	go manageLBLeader(ctx, leaseManager, dnsController, publicIP, gossipCluster)
+
+	// Wait for shutdown signal
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
+	log.Printf("Constellation Agent started successfully")
+	log.Printf("  Node: %s", *nodeName)
+	log.Printf("  Domain: %s", *domain)
+	log.Printf("  Tailscale IP: %s", tailscaleIP)
+	log.Printf("  Public IP: %s", publicIP)
+	log.Printf("  Gossip port: %d", *bindPort)
+	log.Printf("  Raft port: %d", *raftPort)
+	log.Printf("  HTTP provider port: %d", *httpProviderPort)
+
+	<-sigCh
+	log.Printf("Shutting down...")
+}
+
+// Helper functions
+
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+func getPublicIP() string {
+	// TODO: Implement public IP detection
+	// Could use external service or network interface
+	return getEnv("PUBLIC_IP", "")
+}
+
+func getNodePriority(nodeName string) int {
+	// Fast nodes (cloudserver1-3) get lower priority (higher priority)
+	// Slow nodes get higher priority number (lower priority)
+	if strings.Contains(nodeName, "cloudserver") {
+		return 10
+	}
+	return 50 // Default for slower nodes
+}
+
+func buildRaftSeedNodes(seedNodes []string, raftPort int) []string {
+	raftSeeds := make([]string, 0, len(seedNodes))
+	for _, node := range seedNodes {
+		// Assume seed nodes are Tailscale IPs, add Raft port
+		raftSeeds = append(raftSeeds, fmt.Sprintf("%s:%d", node, raftPort))
+	}
+	return raftSeeds
+}
+
+func readSecret(secretsPath, filename string) string {
+	path := fmt.Sprintf("%s/%s", secretsPath, filename)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		log.Printf("Warning: failed to read secret %s: %v", path, err)
+		return ""
+	}
+	return strings.TrimSpace(string(data))
+}
+
+func monitorServiceHealth(ctx context.Context, cluster *gossip.GossipCluster) {
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			// TODO: Query Docker API for container health
+			// TODO: Broadcast service health to gossip
+		}
+	}
+}
+
+func monitorWARPHealth(ctx context.Context, cluster *gossip.GossipCluster) {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			// TODO: Check WARP gateway health
+			// TODO: Broadcast WARP health to gossip
+		}
+	}
+}
+
+func manageLBLeader(ctx context.Context, leaseManager *raft.LeaseManager, dnsController *dns.Controller, publicIP string, cluster *gossip.GossipCluster) {
+	// Try to acquire LB leader lease
+	if err := leaseManager.AcquireLBLeaderLease(); err != nil {
+		log.Printf("Failed to acquire LB leader lease: %v", err)
+	}
+
+	// Register callback for lease changes
+	leaseManager.RegisterLeaseCallback(raft.LeaseTypeLBLeader, func(hasLease bool) {
+		if hasLease {
+			log.Printf("Acquired LB leader lease")
+			// Update DNS
+			dnsController.UpdateLBLeader(publicIP)
+			// TODO: Start Traefik with port bindings
+		} else {
+			log.Printf("Lost LB leader lease")
+			// TODO: Stop Traefik port bindings (or keep running without bindings)
+		}
+	})
+
+	// Periodic lease renewal is handled by LeaseManager
+}

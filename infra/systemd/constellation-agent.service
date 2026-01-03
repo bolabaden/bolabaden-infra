@@ -1,0 +1,41 @@
+[Unit]
+Description=Constellation Agent - Zero-SPOF Gossip-Based HA Orchestration
+Documentation=https://github.com/bolabaden/my-media-stack
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/constellation
+ExecStart=/usr/local/bin/constellation-agent
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=constellation-agent
+
+# Environment variables
+Environment=TS_HOSTNAME=%H
+Environment=DOMAIN=bolabaden.org
+Environment=CONFIG_PATH=/opt/constellation/volumes
+Environment=SECRETS_PATH=/opt/constellation/secrets
+Environment=DATA_DIR=/opt/constellation/data
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/constellation/data /opt/constellation/volumes
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target
+
