@@ -398,7 +398,10 @@ services:
       kuma.stremio.http.interval: 60
     healthcheck:
       # Comprehensive HTTP healthcheck - installs curl if missing and validates actual service functionality
-      test: ["CMD-SHELL", "command -v curl >/dev/null || (apk add --no-cache curl >/dev/null 2>&1 || apt-get update >/dev/null 2>&1 && apt-get install -y curl >/dev/null 2>&1); (curl -fs http://127.0.0.1:11470/ >/dev/null 2>&1 || curl -fsk https://127.0.0.1:12470/ >/dev/null 2>&1) || exit 1"]
+      test: [
+        "CMD-SHELL",
+        "command -v curl >/dev/null || (apk add --no-cache curl >/dev/null 2>&1 || apt-get update >/dev/null 2>&1 && apt-get install -y curl >/dev/null 2>&1); (curl -fs http://127.0.0.1:11470/ >/dev/null 2>&1 || curl -fsk https://127.0.0.1:12470/ >/dev/null 2>&1) || exit 1"
+      ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -729,7 +732,6 @@ services:
       # --- AnimeTosho ---
       BUILTIN_ANIMETOSHO_URL: "https://feed.animetosho.org"
       # BUILTIN_ANIMETOSHO_TIMEOUT: 
-
 
       # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : 
       #                        # ANIME DATABASE
@@ -1528,9 +1530,9 @@ services:
       homepage.icon: comet.png
       homepage.href: https://comet.$DOMAIN/
       homepage.description: Stremio add-on to discover and index media sources from multiple providers
-      kuma.comet.http.name: "comet.$TS_HOSTNAME.$DOMAIN"
-      kuma.comet.http.url: "https://comet.$DOMAIN"
-      kuma.comet.http.interval: "60"
+      kuma.comet.http.name: comet.$TS_HOSTNAME.$DOMAIN
+      kuma.comet.http.url: https://comet.$DOMAIN
+      kuma.comet.http.interval: 60
     healthcheck:  # docker exec comet ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${COMET_PORT:-2020}/health > /dev/null 2>&1 || exit 1"]
       interval: 1m
@@ -1691,9 +1693,9 @@ services:
       homepage.icon: mediafusion.png
       homepage.href: https://mediafusion.$DOMAIN/
       homepage.description: All-in-one Stremio/Kodi stream aggregator combining multiple catalogs and sources
-      kuma.mediafusion.http.name: "mediafusion.$TS_HOSTNAME.$DOMAIN"
-      kuma.mediafusion.http.url: "https://mediafusion.$DOMAIN"
-      kuma.mediafusion.http.interval: "30"
+      kuma.mediafusion.http.name: mediafusion.$TS_HOSTNAME.$DOMAIN
+      kuma.mediafusion.http.url: https://mediafusion.$DOMAIN
+      kuma.mediafusion.http.interval: 30
     mem_limit: 1G
     mem_reservation: 512M
     cpus: 0.33
@@ -1738,9 +1740,9 @@ services:
       homepage.description: M3U/HLS/HSTS proxy for Stremio/Kodi to normalize and proxy streaming playlists
       homepage.group: Stremio Addons
       homepage.href: https://mediaflow-proxy.$DOMAIN/
-      kuma.mediaflow-proxy.http.name: "mediaflow-proxy.$TS_HOSTNAME.$DOMAIN"
-      kuma.mediaflow-proxy.http.url: "https://mediaflow-proxy.$DOMAIN"
-      kuma.mediaflow-proxy.http.interval: "60"
+      kuma.mediaflow-proxy.http.name: mediaflow-proxy.$TS_HOSTNAME.$DOMAIN
+      kuma.mediaflow-proxy.http.url: https://mediaflow-proxy.$DOMAIN
+      kuma.mediaflow-proxy.http.interval: 60
     healthcheck:
       test: [
         "CMD-SHELL",

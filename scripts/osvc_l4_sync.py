@@ -22,6 +22,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -46,17 +47,44 @@ def _run(cmd: List[str]) -> str:
     return proc.stdout.strip()
 
 
-def _node_shortnames_from_osvc() -> List[str]:
-    raw = _run(["om", "node", "ls", "--format", "json"])
-    nodes = json.loads(raw)
-    short: List[str] = []
-    for n in nodes:
-        if not isinstance(n, str) or not n:
-            continue
-        s = n.split(".")[0].strip()
-        if s and s not in short:
-            short.append(s)
-    return short
+def _node_tailscale_ips() -> Dict[str, str]:
+    """Get node shortnames -> Tailscale IP mapping"""
+    try:
+        raw = _run(["tailscale", "status", "--json"])
+        data = json.loads(raw)
+        node_map: Dict[str, str] = {}
+        
+        # Get self (current node)
+        self_name = data.get("Self", {}).get("DNSName", "").split(".")[0] or data.get("Self", {}).get("HostName", "").split(".")[0]
+        self_ip = ""
+        if data.get("Self", {}).get("TailscaleIPs"):
+            self_ip = data["Self"]["TailscaleIPs"][0]
+        if self_name and self_ip:
+            node_map[self_name] = self_ip
+        
+        # Get peers
+        peers = data.get("Peer", {})
+        if isinstance(peers, dict):
+            for peer_data in peers.values():
+                name = peer_data.get("DNSName", "").split(".")[0] or peer_data.get("HostName", "").split(".")[0]
+                ip = ""
+                if peer_data.get("TailscaleIPs"):
+                    ip = peer_data["TailscaleIPs"][0]
+                if name and ip:
+                    node_map[name] = ip
+        elif isinstance(peers, list):
+            for peer_data in peers:
+                name = peer_data.get("DNSName", "").split(".")[0] or peer_data.get("HostName", "").split(".")[0]
+                ip = ""
+                if peer_data.get("TailscaleIPs"):
+                    ip = peer_data["TailscaleIPs"][0]
+                if name and ip:
+                    node_map[name] = ip
+        
+        return node_map
+    except (subprocess.CalledProcessError, json.JSONDecodeError, KeyError) as e:
+        print(f"Warning: Could not get Tailscale IPs: {e}", file=sys.stderr)
+        return {}
 
 
 def _docker_container_ids() -> List[str]:
@@ -111,7 +139,7 @@ def _discover_l4_services() -> List[L4Service]:
     return [by_port[p] for p in sorted(by_port.keys())]
 
 
-def _render_haproxy_cfg(domain: str, nodes: List[str], services: List[L4Service]) -> str:
+def _render_haproxy_cfg(domain: str, node_ips: Dict[str, str], services: List[L4Service]) -> str:
     lines: List[str] = []
     lines.append("global")
     lines.append("  log stdout format raw local0")
@@ -152,11 +180,10 @@ def _render_haproxy_cfg(domain: str, nodes: List[str], services: List[L4Service]
             lines.append("  tcp-check connect")
         # Prefer leastconn for smoother balancing
         lines.append("  balance leastconn")
-        for n in nodes:
-            # Backend target is node-scoped hostname, so any node can proxy to any other.
-            # DNS must resolve <svc>.<node>.<domain> to node ingress.
-            target = f"{svc.name}.{n}.{domain}:{port}"
-            lines.append(f"  server {svc.name}_{n} {target} check inter 3s fall 3 rise 2")
+        for node_name, tailscale_ip in sorted(node_ips.items()):
+            # Backend target uses Tailscale IP directly (no DNS needed)
+            target = f"{tailscale_ip}:{port}"
+            lines.append(f"  server {svc.name}_{node_name} {target} check inter 3s fall 3 rise 2")
         lines.append("")
 
     return "\n".join(lines)
@@ -179,9 +206,11 @@ def main() -> int:
     config_path = os.environ.get("CONFIG_PATH", "./volumes").strip()
     out_file = Path(config_path) / "haproxy" / "haproxy.cfg"
 
-    nodes = _node_shortnames_from_osvc()
+    node_ips = _node_tailscale_ips()
+    if not node_ips:
+        raise SystemExit("No Tailscale nodes found. Ensure tailscale is running and connected.")
     services = _discover_l4_services()
-    cfg = _render_haproxy_cfg(domain=domain, nodes=nodes, services=services)
+    cfg = _render_haproxy_cfg(domain=domain, node_ips=node_ips, services=services)
     _atomic_write(out_file, cfg)
     print(f"Wrote {out_file}")
     return 0

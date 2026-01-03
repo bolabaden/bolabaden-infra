@@ -1,7 +1,6 @@
 package smartproxy
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"log"

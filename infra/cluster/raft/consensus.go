@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/raft"
-	"github.com/hashicorp/raft-boltdb"
+	raftboltdb "github.com/hashicorp/raft-boltdb"
 )
 
 // ConsensusManager manages Raft consensus for leader election
