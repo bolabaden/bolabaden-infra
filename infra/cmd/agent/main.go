@@ -125,12 +125,12 @@ func main() {
 
 	dnsController := dns.NewController(dnsReconciler)
 
-	// Register DNS lease callback
-	leaseManager.RegisterLeaseCallback(raft.LeaseTypeDNSWriter, func(hasLease bool) {
+	// Register DNS lease callback on consensus manager
+	consensusManager.RegisterLeaseCallback(raft.LeaseTypeDNSWriter, func(hasLease bool) {
 		dnsController.SetLeaseOwnership(hasLease)
 		if hasLease {
 			// Update DNS records
-			dnsController.UpdateLBLeaderRecord(publicIP)
+			dnsController.UpdateLBLeader(publicIP)
 			// TODO: Update per-node records from gossip state
 		}
 	})
@@ -172,7 +172,7 @@ func main() {
 	go warpMonitor.Start(ctx)
 
 	// Start LB leader management
-	go manageLBLeader(ctx, leaseManager, dnsController, publicIP, gossipCluster)
+	go manageLBLeader(ctx, leaseManager, dnsController, publicIP, gossipCluster, consensusManager)
 
 	// Wait for shutdown signal
 	sigCh := make(chan os.Signal, 1)
@@ -268,23 +268,23 @@ func monitorServiceHealth(ctx context.Context, dockerClient *client.Client, clus
 					continue
 				}
 
-				// Determine health status
-				healthy := container.State == "running"
-				if container.State == "running" && container.Health != "" {
-					healthy = container.Health == "healthy"
-				}
-
 				// Extract service name from container name (remove stack prefix if present)
 				serviceName := containerName
 				if idx := strings.LastIndex(containerName, "_"); idx > 0 {
 					serviceName = containerName[idx+1:]
 				}
 
-				// Get container details for endpoints and networks
+				// Get container details for endpoints, networks, and health
 				containerJSON, err := dockerClient.ContainerInspect(ctx, container.ID)
 				if err != nil {
 					log.Printf("Failed to inspect container %s: %v", containerName, err)
 					continue
+				}
+
+				// Determine health status
+				healthy := containerJSON.State.Running
+				if containerJSON.State.Running && containerJSON.State.Health != nil {
+					healthy = containerJSON.State.Health.Status == "healthy"
 				}
 
 				// Extract endpoints (ports)
@@ -308,14 +308,14 @@ func monitorServiceHealth(ctx context.Context, dockerClient *client.Client, clus
 	}
 }
 
-func manageLBLeader(ctx context.Context, leaseManager *raft.LeaseManager, dnsController *dns.Controller, publicIP string, cluster *gossip.GossipCluster) {
+func manageLBLeader(ctx context.Context, leaseManager *raft.LeaseManager, dnsController *dns.Controller, publicIP string, cluster *gossip.GossipCluster, consensusManager *raft.ConsensusManager) {
 	// Try to acquire LB leader lease
 	if err := leaseManager.AcquireLBLeaderLease(); err != nil {
 		log.Printf("Failed to acquire LB leader lease: %v", err)
 	}
 
-	// Register callback for lease changes
-	leaseManager.RegisterLeaseCallback(raft.LeaseTypeLBLeader, func(hasLease bool) {
+	// Register callback for lease changes on consensus manager
+	consensusManager.RegisterLeaseCallback(raft.LeaseTypeLBLeader, func(hasLease bool) {
 		if hasLease {
 			log.Printf("Acquired LB leader lease")
 			// Update DNS
