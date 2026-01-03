@@ -121,7 +121,7 @@ configs:
       - Developer:
         - Github:
           - abbr: GH
-            href: https://github.com/bolabaden-site
+            href: https://github.com/bolabaden
 
       - Portfolio:
         - $DOMAIN:
@@ -138,78 +138,6 @@ configs:
         - searxng:
           - abbr: SE
             href: https://searxng.$DOMAIN/
-  jackett-serverconfig.json:
-    content: |
-      {
-        "Port": 9117,
-        "LocalBindAddress": "127.0.0.1",
-        "AllowExternal": true,
-        "AllowCORS": true,
-        "APIKey": "$${JACKETT_API_KEY:-nnx0n84pcj7umynyd2pbid2nl1zzuemz}",
-        "AdminPassword": "",
-        "InstanceId": "jackett-bolabaden-$${DOMAIN}",
-        "BlackholeDir": "/blackhole",
-        "UpdateDisabled": false,
-        "UpdatePrerelease": false,
-        "BasePathOverride": "",
-        "BaseUrlOverride": "",
-        "CacheEnabled": true,
-        "CacheTtl": 2100,
-        "CacheMaxResultsPerIndexer": 1000,
-        "FlareSolverrUrl": "http://flaresolverr:8191",
-        "FlareSolverrMaxTimeout": 55000,
-        "OmdbApiKey": "",
-        "OmdbApiUrl": "",
-        "ProxyType": -1,
-        "ProxyUrl": "",
-        "ProxyPort": null,
-        "ProxyUsername": "",
-        "ProxyPassword": "",
-        "ProxyIsAnonymous": true
-      }
-  jackett-indexer-blacklist.txt:
-    content: |
-      # List of slow/broken indexers to exclude from Jackett provisioning
-      # These indexers cause timeouts (100+ seconds) and degrade Homepage performance
-      # Remove these to ensure fast widget API responses
-      audiobookbay
-      audiobook bay
-      ebookbay
-      ebook bay
-      animetosho
-      anime tosho
-      internetarchive
-      internet archive
-  jackett-init.sh:
-    content: |
-      #!/usr/bin/with-contenv bash
-      # Jackett initialization script - provisions config and removes slow indexers
-      
-      # Copy default ServerConfig if not exists
-      mkdir -p /config/Jackett /config/Jackett/Indexers
-      if [ ! -f /config/Jackett/ServerConfig.json ]; then
-        cp /defaults/ServerConfig.json /config/Jackett/ServerConfig.json
-        chown abc:abc /config/Jackett/ServerConfig.json
-        echo "Provisioned Jackett ServerConfig.json"
-      fi
-      
-      # Remove blacklisted indexers on every startup (self-healing)
-      if [ -f /indexer-blacklist.txt ]; then
-        while IFS= read -r indexer || [ -n "$$indexer" ]; do
-          # Skip comments and empty lines
-          case "$$indexer" in
-            \#*|"") continue ;;
-          esac
-          # Remove the indexer files (both active and backups) - use exact match
-          removed=0
-          for file in /config/Jackett/Indexers/*.json*; do
-            basename=$$(basename "$$file")
-            if echo "$$basename" | grep -qi "$$indexer"; then
-              rm -f "$$file" && echo "Removed slow indexer file: $$basename" && removed=1
-            fi
-          done
-        done < /indexer-blacklist.txt
-      fi
 
 
 services:
@@ -237,7 +165,10 @@ services:
       traefik.tcp.services.mongodb.loadbalancer.server.port: 27017
       traefik.tcp.services.mongodb.loadbalancer.server.tls: true
     healthcheck:
-      test: ["CMD-SHELL", "mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand(\"ping\").ok' > /dev/null 2>&1 || exit 1"]
+      test: [
+        "CMD-SHELL",
+        "mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand(\"ping\").ok' > /dev/null 2>&1 || exit 1"
+      ]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -281,7 +212,10 @@ services:
       kuma.searxng.http.url: https://searxng.$DOMAIN
       kuma.searxng.http.interval: 30
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${SEARXNG_PORT:-8080}/ || exit 1"]
+      test: [
+        "CMD-SHELL",
+        "wget --no-verbose --tries=1 --spider http://127.0.0.1:${SEARXNG_PORT:-8080}/ || exit 1"
+      ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -957,7 +891,7 @@ services:
     build:
       context: projects/kotormodsync/telemetry-auth
       dockerfile: Dockerfile
-    image: bolabaden/kotormodsync-telemetry-auth:latest
+    image: bolabaden/kotormodsync-telemetry-auth
     container_name: telemetry-auth-test
     hostname: telemetry-auth
     user: "0:0"  # Run as root to read secrets
@@ -972,7 +906,10 @@ services:
       MAX_TIMESTAMP_DRIFT: ${MAX_TIMESTAMP_DRIFT:-300}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1"]
+      test: [
+        "CMD-SHELL",
+        "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1"
+      ]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -1033,7 +970,10 @@ services:
     #    max-size: "1m"
     #    max-file: "1"
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping > /dev/null 2>&1 || exit 1"]
+      test: [
+        "CMD-SHELL",
+        "redis-cli ping > /dev/null 2>&1 || exit 1"
+      ]
       interval: 10s
       timeout: 5s
     cpus: 0.5

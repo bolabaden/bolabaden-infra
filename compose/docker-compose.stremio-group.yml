@@ -48,6 +48,78 @@ secrets:
 configs:
   fuse.conf:
     file: /etc/fuse.conf
+  jackett-serverconfig.json:
+    content: |
+      {
+        "Port": 9117,
+        "LocalBindAddress": "127.0.0.1",
+        "AllowExternal": true,
+        "AllowCORS": true,
+        "APIKey": "$${JACKETT_API_KEY:-nnx0n84pcj7umynyd2pbid2nl1zzuemz}",
+        "AdminPassword": "",
+        "InstanceId": "jackett-bolabaden-$${DOMAIN}",
+        "BlackholeDir": "/blackhole",
+        "UpdateDisabled": false,
+        "UpdatePrerelease": false,
+        "BasePathOverride": "",
+        "BaseUrlOverride": "",
+        "CacheEnabled": true,
+        "CacheTtl": 2100,
+        "CacheMaxResultsPerIndexer": 1000,
+        "FlareSolverrUrl": "http://flaresolverr:8191",
+        "FlareSolverrMaxTimeout": 55000,
+        "OmdbApiKey": "",
+        "OmdbApiUrl": "",
+        "ProxyType": -1,
+        "ProxyUrl": "",
+        "ProxyPort": null,
+        "ProxyUsername": "",
+        "ProxyPassword": "",
+        "ProxyIsAnonymous": true
+      }
+  jackett-indexer-blacklist.txt:
+    content: |
+      # List of slow/broken indexers to exclude from Jackett provisioning
+      # These indexers cause timeouts (100+ seconds) and degrade Homepage performance
+      # Remove these to ensure fast widget API responses
+      audiobookbay
+      audiobook bay
+      ebookbay
+      ebook bay
+      animetosho
+      anime tosho
+      internetarchive
+      internet archive
+  jackett-init.sh:
+    content: |
+      #!/usr/bin/with-contenv bash
+      # Jackett initialization script - provisions config and removes slow indexers
+      
+      # Copy default ServerConfig if not exists
+      mkdir -p /config/Jackett /config/Jackett/Indexers
+      if [ ! -f /config/Jackett/ServerConfig.json ]; then
+        cp /defaults/ServerConfig.json /config/Jackett/ServerConfig.json
+        chown abc:abc /config/Jackett/ServerConfig.json
+        echo "Provisioned Jackett ServerConfig.json"
+      fi
+      
+      # Remove blacklisted indexers on every startup (self-healing)
+      if [ -f /indexer-blacklist.txt ]; then
+        while IFS= read -r indexer || [ -n "$$indexer" ]; do
+          # Skip comments and empty lines
+          case "$$indexer" in
+            \#*|"") continue ;;
+          esac
+          # Remove the indexer files (both active and backups) - use exact match
+          removed=0
+          for file in /config/Jackett/Indexers/*.json*; do
+            basename=$$(basename "$$file")
+            if echo "$$basename" | grep -qi "$$indexer"; then
+              rm -f "$$file" && echo "Removed slow indexer file: $$basename" && removed=1
+            fi
+          done
+        done < /indexer-blacklist.txt
+      fi
   rclone.conf:
     # Plex > Cache > Encryption > Cloudsource
     # With these settings all my movies including 4K movies at 95GB start in approx 7 sec and no buffering after starting.
