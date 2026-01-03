@@ -172,10 +172,12 @@ services:
       - host.docker.internal:host-gateway
     networks:
       - backend
+    volumes:
+      - ./rabbitmq-init.sh:/rabbitmq-init.sh:ro
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-rabbitmq}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-rabbitmq}
-    command: rabbitmq-server
+    command: ["/bin/bash", "/rabbitmq-init.sh"]
     labels:
       deunhealth.restart.on.unhealthy: true
       kuma.rabbitmq.http.name: rabbitmq.${TS_HOSTNAME}.${DOMAIN}
