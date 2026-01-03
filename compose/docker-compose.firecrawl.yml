@@ -39,8 +39,10 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    build: https://github.com/firecrawl/firecrawl.git#main:/apps/api
-    image: ghcr.io/firecrawl/firecrawl
+    build:
+      context: /tmp/firecrawl-repo/apps/api
+      dockerfile: Dockerfile
+    image: firecrawl-with-both-fixes:latest
     container_name: firecrawl
     hostname: api
     networks:
@@ -103,9 +105,16 @@ services:
       traefik.enable: true
       traefik.http.routers.firecrawl.rule: Host(`firecrawl-api.$DOMAIN`) || Host(`firecrawl-api.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.services.firecrawl.loadbalancer.server.port: ${FIRECRAWL_INTERNAL_PORT:-3002}
+      deunhealth.restart.on.unhealthy: "true"
     command: node dist/src/harness.js --start-docker
     mem_reservation: 4G
     cpus: 4.0
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://127.0.0.1:$${FIRECRAWL_INTERNAL_PORT:-3002}/v0/health/liveness', (r) => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>process.exit(r.statusCode===200?0:1)); }).on('error',()=>process.exit(1));\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     restart: always
   
   nuq-postgres:
