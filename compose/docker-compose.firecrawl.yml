@@ -42,7 +42,7 @@ services:
     build:
       context: /tmp/firecrawl-repo/apps/api
       dockerfile: Dockerfile
-    image: ghcr.io/firecrawl/firecrawl
+    image: firecrawl-test-pr2632:latest
     container_name: firecrawl
     hostname: api
     networks:
