@@ -38,6 +38,9 @@ func defineServicesFromConfig(config *Config) []Service {
 	// Aggregate services from wordpress stack
 	services = append(services, defineServicesWordpress(config)...)
 
+	// Aggregate services from llm stack
+	services = append(services, defineServicesLLM(config)...)
+
 	// MongoDB
 	services = append(services, Service{
 		Name:          "mongodb",
