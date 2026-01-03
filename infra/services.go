@@ -22,9 +22,12 @@ func defineServicesFromConfig(config *Config) []Service {
 
 	// Aggregate services from headscale stack
 	services = append(services, defineServicesHeadscale(config)...)
-	
+
 	// Aggregate services from authentik stack
 	services = append(services, defineServicesAuthentik(config)...)
+
+	// Aggregate services from metrics stack
+	services = append(services, defineServicesMetrics(config)...)
 
 	// MongoDB
 	services = append(services, Service{

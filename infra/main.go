@@ -59,6 +59,9 @@ type Service struct {
 	Environment    map[string]string
 	Labels         map[string]string
 	Command        []string
+	Entrypoint     []string
+	User           string
+	Devices        []string
 	Restart        string
 	Healthcheck    *Healthcheck
 	DependsOn      []string
@@ -246,6 +249,12 @@ func (infra *Infrastructure) DeployService(svc Service) error {
 		Cmd:         svc.Command,
 		Healthcheck: infra.healthcheckToDocker(svc.Healthcheck),
 	}
+	if len(svc.Entrypoint) > 0 {
+		containerConfig.Entrypoint = svc.Entrypoint
+	}
+	if svc.User != "" {
+		containerConfig.User = svc.User
+	}
 
 	// Prepare host config
 	hostConfig := &container.HostConfig{
@@ -262,6 +271,18 @@ func (infra *Infrastructure) DeployService(svc Service) error {
 			MemoryReservation: infra.parseMemory(svc.MemReservation),
 			NanoCPUs:          infra.parseCPUs(svc.CPUs),
 		},
+	}
+	// Add devices
+	if len(svc.Devices) > 0 {
+		devices := make([]container.DeviceMapping, 0, len(svc.Devices))
+		for _, dev := range svc.Devices {
+			devices = append(devices, container.DeviceMapping{
+				PathOnHost:        dev,
+				PathInContainer:   dev,
+				CgroupPermissions: "rwm",
+			})
+		}
+		hostConfig.Devices = devices
 	}
 
 	// Create container
