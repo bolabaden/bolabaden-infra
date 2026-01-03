@@ -15,6 +15,8 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+
+	"github.com/bolabaden/my-media-stack/infra/tailscale"
 )
 
 // Config holds the infrastructure configuration
@@ -442,12 +444,15 @@ func main() {
 	}
 	defer infra.client.Close()
 
-	// Discover nodes via Tailscale
-	nodes, err := DiscoverNodes()
+	// Discover nodes via Tailscale (optional, for informational purposes)
+	nodeIPs, err := tailscale.DiscoverPeers()
 	if err != nil {
-		log.Fatalf("Failed to discover nodes: %v", err)
+		log.Printf("Warning: Failed to discover nodes via Tailscale: %v (continuing anyway)", err)
+		nodeIPs = []string{}
+	} else {
+		log.Printf("Discovered %d nodes via Tailscale", len(nodeIPs))
 	}
-	log.Printf("Discovered %d nodes via Tailscale", len(nodes))
+	_ = nodeIPs // Used for future enhancements
 
 	// Ensure networks exist
 	if err := infra.EnsureNetworks(); err != nil {
@@ -461,28 +466,10 @@ func main() {
 		}
 	}
 
-	// Generate dynamic Traefik config
-	traefikConfig := &TraefikDynamicConfig{
-		config: config,
-		nodes:  nodes,
-	}
-	containers, err := infra.DiscoverTraefikContainers()
-	if err != nil {
-		log.Printf("Warning: Failed to discover Traefik containers: %v", err)
-	} else {
-		if err := traefikConfig.GenerateFailoverConfig(containers); err != nil {
-			log.Printf("Warning: Failed to generate Traefik config: %v", err)
-		} else {
-			log.Println("Generated Traefik dynamic configuration")
-		}
-	}
-
-	// Generate HAProxy L4 config
-	if err := GenerateHAProxyConfig(config, nodes); err != nil {
-		log.Printf("Warning: Failed to generate HAProxy config: %v", err)
-	} else {
-		log.Println("Generated HAProxy L4 configuration")
-	}
+	// Note: Traefik configuration is now handled dynamically by the Constellation Agent
+	// via the HTTP provider API. No static config generation is needed.
+	// The agent will automatically discover services and generate Traefik config from gossip state.
+	log.Println("Note: Traefik configuration is managed dynamically by Constellation Agent")
 
 	log.Println("Deployment complete!")
 }
