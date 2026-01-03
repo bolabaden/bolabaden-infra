@@ -4,7 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log"
+	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -131,7 +134,8 @@ func main() {
 		if hasLease {
 			// Update DNS records
 			dnsController.UpdateLBLeader(publicIP)
-			// TODO: Update per-node records from gossip state
+			// Update per-node records from gossip state
+			updateNodeDNSRecords(dnsController, gossipCluster)
 		}
 	})
 
@@ -174,6 +178,9 @@ func main() {
 	// Start LB leader management
 	go manageLBLeader(ctx, leaseManager, dnsController, publicIP, gossipCluster, consensusManager)
 
+	// Start periodic DNS reconciliation for all nodes
+	go reconcileNodeDNS(ctx, dnsController, gossipCluster, consensusManager, *nodeName)
+
 	// Wait for shutdown signal
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
@@ -201,9 +208,69 @@ func getEnv(key, defaultValue string) string {
 }
 
 func getPublicIP() string {
-	// TODO: Implement public IP detection
-	// Could use external service or network interface
-	return getEnv("PUBLIC_IP", "")
+	// First check environment variable
+	if ip := getEnv("PUBLIC_IP", ""); ip != "" {
+		return ip
+	}
+
+	// Try to detect from external services
+	ipServices := []string{
+		"https://api.ipify.org",
+		"https://ifconfig.me",
+		"https://icanhazip.com",
+		"https://checkip.amazonaws.com",
+	}
+
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	for _, service := range ipServices {
+		req, err := http.NewRequest("GET", service, nil)
+		if err != nil {
+			continue
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			continue
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				continue
+			}
+
+			ip := strings.TrimSpace(string(body))
+			if net.ParseIP(ip) != nil {
+				log.Printf("Detected public IP: %s (from %s)", ip, service)
+				return ip
+			}
+		}
+	}
+
+	// Fallback: try to get IP from default route interface
+	if ip := getIPFromDefaultInterface(); ip != "" {
+		log.Printf("Using IP from default interface: %s", ip)
+		return ip
+	}
+
+	log.Printf("Warning: Could not detect public IP, using empty string")
+	return ""
+}
+
+func getIPFromDefaultInterface() string {
+	// Try to get IP from default route
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		return ""
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+	return localAddr.IP.String()
 }
 
 func getNodePriority(nodeName string) int {
@@ -328,4 +395,42 @@ func manageLBLeader(ctx context.Context, leaseManager *raft.LeaseManager, dnsCon
 	})
 
 	// Periodic lease renewal is handled by LeaseManager
+}
+
+// updateNodeDNSRecords updates DNS records for all nodes in the gossip state
+func updateNodeDNSRecords(dnsController *dns.Controller, cluster *gossip.GossipCluster) {
+	state := cluster.GetState()
+	nodeIPs := make(map[string]string)
+
+	// Collect node IPs from gossip state
+	for nodeName, nodeInfo := range state.Nodes {
+		if nodeInfo.PublicIP != "" {
+			nodeIPs[nodeName] = nodeInfo.PublicIP
+		}
+	}
+
+	// Update DNS records for all nodes via controller
+	if len(nodeIPs) > 0 {
+		dnsController.UpdateNodeIPs(nodeIPs)
+		log.Printf("Requested DNS update for %d nodes", len(nodeIPs))
+	}
+}
+
+// reconcileNodeDNS periodically reconciles DNS records for all nodes
+func reconcileNodeDNS(ctx context.Context, dnsController *dns.Controller, cluster *gossip.GossipCluster, consensusManager *raft.ConsensusManager, currentNodeName string) {
+	ticker := time.NewTicker(60 * time.Second) // Reconcile every minute
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			// Only reconcile if we hold the DNS writer lease
+			lease := consensusManager.GetLease(raft.LeaseTypeDNSWriter)
+			if lease != nil && lease.NodeName == currentNodeName {
+				updateNodeDNSRecords(dnsController, cluster)
+			}
+		}
+	}
 }
