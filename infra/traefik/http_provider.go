@@ -167,7 +167,20 @@ func NewHTTPProviderServer(gossipState *gossip.ClusterState, port int, domain, l
 // Start starts the HTTP provider server
 func (s *HTTPProviderServer) Start() error {
 	mux := http.NewServeMux()
+
+	// Traefik HTTP provider standard endpoints
+	mux.HandleFunc("/api/http/routers", s.handleHTTPRouters)
+	mux.HandleFunc("/api/http/services", s.handleHTTPServices)
+	mux.HandleFunc("/api/http/middlewares", s.handleHTTPMiddlewares)
+	mux.HandleFunc("/api/tcp/routers", s.handleTCPRouters)
+	mux.HandleFunc("/api/tcp/services", s.handleTCPServices)
+	mux.HandleFunc("/api/udp/routers", s.handleUDPRouters)
+	mux.HandleFunc("/api/udp/services", s.handleUDPServices)
+
+	// Legacy single endpoint (for compatibility)
 	mux.HandleFunc("/api/dynamic", s.handleDynamicConfig)
+
+	// Health check
 	mux.HandleFunc("/health", s.handleHealth)
 
 	s.server = &http.Server{
@@ -189,7 +202,7 @@ func (s *HTTPProviderServer) Shutdown() error {
 	return s.server.Close()
 }
 
-// handleDynamicConfig handles requests for dynamic configuration
+// handleDynamicConfig handles requests for dynamic configuration (legacy endpoint)
 func (s *HTTPProviderServer) handleDynamicConfig(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -198,25 +211,153 @@ func (s *HTTPProviderServer) handleDynamicConfig(w http.ResponseWriter, r *http.
 
 	// Compute config from gossip state
 	config := s.computeConfig()
-
-	// Set headers
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	// Marshal and write response
-	encoder := json.NewEncoder(w)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(config); err != nil {
-		log.Printf("Failed to encode Traefik config: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
+	s.writeJSON(w, config)
 }
 
 // handleHealth handles health check requests
 func (s *HTTPProviderServer) handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
+}
+
+// handleHTTPRouters handles requests for HTTP routers
+func (s *HTTPProviderServer) handleHTTPRouters(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	config := s.computeConfig()
+	if config.HTTP == nil || config.HTTP.Routers == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("{}"))
+		return
+	}
+
+	s.writeJSON(w, config.HTTP.Routers)
+}
+
+// handleHTTPServices handles requests for HTTP services
+func (s *HTTPProviderServer) handleHTTPServices(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	config := s.computeConfig()
+	if config.HTTP == nil || config.HTTP.Services == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("{}"))
+		return
+	}
+
+	s.writeJSON(w, config.HTTP.Services)
+}
+
+// handleHTTPMiddlewares handles requests for HTTP middlewares
+func (s *HTTPProviderServer) handleHTTPMiddlewares(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	config := s.computeConfig()
+	if config.HTTP == nil || config.HTTP.Middlewares == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("{}"))
+		return
+	}
+
+	s.writeJSON(w, config.HTTP.Middlewares)
+}
+
+// handleTCPRouters handles requests for TCP routers
+func (s *HTTPProviderServer) handleTCPRouters(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	config := s.computeConfig()
+	if config.TCP == nil || config.TCP.Routers == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("{}"))
+		return
+	}
+
+	s.writeJSON(w, config.TCP.Routers)
+}
+
+// handleTCPServices handles requests for TCP services
+func (s *HTTPProviderServer) handleTCPServices(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	config := s.computeConfig()
+	if config.TCP == nil || config.TCP.Services == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("{}"))
+		return
+	}
+
+	s.writeJSON(w, config.TCP.Services)
+}
+
+// handleUDPRouters handles requests for UDP routers
+func (s *HTTPProviderServer) handleUDPRouters(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	config := s.computeConfig()
+	if config.UDP == nil || config.UDP.Routers == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("{}"))
+		return
+	}
+
+	s.writeJSON(w, config.UDP.Routers)
+}
+
+// handleUDPServices handles requests for UDP services
+func (s *HTTPProviderServer) handleUDPServices(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	config := s.computeConfig()
+	if config.UDP == nil || config.UDP.Services == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("{}"))
+		return
+	}
+
+	s.writeJSON(w, config.UDP.Services)
+}
+
+// writeJSON writes a JSON response
+func (s *HTTPProviderServer) writeJSON(w http.ResponseWriter, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(data); err != nil {
+		log.Printf("Failed to encode JSON response: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 }
 
 // computeConfig computes the Traefik dynamic configuration from gossip state
