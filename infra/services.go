@@ -29,6 +29,12 @@ func defineServicesFromConfig(config *Config) []Service {
 	// Aggregate services from metrics stack
 	services = append(services, defineServicesMetrics(config)...)
 
+	// Aggregate services from unsend stack
+	services = append(services, defineServicesUnsend(config)...)
+
+	// Aggregate services from firecrawl stack
+	services = append(services, defineServicesFirecrawl(config)...)
+
 	// MongoDB
 	services = append(services, Service{
 		Name:          "mongodb",
