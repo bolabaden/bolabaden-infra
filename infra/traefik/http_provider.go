@@ -13,12 +13,14 @@ import (
 
 // HTTPProviderServer serves Traefik dynamic configuration via HTTP provider API
 type HTTPProviderServer struct {
-	gossipState *gossip.ClusterState
-	port        int
-	server      *http.Server
-	mu          sync.RWMutex
-	lastConfig  *TraefikDynamicConfig
-	lastUpdate  time.Time
+	gossipState   *gossip.ClusterState
+	port          int
+	domain        string
+	localNodeName string
+	server        *http.Server
+	mu            sync.RWMutex
+	lastConfig    *TraefikDynamicConfig
+	lastUpdate    time.Time
 }
 
 // TraefikDynamicConfig represents the Traefik dynamic configuration format
@@ -153,10 +155,12 @@ type UDPServer struct {
 }
 
 // NewHTTPProviderServer creates a new HTTP provider server
-func NewHTTPProviderServer(gossipState *gossip.ClusterState, port int) *HTTPProviderServer {
+func NewHTTPProviderServer(gossipState *gossip.ClusterState, port int, domain, localNodeName string) *HTTPProviderServer {
 	return &HTTPProviderServer{
-		gossipState: gossipState,
-		port:        port,
+		gossipState:   gossipState,
+		port:          port,
+		domain:        domain,
+		localNodeName: localNodeName,
 	}
 }
 
@@ -253,22 +257,4 @@ func (s *HTTPProviderServer) computeHTTPConfig() *HTTPConfig {
 	}
 }
 
-// computeTCPConfig computes TCP routers and services
-func (s *HTTPProviderServer) computeTCPConfig() *TCPConfig {
-	// This will be implemented in tcp_udp.go
-	// For now, return empty config
-	return &TCPConfig{
-		Routers:  make(map[string]*TCPRouter),
-		Services: make(map[string]*TCPService),
-	}
-}
-
-// computeUDPConfig computes UDP routers and services
-func (s *HTTPProviderServer) computeUDPConfig() *UDPConfig {
-	// This will be implemented in tcp_udp.go
-	// For now, return empty config
-	return &UDPConfig{
-		Routers:  make(map[string]*UDPRouter),
-		Services: make(map[string]*UDPService),
-	}
-}
+// computeTCPConfig and computeUDPConfig are implemented in tcp_udp.go

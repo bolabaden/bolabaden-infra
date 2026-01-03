@@ -118,7 +118,7 @@ func (cs *ClusterState) GetHealthyServiceNodes(serviceName string) []string {
 	defer cs.mu.RUnlock()
 
 	var healthyNodes []string
-	for key, health := range cs.ServiceHealth {
+	for _, health := range cs.ServiceHealth {
 		if health.ServiceName == serviceName && health.Healthy {
 			healthyNodes = append(healthyNodes, health.NodeName)
 		}
@@ -155,6 +155,19 @@ func (cs *ClusterState) GetAllNodes() []*NodeMetadata {
 		nodes = append(nodes, node)
 	}
 	return nodes
+}
+
+// GetAllServiceHealth returns all service health entries
+func (cs *ClusterState) GetAllServiceHealth() map[string]*ServiceHealth {
+	cs.mu.RLock()
+	defer cs.mu.RUnlock()
+
+	// Return a copy to prevent external modification
+	healthCopy := make(map[string]*ServiceHealth)
+	for k, v := range cs.ServiceHealth {
+		healthCopy[k] = v
+	}
+	return healthCopy
 }
 
 // MarshalJSON serializes the cluster state to JSON
