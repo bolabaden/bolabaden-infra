@@ -37,7 +37,9 @@ services:
         condition: service_started
       nuq-postgres:
         condition: service_healthy
-    build: https://github.com/firecrawl/firecrawl.git#main:/apps/api
+    build:
+      context: /tmp/firecrawl-repo/apps/api
+      dockerfile: Dockerfile
     image: ghcr.io/firecrawl/firecrawl
     container_name: firecrawl
     hostname: api
@@ -62,6 +64,7 @@ services:
       REDIS_RATE_LIMIT_URL: redis://redis:6379
       PLAYWRIGHT_MICROSERVICE_URL: ${PLAYWRIGHT_HOST:-http://playwright-service:3000/scrape}
       NUQ_DATABASE_URL: postgres://postgres:postgres@nuq-postgres:5432/postgres
+      NUQ_RABBITMQ_URL: ${FIRECRAWL_NUQ_RABBITMQ_URL:-}
       EXTRACT_WORKER_PORT: ${FIRECRAWL_EXTRACT_WORKER_PORT:-3004}
       # To turn on DB authentication, you need to set up Supabase.
       USE_DB_AUTHENTICATION: ${FIRECRAWL_USE_DB_AUTHENTICATION:-}  # supabase is required
