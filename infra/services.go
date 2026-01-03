@@ -14,6 +14,9 @@ func defineServicesFromConfig(config *Config) []Service {
 
 	services := []Service{}
 
+	// Aggregate services from coolify-proxy stack
+	services = append(services, defineServicesCoolifyProxy(config)...)
+
 	// MongoDB
 	services = append(services, Service{
 		Name:          "mongodb",
