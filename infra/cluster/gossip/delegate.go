@@ -37,8 +37,40 @@ func (gd *GossipDelegate) NodeMeta(limit int) []byte {
 	}
 
 	if len(data) > limit {
-		log.Printf("Node metadata exceeds limit (%d > %d), truncating", len(data), limit)
-		data = data[:limit]
+		// Truncating JSON mid-stream produces invalid JSON that cannot be parsed.
+		// Instead, we need to either:
+		// 1. Return empty (safe but loses data)
+		// 2. Use a more compact representation
+		// 3. Remove less critical fields to fit within limit
+		// For now, we'll try to create a minimal valid JSON by removing less critical fields
+		log.Printf("Node metadata exceeds limit (%d > %d), creating minimal representation", len(data), limit)
+
+		// Create a minimal node metadata with only essential fields
+		minimalNode := struct {
+			Name        string `json:"name"`
+			PublicIP    string `json:"public_ip"`
+			TailscaleIP string `json:"tailscale_ip"`
+			Priority    int    `json:"priority"`
+		}{
+			Name:        node.Name,
+			PublicIP:    node.PublicIP,
+			TailscaleIP: node.TailscaleIP,
+			Priority:    node.Priority,
+		}
+
+		minimalData, err := json.Marshal(minimalNode)
+		if err != nil {
+			log.Printf("Failed to marshal minimal node metadata: %v", err)
+			return []byte{}
+		}
+
+		// If still too large, return empty rather than corrupt JSON
+		if len(minimalData) > limit {
+			log.Printf("Minimal node metadata still exceeds limit (%d > %d), returning empty", len(minimalData), limit)
+			return []byte{}
+		}
+
+		return minimalData
 	}
 
 	return data

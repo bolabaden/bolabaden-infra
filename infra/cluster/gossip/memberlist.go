@@ -182,19 +182,33 @@ func (gc *GossipCluster) BroadcastWARPHealth(healthy bool) {
 
 // UpdateNodeMetadata updates this node's metadata
 func (gc *GossipCluster) UpdateNodeMetadata(cordoned bool, capabilities []string) {
+	// GetNode returns a pointer but releases the lock, so we need to create a copy
+	// to avoid data races when modifying the node
 	node, exists := gc.state.GetNode(gc.config.NodeName)
 	if !exists {
 		log.Printf("Warning: node %s not found in state", gc.config.NodeName)
 		return
 	}
 
-	node.Cordoned = cordoned
-	if capabilities != nil {
-		node.Capabilities = capabilities
+	// Create a copy of the node to avoid data race
+	// We can't modify the node directly because GetNode releases the lock
+	updatedNode := &NodeMetadata{
+		Name:         node.Name,
+		PublicIP:     node.PublicIP,
+		TailscaleIP:  node.TailscaleIP,
+		Priority:     node.Priority,
+		Capabilities: node.Capabilities,
+		LastSeen:     time.Now(),
+		Cordoned:     cordoned,
 	}
-	node.LastSeen = time.Now()
 
-	gc.state.UpdateNode(node)
+	if capabilities != nil {
+		// Copy capabilities slice to avoid sharing the underlying array
+		updatedNode.Capabilities = make([]string, len(capabilities))
+		copy(updatedNode.Capabilities, capabilities)
+	}
+
+	gc.state.UpdateNode(updatedNode)
 	log.Printf("Updated node metadata for %s (cordoned: %v)", gc.config.NodeName, cordoned)
 }
 

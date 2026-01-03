@@ -12,6 +12,13 @@ func defineServicesCoolifyProxy(config *Config) []Service {
 	tsHostname := getEnv("TS_HOSTNAME", "localhost")
 	stackName := config.StackName
 
+	// Determine Traefik Docker network name - match logic from DeployService
+	// If StackName is empty, use just "publicnet", otherwise use "StackName_publicnet"
+	traefikNetwork := "publicnet"
+	if stackName != "" {
+		traefikNetwork = stackName + "_publicnet"
+	}
+
 	services := []Service{}
 
 	// cloudflare-ddns
@@ -208,7 +215,7 @@ func defineServicesCoolifyProxy(config *Config) []Service {
 		"--ping=true",
 		"--providers.docker=true",
 		fmt.Sprintf("--providers.docker.endpoint=%s", getEnv("TRAEFIK_DOCKER_HOST", "unix:///var/run/docker.sock")),
-		fmt.Sprintf("--providers.docker.network=%s_publicnet", stackName),
+		fmt.Sprintf("--providers.docker.network=%s", traefikNetwork),
 		fmt.Sprintf("--providers.docker.defaultRule=Host(`{{ normalize .ContainerName }}.%s`) || Host(`{{ normalize .Name }}.%s`) || Host(`{{ normalize .ContainerName }}.%s.%s`) || Host(`{{ normalize .Name }}.%s.%s`)", domain, domain, tsHostname, domain, tsHostname, domain),
 		"--providers.docker.exposedByDefault=false",
 		"--providers.file.directory=/traefik/dynamic/",
