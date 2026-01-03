@@ -35,6 +35,9 @@ func defineServicesFromConfig(config *Config) []Service {
 	// Aggregate services from firecrawl stack
 	services = append(services, defineServicesFirecrawl(config)...)
 
+	// Aggregate services from wordpress stack
+	services = append(services, defineServicesWordpress(config)...)
+
 	// MongoDB
 	services = append(services, Service{
 		Name:          "mongodb",
