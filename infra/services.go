@@ -41,6 +41,9 @@ func defineServicesFromConfig(config *Config) []Service {
 	// Aggregate services from llm stack
 	services = append(services, defineServicesLLM(config)...)
 
+	// Aggregate services from stremio stack
+	services = append(services, defineServicesStremio(config)...)
+
 	// MongoDB
 	services = append(services, Service{
 		Name:          "mongodb",
