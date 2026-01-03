@@ -101,7 +101,7 @@ docker run --rm --network "${NETWORK_NAME}" --entrypoint sh "${CHECK_IMAGE}" -c 
   "curl -sS --max-time 8 https://cloudflare.com/cdn-cgi/trace | grep -qE '^warp=(on|plus)$'"
 
 docker run --rm --network "${NETWORK_NAME}" --entrypoint sh "${CHECK_IMAGE}" -c \
-  "curl -sS --max-time 12 https://registry.npmjs.org/pnpm/latest >/dev/null"
+  "curl -f -sS --max-time 12 https://registry.npmjs.org/pnpm/latest >/dev/null"
 
 echo "warp-fix: OK (warp-nat-net egress + WARP active)"
 
