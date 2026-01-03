@@ -20,6 +20,9 @@ func defineServicesFromConfig(config *Config) []Service {
 	// Aggregate services from WARP NAT routing stack
 	services = append(services, defineServicesWarp(config)...)
 
+	// Aggregate services from headscale stack
+	services = append(services, defineServicesHeadscale(config)...)
+
 	// MongoDB
 	services = append(services, Service{
 		Name:          "mongodb",
