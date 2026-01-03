@@ -44,6 +44,22 @@ if [ "${needs_repair}" = "true" ]; then
   docker exec -u 0 "${CONTAINER_NAME}" sh -lc \
     "rm -f '${REG_PATH}' '${CONF_PATH}' && sync || true"
   docker restart "${CONTAINER_NAME}" >/dev/null
+  
+  # Wait for container to be running after restart
+  echo "warp-fix: waiting for ${CONTAINER_NAME} to be running..."
+  for _ in $(seq 1 30); do
+    state="$(docker inspect -f '{{.State.Status}}' "${CONTAINER_NAME}" 2>/dev/null || echo unknown)"
+    if [ "${state}" = "running" ]; then
+      break
+    fi
+    sleep 1
+  done
+  state="$(docker inspect -f '{{.State.Status}}' "${CONTAINER_NAME}" 2>/dev/null || echo unknown)"
+  if [ "${state}" != "running" ]; then
+    echo "warp-fix: container did not start (state=${state})" >&2
+    docker logs --tail 200 "${CONTAINER_NAME}" >&2 || true
+    exit 1
+  fi
 else
   echo "warp-fix: registration files look non-empty; no repair needed."
 fi
@@ -63,6 +79,19 @@ if docker inspect -f '{{.State.Health.Status}}' "${CONTAINER_NAME}" >/dev/null 2
     echo "warp-fix: container did not become healthy (health=${health})" >&2
     docker logs --tail 200 "${CONTAINER_NAME}" >&2 || true
     exit 1
+  fi
+else
+  # If no healthcheck, wait a bit for container to be ready after restart
+  if [ "${needs_repair}" = "true" ]; then
+    echo "warp-fix: waiting for ${CONTAINER_NAME} to be ready (no healthcheck configured)..."
+    sleep 5
+    # Verify container is still running
+    state="$(docker inspect -f '{{.State.Status}}' "${CONTAINER_NAME}" 2>/dev/null || echo unknown)"
+    if [ "${state}" != "running" ]; then
+      echo "warp-fix: container is not running (state=${state})" >&2
+      docker logs --tail 200 "${CONTAINER_NAME}" >&2 || true
+      exit 1
+    fi
   fi
 fi
 
