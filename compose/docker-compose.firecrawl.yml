@@ -43,6 +43,7 @@ services:
       context: /tmp/firecrawl-repo/apps/api
       dockerfile: Dockerfile
     image: firecrawl-with-both-fixes:latest
+    pull_policy: build
     container_name: firecrawl
     hostname: api
     networks:
