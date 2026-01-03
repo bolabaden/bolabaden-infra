@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -120,7 +121,11 @@ type Infrastructure struct {
 
 // NewInfrastructure creates a new infrastructure manager
 func NewInfrastructure(config *Config) (*Infrastructure, error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	cli, err := client.NewClientWithOpts(
+		client.FromEnv,
+		client.WithAPIVersionNegotiation(),
+		client.WithVersion("1.44"), // Minimum required version
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Docker client: %w", err)
 	}
@@ -135,7 +140,11 @@ func NewInfrastructure(config *Config) (*Infrastructure, error) {
 // EnsureNetworks creates all required Docker networks
 func (infra *Infrastructure) EnsureNetworks() error {
 	for name, netConfig := range infra.config.Networks {
-		log.Printf("Ensuring network: %s", name)
+		networkName := netConfig.Name
+		if networkName == "" {
+			networkName = name
+		}
+		log.Printf("Ensuring network: %s", networkName)
 
 		// Check if network exists
 		networks, err := infra.client.NetworkList(infra.ctx, types.NetworkListOptions{})
@@ -145,9 +154,9 @@ func (infra *Infrastructure) EnsureNetworks() error {
 
 		exists := false
 		for _, net := range networks {
-			if net.Name == name {
+			if net.Name == networkName {
 				exists = true
-				log.Printf("  Network %s already exists", name)
+				log.Printf("  Network %s already exists", networkName)
 				break
 			}
 		}
@@ -181,11 +190,11 @@ func (infra *Infrastructure) EnsureNetworks() error {
 				Internal:   false,
 			}
 
-			_, err := infra.client.NetworkCreate(infra.ctx, name, createOpts)
+			_, err := infra.client.NetworkCreate(infra.ctx, networkName, createOpts)
 			if err != nil {
-				return fmt.Errorf("failed to create network %s: %w", name, err)
+				return fmt.Errorf("failed to create network %s: %w", networkName, err)
 			}
-			log.Printf("  Created network: %s", name)
+			log.Printf("  Created network: %s", networkName)
 		}
 	}
 
@@ -212,7 +221,8 @@ func (infra *Infrastructure) DeployService(svc Service) error {
 			Force: true,
 		})
 		if err != nil {
-			return fmt.Errorf("failed to remove container: %w", err)
+			// Log warning but continue if container doesn't exist
+			log.Printf("  Warning: Failed to remove container %s: %v (continuing anyway)", svc.ContainerName, err)
 		}
 	}
 
@@ -301,11 +311,19 @@ func (infra *Infrastructure) volumesToBinds(volumes []VolumeMount) []string {
 	binds := make([]string, 0, len(volumes))
 	for _, vol := range volumes {
 		if vol.Type == "bind" {
+			// Convert relative paths to absolute paths
+			sourcePath := vol.Source
+			if !filepath.IsAbs(sourcePath) {
+				absPath, err := filepath.Abs(sourcePath)
+				if err == nil {
+					sourcePath = absPath
+				}
+			}
 			ro := ""
 			if vol.ReadOnly {
 				ro = ":ro"
 			}
-			binds = append(binds, fmt.Sprintf("%s:%s%s", vol.Source, vol.Target, ro))
+			binds = append(binds, fmt.Sprintf("%s:%s%s", sourcePath, vol.Target, ro))
 		}
 	}
 	return binds

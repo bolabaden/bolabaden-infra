@@ -128,4 +128,3 @@ type TailscaleSelf struct {
 	HostName     string   `json:"HostName"`
 	TailscaleIPs []string `json:"TailscaleIPs"`
 }
-
