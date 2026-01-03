@@ -1,0 +1,12 @@
+[Unit]
+Description=Periodically regenerate Traefik failover config (OpenSVC + Docker)
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=30s
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target
+
+

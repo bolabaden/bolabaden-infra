@@ -427,16 +427,6 @@ configs:
             loadBalancer:
               servers:
                 - url: http://{{ $$name }}:{{ (index $$c.Addresses 0).Port }}
-                - url: https://{{ $$name }}.micklethefickle.$DOMAIN
-                - url: https://{{ $$name }}.beatapostapita.$DOMAIN
-                - url: https://{{ $$name }}.vractormania.$DOMAIN
-              #  - url: https://{{ $$name }}.arnialtrashlid.$DOMAIN
-              #  - url: https://{{ $$name }}.wizard-pc.$DOMAIN
-              #  - url: https://{{ $$name }}.wizard-pc-wsl.$DOMAIN
-              #  - url: https://{{ $$name }}.wizard-laptop.$DOMAIN
-              #  - url: https://{{ $$name }}.cloudserver1.$DOMAIN
-              #  - url: https://{{ $$name }}.cloudserver2.$DOMAIN
-              #  - url: https://{{ $$name }}.cloudserver3.$DOMAIN
               healthCheck:
                 path: "{{ $$healthPath }}"
                 interval: "{{ $$healthInterval }}"
