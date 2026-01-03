@@ -11,6 +11,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
+
+	"github.com/bolabaden/my-media-stack/infra"
 	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
 	"github.com/bolabaden/my-media-stack/infra/cluster/raft"
 	"github.com/bolabaden/my-media-stack/infra/dns"
@@ -151,11 +156,21 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// Initialize Docker client for health monitoring
+	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithVersion("1.44"))
+	if err != nil {
+		log.Fatalf("Failed to create Docker client: %v", err)
+	}
+
 	// Start service health monitoring
-	go monitorServiceHealth(ctx, gossipCluster)
+	go monitorServiceHealth(ctx, dockerClient, gossipCluster, *nodeName)
 
 	// Start WARP health monitoring
-	go monitorWARPHealth(ctx, gossipCluster)
+	warpMonitor := infra.NewWarpMonitor(dockerClient, func(healthy bool) {
+		// Broadcast WARP health to gossip
+		gossipCluster.BroadcastWARPHealth(healthy)
+	})
+	go warpMonitor.Start(ctx)
 
 	// Start LB leader management
 	go manageLBLeader(ctx, leaseManager, dnsController, publicIP, gossipCluster)
@@ -220,7 +235,7 @@ func readSecret(secretsPath, filename string) string {
 	return strings.TrimSpace(string(data))
 }
 
-func monitorServiceHealth(ctx context.Context, cluster *gossip.GossipCluster) {
+func monitorServiceHealth(ctx context.Context, dockerClient *client.Client, cluster *gossip.GossipCluster, nodeName string) {
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
@@ -229,23 +244,67 @@ func monitorServiceHealth(ctx context.Context, cluster *gossip.GossipCluster) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			// TODO: Query Docker API for container health
-			// TODO: Broadcast service health to gossip
-		}
-	}
-}
+			// Query all containers
+			containers, err := dockerClient.ContainerList(ctx, types.ContainerListOptions{
+				All: true,
+			})
+			if err != nil {
+				log.Printf("Failed to list containers for health check: %v", err)
+				continue
+			}
 
-func monitorWARPHealth(ctx context.Context, cluster *gossip.GossipCluster) {
-	ticker := time.NewTicker(30 * time.Second)
-	defer ticker.Stop()
+			// Check health of each container
+			for _, container := range containers {
+				// Skip containers without names or system containers
+				if len(container.Names) == 0 {
+					continue
+				}
 
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			// TODO: Check WARP gateway health
-			// TODO: Broadcast WARP health to gossip
+				containerName := strings.TrimPrefix(container.Names[0], "/")
+
+				// Skip infrastructure containers
+				if strings.HasPrefix(containerName, "constellation-") ||
+					strings.HasPrefix(containerName, "traefik") ||
+					strings.HasPrefix(containerName, "warp-") {
+					continue
+				}
+
+				// Determine health status
+				healthy := container.State == "running"
+				if container.State == "running" && container.Health != "" {
+					healthy = container.Health == "healthy"
+				}
+
+				// Extract service name from container name (remove stack prefix if present)
+				serviceName := containerName
+				if idx := strings.LastIndex(containerName, "_"); idx > 0 {
+					serviceName = containerName[idx+1:]
+				}
+
+				// Get container details for endpoints and networks
+				containerJSON, err := dockerClient.ContainerInspect(ctx, container.ID)
+				if err != nil {
+					log.Printf("Failed to inspect container %s: %v", containerName, err)
+					continue
+				}
+
+				// Extract endpoints (ports)
+				endpoints := make(map[string]string)
+				for port, bindings := range containerJSON.NetworkSettings.Ports {
+					if len(bindings) > 0 {
+						endpoints[string(port)] = bindings[0].HostIP + ":" + bindings[0].HostPort
+					}
+				}
+
+				// Extract networks
+				networks := make([]string, 0, len(containerJSON.NetworkSettings.Networks))
+				for netName := range containerJSON.NetworkSettings.Networks {
+					networks = append(networks, netName)
+				}
+
+				// Broadcast service health
+				cluster.BroadcastServiceHealth(serviceName, healthy, endpoints, networks)
+			}
 		}
 	}
 }

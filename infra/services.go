@@ -22,6 +22,9 @@ func defineServicesFromConfig(config *Config) []Service {
 
 	// Aggregate services from headscale stack
 	services = append(services, defineServicesHeadscale(config)...)
+	
+	// Aggregate services from authentik stack
+	services = append(services, defineServicesAuthentik(config)...)
 
 	// MongoDB
 	services = append(services, Service{
