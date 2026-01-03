@@ -24,12 +24,17 @@ RABBITMQ_PASS="${RABBITMQ_DEFAULT_PASS:-rabbitmq}"
 # Check if user exists, create if not
 if ! rabbitmqctl list_users 2>/dev/null | grep -q "^${RABBITMQ_USER}[[:space:]]"; then
   echo "Creating RabbitMQ user: ${RABBITMQ_USER}"
-  rabbitmqctl add_user "${RABBITMQ_USER}" "${RABBITMQ_PASS}" 2>/dev/null || true
-  rabbitmqctl set_permissions -p / "${RABBITMQ_USER}" ".*" ".*" ".*" 2>/dev/null || true
-  rabbitmqctl set_user_tags "${RABBITMQ_USER}" administrator 2>/dev/null || true
+  rabbitmqctl add_user "${RABBITMQ_USER}" "${RABBITMQ_PASS}" 2>/dev/null
+  rabbitmqctl set_permissions -p / "${RABBITMQ_USER}" ".*" ".*" ".*" 2>/dev/null
+  rabbitmqctl set_user_tags "${RABBITMQ_USER}" administrator 2>/dev/null
   echo "User ${RABBITMQ_USER} created successfully"
 else
   echo "User ${RABBITMQ_USER} already exists"
+  # Update password in case it changed
+  rabbitmqctl change_password "${RABBITMQ_USER}" "${RABBITMQ_PASS}" 2>/dev/null || true
+  # Ensure permissions are set
+  rabbitmqctl set_permissions -p / "${RABBITMQ_USER}" ".*" ".*" ".*" 2>/dev/null || true
+  rabbitmqctl set_user_tags "${RABBITMQ_USER}" administrator 2>/dev/null || true
 fi
 
 # Stop the detached server
