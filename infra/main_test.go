@@ -85,7 +85,7 @@ func TestEnvMapToSlice(t *testing.T) {
 		found[item] = true
 	}
 
-	if !found["KEY1=value1"] && !found["KEY2=value2"] {
+	if !found["KEY1=value1"] || !found["KEY2=value2"] {
 		t.Error("envMapToSlice missing expected items")
 	}
 }

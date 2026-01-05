@@ -25,6 +25,7 @@ type WebSocketServer struct {
 	consensusManager *raft.ConsensusManager
 	clients          map[*websocket.Conn]bool
 	mu               sync.RWMutex
+	clientMu         map[*websocket.Conn]*sync.Mutex // Per-connection mutex for serializing writes
 	broadcast        chan []byte
 }
 
@@ -34,6 +35,7 @@ func NewWebSocketServer(gossipCluster *gossip.GossipCluster, consensusManager *r
 		gossipCluster:    gossipCluster,
 		consensusManager: consensusManager,
 		clients:          make(map[*websocket.Conn]bool),
+		clientMu:         make(map[*websocket.Conn]*sync.Mutex),
 		broadcast:        make(chan []byte, 256),
 	}
 }
@@ -50,6 +52,7 @@ func (ws *WebSocketServer) HandleWebSocket(w http.ResponseWriter, r *http.Reques
 	// Register client
 	ws.mu.Lock()
 	ws.clients[conn] = true
+	ws.clientMu[conn] = &sync.Mutex{}
 	ws.mu.Unlock()
 
 	log.Printf("WebSocket client connected: %s", r.RemoteAddr)
@@ -72,13 +75,14 @@ func (ws *WebSocketServer) HandleWebSocket(w http.ResponseWriter, r *http.Reques
 
 		// Handle ping
 		if string(message) == "ping" {
-			conn.WriteMessage(websocket.TextMessage, []byte("pong"))
+			ws.writeMessage(conn, websocket.TextMessage, []byte("pong"))
 		}
 	}
 
 	// Unregister client
 	ws.mu.Lock()
 	delete(ws.clients, conn)
+	delete(ws.clientMu, conn)
 	ws.mu.Unlock()
 
 	log.Printf("WebSocket client disconnected: %s", r.RemoteAddr)
@@ -107,7 +111,7 @@ func (ws *WebSocketServer) sendInitialState(conn *websocket.Conn) {
 		return
 	}
 
-	conn.WriteMessage(websocket.TextMessage, data)
+	ws.writeMessage(conn, websocket.TextMessage, data)
 }
 
 // sendPeriodicUpdates sends periodic cluster state updates
@@ -132,7 +136,7 @@ func (ws *WebSocketServer) sendPeriodicUpdates(conn *websocket.Conn) {
 				continue
 			}
 
-			if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
+			if err := ws.writeMessage(conn, websocket.TextMessage, data); err != nil {
 				return // Client disconnected
 			}
 		}
@@ -153,7 +157,7 @@ func (ws *WebSocketServer) Broadcast(message map[string]interface{}) {
 	// First pass: send messages and collect failed clients
 	ws.mu.RLock()
 	for client := range ws.clients {
-		if err := client.WriteMessage(websocket.TextMessage, data); err != nil {
+		if err := ws.writeMessage(client, websocket.TextMessage, data); err != nil {
 			log.Printf("Failed to send to client: %v", err)
 			clientsToRemove = append(clientsToRemove, client)
 		}
@@ -169,6 +173,23 @@ func (ws *WebSocketServer) Broadcast(message map[string]interface{}) {
 		}
 		ws.mu.Unlock()
 	}
+}
+
+// writeMessage writes a message to a WebSocket connection with proper synchronization
+// Gorilla WebSocket requires that writes to a connection are serialized
+func (ws *WebSocketServer) writeMessage(conn *websocket.Conn, messageType int, data []byte) error {
+	ws.mu.RLock()
+	mu, exists := ws.clientMu[conn]
+	ws.mu.RUnlock()
+
+	if !exists {
+		// Connection not registered, write without mutex (shouldn't happen in normal flow)
+		return conn.WriteMessage(messageType, data)
+	}
+
+	mu.Lock()
+	defer mu.Unlock()
+	return conn.WriteMessage(messageType, data)
 }
 
 // BroadcastNodeJoin broadcasts a node join event
