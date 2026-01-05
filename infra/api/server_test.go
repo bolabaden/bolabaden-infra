@@ -151,7 +151,7 @@ func TestServer_HandleNodes(t *testing.T) {
 	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
 	server := NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
 
-	// Add test nodes
+	// Add test nodes (note: test cluster already has one node created during initialization)
 	state := gossipCluster.GetState()
 	state.UpdateNode(&gossip.NodeMetadata{
 		Name:        "node1",
@@ -180,7 +180,17 @@ func TestServer_HandleNodes(t *testing.T) {
 	assert.Contains(t, response, "nodes")
 
 	nodes := response["nodes"].([]interface{})
-	assert.Len(t, nodes, 2)
+	// Should have at least 3 nodes: test cluster node + node1 + node2
+	assert.GreaterOrEqual(t, len(nodes), 3, "Should have at least 3 nodes (test cluster node + 2 added nodes)")
+	
+	// Verify specific nodes exist
+	nodeNames := make(map[string]bool)
+	for _, node := range nodes {
+		nodeMap := node.(map[string]interface{})
+		nodeNames[nodeMap["name"].(string)] = true
+	}
+	assert.True(t, nodeNames["node1"], "node1 should be present")
+	assert.True(t, nodeNames["node2"], "node2 should be present")
 }
 
 func TestServer_HandleNode(t *testing.T) {
