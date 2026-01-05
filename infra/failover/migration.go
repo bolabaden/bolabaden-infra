@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 
 	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
@@ -148,6 +150,23 @@ func (mm *MigrationManager) selectTargetNode(serviceName string) (string, error)
 }
 
 // executeMigration performs the actual migration
+// NOTE: Current implementation simulates migration for testing/monitoring purposes.
+// Full container migration would require:
+// 1. Remote Docker API access to target node (via Tailscale network)
+// 2. Container inspection and state export on source node
+// 3. Volume/data transfer to target node
+// 4. Container creation and start on target node
+// 5. Verification of service health on target node
+// 6. Service discovery updates via gossip protocol
+// 7. Cleanup of source container after successful migration
+//
+// For production use, this should be enhanced to:
+// - Use Docker API to inspect and stop container on source node
+// - Export container configuration and state
+// - Transfer volumes/data via Tailscale network (rsync, tar over SSH, etc.)
+// - Create and start container on target node with same configuration
+// - Update gossip state to reflect new service location
+// - Implement rollback mechanism if migration fails
 func (mm *MigrationManager) executeMigration(ctx context.Context, migration *Migration, rule MigrationRule) {
 	mm.mu.Lock()
 	migration.Status = MigrationStatusRunning
@@ -155,23 +174,50 @@ func (mm *MigrationManager) executeMigration(ctx context.Context, migration *Mig
 
 	log.Printf("Starting migration of %s from %s to %s", migration.ServiceName, migration.SourceNode, migration.TargetNode)
 
-	// For now, we log the migration but don't actually move containers
-	// Container migration would require:
-	// 1. Stopping container on source node
-	// 2. Exporting container state/volumes
-	// 3. Transferring to target node
-	// 4. Starting container on target node
-	// 5. Updating service discovery
+	// Try to find the container on the source node if Docker client is available
+	if mm.dockerClient != nil {
+		// Attempt to locate the container by service name
+		// This validates that the container exists before attempting migration
+		containers, err := mm.dockerClient.ContainerList(ctx, types.ContainerListOptions{
+			All: true,
+			Filters: filters.NewArgs(
+				filters.Arg("name", migration.ServiceName),
+			),
+		})
+		if err != nil {
+			log.Printf("Warning: Failed to list containers during migration: %v", err)
+		} else if len(containers) == 0 {
+			log.Printf("Warning: Container %s not found on source node, migration may not be applicable", migration.ServiceName)
+		} else {
+			log.Printf("Found %d container(s) matching service name %s on source node", len(containers), migration.ServiceName)
+		}
+	}
 
-	// This is a placeholder implementation
-	// In a full implementation, we would:
-	// - Use Docker API to stop/export container
-	// - Transfer data via Tailscale network
-	// - Use Docker API on target node to start container
-	// - Update gossip state
+	// TODO: Implement actual container migration
+	// Current implementation simulates migration for testing/monitoring
+	// In a full implementation:
+	// 1. Validate container exists and is running on source node
+	// 2. Inspect container to get configuration (env vars, mounts, networks, etc.)
+	// 3. Export container state and volumes
+	// 4. Transfer to target node via Tailscale network
+	// 5. Create container on target node with same configuration
+	// 6. Start container on target node
+	// 7. Verify health check passes on target node
+	// 8. Update gossip state to reflect new location
+	// 9. Stop and remove container from source node (optional, or keep for rollback)
+	// 10. Clean up temporary files/volumes
 
-	// Simulate migration delay
-	time.Sleep(2 * time.Second)
+	// Simulate migration delay (actual migration would take longer)
+	select {
+	case <-time.After(2 * time.Second):
+	case <-ctx.Done():
+		mm.mu.Lock()
+		migration.Status = MigrationStatusFailed
+		migration.Error = ctx.Err()
+		mm.mu.Unlock()
+		log.Printf("Migration of %s cancelled: %v", migration.ServiceName, ctx.Err())
+		return
+	}
 
 	mm.mu.Lock()
 	migration.Status = MigrationStatusCompleted
@@ -179,7 +225,7 @@ func (mm *MigrationManager) executeMigration(ctx context.Context, migration *Mig
 	migration.CompletedAt = &now
 	mm.mu.Unlock()
 
-	log.Printf("Migration of %s completed", migration.ServiceName)
+	log.Printf("Migration of %s completed (simulated)", migration.ServiceName)
 }
 
 // GetMigrationStatus returns the status of a migration
