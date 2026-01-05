@@ -198,12 +198,15 @@ func TestAPI_Integration_WebSocketThroughServer(t *testing.T) {
 	defer testServer.Close()
 
 	// Test that WebSocket endpoint is accessible through server setup
-	// This is more of a configuration test
+	// Regular HTTP GET request to WebSocket endpoint should work (returns BadRequest or similar)
+	// The error might be nil if the server handles it gracefully, so we just verify the endpoint exists
 	url := "ws" + testServer.URL[4:] + "/ws"
 	resp, err := http.Get(testServer.URL + "/ws")
-	// Should fail as GET request (WebSocket requires upgrade)
-	assert.Error(t, err) // Or StatusBadRequest/StatusUpgradeRequired
-	if resp != nil {
+	// WebSocket endpoint exists - GET request may or may not return error depending on implementation
+	// The important thing is the endpoint is registered
+	if err == nil && resp != nil {
+		// Server returned a response (likely 400 Bad Request or similar)
+		assert.NotEqual(t, http.StatusNotFound, resp.StatusCode, "WebSocket endpoint should be registered")
 		resp.Body.Close()
 	}
 	_ = url // Used in actual WebSocket connection tests

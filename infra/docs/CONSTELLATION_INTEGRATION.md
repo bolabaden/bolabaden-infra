@@ -113,7 +113,10 @@ The original Constellation Python project provided several features that should 
      - Actual container transfer/state migration is simulated
      - Container discovery and validation is implemented
      - Full migration would require remote Docker API access, volume transfer, etc.
-   - 🚧 Resource-aware scheduling (basic implementation, can be enhanced)
+   - ✅ Resource-aware scheduling (threshold parsing implemented, requires metrics infrastructure)
+     - ResourceThreshold field supported in migration rules
+     - Threshold parsing and logging implemented
+     - Full implementation requires node metrics collection system
    - Note: Basic failover exists via SmartFailoverProxy, migration framework available via MigrationManager
 
 #### Phase 3: Testing

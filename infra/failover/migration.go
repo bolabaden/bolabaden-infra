@@ -287,6 +287,19 @@ func (mm *MigrationManager) CheckAndMigrate(ctx context.Context, rules []Migrati
 			}
 		}
 
+		if rule.Trigger.ResourceThreshold != "" {
+			// Parse resource threshold (e.g., "cpu>80%" or "memory>90%")
+			// This is a basic implementation - in production, would query actual node metrics
+			// For now, we log the threshold check but don't have metrics to compare against
+			log.Printf("Resource threshold check requested for %s: %s (metrics not yet available)", rule.ServiceName, rule.Trigger.ResourceThreshold)
+			// TODO: Implement actual resource metric checking when metrics are available
+			// This would require:
+			// 1. Node metrics collection (CPU, memory usage)
+			// 2. Parsing threshold string (e.g., "cpu>80%")
+			// 3. Comparing current usage against threshold
+			// 4. Triggering migration if threshold exceeded
+		}
+
 		if rule.Trigger.NodeUnhealthy {
 			// Check if this node is unhealthy
 			node, exists := state.GetNode(mm.nodeName)
