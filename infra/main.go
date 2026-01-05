@@ -660,10 +660,10 @@ func loadConfigFromFile(filename string) (*Config, error) {
 
 	// Try YAML first
 	if strings.HasSuffix(filename, ".yaml") || strings.HasSuffix(filename, ".yml") {
-		if err := loadYAMLConfig(data, config); err == nil {
-			return config, nil
+		if err := loadYAMLConfig(data, config); err != nil {
+			return nil, fmt.Errorf("failed to parse YAML config: %w", err)
 		}
-		return nil, fmt.Errorf("failed to parse YAML config: %w", err)
+		return config, nil
 	}
 
 	// Try JSON
