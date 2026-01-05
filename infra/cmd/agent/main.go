@@ -192,19 +192,18 @@ func main() {
 	// Start migration monitoring (with empty rules for now - can be configured later)
 	go migrationManager.MonitorAndMigrate(ctx, []failover.MigrationRule{})
 
-	// Initialize and start REST API server
+	// Initialize WebSocket server
+	log.Printf("Initializing WebSocket server...")
+	wsServer := api.NewWebSocketServer(gossipCluster, consensusManager)
+
+	// Initialize and start REST API server (includes WebSocket endpoint)
 	log.Printf("Initializing REST API server...")
-	apiServer := api.NewServer(gossipCluster, consensusManager, migrationManager, *apiPort)
+	apiServer := api.NewServer(gossipCluster, consensusManager, migrationManager, wsServer, *apiPort)
 	go func() {
 		if err := apiServer.Start(); err != nil {
 			log.Printf("API server failed: %v", err)
 		}
 	}()
-
-	// Initialize and start WebSocket server
-	log.Printf("Initializing WebSocket server...")
-	wsServer := api.NewWebSocketServer(gossipCluster, consensusManager)
-	http.HandleFunc("/ws", wsServer.HandleWebSocket)
 
 	// Wait for shutdown signal
 	sigCh := make(chan os.Signal, 1)

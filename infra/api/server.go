@@ -17,16 +17,18 @@ type Server struct {
 	gossipCluster    *gossip.GossipCluster
 	consensusManager *raft.ConsensusManager
 	migrationManager *failover.MigrationManager
+	wsServer         *WebSocketServer
 	port             int
 	server           *http.Server
 }
 
 // NewServer creates a new API server
-func NewServer(gossipCluster *gossip.GossipCluster, consensusManager *raft.ConsensusManager, migrationManager *failover.MigrationManager, port int) *Server {
+func NewServer(gossipCluster *gossip.GossipCluster, consensusManager *raft.ConsensusManager, migrationManager *failover.MigrationManager, wsServer *WebSocketServer, port int) *Server {
 	return &Server{
 		gossipCluster:    gossipCluster,
 		consensusManager: consensusManager,
 		migrationManager: migrationManager,
+		wsServer:         wsServer,
 		port:             port,
 	}
 }
@@ -59,6 +61,11 @@ func (s *Server) Start() error {
 	// Migrations
 	mux.HandleFunc("/api/v1/migrations", s.handleMigrations)
 	mux.HandleFunc("/api/v1/migrations/", s.handleMigration)
+
+	// WebSocket
+	if s.wsServer != nil {
+		mux.HandleFunc("/ws", s.wsServer.HandleWebSocket)
+	}
 
 	s.server = &http.Server{
 		Addr:         fmt.Sprintf(":%d", s.port),
