@@ -9,21 +9,24 @@ import (
 
 	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
 	"github.com/bolabaden/my-media-stack/infra/cluster/raft"
+	"github.com/bolabaden/my-media-stack/infra/failover"
 )
 
 // Server provides REST API for cluster management
 type Server struct {
 	gossipCluster    *gossip.GossipCluster
 	consensusManager *raft.ConsensusManager
+	migrationManager *failover.MigrationManager
 	port             int
 	server           *http.Server
 }
 
 // NewServer creates a new API server
-func NewServer(gossipCluster *gossip.GossipCluster, consensusManager *raft.ConsensusManager, port int) *Server {
+func NewServer(gossipCluster *gossip.GossipCluster, consensusManager *raft.ConsensusManager, migrationManager *failover.MigrationManager, port int) *Server {
 	return &Server{
 		gossipCluster:    gossipCluster,
 		consensusManager: consensusManager,
+		migrationManager: migrationManager,
 		port:             port,
 	}
 }
@@ -52,6 +55,10 @@ func (s *Server) Start() error {
 
 	// Metrics
 	mux.HandleFunc("/api/v1/metrics", s.handleMetrics)
+
+	// Migrations
+	mux.HandleFunc("/api/v1/migrations", s.handleMigrations)
+	mux.HandleFunc("/api/v1/migrations/", s.handleMigration)
 
 	s.server = &http.Server{
 		Addr:         fmt.Sprintf(":%d", s.port),
@@ -352,4 +359,83 @@ func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 		"cluster_version": state.Version,
 		"timestamp":       time.Now().UTC().Format(time.RFC3339),
 	})
+}
+
+// handleMigrations handles migration list requests
+func (s *Server) handleMigrations(w http.ResponseWriter, r *http.Request) {
+	if s.migrationManager == nil {
+		http.Error(w, "Migration manager not available", http.StatusServiceUnavailable)
+		return
+	}
+
+	if r.Method == http.MethodGet {
+		activeMigrations := s.migrationManager.GetActiveMigrations()
+		migrations := make([]map[string]interface{}, 0, len(activeMigrations))
+		for _, migration := range activeMigrations {
+			mig := map[string]interface{}{
+				"service_name": migration.ServiceName,
+				"source_node":  migration.SourceNode,
+				"target_node":  migration.TargetNode,
+				"status":        string(migration.Status),
+				"started_at":    migration.StartedAt.Format(time.RFC3339),
+			}
+			if migration.CompletedAt != nil {
+				mig["completed_at"] = migration.CompletedAt.Format(time.RFC3339)
+			}
+			migrations = append(migrations, mig)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"migrations": migrations,
+		})
+		return
+	}
+
+	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+}
+
+// handleMigration handles individual migration requests
+func (s *Server) handleMigration(w http.ResponseWriter, r *http.Request) {
+	if s.migrationManager == nil {
+		http.Error(w, "Migration manager not available", http.StatusServiceUnavailable)
+		return
+	}
+
+	// Extract service name from path
+	serviceName := r.URL.Path[len("/api/v1/migrations/"):]
+	if serviceName == "" {
+		http.Error(w, "Service name required", http.StatusBadRequest)
+		return
+	}
+
+	if r.Method == http.MethodGet {
+		migration, exists := s.migrationManager.GetMigrationStatus(serviceName)
+		if !exists {
+			http.Error(w, "Migration not found", http.StatusNotFound)
+			return
+		}
+
+		result := map[string]interface{}{
+			"service_name": migration.ServiceName,
+			"source_node":  migration.SourceNode,
+			"target_node":  migration.TargetNode,
+			"status":        string(migration.Status),
+			"started_at":    migration.StartedAt.Format(time.RFC3339),
+		}
+		if migration.CompletedAt != nil {
+			result["completed_at"] = migration.CompletedAt.Format(time.RFC3339)
+		}
+		if migration.Error != nil {
+			result["error"] = migration.Error.Error()
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(result)
+		return
+	}
+
+	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 }

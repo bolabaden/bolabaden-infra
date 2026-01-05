@@ -22,6 +22,7 @@ import (
 	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
 	"github.com/bolabaden/my-media-stack/infra/cluster/raft"
 	"github.com/bolabaden/my-media-stack/infra/dns"
+	"github.com/bolabaden/my-media-stack/infra/failover"
 	"github.com/bolabaden/my-media-stack/infra/monitoring"
 	"github.com/bolabaden/my-media-stack/infra/tailscale"
 	"github.com/bolabaden/my-media-stack/infra/traefik"
@@ -184,9 +185,16 @@ func main() {
 	// Start periodic DNS reconciliation for all nodes
 	go reconcileNodeDNS(ctx, dnsController, gossipCluster, consensusManager, *nodeName)
 
+	// Initialize migration manager for enhanced failover
+	log.Printf("Initializing migration manager...")
+	migrationManager := failover.NewMigrationManager(dockerClient, gossipCluster.GetState(), *nodeName)
+
+	// Start migration monitoring (with empty rules for now - can be configured later)
+	go migrationManager.MonitorAndMigrate(ctx, []failover.MigrationRule{})
+
 	// Initialize and start REST API server
 	log.Printf("Initializing REST API server...")
-	apiServer := api.NewServer(gossipCluster, consensusManager, *apiPort)
+	apiServer := api.NewServer(gossipCluster, consensusManager, migrationManager, *apiPort)
 	go func() {
 		if err := apiServer.Start(); err != nil {
 			log.Printf("API server failed: %v", err)
@@ -210,6 +218,7 @@ func main() {
 	log.Printf("  Gossip port: %d", *bindPort)
 	log.Printf("  Raft port: %d", *raftPort)
 	log.Printf("  HTTP provider port: %d", *httpProviderPort)
+	log.Printf("  API port: %d", *apiPort)
 
 	<-sigCh
 	log.Printf("Shutting down...")
