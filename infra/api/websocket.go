@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -60,8 +61,11 @@ func (ws *WebSocketServer) HandleWebSocket(w http.ResponseWriter, r *http.Reques
 	// Send initial state
 	ws.sendInitialState(conn)
 
+	// Create context for periodic updates that will be cancelled when connection closes
+	ctx, cancel := context.WithCancel(context.Background())
+	
 	// Start sending periodic updates
-	go ws.sendPeriodicUpdates(conn)
+	go ws.sendPeriodicUpdates(ctx, conn)
 
 	// Handle incoming messages (for ping/pong)
 	for {
@@ -78,6 +82,9 @@ func (ws *WebSocketServer) HandleWebSocket(w http.ResponseWriter, r *http.Reques
 			ws.writeMessage(conn, websocket.TextMessage, []byte("pong"))
 		}
 	}
+
+	// Cancel periodic updates context
+	cancel()
 
 	// Unregister client
 	ws.mu.Lock()
@@ -115,13 +122,23 @@ func (ws *WebSocketServer) sendInitialState(conn *websocket.Conn) {
 }
 
 // sendPeriodicUpdates sends periodic cluster state updates
-func (ws *WebSocketServer) sendPeriodicUpdates(conn *websocket.Conn) {
+func (ws *WebSocketServer) sendPeriodicUpdates(ctx context.Context, conn *websocket.Conn) {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
 	for {
 		select {
+		case <-ctx.Done():
+			return // Context cancelled (connection closed)
 		case <-ticker.C:
+			// Check if connection is still registered before sending
+			ws.mu.RLock()
+			_, exists := ws.clients[conn]
+			ws.mu.RUnlock()
+			if !exists {
+				return // Connection no longer registered
+			}
+
 			state := ws.gossipCluster.GetState()
 
 			update := map[string]interface{}{

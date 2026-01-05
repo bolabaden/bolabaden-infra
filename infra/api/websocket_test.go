@@ -86,11 +86,11 @@ func TestWebSocketServer_HandleWebSocket(t *testing.T) {
 	wsServer.mu.RLock()
 	clientCount := len(wsServer.clients)
 	wsServer.mu.RUnlock()
-	
+
 	// The connection should be registered
 	// Since we can't directly compare conn pointers, we check that at least one client is registered
 	assert.Greater(t, clientCount, 0, "At least one client should be registered after connection")
-	
+
 	// Also verify that our specific connection exists by checking if we can find it
 	// by trying to send a ping (if connection is registered, it should work)
 	wsServer.mu.RLock()
@@ -133,7 +133,7 @@ func TestWebSocketServer_SendInitialState(t *testing.T) {
 	dialer := websocket.Dialer{}
 	conn, _, err := dialer.Dial(url, nil)
 	require.NoError(t, err)
-	
+
 	// Read initial state message
 	conn.SetReadDeadline(time.Now().Add(1 * time.Second))
 	_, message, err := conn.ReadMessage()
@@ -146,12 +146,14 @@ func TestWebSocketServer_SendInitialState(t *testing.T) {
 	assert.Contains(t, update, "nodes")
 	assert.Contains(t, update, "services")
 	assert.Contains(t, update, "raft")
-	
+
 	// Close connection to stop the periodic updates goroutine
+	// This triggers cleanup in HandleWebSocket which cancels the context
 	conn.Close()
 	
-	// Wait a moment for goroutine to clean up
-	time.Sleep(100 * time.Millisecond)
+	// Wait for goroutine cleanup (context cancellation is handled in HandleWebSocket)
+	// Give it enough time for the periodic update goroutine to detect context cancellation
+	time.Sleep(200 * time.Millisecond)
 }
 
 func TestWebSocketServer_PingPong(t *testing.T) {

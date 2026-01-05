@@ -126,11 +126,11 @@ func TestE2E_FailoverScenario(t *testing.T) {
 	gossipCluster := createTestGossipCluster()
 	consensusManager := createTestConsensusManager()
 	defer consensusManager.Shutdown()
-	
+
 	// Get the node name from the migration manager (it uses "test-node" by default)
 	state := gossipCluster.GetState()
 	testNodeName := "test-node" // This matches the default in createTestMigrationManager
-	
+
 	// Create migration manager with the same node name
 	migrationManager := failover.NewMigrationManager(nil, state, testNodeName)
 	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
@@ -276,7 +276,7 @@ func TestE2E_MultipleClientsWebSocketUpdates(t *testing.T) {
 	wsServer.BroadcastServiceHealthChange("service1", "node1", true)
 	time.Sleep(150 * time.Millisecond)
 	wsServer.BroadcastLeaderChange("node1")
-	
+
 	// Wait for broadcasts to be sent and received
 	time.Sleep(200 * time.Millisecond)
 

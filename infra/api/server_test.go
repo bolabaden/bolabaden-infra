@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	portCounter  int64
+	portCounter   int64
 	portCounterMu sync.Mutex
 )
 
@@ -182,7 +182,7 @@ func TestServer_HandleNodes(t *testing.T) {
 	nodes := response["nodes"].([]interface{})
 	// Should have at least 3 nodes: test cluster node + node1 + node2
 	assert.GreaterOrEqual(t, len(nodes), 3, "Should have at least 3 nodes (test cluster node + 2 added nodes)")
-	
+
 	// Verify specific nodes exist
 	nodeNames := make(map[string]bool)
 	for _, node := range nodes {
