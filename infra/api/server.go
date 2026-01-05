@@ -383,8 +383,8 @@ func (s *Server) handleMigrations(w http.ResponseWriter, r *http.Request) {
 				"service_name": migration.ServiceName,
 				"source_node":  migration.SourceNode,
 				"target_node":  migration.TargetNode,
-				"status":        string(migration.Status),
-				"started_at":    migration.StartedAt.Format(time.RFC3339),
+				"status":       string(migration.Status),
+				"started_at":   migration.StartedAt.Format(time.RFC3339),
 			}
 			if migration.CompletedAt != nil {
 				mig["completed_at"] = migration.CompletedAt.Format(time.RFC3339)
@@ -428,8 +428,8 @@ func (s *Server) handleMigration(w http.ResponseWriter, r *http.Request) {
 			"service_name": migration.ServiceName,
 			"source_node":  migration.SourceNode,
 			"target_node":  migration.TargetNode,
-			"status":        string(migration.Status),
-			"started_at":    migration.StartedAt.Format(time.RFC3339),
+			"status":       string(migration.Status),
+			"started_at":   migration.StartedAt.Format(time.RFC3339),
 		}
 		if migration.CompletedAt != nil {
 			result["completed_at"] = migration.CompletedAt.Format(time.RFC3339)

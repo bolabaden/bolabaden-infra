@@ -214,13 +214,14 @@ func (mm *MigrationManager) MonitorAndMigrate(ctx context.Context, rules []Migra
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			mm.checkAndMigrate(ctx, rules)
+			mm.CheckAndMigrate(ctx, rules)
 		}
 	}
 }
 
-// checkAndMigrate checks services against migration rules and triggers migrations
-func (mm *MigrationManager) checkAndMigrate(ctx context.Context, rules []MigrationRule) {
+// CheckAndMigrate checks services against migration rules and triggers migrations
+// This is exported for testing purposes
+func (mm *MigrationManager) CheckAndMigrate(ctx context.Context, rules []MigrationRule) {
 	state := mm.gossipState
 
 	for _, rule := range rules {
