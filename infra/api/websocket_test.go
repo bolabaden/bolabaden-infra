@@ -133,8 +133,7 @@ func TestWebSocketServer_SendInitialState(t *testing.T) {
 	dialer := websocket.Dialer{}
 	conn, _, err := dialer.Dial(url, nil)
 	require.NoError(t, err)
-	defer conn.Close()
-
+	
 	// Read initial state message
 	conn.SetReadDeadline(time.Now().Add(1 * time.Second))
 	_, message, err := conn.ReadMessage()
@@ -147,6 +146,12 @@ func TestWebSocketServer_SendInitialState(t *testing.T) {
 	assert.Contains(t, update, "nodes")
 	assert.Contains(t, update, "services")
 	assert.Contains(t, update, "raft")
+	
+	// Close connection to stop the periodic updates goroutine
+	conn.Close()
+	
+	// Wait a moment for goroutine to clean up
+	time.Sleep(100 * time.Millisecond)
 }
 
 func TestWebSocketServer_PingPong(t *testing.T) {
