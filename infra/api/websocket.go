@@ -169,6 +169,7 @@ func (ws *WebSocketServer) Broadcast(message map[string]interface{}) {
 		ws.mu.Lock()
 		for _, client := range clientsToRemove {
 			delete(ws.clients, client)
+			delete(ws.clientMu, client)
 			client.Close()
 		}
 		ws.mu.Unlock()
