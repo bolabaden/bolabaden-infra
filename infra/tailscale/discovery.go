@@ -212,6 +212,12 @@ func switchToDefaultTailscale(ctx context.Context) error {
 // normalizeHeadscaleURL normalizes a Headscale URL to include scheme and remove path
 // Returns a URL suitable for Tailscale's --login-server flag (e.g., "https://headscale.example.com")
 func normalizeHeadscaleURL(urlStr string) (string, error) {
+	// Prepend scheme if missing (Go's url.Parse puts schemeless URLs in Path, not Host)
+	// This must be done before parsing to ensure proper host extraction
+	if !strings.Contains(urlStr, "://") {
+		urlStr = "https://" + urlStr
+	}
+
 	// Parse the URL
 	parsedURL, err := url.Parse(urlStr)
 	if err != nil {

@@ -249,9 +249,10 @@ func (mm *MigrationManager) checkAndMigrate(ctx context.Context, rules []Migrati
 		}
 
 		if shouldMigrate {
-			// Check if migration already in progress
+			// Check if migration already in progress (only block if Running or Pending)
 			mm.mu.RLock()
-			_, inProgress := mm.migrations[rule.ServiceName]
+			existing, exists := mm.migrations[rule.ServiceName]
+			inProgress := exists && (existing.Status == MigrationStatusRunning || existing.Status == MigrationStatusPending)
 			mm.mu.RUnlock()
 
 			if !inProgress {
