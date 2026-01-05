@@ -147,15 +147,27 @@ func (ws *WebSocketServer) Broadcast(message map[string]interface{}) {
 		return
 	}
 
-	ws.mu.RLock()
-	defer ws.mu.RUnlock()
+	// Collect clients to remove (to avoid modifying map while holding read lock)
+	var clientsToRemove []*websocket.Conn
 
+	// First pass: send messages and collect failed clients
+	ws.mu.RLock()
 	for client := range ws.clients {
 		if err := client.WriteMessage(websocket.TextMessage, data); err != nil {
 			log.Printf("Failed to send to client: %v", err)
+			clientsToRemove = append(clientsToRemove, client)
+		}
+	}
+	ws.mu.RUnlock()
+
+	// Second pass: remove failed clients with write lock
+	if len(clientsToRemove) > 0 {
+		ws.mu.Lock()
+		for _, client := range clientsToRemove {
 			delete(ws.clients, client)
 			client.Close()
 		}
+		ws.mu.Unlock()
 	}
 }
 
