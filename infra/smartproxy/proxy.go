@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -21,17 +23,66 @@ type SmartProxy struct {
 	httpClient      *http.Client
 }
 
+// ProxyConfig holds configuration for the smart proxy
+type ProxyConfig struct {
+	RequestTimeout      time.Duration
+	MaxIdleConns        int
+	MaxIdleConnsPerHost int
+	IdleConnTimeout     time.Duration
+	LocalNodeName       string
+}
+
+// DefaultProxyConfig returns default proxy configuration
+func DefaultProxyConfig() *ProxyConfig {
+	timeout := 30 * time.Second
+	if timeoutStr := os.Getenv("SMARTPROXY_TIMEOUT"); timeoutStr != "" {
+		if d, err := time.ParseDuration(timeoutStr); err == nil {
+			timeout = d
+		}
+	}
+
+	maxIdleConns := 100
+	if val := os.Getenv("SMARTPROXY_MAX_IDLE_CONNS"); val != "" {
+		if n, err := strconv.Atoi(val); err == nil {
+			maxIdleConns = n
+		}
+	}
+
+	maxIdleConnsPerHost := 10
+	if val := os.Getenv("SMARTPROXY_MAX_IDLE_CONNS_PER_HOST"); val != "" {
+		if n, err := strconv.Atoi(val); err == nil {
+			maxIdleConnsPerHost = n
+		}
+	}
+
+	idleTimeout := 90 * time.Second
+	if timeoutStr := os.Getenv("SMARTPROXY_IDLE_TIMEOUT"); timeoutStr != "" {
+		if d, err := time.ParseDuration(timeoutStr); err == nil {
+			idleTimeout = d
+		}
+	}
+
+	return &ProxyConfig{
+		RequestTimeout:      timeout,
+		MaxIdleConns:        maxIdleConns,
+		MaxIdleConnsPerHost: maxIdleConnsPerHost,
+		IdleConnTimeout:     idleTimeout,
+		LocalNodeName:       getLocalNodeName(),
+	}
+}
+
 // NewSmartProxy creates a new smart proxy
 func NewSmartProxy(gossipState *gossip.ClusterState) *SmartProxy {
+	config := DefaultProxyConfig()
 	return &SmartProxy{
 		gossipState:     gossipState,
 		circuitBreakers: make(map[string]*CircuitBreaker),
 		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout: config.RequestTimeout,
 			Transport: &http.Transport{
-				MaxIdleConns:        100,
-				MaxIdleConnsPerHost: 10,
-				IdleConnTimeout:     90 * time.Second,
+				MaxIdleConns:        config.MaxIdleConns,
+				MaxIdleConnsPerHost: config.MaxIdleConnsPerHost,
+				IdleConnTimeout:     config.IdleConnTimeout,
 			},
 		},
 	}
@@ -370,6 +421,21 @@ func getScheme(r *http.Request) string {
 }
 
 func getLocalNodeName() string {
-	// TODO: Get from environment or config
+	// Try environment variable first
+	if nodeName := os.Getenv("TS_HOSTNAME"); nodeName != "" {
+		return nodeName
+	}
+
+	// Try NODE_NAME
+	if nodeName := os.Getenv("NODE_NAME"); nodeName != "" {
+		return nodeName
+	}
+
+	// Try hostname
+	if hostname, err := os.Hostname(); err == nil && hostname != "" {
+		return hostname
+	}
+
+	// Fallback
 	return "localhost"
 }

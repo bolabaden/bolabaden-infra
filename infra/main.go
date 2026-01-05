@@ -1,8 +1,12 @@
 package main
 
 import (
+	"archive/tar"
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -15,6 +19,7 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+	"gopkg.in/yaml.v3"
 
 	"github.com/bolabaden/my-media-stack/infra/tailscale"
 )
@@ -238,8 +243,9 @@ func (infra *Infrastructure) DeployService(svc Service) error {
 	// Build image if needed
 	if svc.Build != nil {
 		log.Printf("  Building image for %s...", svc.Name)
-		// TODO: Implement image building
-		// This would use docker build API
+		if err := infra.buildImage(svc); err != nil {
+			return fmt.Errorf("failed to build image: %w", err)
+		}
 	}
 
 	// Prepare container config
@@ -326,6 +332,150 @@ func (infra *Infrastructure) DeployService(svc Service) error {
 
 	log.Printf("  Started container: %s", svc.ContainerName)
 	return nil
+}
+
+// buildImage builds a Docker image using the Docker build API
+func (infra *Infrastructure) buildImage(svc Service) error {
+	if svc.Build == nil {
+		return nil
+	}
+
+	buildCtx := svc.Build.Context
+	if buildCtx == "" {
+		buildCtx = "."
+	}
+
+	// Convert relative path to absolute
+	if !filepath.IsAbs(buildCtx) {
+		absPath, err := filepath.Abs(buildCtx)
+		if err != nil {
+			return fmt.Errorf("failed to resolve build context path: %w", err)
+		}
+		buildCtx = absPath
+	}
+
+	// Check if context directory exists
+	if _, err := os.Stat(buildCtx); os.IsNotExist(err) {
+		return fmt.Errorf("build context directory does not exist: %s", buildCtx)
+	}
+
+	dockerfile := svc.Build.Dockerfile
+	if dockerfile == "" {
+		dockerfile = "Dockerfile"
+	}
+
+	// Create build context tar
+	buildContext, err := createBuildContext(buildCtx, dockerfile)
+	if err != nil {
+		return fmt.Errorf("failed to create build context: %w", err)
+	}
+	defer buildContext.Close()
+
+	// Build options
+	buildOptions := types.ImageBuildOptions{
+		Dockerfile: dockerfile,
+		Tags:       []string{svc.Image},
+		Remove:     true, // Remove intermediate containers
+		PullParent: false,
+	}
+
+	// Build the image
+	buildResponse, err := infra.client.ImageBuild(infra.ctx, buildContext, buildOptions)
+	if err != nil {
+		return fmt.Errorf("failed to start image build: %w", err)
+	}
+	defer buildResponse.Body.Close()
+
+	// Stream build output
+	decoder := json.NewDecoder(buildResponse.Body)
+	for {
+		var stream struct {
+			Stream string `json:"stream"`
+			Error  string `json:"error"`
+		}
+		if err := decoder.Decode(&stream); err != nil {
+			if err == io.EOF {
+				break
+			}
+			return fmt.Errorf("failed to decode build output: %w", err)
+		}
+
+		if stream.Stream != "" {
+			log.Printf("  %s", strings.TrimSpace(stream.Stream))
+		}
+		if stream.Error != "" {
+			return fmt.Errorf("build error: %s", stream.Error)
+		}
+	}
+
+	log.Printf("  Successfully built image: %s", svc.Image)
+	return nil
+}
+
+// createBuildContext creates a tar archive of the build context
+func createBuildContext(contextPath, dockerfile string) (io.ReadCloser, error) {
+	var buf bytes.Buffer
+	tw := tar.NewWriter(&buf)
+
+	// Walk the context directory and add files to tar
+	err := filepath.Walk(contextPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Skip directories, we'll add them as needed
+		if info.IsDir() {
+			return nil
+		}
+
+		// Get relative path from context
+		relPath, err := filepath.Rel(contextPath, path)
+		if err != nil {
+			return err
+		}
+
+		// Skip if outside context (shouldn't happen, but be safe)
+		if strings.HasPrefix(relPath, "..") {
+			return nil
+		}
+
+		// Read file
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		// Create tar header
+		header, err := tar.FileInfoHeader(info, "")
+		if err != nil {
+			return err
+		}
+		header.Name = relPath
+
+		// Write header
+		if err := tw.WriteHeader(header); err != nil {
+			return err
+		}
+
+		// Write file content
+		if _, err := io.Copy(tw, file); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		tw.Close()
+		return nil, fmt.Errorf("failed to walk build context: %w", err)
+	}
+
+	if err := tw.Close(); err != nil {
+		return nil, fmt.Errorf("failed to close tar writer: %w", err)
+	}
+
+	return io.NopCloser(&buf), nil
 }
 
 // Helper functions
@@ -475,7 +625,19 @@ func main() {
 }
 
 func loadConfig() *Config {
-	// TODO: Load from environment or config file
+	// Try to load from config file first
+	configFile := getEnv("CONFIG_FILE", "")
+	if configFile != "" {
+		if config, err := loadConfigFromFile(configFile); err == nil {
+			// Merge with environment variables (env takes precedence)
+			mergeConfigWithEnv(config)
+			return config
+		} else {
+			log.Printf("Warning: Failed to load config file %s: %v, using defaults", configFile, err)
+		}
+	}
+
+	// Fall back to environment variables only
 	return &Config{
 		Domain:      getEnv("DOMAIN", "bolabaden.org"),
 		StackName:   getEnv("STACK_NAME", "my-media-stack"),
@@ -484,6 +646,95 @@ func loadConfig() *Config {
 		SecretsPath: getEnv("SECRETS_PATH", "./secrets"),
 		Networks:    defineNetworks(),
 		Services:    defineServices(),
+	}
+}
+
+// loadConfigFromFile loads configuration from YAML or JSON file
+func loadConfigFromFile(filename string) (*Config, error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config file: %w", err)
+	}
+
+	config := &Config{}
+
+	// Try YAML first
+	if strings.HasSuffix(filename, ".yaml") || strings.HasSuffix(filename, ".yml") {
+		if err := loadYAMLConfig(data, config); err == nil {
+			return config, nil
+		}
+		return nil, fmt.Errorf("failed to parse YAML config: %w", err)
+	}
+
+	// Try JSON
+	if strings.HasSuffix(filename, ".json") {
+		if err := json.Unmarshal(data, config); err != nil {
+			return nil, fmt.Errorf("failed to parse JSON config: %w", err)
+		}
+		return config, nil
+	}
+
+	// Try both formats
+	if err := loadYAMLConfig(data, config); err == nil {
+		return config, nil
+	}
+	if err := json.Unmarshal(data, config); err == nil {
+		return config, nil
+	}
+
+	return nil, fmt.Errorf("unable to parse config file as YAML or JSON")
+}
+
+// loadYAMLConfig loads YAML configuration
+func loadYAMLConfig(data []byte, config *Config) error {
+	// We'll use a simple approach - in production you'd use gopkg.in/yaml.v3
+	// For now, we'll parse basic YAML structure manually or use a library
+	// Since we added yaml.v3, let's use it
+	var yamlData map[string]interface{}
+	if err := yaml.Unmarshal(data, &yamlData); err != nil {
+		return err
+	}
+
+	// Extract values
+	if domain, ok := yamlData["domain"].(string); ok {
+		config.Domain = domain
+	}
+	if stackName, ok := yamlData["stack_name"].(string); ok {
+		config.StackName = stackName
+	}
+	if configPath, ok := yamlData["config_path"].(string); ok {
+		config.ConfigPath = configPath
+	}
+	if rootPath, ok := yamlData["root_path"].(string); ok {
+		config.RootPath = rootPath
+	}
+	if secretsPath, ok := yamlData["secrets_path"].(string); ok {
+		config.SecretsPath = secretsPath
+	}
+
+	// Networks and services are defined in code, not loaded from config
+	config.Networks = defineNetworks()
+	config.Services = defineServices()
+
+	return nil
+}
+
+// mergeConfigWithEnv merges environment variables into config (env takes precedence)
+func mergeConfigWithEnv(config *Config) {
+	if val := getEnv("DOMAIN", ""); val != "" {
+		config.Domain = val
+	}
+	if val := getEnv("STACK_NAME", ""); val != "" {
+		config.StackName = val
+	}
+	if val := getEnv("CONFIG_PATH", ""); val != "" {
+		config.ConfigPath = val
+	}
+	if val := getEnv("ROOT_PATH", ""); val != "" {
+		config.RootPath = val
+	}
+	if val := getEnv("SECRETS_PATH", ""); val != "" {
+		config.SecretsPath = val
 	}
 }
 

@@ -98,8 +98,56 @@ type Domain struct {
 
 // Middleware represents a middleware configuration
 type Middleware struct {
-	// Middleware configuration varies by type
-	// This is a placeholder - actual middleware configs will be added as needed
+	// Common middleware types
+	BasicAuth   *BasicAuthMiddleware   `json:"basicAuth,omitempty"`
+	Headers     *HeadersMiddleware     `json:"headers,omitempty"`
+	Redirect    *RedirectMiddleware    `json:"redirect,omitempty"`
+	StripPrefix *StripPrefixMiddleware `json:"stripPrefix,omitempty"`
+	RateLimit   *RateLimitMiddleware   `json:"rateLimit,omitempty"`
+	Compress    *CompressMiddleware    `json:"compress,omitempty"`
+}
+
+// BasicAuthMiddleware represents basic authentication middleware
+type BasicAuthMiddleware struct {
+	Users        []string `json:"users,omitempty"`
+	UsersFile    string   `json:"usersFile,omitempty"`
+	Realm        string   `json:"realm,omitempty"`
+	RemoveHeader bool     `json:"removeHeader,omitempty"`
+	HeaderField  string   `json:"headerField,omitempty"`
+}
+
+// HeadersMiddleware represents headers middleware
+type HeadersMiddleware struct {
+	CustomRequestHeaders         map[string]string `json:"customRequestHeaders,omitempty"`
+	CustomResponseHeaders        map[string]string `json:"customResponseHeaders,omitempty"`
+	AccessControlAllowMethods    []string          `json:"accessControlAllowMethods,omitempty"`
+	AccessControlAllowOriginList []string          `json:"accessControlAllowOriginList,omitempty"`
+	AccessControlMaxAge          int               `json:"accessControlMaxAge,omitempty"`
+	AddVaryHeader                bool              `json:"addVaryHeader,omitempty"`
+}
+
+// RedirectMiddleware represents redirect middleware
+type RedirectMiddleware struct {
+	Scheme    string `json:"scheme,omitempty"`
+	Permanent bool   `json:"permanent,omitempty"`
+	Port      string `json:"port,omitempty"`
+}
+
+// StripPrefixMiddleware represents strip prefix middleware
+type StripPrefixMiddleware struct {
+	Prefixes []string `json:"prefixes,omitempty"`
+}
+
+// RateLimitMiddleware represents rate limit middleware
+type RateLimitMiddleware struct {
+	Average int    `json:"average,omitempty"`
+	Period  string `json:"period,omitempty"`
+	Burst   int    `json:"burst,omitempty"`
+}
+
+// CompressMiddleware represents compression middleware
+type CompressMiddleware struct {
+	ExcludedContentTypes []string `json:"excludedContentTypes,omitempty"`
 }
 
 // StickyCookie represents sticky session configuration

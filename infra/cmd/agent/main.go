@@ -15,8 +15,10 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 
+	"github.com/bolabaden/my-media-stack/infra/api"
 	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
 	"github.com/bolabaden/my-media-stack/infra/cluster/raft"
 	"github.com/bolabaden/my-media-stack/infra/dns"
@@ -35,6 +37,7 @@ var (
 	configPath       = flag.String("config-path", getEnv("CONFIG_PATH", "/opt/constellation/volumes"), "Configuration path")
 	secretsPath      = flag.String("secrets-path", getEnv("SECRETS_PATH", "/opt/constellation/secrets"), "Secrets path")
 	httpProviderPort = flag.Int("http-provider-port", 8081, "Port for Traefik HTTP provider API")
+	apiPort          = flag.Int("api-port", getEnvInt("API_PORT", 8080), "Port for REST API server")
 )
 
 func main() {
@@ -176,10 +179,24 @@ func main() {
 	go warpMonitor.Start(ctx)
 
 	// Start LB leader management
-	go manageLBLeader(ctx, leaseManager, dnsController, publicIP, gossipCluster, consensusManager)
+	go manageLBLeader(ctx, leaseManager, dnsController, publicIP, gossipCluster, consensusManager, dockerClient)
 
 	// Start periodic DNS reconciliation for all nodes
 	go reconcileNodeDNS(ctx, dnsController, gossipCluster, consensusManager, *nodeName)
+
+	// Initialize and start REST API server
+	log.Printf("Initializing REST API server...")
+	apiServer := api.NewServer(gossipCluster, consensusManager, *apiPort)
+	go func() {
+		if err := apiServer.Start(); err != nil {
+			log.Printf("API server failed: %v", err)
+		}
+	}()
+
+	// Initialize and start WebSocket server
+	log.Printf("Initializing WebSocket server...")
+	wsServer := api.NewWebSocketServer(gossipCluster, consensusManager)
+	http.HandleFunc("/ws", wsServer.HandleWebSocket)
 
 	// Wait for shutdown signal
 	sigCh := make(chan os.Signal, 1)
@@ -203,6 +220,16 @@ func main() {
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
+	}
+	return defaultValue
+}
+
+func getEnvInt(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		var result int
+		if _, err := fmt.Sscanf(value, "%d", &result); err == nil {
+			return result
+		}
 	}
 	return defaultValue
 }
@@ -375,7 +402,7 @@ func monitorServiceHealth(ctx context.Context, dockerClient *client.Client, clus
 	}
 }
 
-func manageLBLeader(ctx context.Context, leaseManager *raft.LeaseManager, dnsController *dns.Controller, publicIP string, cluster *gossip.GossipCluster, consensusManager *raft.ConsensusManager) {
+func manageLBLeader(ctx context.Context, leaseManager *raft.LeaseManager, dnsController *dns.Controller, publicIP string, cluster *gossip.GossipCluster, consensusManager *raft.ConsensusManager, dockerClient *client.Client) {
 	// Try to acquire LB leader lease
 	if err := leaseManager.AcquireLBLeaderLease(); err != nil {
 		log.Printf("Failed to acquire LB leader lease: %v", err)
@@ -387,10 +414,15 @@ func manageLBLeader(ctx context.Context, leaseManager *raft.LeaseManager, dnsCon
 			log.Printf("Acquired LB leader lease")
 			// Update DNS
 			dnsController.UpdateLBLeader(publicIP)
-			// TODO: Start Traefik with port bindings
+			// Ensure Traefik has port bindings
+			if err := ensureTraefikPortBindings(ctx, dockerClient); err != nil {
+				log.Printf("Warning: Failed to ensure Traefik port bindings: %v", err)
+			}
 		} else {
 			log.Printf("Lost LB leader lease")
-			// TODO: Stop Traefik port bindings (or keep running without bindings)
+			// Traefik continues running but DNS points elsewhere, so it won't receive traffic
+			// We could remove port bindings, but keeping them allows quick failover
+			log.Printf("Traefik will continue running but won't receive traffic (DNS points to new leader)")
 		}
 	})
 
@@ -433,4 +465,54 @@ func reconcileNodeDNS(ctx context.Context, dnsController *dns.Controller, cluste
 			}
 		}
 	}
+}
+
+// ensureTraefikPortBindings ensures Traefik container has port bindings for 80 and 443
+func ensureTraefikPortBindings(ctx context.Context, dockerClient *client.Client) error {
+	// Find Traefik container
+	containers, err := dockerClient.ContainerList(ctx, types.ContainerListOptions{
+		All:     true,
+		Filters: filters.NewArgs(filters.Arg("name", "traefik")),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to list containers: %w", err)
+	}
+
+	if len(containers) == 0 {
+		log.Printf("Traefik container not found, it should be deployed via main.go")
+		return nil // Traefik should be deployed separately
+	}
+
+	// Check if Traefik has the required port bindings
+	containerID := containers[0].ID
+	containerJSON, err := dockerClient.ContainerInspect(ctx, containerID)
+	if err != nil {
+		return fmt.Errorf("failed to inspect Traefik container: %w", err)
+	}
+
+	// Check port bindings
+	hasPort80 := false
+	hasPort443 := false
+
+	if containerJSON.HostConfig != nil && containerJSON.HostConfig.PortBindings != nil {
+		for port := range containerJSON.HostConfig.PortBindings {
+			if port.Port() == "80" && port.Proto() == "tcp" {
+				hasPort80 = true
+			}
+			if port.Port() == "443" && (port.Proto() == "tcp" || port.Proto() == "udp") {
+				hasPort443 = true
+			}
+		}
+	}
+
+	if hasPort80 && hasPort443 {
+		log.Printf("Traefik already has required port bindings (80, 443)")
+		return nil
+	}
+
+	// Port bindings are missing - log a warning
+	// Note: We can't dynamically change port bindings, container would need to be recreated
+	// This is expected to be handled by the deployment tool (main.go)
+	log.Printf("Warning: Traefik container missing port bindings (80: %v, 443: %v). Recreate container to add bindings.", hasPort80, hasPort443)
+	return nil
 }

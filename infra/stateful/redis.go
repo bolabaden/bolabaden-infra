@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 	"sync"
 
 	"github.com/go-redis/redis/v8"
@@ -12,6 +14,7 @@ import (
 // RedisOrchestrator manages Redis Sentinel/Cluster orchestration
 type RedisOrchestrator struct {
 	masterName    string
+	password      string // Redis password (can be empty for no auth)
 	sentinels     []RedisSentinel
 	redisNodes    []RedisNode
 	mu            sync.RWMutex
@@ -40,9 +43,38 @@ type RedisNode struct {
 func NewRedisOrchestrator(masterName string) *RedisOrchestrator {
 	return &RedisOrchestrator{
 		masterName: masterName,
+		password:   getRedisPassword(),
 		sentinels:  make([]RedisSentinel, 0),
 		redisNodes: make([]RedisNode, 0),
 	}
+}
+
+// SetPassword sets the Redis password
+func (ro *RedisOrchestrator) SetPassword(password string) {
+	ro.mu.Lock()
+	defer ro.mu.Unlock()
+	ro.password = password
+}
+
+// getRedisPassword retrieves Redis password from environment or secrets
+func getRedisPassword() string {
+	// Try environment variable first
+	if password := os.Getenv("REDIS_PASSWORD"); password != "" {
+		return password
+	}
+
+	// Try secret file
+	secretPath := os.Getenv("REDIS_PASSWORD_FILE")
+	if secretPath == "" {
+		secretPath = "/opt/constellation/secrets/redis-password.txt"
+	}
+
+	if data, err := os.ReadFile(secretPath); err == nil {
+		return strings.TrimSpace(string(data))
+	}
+
+	// No password
+	return ""
 }
 
 // AddSentinel adds a Sentinel instance
@@ -109,9 +141,13 @@ func (ro *RedisOrchestrator) InitializeSentinel(ctx context.Context) error {
 
 	// Configure each sentinel to monitor the master
 	for _, sentinel := range sentinels {
+		ro.mu.RLock()
+		password := ro.password
+		ro.mu.RUnlock()
+
 		client := redis.NewClient(&redis.Options{
 			Addr:     fmt.Sprintf("%s:%d", sentinel.Host, sentinel.Port),
-			Password: "", // TODO: Get from config
+			Password: password,
 		})
 
 		// Send SENTINEL MONITOR command
@@ -144,10 +180,14 @@ func (ro *RedisOrchestrator) InitializeSentinel(ctx context.Context) error {
 			continue // Skip master
 		}
 
+		ro.mu.RLock()
+		password := ro.password
+		ro.mu.RUnlock()
+
 		// Configure as slave
 		slaveClient := redis.NewClient(&redis.Options{
 			Addr:     fmt.Sprintf("%s:%d", redisNodes[i].Host, redisNodes[i].Port),
-			Password: "", // TODO: Get from config
+			Password: password,
 		})
 
 		// Send SLAVEOF command
@@ -175,10 +215,14 @@ func (ro *RedisOrchestrator) GetCurrentMaster(ctx context.Context) (*RedisNode, 
 	ro.mu.RUnlock()
 
 	// Query sentinels to find current master
+	ro.mu.RLock()
+	password := ro.password
+	ro.mu.RUnlock()
+
 	for _, sentinel := range sentinels {
 		client := redis.NewClient(&redis.Options{
 			Addr:     fmt.Sprintf("%s:%d", sentinel.Host, sentinel.Port),
-			Password: "",
+			Password: password,
 		})
 
 		// Get master info
@@ -242,10 +286,14 @@ func (ro *RedisOrchestrator) MonitorSentinel(ctx context.Context) error {
 	copy(sentinels, ro.sentinels)
 	ro.mu.RUnlock()
 
+	ro.mu.RLock()
+	password := ro.password
+	ro.mu.RUnlock()
+
 	for _, sentinel := range sentinels {
 		client := redis.NewClient(&redis.Options{
 			Addr:     fmt.Sprintf("%s:%d", sentinel.Host, sentinel.Port),
-			Password: "",
+			Password: password,
 		})
 
 		// Get sentinel info

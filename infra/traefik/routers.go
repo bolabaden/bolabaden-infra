@@ -134,5 +134,45 @@ func (s *HTTPProviderServer) computeHTTPConfig() *HTTPConfig {
 		}
 	}
 
+	// Generate common middlewares
+	s.generateCommonMiddlewares(config)
+
 	return config
+}
+
+// generateCommonMiddlewares generates common middleware configurations
+func (s *HTTPProviderServer) generateCommonMiddlewares(config *HTTPConfig) {
+	// Add compression middleware (commonly used)
+	config.Middlewares["compress"] = &Middleware{
+		Compress: &CompressMiddleware{
+			ExcludedContentTypes: []string{
+				"text/event-stream",
+				"application/octet-stream",
+			},
+		},
+	}
+
+	// Add security headers middleware
+	config.Middlewares["security-headers"] = &Middleware{
+		Headers: &HeadersMiddleware{
+			CustomResponseHeaders: map[string]string{
+				"X-Content-Type-Options":    "nosniff",
+				"X-Frame-Options":           "DENY",
+				"X-XSS-Protection":          "1; mode=block",
+				"Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+				"Content-Security-Policy":   "default-src 'self'",
+				"Referrer-Policy":           "strict-origin-when-cross-origin",
+			},
+		},
+	}
+
+	// Add CORS middleware (if needed)
+	config.Middlewares["cors"] = &Middleware{
+		Headers: &HeadersMiddleware{
+			AccessControlAllowMethods:    []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AccessControlAllowOriginList: []string{"*"},
+			AccessControlMaxAge:          3600,
+			AddVaryHeader:                true,
+		},
+	}
 }
