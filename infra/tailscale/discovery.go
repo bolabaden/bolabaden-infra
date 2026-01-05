@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
@@ -180,19 +181,19 @@ func isHeadscaleAvailable(ctx context.Context, url string) bool {
 
 // switchToHeadscale configures Tailscale to use Headscale
 func switchToHeadscale(ctx context.Context, headscaleURL string) error {
-	// Extract hostname from URL
-	hostname := extractHostname(headscaleURL)
-	if hostname == "" {
-		return fmt.Errorf("invalid Headscale URL: %s", headscaleURL)
+	// Normalize URL to ensure it has a scheme and remove path components
+	normalizedURL, err := normalizeHeadscaleURL(headscaleURL)
+	if err != nil {
+		return fmt.Errorf("invalid Headscale URL: %w", err)
 	}
 
-	// Use tailscale set to configure login server
-	cmd := exec.CommandContext(ctx, "tailscale", "set", "--login-server", hostname)
+	// Use tailscale set to configure login server (requires full URL with scheme)
+	cmd := exec.CommandContext(ctx, "tailscale", "set", "--login-server", normalizedURL)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to set Headscale login server: %w", err)
 	}
 
-	log.Printf("Switched Tailscale to use Headscale at %s", hostname)
+	log.Printf("Switched Tailscale to use Headscale at %s", normalizedURL)
 	return nil
 }
 
@@ -208,7 +209,36 @@ func switchToDefaultTailscale(ctx context.Context) error {
 	return nil
 }
 
-// extractHostname extracts hostname from URL
+// normalizeHeadscaleURL normalizes a Headscale URL to include scheme and remove path
+// Returns a URL suitable for Tailscale's --login-server flag (e.g., "https://headscale.example.com")
+func normalizeHeadscaleURL(urlStr string) (string, error) {
+	// Parse the URL
+	parsedURL, err := url.Parse(urlStr)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse URL: %w", err)
+	}
+
+	// Ensure scheme is present (default to https if missing)
+	if parsedURL.Scheme == "" {
+		parsedURL.Scheme = "https"
+	}
+
+	// Validate scheme
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		return "", fmt.Errorf("unsupported scheme: %s (must be http or https)", parsedURL.Scheme)
+	}
+
+	// Ensure host is present
+	if parsedURL.Host == "" {
+		return "", fmt.Errorf("URL must include a host")
+	}
+
+	// Reconstruct URL with only scheme and host (no path, query, or fragment)
+	normalized := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
+	return normalized, nil
+}
+
+// extractHostname extracts hostname from URL (kept for backward compatibility if needed elsewhere)
 func extractHostname(urlStr string) string {
 	// Remove protocol prefix (http://, https://)
 	if strings.HasPrefix(urlStr, "http://") {
