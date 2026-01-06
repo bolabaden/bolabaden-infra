@@ -2,8 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 	"time"
 
@@ -14,12 +16,29 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	wsPortCounter   int64
+	wsPortCounterMu sync.Mutex
+)
+
+func getNextWSPort() int {
+	wsPortCounterMu.Lock()
+	defer wsPortCounterMu.Unlock()
+	wsPortCounter++
+	basePort := 8000
+	return basePort + int(wsPortCounter%1000) // Use ports 8000-8999 for WebSocket tests
+}
+
 func createTestWebSocketServer() (*WebSocketServer, *gossip.GossipCluster, *raft.ConsensusManager) {
+	gossipPort := getNextPort()
+	raftPort := getNextPort()
+	nodeID := fmt.Sprintf("%d-%d", time.Now().UnixNano(), gossipPort)
+	
 	gossip.NewClusterState()
 	config := &gossip.Config{
-		NodeName:     "test-node",
+		NodeName:     "test-node-" + nodeID,
 		BindAddr:     "127.0.0.1",
-		BindPort:     7946,
+		BindPort:     gossipPort,
 		PublicIP:     "1.2.3.4",
 		TailscaleIP:  "100.64.0.1",
 		Priority:     10,
@@ -28,12 +47,12 @@ func createTestWebSocketServer() (*WebSocketServer, *gossip.GossipCluster, *raft
 	}
 	cluster, _ := gossip.NewGossipCluster(config)
 
-	tmpDir := "/tmp/raft-test-" + time.Now().Format("20060102-150405")
+	tmpDir := fmt.Sprintf("/tmp/raft-test-%s", nodeID)
 	raftConfig := &raft.Config{
-		NodeName:  "test-node",
+		NodeName:  "test-node-" + nodeID,
 		DataDir:   tmpDir,
 		BindAddr:  "127.0.0.1",
-		BindPort:  8300,
+		BindPort:  raftPort,
 		SeedNodes: []string{},
 		LogLevel:  "error",
 	}
@@ -57,7 +76,8 @@ func TestWebSocketServer_NewWebSocketServer(t *testing.T) {
 }
 
 func TestWebSocketServer_HandleWebSocket(t *testing.T) {
-	wsServer, _, consensusManager := createTestWebSocketServer()
+	wsServer, cluster, consensusManager := createTestWebSocketServer()
+	defer cluster.Shutdown()
 	defer consensusManager.Shutdown()
 
 	// Create test HTTP server
@@ -108,6 +128,7 @@ func TestWebSocketServer_HandleWebSocket(t *testing.T) {
 
 func TestWebSocketServer_SendInitialState(t *testing.T) {
 	wsServer, cluster, consensusManager := createTestWebSocketServer()
+	defer cluster.Shutdown()
 	defer consensusManager.Shutdown()
 
 	// Add some test data
@@ -157,7 +178,8 @@ func TestWebSocketServer_SendInitialState(t *testing.T) {
 }
 
 func TestWebSocketServer_PingPong(t *testing.T) {
-	wsServer, _, consensusManager := createTestWebSocketServer()
+	wsServer, cluster, consensusManager := createTestWebSocketServer()
+	defer cluster.Shutdown()
 	defer consensusManager.Shutdown()
 
 	server := httptest.NewServer(http.HandlerFunc(wsServer.HandleWebSocket))
@@ -170,8 +192,10 @@ func TestWebSocketServer_PingPong(t *testing.T) {
 	require.NoError(t, err)
 	defer conn.Close()
 
-	// Wait for initial state
-	time.Sleep(100 * time.Millisecond)
+	// Read and discard initial state message
+	conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+	_, _, err = conn.ReadMessage()
+	require.NoError(t, err)
 
 	// Send ping
 	err = conn.WriteMessage(websocket.TextMessage, []byte("ping"))
@@ -185,7 +209,8 @@ func TestWebSocketServer_PingPong(t *testing.T) {
 }
 
 func TestWebSocketServer_Broadcast(t *testing.T) {
-	wsServer, _, consensusManager := createTestWebSocketServer()
+	wsServer, cluster, consensusManager := createTestWebSocketServer()
+	defer cluster.Shutdown()
 	defer consensusManager.Shutdown()
 
 	server := httptest.NewServer(http.HandlerFunc(wsServer.HandleWebSocket))
@@ -241,7 +266,8 @@ func TestWebSocketServer_Broadcast(t *testing.T) {
 }
 
 func TestWebSocketServer_BroadcastNodeJoin(t *testing.T) {
-	wsServer, _, consensusManager := createTestWebSocketServer()
+	wsServer, cluster, consensusManager := createTestWebSocketServer()
+	defer cluster.Shutdown()
 	defer consensusManager.Shutdown()
 
 	server := httptest.NewServer(http.HandlerFunc(wsServer.HandleWebSocket))
@@ -274,7 +300,8 @@ func TestWebSocketServer_BroadcastNodeJoin(t *testing.T) {
 }
 
 func TestWebSocketServer_BroadcastNodeLeave(t *testing.T) {
-	wsServer, _, consensusManager := createTestWebSocketServer()
+	wsServer, cluster, consensusManager := createTestWebSocketServer()
+	defer cluster.Shutdown()
 	defer consensusManager.Shutdown()
 
 	server := httptest.NewServer(http.HandlerFunc(wsServer.HandleWebSocket))
@@ -307,7 +334,8 @@ func TestWebSocketServer_BroadcastNodeLeave(t *testing.T) {
 }
 
 func TestWebSocketServer_BroadcastServiceHealthChange(t *testing.T) {
-	wsServer, _, consensusManager := createTestWebSocketServer()
+	wsServer, cluster, consensusManager := createTestWebSocketServer()
+	defer cluster.Shutdown()
 	defer consensusManager.Shutdown()
 
 	server := httptest.NewServer(http.HandlerFunc(wsServer.HandleWebSocket))
@@ -342,7 +370,8 @@ func TestWebSocketServer_BroadcastServiceHealthChange(t *testing.T) {
 }
 
 func TestWebSocketServer_BroadcastLeaderChange(t *testing.T) {
-	wsServer, _, consensusManager := createTestWebSocketServer()
+	wsServer, cluster, consensusManager := createTestWebSocketServer()
+	defer cluster.Shutdown()
 	defer consensusManager.Shutdown()
 
 	server := httptest.NewServer(http.HandlerFunc(wsServer.HandleWebSocket))
@@ -375,7 +404,8 @@ func TestWebSocketServer_BroadcastLeaderChange(t *testing.T) {
 }
 
 func TestWebSocketServer_ConcurrentWrites(t *testing.T) {
-	wsServer, _, consensusManager := createTestWebSocketServer()
+	wsServer, cluster, consensusManager := createTestWebSocketServer()
+	defer cluster.Shutdown()
 	defer consensusManager.Shutdown()
 
 	server := httptest.NewServer(http.HandlerFunc(wsServer.HandleWebSocket))

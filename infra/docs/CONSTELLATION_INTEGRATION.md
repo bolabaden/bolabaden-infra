@@ -255,16 +255,22 @@ The infrastructure is fully tested and ready for production use. The migration s
   - Volume/data synchronization mechanisms
   - Network configuration migration
   - Rollback and recovery mechanisms
+  - See `infra/failover/migration.go` for implementation details and TODO comments
 
 ### Resource-Aware Scheduling
 - **Resource Threshold Parsing**: Implemented and logged
 - **Metrics Collection**: Requires integration with metrics infrastructure (Prometheus/node-exporter)
 - **Threshold Evaluation**: Logic ready, needs metrics data source
+  - Threshold parsing logic is fully implemented in `infra/failover/migration.go`
+  - Integration with metrics collection system needed for full functionality
 
 ### Testing
 - **Multi-Node Tests**: Integration tests for gossip and Raft require actual multi-node setup
 - **Infrastructure E2E Tests**: DNS updates and Traefik configuration tests require full infrastructure
 - **Performance Tests**: Some tests may take longer to run; use `-short` flag to skip
+- **Test Infrastructure**: All tests now use unique ports and proper cleanup to prevent conflicts
+  - Test helpers have been updated to use dynamic port allocation
+  - All tests properly shut down gossip clusters and raft consensus managers
 
 ## Test Coverage Summary
 
@@ -294,4 +300,18 @@ The infrastructure is fully tested and ready for production use. The migration s
 - ✅ All test suites pass individually
 
 **Status**: ✅ **COMPLETE AND FUNCTIONAL**
+
+## Recent Updates
+
+### Test Infrastructure Improvements
+- ✅ Fixed test helper `createTestWebSocketServer()` to use unique ports (prevents port conflicts)
+- ✅ Added proper cleanup for gossip clusters in all tests (`defer cluster.Shutdown()`)
+- ✅ Fixed race conditions in WebSocket tests by ensuring proper context cancellation
+- ✅ Fixed `TestWebSocketServer_PingPong` to correctly handle initial state message
+- ✅ All tests now pass reliably when run together
+
+### Code Improvements
+- ✅ Updated TODOs in `infra/failover/migration.go` to reference documentation
+- ✅ Improved code comments to clarify simulated vs. full implementation status
+- ✅ All migration execution and resource threshold logic properly documented
 

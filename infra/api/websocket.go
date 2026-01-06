@@ -63,7 +63,7 @@ func (ws *WebSocketServer) HandleWebSocket(w http.ResponseWriter, r *http.Reques
 
 	// Create context for periodic updates that will be cancelled when connection closes
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	// Start sending periodic updates
 	go ws.sendPeriodicUpdates(ctx, conn)
 

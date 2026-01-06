@@ -19,6 +19,7 @@ import (
 // End-to-end tests that test complete workflows
 func TestE2E_NodeJoinAndServiceDiscovery(t *testing.T) {
 	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
 	consensusManager := createTestConsensusManager()
 	defer consensusManager.Shutdown()
 	migrationManager := createTestMigrationManager()
@@ -80,6 +81,7 @@ func TestE2E_NodeJoinAndServiceDiscovery(t *testing.T) {
 
 func TestE2E_ServiceHealthChangePropagation(t *testing.T) {
 	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
 	consensusManager := createTestConsensusManager()
 	defer consensusManager.Shutdown()
 	migrationManager := createTestMigrationManager()
@@ -124,6 +126,7 @@ func TestE2E_ServiceHealthChangePropagation(t *testing.T) {
 
 func TestE2E_FailoverScenario(t *testing.T) {
 	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
 	consensusManager := createTestConsensusManager()
 	defer consensusManager.Shutdown()
 
@@ -215,6 +218,7 @@ func TestE2E_FailoverScenario(t *testing.T) {
 
 func TestE2E_MultipleClientsWebSocketUpdates(t *testing.T) {
 	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
 	consensusManager := createTestConsensusManager()
 	defer consensusManager.Shutdown()
 	migrationManager := createTestMigrationManager()
