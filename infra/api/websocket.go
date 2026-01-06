@@ -126,10 +126,22 @@ func (ws *WebSocketServer) sendPeriodicUpdates(ctx context.Context, conn *websoc
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
+	// Also check context more frequently to respond quickly to cancellation
+	checkTicker := time.NewTicker(100 * time.Millisecond)
+	defer checkTicker.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return // Context cancelled (connection closed)
+		case <-checkTicker.C:
+			// Quick check if connection is still registered
+			ws.mu.RLock()
+			_, exists := ws.clients[conn]
+			ws.mu.RUnlock()
+			if !exists {
+				return // Connection no longer registered
+			}
 		case <-ticker.C:
 			// Check if connection is still registered before sending
 			ws.mu.RLock()
@@ -137,6 +149,13 @@ func (ws *WebSocketServer) sendPeriodicUpdates(ctx context.Context, conn *websoc
 			ws.mu.RUnlock()
 			if !exists {
 				return // Connection no longer registered
+			}
+
+			// Also check context before sending
+			select {
+			case <-ctx.Done():
+				return
+			default:
 			}
 
 			state := ws.gossipCluster.GetState()

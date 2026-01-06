@@ -150,7 +150,7 @@ func TestWebSocketServer_SendInitialState(t *testing.T) {
 	// Close connection to stop the periodic updates goroutine
 	// This triggers cleanup in HandleWebSocket which cancels the context
 	conn.Close()
-	
+
 	// Wait for goroutine cleanup (context cancellation is handled in HandleWebSocket)
 	// Give it enough time for the periodic update goroutine to detect context cancellation
 	time.Sleep(200 * time.Millisecond)
