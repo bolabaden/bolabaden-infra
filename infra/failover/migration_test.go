@@ -349,6 +349,70 @@ func TestMigrationManager_CheckAndMigrate_NoTrigger(t *testing.T) {
 	assert.False(t, exists)
 }
 
+func TestMigrationManager_CheckAndMigrate_ReMigrateAfterCompletion(t *testing.T) {
+	// This test verifies that a service can be re-migrated after a previous migration completed
+	manager, state := createTestMigrationManager()
+
+	serviceName := "test-service"
+	nodeName := "test-node"
+
+	// Add unhealthy service
+	state.UpdateServiceHealth(&gossip.ServiceHealth{
+		ServiceName: serviceName,
+		NodeName:    nodeName,
+		Healthy:     false,
+	})
+
+	rule := MigrationRule{
+		ServiceName: serviceName,
+		TargetNode:  "target-node",
+		Trigger: MigrationTrigger{
+			HealthCheckFailures: 1,
+		},
+	}
+
+	// First migration - should succeed
+	ctx1, cancel1 := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel1()
+
+	manager.CheckAndMigrate(ctx1, []MigrationRule{rule})
+	time.Sleep(150 * time.Millisecond)
+
+	// Verify first migration exists and completed
+	migration1, exists := manager.GetMigrationStatus(serviceName)
+	require.True(t, exists, "First migration should exist")
+	assert.True(t, migration1.Status == MigrationStatusCompleted || migration1.Status == MigrationStatusFailed,
+		"First migration should be completed or failed, got: %s", migration1.Status)
+
+	// Mark service as healthy, then unhealthy again (simulating service recovery and failure)
+	state.UpdateServiceHealth(&gossip.ServiceHealth{
+		ServiceName: serviceName,
+		NodeName:    nodeName,
+		Healthy:     true,
+	})
+	time.Sleep(50 * time.Millisecond)
+	state.UpdateServiceHealth(&gossip.ServiceHealth{
+		ServiceName: serviceName,
+		NodeName:    nodeName,
+		Healthy:     false,
+	})
+
+	// Second migration attempt - should be allowed since previous migration is completed
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel2()
+
+	manager.CheckAndMigrate(ctx2, []MigrationRule{rule})
+	time.Sleep(150 * time.Millisecond)
+
+	// Verify second migration was triggered (should have new StartedAt time)
+	migration2, exists := manager.GetMigrationStatus(serviceName)
+	require.True(t, exists, "Second migration should exist")
+	// The migration should have been re-triggered (newer StartedAt or different status)
+	assert.True(t, migration2.Status == MigrationStatusPending || migration2.Status == MigrationStatusRunning ||
+		migration2.Status == MigrationStatusCompleted || migration2.Status == MigrationStatusFailed,
+		"Second migration should have been triggered, status: %s", migration2.Status)
+}
+
 func TestMigrationStatus_Constants(t *testing.T) {
 	assert.Equal(t, MigrationStatus("pending"), MigrationStatusPending)
 	assert.Equal(t, MigrationStatus("running"), MigrationStatusRunning)

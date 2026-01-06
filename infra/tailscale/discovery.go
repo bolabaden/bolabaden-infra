@@ -213,7 +213,8 @@ func switchToDefaultTailscale(ctx context.Context) error {
 // Returns a URL suitable for Tailscale's --login-server flag (e.g., "https://headscale.example.com")
 func normalizeHeadscaleURL(urlStr string) (string, error) {
 	// Prepend scheme if missing (Go's url.Parse puts schemeless URLs in Path, not Host)
-	// This must be done before parsing to ensure proper host extraction
+	// This must be done BEFORE parsing to ensure proper host extraction.
+	// Setting parsedURL.Scheme after parsing doesn't work because the host remains empty.
 	if !strings.Contains(urlStr, "://") {
 		urlStr = "https://" + urlStr
 	}
@@ -224,9 +225,10 @@ func normalizeHeadscaleURL(urlStr string) (string, error) {
 		return "", fmt.Errorf("failed to parse URL: %w", err)
 	}
 
-	// Ensure scheme is present (default to https if missing)
+	// At this point, scheme should always be set (we prepended it if missing)
+	// This check is just for safety, but should never trigger if prepending worked correctly
 	if parsedURL.Scheme == "" {
-		parsedURL.Scheme = "https"
+		return "", fmt.Errorf("URL scheme is missing and could not be determined")
 	}
 
 	// Validate scheme
