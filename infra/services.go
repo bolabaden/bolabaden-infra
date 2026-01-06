@@ -267,9 +267,6 @@ func defineServicesFromConfig(config *Config) []Service {
 		Restart: "always",
 	})
 
-	// Add more services...
-	// This is a template - you'd add all services from docker-compose.yml here
-
 	return services
 }
 

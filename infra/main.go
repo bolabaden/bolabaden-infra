@@ -423,7 +423,7 @@ func createBuildContext(contextPath, dockerfile string) (io.ReadCloser, error) {
 			return err
 		}
 
-		// Skip directories, we'll add them as needed
+		// Skip directories - tar automatically creates directory entries when files are added
 		if info.IsDir() {
 			return nil
 		}

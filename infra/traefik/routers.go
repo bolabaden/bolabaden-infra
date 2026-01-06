@@ -16,8 +16,6 @@ func (s *HTTPProviderServer) computeHTTPConfig() *HTTPConfig {
 	}
 
 	// Get all service health entries from gossip state
-
-	// Get all service health entries
 	allServices := make(map[string][]*gossip.ServiceHealth) // service name -> health entries
 
 	// Iterate through all service health entries using the helper method
