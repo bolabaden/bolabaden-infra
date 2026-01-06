@@ -1,0 +1,101 @@
+# Example Configuration File
+# This demonstrates how to configure the infrastructure system
+# All values can be overridden via environment variables
+
+# Core identity
+domain: example.com
+stack_name: my-infra
+node_name: node1  # Optional, defaults to hostname
+
+# Paths
+config_path: ./volumes
+secrets_path: ./secrets
+root_path: .
+data_dir: /opt/constellation/data
+
+# Traefik configuration
+traefik:
+  web_port: 80
+  websecure_port: 443
+  error_pages_middleware: "error-pages@file"
+  crowdsec_middleware: "crowdsec@file"
+  strip_www_middleware: "strip-www@file"
+  cert_resolver: "letsencrypt"
+  http_provider_port: 8081
+  # Cloudflare trusted IPs (for forwarded headers)
+  cloudflare_trusted_ips:
+    - "103.21.244.0/22"
+    - "103.22.200.0/22"
+    - "103.31.4.0/22"
+    - "104.16.0.0/13"
+    - "104.24.0.0/14"
+    - "108.162.192.0/18"
+    - "131.0.72.0/22"
+    - "141.101.64.0/18"
+    - "162.158.0.0/15"
+    - "172.64.0.0/13"
+    - "173.245.48.0/20"
+    - "188.114.96.0/20"
+    - "190.93.240.0/20"
+    - "197.234.240.0/22"
+    - "198.41.128.0/17"
+    - "2400:cb00::/32"
+    - "2405:8100::/32"
+    - "2405:b500::/32"
+    - "2606:4700::/32"
+    - "2803:f800::/32"
+    - "2a06:98c0::/29"
+    - "2c0f:f248::/32"
+
+# DNS configuration
+dns:
+  provider: cloudflare  # cloudflare, route53, etc.
+  domain: example.com  # Inherits from top-level domain if empty
+  api_key: ""  # Set via CLOUDFLARE_API_KEY environment variable
+  api_email: ""  # Set via CLOUDFLARE_API_EMAIL environment variable
+  zone_id: ""  # Set via CLOUDFLARE_ZONE_ID environment variable
+
+# Cluster configuration
+cluster:
+  bind_addr: ""  # Auto-detected from Tailscale if empty
+  bind_port: 7946
+  raft_port: 8300
+  api_port: 8080
+  public_ip: ""  # Auto-detected if empty
+  tailscale_ip: ""  # Auto-detected if empty
+  priority: 100  # Lower = higher priority (fast nodes first)
+
+# Middleware configuration
+middlewares:
+  error_pages_enabled: true
+  error_pages_name: "error-pages"
+  crowdsec_enabled: true
+  crowdsec_name: "crowdsec"
+  strip_www_enabled: true
+  strip_www_name: "strip-www"
+
+# Docker registry configuration
+registry:
+  # Default registry prefix for images
+  # e.g., "docker.io/myorg" or "ghcr.io/user" or empty for public images
+  image_prefix: ""
+  default_registry: "docker.io"
+
+# Network definitions (optional - can be defined programmatically)
+networks:
+  publicnet:
+    name: "my-infra_publicnet"
+    driver: "bridge"
+    subnet: "10.76.0.0/16"
+    gateway: "10.76.0.1"
+    attachable: true
+  backend:
+    name: "my-infra_backend"
+    driver: "bridge"
+    subnet: "10.0.7.0/24"
+    gateway: "10.0.7.1"
+    attachable: true
+
+# Service definitions (optional - can be defined programmatically)
+# Services are typically defined in code, but can be loaded from YAML
+services: []

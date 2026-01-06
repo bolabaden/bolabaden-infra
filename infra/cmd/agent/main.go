@@ -21,6 +21,7 @@ import (
 	"cluster/infra/api"
 	"cluster/infra/cluster/gossip"
 	"cluster/infra/cluster/raft"
+	infraconfig "cluster/infra/config"
 	"cluster/infra/dns"
 	"cluster/infra/failover"
 	"cluster/infra/monitoring"
@@ -29,27 +30,65 @@ import (
 )
 
 var (
-	domain           = flag.String("domain", getEnv("DOMAIN", "bolabaden.org"), "Domain name")
+	configFile       = flag.String("config", getEnv("CONFIG_FILE", ""), "Path to configuration YAML file")
+	domain           = flag.String("domain", "", "Domain name (overrides config)")
 	nodeName         = flag.String("node-name", getEnv("TS_HOSTNAME", ""), "Node name (from TS_HOSTNAME)")
 	bindAddr         = flag.String("bind-addr", "", "Address to bind to (Tailscale IP)")
-	bindPort         = flag.Int("bind-port", 7946, "Port for gossip protocol")
-	raftPort         = flag.Int("raft-port", 8300, "Port for Raft consensus")
-	dataDir          = flag.String("data-dir", getEnv("DATA_DIR", "/opt/constellation/data"), "Data directory for Raft")
-	configPath       = flag.String("config-path", getEnv("CONFIG_PATH", "/opt/constellation/volumes"), "Configuration path")
-	secretsPath      = flag.String("secrets-path", getEnv("SECRETS_PATH", "/opt/constellation/secrets"), "Secrets path")
-	httpProviderPort = flag.Int("http-provider-port", 8081, "Port for Traefik HTTP provider API")
-	apiPort          = flag.Int("api-port", getEnvInt("API_PORT", 8080), "Port for REST API server")
+	bindPort         = flag.Int("bind-port", 0, "Port for gossip protocol (0 = use config default)")
+	raftPort         = flag.Int("raft-port", 0, "Port for Raft consensus (0 = use config default)")
+	dataDir          = flag.String("data-dir", "", "Data directory for Raft (empty = use config default)")
+	configPath       = flag.String("config-path", "", "Configuration path (empty = use config default)")
+	secretsPath      = flag.String("secrets-path", "", "Secrets path (empty = use config default)")
+	httpProviderPort = flag.Int("http-provider-port", 0, "Port for Traefik HTTP provider API (0 = use config default)")
+	apiPort          = flag.Int("api-port", 0, "Port for REST API server (0 = use config default)")
 )
 
 func main() {
 	flag.Parse()
 
-	// Validate required parameters
-	if *nodeName == "" {
-		hostname, _ := os.Hostname()
-		*nodeName = hostname
-		log.Printf("Node name not provided, using hostname: %s", *nodeName)
+	// Load canonical configuration
+	cfg, err := infraconfig.LoadConfig(*configFile)
+	if err != nil {
+		log.Fatalf("Failed to load configuration: %v", err)
 	}
+
+	// Override config with command-line flags if provided
+	if *domain != "" {
+		cfg.Domain = *domain
+	}
+	if *nodeName == "" {
+		if cfg.NodeName != "" {
+			*nodeName = cfg.NodeName
+		} else {
+			hostname, _ := os.Hostname()
+			*nodeName = hostname
+			log.Printf("Node name not provided, using hostname: %s", *nodeName)
+		}
+	}
+	if *bindPort == 0 {
+		*bindPort = cfg.Cluster.BindPort
+	}
+	if *raftPort == 0 {
+		*raftPort = cfg.Cluster.RaftPort
+	}
+	if *dataDir == "" {
+		*dataDir = cfg.DataDir
+	}
+	if *configPath == "" {
+		*configPath = cfg.ConfigPath
+	}
+	if *secretsPath == "" {
+		*secretsPath = cfg.SecretsPath
+	}
+	if *httpProviderPort == 0 {
+		*httpProviderPort = cfg.Traefik.HTTPProviderPort
+	}
+	if *apiPort == 0 {
+		*apiPort = cfg.Cluster.APIPort
+	}
+
+	// Use config domain
+	domain := cfg.Domain
 
 	// Get Tailscale IP
 	tailscaleIP, err := tailscale.GetTailscaleIP()
@@ -64,8 +103,11 @@ func main() {
 	// Get public IP (for DNS updates)
 	publicIP := getPublicIP()
 
-	// Get node priority (from environment or default)
-	priority := getNodePriority(*nodeName)
+	// Get node priority (from config, environment, or default)
+	priority := cfg.Cluster.Priority
+	if priority == 0 {
+		priority = getNodePriority(*nodeName)
+	}
 
 	// Discover seed nodes via Tailscale
 	seedNodes, err := tailscale.DiscoverPeers()
@@ -119,10 +161,16 @@ func main() {
 	cfAPIToken := readSecret(*secretsPath, "cf-api-token.txt")
 	cfZoneID := getEnv("CLOUDFLARE_ZONE_ID", "")
 
+	// Use DNS config from canonical config if available
+	dnsZoneID := cfZoneID
+	if cfg.DNS.ZoneID != "" {
+		dnsZoneID = cfg.DNS.ZoneID
+	}
+	
 	dnsReconciler, err := dns.NewDNSReconciler(&dns.Config{
 		APIToken:   cfAPIToken,
-		ZoneID:     cfZoneID,
-		Domain:     *domain,
+		ZoneID:     dnsZoneID,
+		Domain:     domain,
 		RateLimit:  4,
 		BurstLimit: 10,
 	})
@@ -148,7 +196,7 @@ func main() {
 	httpProvider := traefik.NewHTTPProviderServer(
 		gossipCluster.GetState(),
 		*httpProviderPort,
-		*domain,
+		domain,
 		*nodeName,
 	)
 
@@ -221,7 +269,7 @@ func main() {
 
 	log.Printf("Constellation Agent started successfully")
 	log.Printf("  Node: %s", *nodeName)
-	log.Printf("  Domain: %s", *domain)
+	log.Printf("  Domain: %s", domain)
 	log.Printf("  Tailscale IP: %s", tailscaleIP)
 	log.Printf("  Public IP: %s", publicIP)
 	log.Printf("  Gossip port: %d", *bindPort)
