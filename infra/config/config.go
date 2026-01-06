@@ -204,6 +204,7 @@ type RegistryConfig struct {
 // This is the canonical way to load configuration
 func LoadConfig(configPath string) (*Config, error) {
 	cfg := &Config{
+		Version:     getEnv("CONFIG_VERSION", "1.0"),
 		Domain:      getEnv("DOMAIN", "example.com"),
 		StackName:   getEnv("STACK_NAME", "infra"),
 		NodeName:    getEnv("TS_HOSTNAME", ""),
