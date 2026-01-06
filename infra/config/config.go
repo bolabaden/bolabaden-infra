@@ -457,12 +457,12 @@ func (c *Config) Validate() error {
 
 	// Validate port uniqueness
 	ports := map[int]string{
-		c.Traefik.WebPort:        "traefik.web_port",
-		c.Traefik.WebSecurePort:  "traefik.websecure_port",
+		c.Traefik.WebPort:          "traefik.web_port",
+		c.Traefik.WebSecurePort:    "traefik.websecure_port",
 		c.Traefik.HTTPProviderPort: "traefik.http_provider_port",
-		c.Cluster.BindPort:      "cluster.bind_port",
-		c.Cluster.RaftPort:      "cluster.raft_port",
-		c.Cluster.APIPort:       "cluster.api_port",
+		c.Cluster.BindPort:         "cluster.bind_port",
+		c.Cluster.RaftPort:         "cluster.raft_port",
+		c.Cluster.APIPort:          "cluster.api_port",
 	}
 	portUsage := make(map[int][]string)
 	for port, name := range ports {
