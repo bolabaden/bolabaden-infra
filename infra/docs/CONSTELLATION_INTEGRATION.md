@@ -191,7 +191,7 @@ The original Constellation Python project provided several features that should 
 ## Test Files Created
 
 1. **Unit Tests**
-   - `api/server_test.go` - 19 tests for API server endpoints
+   - `api/server_test.go` - 22 tests for API server endpoints (includes GET and POST operations)
    - `api/websocket_test.go` - 9 tests for WebSocket functionality
    - `failover/migration_test.go` - 15 tests for migration manager
 
