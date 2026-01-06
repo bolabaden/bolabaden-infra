@@ -102,4 +102,3 @@ func TestNormalizeHeadscaleURL_SchemelessBug(t *testing.T) {
 		})
 	}
 }
-
