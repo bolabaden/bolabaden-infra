@@ -2,11 +2,27 @@ package main
 
 import (
 	"fmt"
+
+	infraconfig "cluster/infra/config"
 )
 
 // defineServicesLLM returns all services from compose/docker-compose.llm.yml
 // Note: Some services are profile-based (model-updater, qdrant, mcp-proxy) and are excluded
 func defineServicesLLM(config *Config) []Service {
+	// Get canonical config for image name resolution
+	var cfg *infraconfig.Config
+	if config.NewConfig != nil {
+		cfg = config.NewConfig
+	} else {
+		cfg = infraconfig.MigrateFromOldConfig(
+			config.Domain,
+			config.StackName,
+			config.ConfigPath,
+			config.SecretsPath,
+			config.RootPath,
+		)
+	}
+	
 	domain := config.Domain
 	configPath := config.ConfigPath
 	secretsPath := config.SecretsPath
@@ -213,7 +229,7 @@ func defineServicesLLM(config *Config) []Service {
 	}
 	services = append(services, Service{
 		Name:          "gptr",
-		Image:         "docker.io/bolabaden/ai-researchwizard-aio-fullstack:master",
+		Image:         cfg.GetImageName("ai-researchwizard-aio-fullstack:master"),
 		ContainerName: "gptr",
 		Hostname:      "gptr",
 		Networks:      []string{"backend", "publicnet"},

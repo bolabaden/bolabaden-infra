@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"path/filepath"
+
+	infraconfig "cluster/infra/config"
 )
 
 // Define all services from docker-compose.yml
@@ -271,63 +273,23 @@ func defineServicesFromConfig(config *Config) []Service {
 }
 
 func buildTraefikCommand(config *Config) []string {
-	domain := config.Domain
-	stackName := config.StackName
-
-	cmd := []string{
-		"--accessLog=true",
-		"--accessLog.bufferingSize=0",
-		"--accessLog.fields.headers.defaultMode=drop",
-		"--accessLog.fields.headers.names.User-Agent=keep",
-		"--accessLog.fields.names.StartUTC=drop",
-		"--accessLog.filePath=/var/log/traefik/traefik.log",
-		"--accessLog.filters.statusCodes=100-999",
-		"--accessLog.format=json",
-		"--metrics.prometheus.buckets=0.1,0.3,1.2,5.0",
-		"--api.dashboard=true",
-		"--api.debug=true",
-		"--api.disableDashboardAd=true",
-		"--api.insecure=true",
-		"--api=true",
-		fmt.Sprintf("--certificatesResolvers.letsencrypt.acme.caServer=%s", getEnv("TRAEFIK_CA_SERVER", "https://acme-v02.api.letsencrypt.org/directory")),
-		fmt.Sprintf("--certificatesResolvers.letsencrypt.acme.dnsChallenge=%s", getEnv("TRAEFIK_DNS_CHALLENGE", "true")),
-		"--certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare",
-		fmt.Sprintf("--certificatesResolvers.letsencrypt.acme.dnsChallenge.resolvers=%s", getEnv("TRAEFIK_DNS_RESOLVERS", "1.1.1.1,1.0.0.1")),
-		fmt.Sprintf("--certificatesResolvers.letsencrypt.acme.email=%s", getEnv("ACME_RESOLVER_EMAIL", "")),
-		fmt.Sprintf("--certificatesResolvers.letsencrypt.acme.httpChallenge=%s", getEnv("TRAEFIK_HTTP_CHALLENGE", "false")),
-		"--certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web",
-		fmt.Sprintf("--certificatesResolvers.letsencrypt.acme.tlsChallenge=%s", getEnv("TRAEFIK_TLS_CHALLENGE", "false")),
-		"--certificatesResolvers.letsencrypt.acme.storage=/certs/acme.json",
-		"--entryPoints.web.address=:80",
-		"--entryPoints.web.http.redirections.entryPoint.scheme=https",
-		"--entryPoints.web.http.redirections.entryPoint.to=websecure",
-		"--entryPoints.websecure.address=:443",
-		"--entryPoints.websecure.http.encodeQuerySemiColons=true",
-		// Middlewares are now configurable via config.GetTraefikMiddlewares()
-		// This will be replaced when we update buildTraefikCommand to accept config.Config
-		"--entryPoints.websecure.http.middlewares=bolabaden-error-pages@file,crowdsec@file,strip-www@file",
-		"--entryPoints.websecure.http.tls=true",
-		"--entryPoints.websecure.http.tls.certResolver=letsencrypt",
-		fmt.Sprintf("--entryPoints.websecure.http.tls.domains[0].main=%s", domain),
-		fmt.Sprintf("--entryPoints.websecure.http.tls.domains[0].sans=www.%s,*.%s,*.${TS_HOSTNAME}.%s", domain, domain, domain),
-		"--entryPoints.websecure.http2.maxConcurrentStreams=100",
-		"--entryPoints.websecure.http3",
-		"--global.checkNewVersion=true",
-		"--global.sendAnonymousUsage=false",
-		"--log.level=INFO",
-		"--ping=true",
-		"--providers.docker=true",
-		fmt.Sprintf("--providers.docker.endpoint=%s", getEnv("TRAEFIK_DOCKER_HOST", "unix:///var/run/docker.sock")),
-		fmt.Sprintf("--providers.docker.network=%s_publicnet", stackName),
-		fmt.Sprintf("--providers.docker.defaultRule=Host(`{{ normalize .ContainerName }}.%s`) || Host(`{{ normalize .Name }}.%s`) || Host(`{{ normalize .ContainerName }}.${TS_HOSTNAME}.%s`) || Host(`{{ normalize .Name }}.${TS_HOSTNAME}.%s`)", domain, domain, domain, domain),
-		"--providers.docker.exposedByDefault=false",
-		"--providers.file.directory=/traefik/dynamic/",
-		"--providers.file.watch=true",
-		"--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin",
-		"--experimental.plugins.bouncer.version=v1.4.6",
-		"--experimental.plugins.traefikerrorreplace.modulename=github.com/PseudoResonance/traefikerrorreplace",
-		"--experimental.plugins.traefikerrorreplace.version=v1.0.1",
-		"--serversTransport.insecureSkipVerify=true",
+	// Use canonical config if available, otherwise create one
+	var cfg *infraconfig.Config
+	if config.NewConfig != nil {
+		cfg = config.NewConfig
+	} else {
+		cfg = infraconfig.MigrateFromOldConfig(
+			config.Domain,
+			config.StackName,
+			config.ConfigPath,
+			config.SecretsPath,
+			config.RootPath,
+		)
 	}
-	return cmd
+	
+	// Get Tailscale hostname from environment
+	tsHostname := getEnv("TS_HOSTNAME", "")
+	
+	// Use the canonical BuildTraefikCommand function
+	return infraconfig.BuildTraefikCommand(cfg, tsHostname)
 }

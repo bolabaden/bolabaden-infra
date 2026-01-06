@@ -2,10 +2,26 @@ package main
 
 import (
 	"fmt"
+
+	infraconfig "cluster/infra/config"
 )
 
 // defineServicesWarp returns all services from compose/docker-compose.warp-nat-routing.yml
 func defineServicesWarp(config *Config) []Service {
+	// Get canonical config for image name resolution
+	var cfg *infraconfig.Config
+	if config.NewConfig != nil {
+		cfg = config.NewConfig
+	} else {
+		cfg = infraconfig.MigrateFromOldConfig(
+			config.Domain,
+			config.StackName,
+			config.ConfigPath,
+			config.SecretsPath,
+			config.RootPath,
+		)
+	}
+	
 	configPath := config.ConfigPath
 	secretsPath := config.SecretsPath
 
@@ -82,7 +98,7 @@ fi`,
 	// The setup and monitor scripts are quite complex and should be handled as configs
 	services = append(services, Service{
 		Name:          "warp_router",
-		Image:         "bolabaden/warp-router:latest", // Build separately
+		Image:         cfg.GetImageName("warp-router:latest"), // Build separately
 		ContainerName: "warp_router",
 		Networks:      []string{}, // network_mode: host
 		Command:       []string{"/bin/bash", "/usr/local/bin/warp-monitor.sh"},

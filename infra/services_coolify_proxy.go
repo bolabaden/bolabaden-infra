@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+
+	infraconfig "cluster/infra/config"
 )
 
 // defineServicesCoolifyProxy returns all services from compose/docker-compose.coolify-proxy.yml
@@ -171,60 +173,28 @@ func defineServicesCoolifyProxy(config *Config) []Service {
 	})
 
 	// traefik
-	traefikCommand := []string{
-		"--accessLog=true",
-		"--accessLog.bufferingSize=0",
-		"--accessLog.fields.headers.defaultMode=drop",
-		"--accessLog.fields.headers.names.User-Agent=keep",
-		"--accessLog.fields.names.StartUTC=drop",
-		"--accessLog.filePath=/var/log/traefik/traefik.log",
-		"--accessLog.filters.statusCodes=100-999",
-		"--accessLog.format=json",
-		"--metrics.prometheus.buckets=0.1,0.3,1.2,5.0",
-		"--api.dashboard=true",
-		"--api.debug=true",
-		"--api.disableDashboardAd=true",
-		"--api.insecure=true",
-		"--api=true",
-		fmt.Sprintf("--certificatesResolvers.letsencrypt.acme.caServer=%s", getEnv("TRAEFIK_CA_SERVER", "https://acme-v02.api.letsencrypt.org/directory")),
-		fmt.Sprintf("--certificatesResolvers.letsencrypt.acme.dnsChallenge=%s", getEnv("TRAEFIK_DNS_CHALLENGE", "true")),
-		"--certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare",
-		fmt.Sprintf("--certificatesResolvers.letsencrypt.acme.dnsChallenge.resolvers=%s", getEnv("TRAEFIK_DNS_RESOLVERS", "1.1.1.1,1.0.0.1")),
-		fmt.Sprintf("--certificatesResolvers.letsencrypt.acme.email=%s", getEnv("ACME_RESOLVER_EMAIL", "")),
-		fmt.Sprintf("--certificatesResolvers.letsencrypt.acme.httpChallenge=%s", getEnv("TRAEFIK_HTTP_CHALLENGE", "false")),
-		"--certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web",
-		fmt.Sprintf("--certificatesResolvers.letsencrypt.acme.tlsChallenge=%s", getEnv("TRAEFIK_TLS_CHALLENGE", "false")),
-		"--certificatesResolvers.letsencrypt.acme.storage=/certs/acme.json",
-		"--entryPoints.web.address=:80",
-		"--entryPoints.web.http.redirections.entryPoint.scheme=https",
-		"--entryPoints.web.http.redirections.entryPoint.to=websecure",
-		"--entryPoints.web.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32",
-		"--entryPoints.websecure.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32",
-		"--entryPoints.websecure.address=:443",
-		"--entryPoints.websecure.http.encodeQuerySemiColons=true",
-		"--entryPoints.websecure.http.middlewares=bolabaden-error-pages@file,crowdsec@file,strip-www@file",
-		"--entryPoints.websecure.http.tls=true",
-		"--entryPoints.websecure.http.tls.certResolver=letsencrypt",
-		fmt.Sprintf("--entryPoints.websecure.http.tls.domains[0].main=%s", domain),
-		fmt.Sprintf("--entryPoints.websecure.http.tls.domains[0].sans=www.%s,*.%s,*.%s.%s", domain, domain, tsHostname, domain),
-		"--entryPoints.websecure.http2.maxConcurrentStreams=100",
-		"--entryPoints.websecure.http3",
-		"--global.checkNewVersion=true",
-		"--global.sendAnonymousUsage=false",
-		"--log.level=INFO",
-		"--ping=true",
-		"--providers.docker=true",
-		fmt.Sprintf("--providers.docker.endpoint=%s", getEnv("TRAEFIK_DOCKER_HOST", "unix:///var/run/docker.sock")),
-		fmt.Sprintf("--providers.docker.network=%s", traefikNetwork),
-		fmt.Sprintf("--providers.docker.defaultRule=Host(`{{ normalize .ContainerName }}.%s`) || Host(`{{ normalize .Name }}.%s`) || Host(`{{ normalize .ContainerName }}.%s.%s`) || Host(`{{ normalize .Name }}.%s.%s`)", domain, domain, tsHostname, domain, tsHostname, domain),
-		"--providers.docker.exposedByDefault=false",
-		"--providers.file.directory=/traefik/dynamic/",
-		"--providers.file.watch=true",
-		"--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin",
-		"--experimental.plugins.bouncer.version=v1.4.6",
-		"--experimental.plugins.traefikerrorreplace.modulename=github.com/PseudoResonance/traefikerrorreplace",
-		"--experimental.plugins.traefikerrorreplace.version=v1.0.1",
-		"--serversTransport.insecureSkipVerify=true",
+	// Use canonical config to build Traefik command
+	var cfg *infraconfig.Config
+	if config.NewConfig != nil {
+		cfg = config.NewConfig
+	} else {
+		cfg = infraconfig.MigrateFromOldConfig(
+			config.Domain,
+			config.StackName,
+			config.ConfigPath,
+			config.SecretsPath,
+			config.RootPath,
+		)
+	}
+	traefikCommand := infraconfig.BuildTraefikCommand(cfg, tsHostname)
+	
+	// Override network name to match the computed traefikNetwork
+	// Find and replace the network argument
+	for i, arg := range traefikCommand {
+		if len(arg) > 20 && arg[:21] == "--providers.docker.network=" {
+			traefikCommand[i] = fmt.Sprintf("--providers.docker.network=%s", traefikNetwork)
+			break
+		}
 	}
 
 	services = append(services, Service{
@@ -315,7 +285,7 @@ func defineServicesCoolifyProxy(config *Config) []Service {
 	// logrotate-traefik
 	services = append(services, Service{
 		Name:          "logrotate-traefik",
-		Image:         "docker.io/bolabaden/logrotate-traefik",
+		Image:         traefikCfg.GetImageName("logrotate-traefik"),
 		ContainerName: "logrotate-traefik",
 		Networks:      []string{}, // network_mode: none
 		Volumes: []VolumeMount{

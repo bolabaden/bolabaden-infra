@@ -21,10 +21,13 @@ import (
 	"github.com/docker/go-connections/nat"
 	"gopkg.in/yaml.v3"
 
+	infraconfig "cluster/infra/config"
 	"cluster/infra/tailscale"
 )
 
 // Config holds the infrastructure configuration
+// This is a compatibility wrapper around the new config.Config
+// TODO: Migrate fully to infraconfig.Config
 type Config struct {
 	Domain      string
 	StackName   string
@@ -34,6 +37,8 @@ type Config struct {
 	Nodes       []Node
 	Networks    map[string]NetworkConfig
 	Services    []Service
+	// NewConfig holds the canonical configuration
+	NewConfig *infraconfig.Config
 }
 
 // Node represents a cluster node
@@ -629,28 +634,52 @@ func main() {
 }
 
 func loadConfig() *Config {
-	// Try to load from config file first
+	// Load canonical configuration
+	newCfg, err := infraconfig.LoadConfig(getEnv("CONFIG_FILE", ""))
+	if err != nil {
+		log.Printf("Warning: Failed to load canonical config: %v, using defaults", err)
+		// Create default config
+		newCfg = infraconfig.MigrateFromOldConfig(
+			getEnv("DOMAIN", "example.com"),
+			getEnv("STACK_NAME", "infra"),
+			getEnv("CONFIG_PATH", "./volumes"),
+			getEnv("SECRETS_PATH", "./secrets"),
+			getEnv("ROOT_PATH", "."),
+		)
+	}
+
+	// Create compatibility Config wrapper
+	config := &Config{
+		Domain:      newCfg.Domain,
+		StackName:   newCfg.StackName,
+		ConfigPath:  newCfg.ConfigPath,
+		RootPath:    newCfg.RootPath,
+		SecretsPath: newCfg.SecretsPath,
+		NewConfig:   newCfg,
+		Networks:    defineNetworksFromConfig(newCfg),
+		Services:    defineServices(),
+	}
+
+	// Try to load from file if specified (for backward compatibility)
 	configFile := getEnv("CONFIG_FILE", "")
 	if configFile != "" {
-		if config, err := loadConfigFromFile(configFile); err == nil {
-			// Merge with environment variables (env takes precedence)
-			mergeConfigWithEnv(config)
-			return config
+		fileConfig, err := loadConfigFromFile(configFile)
+		if err == nil {
+			mergeConfigWithEnv(fileConfig)
+			// Merge file config into compatibility wrapper
+			config.Domain = fileConfig.Domain
+			config.StackName = fileConfig.StackName
+			config.ConfigPath = fileConfig.ConfigPath
+			config.RootPath = fileConfig.RootPath
+			config.SecretsPath = fileConfig.SecretsPath
+			config.Networks = fileConfig.Networks
+			config.Services = fileConfig.Services
 		} else {
 			log.Printf("Warning: Failed to load config file %s: %v, using defaults", configFile, err)
 		}
 	}
 
-	// Fall back to environment variables only
-	return &Config{
-		Domain:      getEnv("DOMAIN", "bolabaden.org"),
-		StackName:   getEnv("STACK_NAME", "my-media-stack"),
-		ConfigPath:  getEnv("CONFIG_PATH", "./volumes"),
-		RootPath:    getEnv("ROOT_PATH", "."),
-		SecretsPath: getEnv("SECRETS_PATH", "./secrets"),
-		Networks:    defineNetworks(),
-		Services:    defineServices(),
-	}
+	return config
 }
 
 // loadConfigFromFile loads configuration from YAML or JSON file
@@ -748,6 +777,21 @@ func getEnv(key, defaultValue string) string {
 }
 
 func defineNetworks() map[string]NetworkConfig {
+	// Use canonical config if available
+	cfg, err := infraconfig.LoadConfig("")
+	if err != nil {
+		cfg = infraconfig.MigrateFromOldConfig(
+			getEnv("DOMAIN", "example.com"),
+			getEnv("STACK_NAME", "infra"),
+			getEnv("CONFIG_PATH", "./volumes"),
+			getEnv("SECRETS_PATH", "./secrets"),
+			getEnv("ROOT_PATH", "."),
+		)
+	}
+	return defineNetworksFromConfig(cfg)
+}
+
+func defineNetworksFromConfig(cfg *infraconfig.Config) map[string]NetworkConfig {
 	return map[string]NetworkConfig{
 		"warp-nat-net": {
 			Name:       "warp-nat-net",
@@ -759,7 +803,7 @@ func defineNetworks() map[string]NetworkConfig {
 			Attachable: true,
 		},
 		"publicnet": {
-			Name:       getEnv("STACK_NAME", "my-media-stack") + "_publicnet",
+			Name:       cfg.GetFullNetworkName("publicnet"),
 			Driver:     "bridge",
 			Subnet:     getEnv("PUBLICNET_SUBNET", "10.76.0.0/16"),
 			Gateway:    getEnv("PUBLICNET_GATEWAY", "10.76.0.1"),
@@ -767,7 +811,7 @@ func defineNetworks() map[string]NetworkConfig {
 			Attachable: true,
 		},
 		"backend": {
-			Name:       getEnv("STACK_NAME", "my-media-stack") + "_backend",
+			Name:       cfg.GetFullNetworkName("backend"),
 			Driver:     "bridge",
 			Subnet:     getEnv("BACKEND_SUBNET", "10.0.7.0/24"),
 			Gateway:    getEnv("BACKEND_GATEWAY", "10.0.7.1"),
@@ -775,7 +819,7 @@ func defineNetworks() map[string]NetworkConfig {
 			Attachable: true,
 		},
 		"nginx_net": {
-			Name:       getEnv("STACK_NAME", "my-media-stack") + "_nginx_net",
+			Name:       cfg.GetFullNetworkName("nginx_net"),
 			Driver:     "bridge",
 			Subnet:     getEnv("NGINX_TRAEFIK_SUBNET", "10.0.8.0/24"),
 			Gateway:    getEnv("NGINX_TRAEFIK_GATEWAY", "10.0.8.1"),
@@ -783,7 +827,7 @@ func defineNetworks() map[string]NetworkConfig {
 			Attachable: true,
 		},
 		"default": {
-			Name:       getEnv("STACK_NAME", "my-media-stack") + "_default",
+			Name:       cfg.GetFullNetworkName("default"),
 			Driver:     "bridge",
 			Attachable: true,
 		},
@@ -791,12 +835,25 @@ func defineNetworks() map[string]NetworkConfig {
 }
 
 func defineServices() []Service {
+	// Use canonical config
+	cfg, err := infraconfig.LoadConfig("")
+	if err != nil {
+		cfg = infraconfig.MigrateFromOldConfig(
+			getEnv("DOMAIN", "example.com"),
+			getEnv("STACK_NAME", "infra"),
+			getEnv("CONFIG_PATH", "./volumes"),
+			getEnv("SECRETS_PATH", "./secrets"),
+			getEnv("ROOT_PATH", "."),
+		)
+	}
+	// Create compatibility Config wrapper
 	config := &Config{
-		Domain:      getEnv("DOMAIN", "bolabaden.org"),
-		StackName:   getEnv("STACK_NAME", "my-media-stack"),
-		ConfigPath:  getEnv("CONFIG_PATH", "./volumes"),
-		RootPath:    getEnv("ROOT_PATH", "."),
-		SecretsPath: getEnv("SECRETS_PATH", "./secrets"),
+		Domain:      cfg.Domain,
+		StackName:   cfg.StackName,
+		ConfigPath:  cfg.ConfigPath,
+		RootPath:    cfg.RootPath,
+		SecretsPath: cfg.SecretsPath,
+		NewConfig:   cfg,
 	}
 	return defineServicesFromConfig(config)
 }
