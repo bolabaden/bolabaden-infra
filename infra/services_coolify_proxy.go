@@ -188,18 +188,6 @@ func defineServicesCoolifyProxy(config *Config) []Service {
 
 	// traefik
 	// Use canonical config to build Traefik command
-	var cfg *infraconfig.Config
-	if config.NewConfig != nil {
-		cfg = config.NewConfig
-	} else {
-		cfg = infraconfig.MigrateFromOldConfig(
-			config.Domain,
-			config.StackName,
-			config.ConfigPath,
-			config.SecretsPath,
-			config.RootPath,
-		)
-	}
 	traefikCommand := infraconfig.BuildTraefikCommand(cfg, tsHostname)
 	
 	// Override network name to match the computed traefikNetwork
