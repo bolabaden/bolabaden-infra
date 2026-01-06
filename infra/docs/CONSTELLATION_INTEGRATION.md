@@ -131,7 +131,7 @@ The original Constellation Python project provided several features that should 
 #### Phase 3: Testing
 1. **Unit tests** ✅ COMPLETE
    - ✅ Unit tests for core functions (`parseMemory`, `parseCPUs`, `parseDuration`, `envMapToSlice`)
-   - ✅ Comprehensive unit tests for API server (19 tests covering all endpoints)
+   - ✅ Comprehensive unit tests for API server (22 tests covering all endpoints including new POST operations)
    - ✅ Comprehensive unit tests for WebSocket server (9 tests covering all functionality)
    - ✅ Comprehensive unit tests for migration manager (15 tests covering all scenarios)
    - ✅ All core tests passing
@@ -204,6 +204,66 @@ The original Constellation Python project provided several features that should 
 4. **Performance Tests**
    - `api/performance_test.go` - Load tests and benchmarks
 
+## API Quick Reference
+
+### REST API Endpoints
+
+Base URL: `http://localhost:8080` (configurable via `API_PORT`)
+
+#### Cluster Status
+- `GET /api/v1/status` - Get cluster status (nodes, services, leader info)
+- `GET /health` - Health check endpoint
+
+#### Node Management
+- `GET /api/v1/nodes` - List all nodes
+- `GET /api/v1/nodes/{node}` - Get specific node details
+- `POST /api/v1/nodes/{node}/cordon` - Mark node as unschedulable (only current node)
+- `POST /api/v1/nodes/{node}/uncordon` - Mark node as schedulable (only current node)
+
+#### Service Management
+- `GET /api/v1/services` - List all services
+- `GET /api/v1/services/{service}` - Get specific service details and healthy instances
+
+#### Raft Consensus
+- `GET /api/v1/raft/status` - Get Raft consensus status
+- `GET /api/v1/raft/leader` - Get current Raft leader
+
+#### Metrics
+- `GET /api/v1/metrics` - Get cluster metrics (nodes, services, health stats)
+
+#### Migrations
+- `GET /api/v1/migrations` - List all active migrations
+- `GET /api/v1/migrations/{service}` - Get migration status for a service
+- `POST /api/v1/migrations` - Trigger a migration
+  ```json
+  {
+    "service_name": "my-service",
+    "target_node": "node-2",  // optional
+    "priority": 10             // optional
+  }
+  ```
+
+#### WebSocket
+- `WS /ws` - WebSocket connection for real-time cluster updates
+
+### Example Usage
+
+```bash
+# Get cluster status
+curl http://localhost:8080/api/v1/status
+
+# List all nodes
+curl http://localhost:8080/api/v1/nodes
+
+# Trigger a migration
+curl -X POST http://localhost:8080/api/v1/migrations \
+  -H "Content-Type: application/json" \
+  -d '{"service_name": "my-service"}'
+
+# Cordon current node
+curl -X POST http://localhost:8080/api/v1/nodes/$(hostname)/cordon
+```
+
 ## Test Execution
 
 Run all tests:
@@ -227,6 +287,9 @@ go test ./api/... -run E2E -v
 # Performance tests (may take longer)
 go test ./api/... -run Performance -v
 go test ./api/... -bench=.
+
+# Short tests (skip performance benchmarks)
+go test ./api/... ./failover/... -short
 ```
 
 ## Project Status: ✅ COMPLETE (with implementation notes)
@@ -284,7 +347,7 @@ The infrastructure is fully tested and ready for production use. The migration s
 ## Test Coverage Summary
 
 **Total Test Files**: 7
-- `api/server_test.go` - 26 unit tests (was 19, added 7 new POST endpoint tests)
+- `api/server_test.go` - 22 unit tests (covering all REST API endpoints including GET and POST operations)
 - `api/websocket_test.go` - 9 unit tests  
 - `api/integration_test.go` - 4 integration tests
 - `api/e2e_test.go` - 4 end-to-end tests
@@ -292,8 +355,8 @@ The infrastructure is fully tested and ready for production use. The migration s
 - `failover/migration_test.go` - 15 unit tests
 - `main_test.go` - 4 unit tests
 
-**Total Test Functions**: 67+ (was 60+)
-**All Critical Tests**: ✅ Passing
+**Total Test Functions**: 63+ (comprehensive coverage of all functionality)
+**All Critical Tests**: ✅ Passing (verified with `go test ./api/... ./failover/... -v -count=1`)
 
 ## Verification Checklist
 

@@ -504,7 +504,7 @@ func TestServer_HandleMigrations_POST(t *testing.T) {
 	server.handleMigrations(w, req)
 
 	assert.Equal(t, http.StatusAccepted, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.NewDecoder(w.Body).Decode(&response)
 	require.NoError(t, err)
