@@ -38,11 +38,8 @@ func (gd *GossipDelegate) NodeMeta(limit int) []byte {
 
 	if len(data) > limit {
 		// Truncating JSON mid-stream produces invalid JSON that cannot be parsed.
-		// Instead, we need to either:
-		// 1. Return empty (safe but loses data)
-		// 2. Use a more compact representation
-		// 3. Remove less critical fields to fit within limit
-		// For now, we'll try to create a minimal valid JSON by removing less critical fields
+		// We create a minimal valid JSON representation by removing less critical fields
+		// to fit within the memberlist metadata size limit while preserving essential information.
 		log.Printf("Node metadata exceeds limit (%d > %d), creating minimal representation", len(data), limit)
 
 		// Create a minimal node metadata with only essential fields

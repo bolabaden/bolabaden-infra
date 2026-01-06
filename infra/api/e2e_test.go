@@ -26,7 +26,7 @@ func TestE2E_NodeJoinAndServiceDiscovery(t *testing.T) {
 	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
 	server := NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
 
-	// Simulate node joining
+	// Create node in cluster state
 	state := gossipCluster.GetState()
 	state.UpdateNode(&gossip.NodeMetadata{
 		Name:        "new-node",
@@ -36,7 +36,7 @@ func TestE2E_NodeJoinAndServiceDiscovery(t *testing.T) {
 		Cordoned:    false,
 	})
 
-	// Simulate service being discovered on that node
+	// Create service health entry for that node
 	state.UpdateServiceHealth(&gossip.ServiceHealth{
 		ServiceName: "web-service",
 		NodeName:    "new-node",
@@ -109,7 +109,7 @@ func TestE2E_ServiceHealthChangePropagation(t *testing.T) {
 	conn.SetReadDeadline(time.Now().Add(100 * time.Millisecond))
 	conn.ReadMessage()
 
-	// Simulate service health change
+	// Update service health status via WebSocket broadcast
 	wsServer.BroadcastServiceHealthChange("test-service", "test-node", false)
 
 	// Verify WebSocket receives the update

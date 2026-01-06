@@ -30,7 +30,7 @@ func getNextPort() int {
 	return basePort + int(portCounter%1000) // Use ports 9000-9999
 }
 
-// Mock helpers
+// Test helpers for creating test instances
 func createTestGossipCluster() *gossip.GossipCluster {
 	gossipPort := getNextPort()
 	nodeID := fmt.Sprintf("%d-%d", time.Now().UnixNano(), gossipPort)

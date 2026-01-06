@@ -685,11 +685,9 @@ func loadConfigFromFile(filename string) (*Config, error) {
 	return nil, fmt.Errorf("unable to parse config file as YAML or JSON")
 }
 
-// loadYAMLConfig loads YAML configuration
+// loadYAMLConfig loads YAML configuration using gopkg.in/yaml.v3
 func loadYAMLConfig(data []byte, config *Config) error {
-	// We'll use a simple approach - in production you'd use gopkg.in/yaml.v3
-	// For now, we'll parse basic YAML structure manually or use a library
-	// Since we added yaml.v3, let's use it
+	// Uses gopkg.in/yaml.v3 for full YAML parsing support
 	var yamlData map[string]interface{}
 	if err := yaml.Unmarshal(data, &yamlData); err != nil {
 		return err

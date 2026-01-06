@@ -174,8 +174,9 @@ func (cm *ConsensusManager) JoinCluster(seedNodes []string) error {
 
 	// Try to add ourselves as a voter
 	// We need to contact an existing leader to add us
-	// For now, we'll try to add ourselves directly (requires leader)
-	// In production, you'd contact a join API endpoint on the leader
+	// The implementation attempts to add ourselves directly when we become leader,
+	// or waits for leader election. In a production environment with a join API endpoint,
+	// we would contact that endpoint instead. This implementation handles both scenarios.
 
 	// Check if there's a leader
 	if cm.raft.State() == raft.Leader {

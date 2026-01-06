@@ -62,7 +62,7 @@ func TestWebSocketServer_Shutdown(t *testing.T) {
 	defer consensusManager.Shutdown()
 	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
 
-	// Create a mock HTTP server with WebSocket endpoint
+	// Create a test HTTP server with WebSocket endpoint
 	server := httptest.NewServer(http.HandlerFunc(wsServer.HandleWebSocket))
 	defer server.Close()
 

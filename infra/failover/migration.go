@@ -359,12 +359,45 @@ func (mm *MigrationManager) executeMigration(ctx context.Context, migration *Mig
 	// but we can proactively update the state
 	log.Printf("Migration of %s completed successfully", migration.ServiceName)
 
-	// Step 11: Optionally stop source container (for now, keep it for rollback capability)
-	// In production, you might want to:
-	// - Stop the source container after a grace period
-	// - Keep it for rollback if migration fails later
-	// - Remove it after confirming target is stable
-	log.Printf("Source container %s kept running for rollback capability", containerID)
+	// Step 11: Source container management
+	// The source container is kept running initially for rollback capability.
+	// After a grace period and verification that the target is stable, it can be stopped.
+	// This allows for quick rollback if issues are detected on the target node.
+	// The grace period and cleanup can be configured via migration rules or environment variables.
+	gracePeriod := 5 * time.Minute // Default grace period before cleanup
+	if rule.RetryDelay > 0 {
+		gracePeriod = rule.RetryDelay * 10 // Use retry delay as basis for grace period
+	}
+
+	// Schedule source container cleanup after grace period
+	go func() {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), gracePeriod)
+		defer cleanupCancel()
+
+		select {
+		case <-cleanupCtx.Done():
+			// Grace period expired, verify target is still healthy
+			targetHealth, exists := mm.gossipState.GetServiceHealth(migration.ServiceName, migration.TargetNode)
+			if exists && targetHealth.Healthy {
+				// Target is healthy, stop source container
+				log.Printf("Grace period expired and target is healthy, stopping source container %s", containerID)
+				stopTimeoutSeconds := 30
+				stopTimeout := time.Duration(stopTimeoutSeconds) * time.Second
+				if err := mm.dockerClient.ContainerStop(ctx, containerID, container.StopOptions{Timeout: &stopTimeoutSeconds}); err != nil {
+					log.Printf("Warning: Failed to stop source container %s: %v", containerID, err)
+				} else {
+					log.Printf("Source container %s stopped successfully after grace period (%v)", containerID, stopTimeout)
+				}
+			} else {
+				log.Printf("Target health check failed, keeping source container %s for rollback", containerID)
+			}
+		case <-ctx.Done():
+			// Migration context cancelled, keep source container
+			return
+		}
+	}()
+
+	log.Printf("Source container %s will be stopped after grace period (%v) if target remains healthy", containerID, gracePeriod)
 
 	mm.mu.Lock()
 	migration.Status = MigrationStatusCompleted

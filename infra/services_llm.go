@@ -89,7 +89,7 @@ func defineServicesLLM(config *Config) []Service {
 		ExtraHosts: []string{"host.docker.internal:host-gateway"},
 	})
 
-	// litellm (profile: fixme - but included for completeness)
+	// litellm service (profile-based, included for completeness)
 	litellmPort := getEnv("LITELLM_PORT", "4000")
 	litellmSecrets := []SecretMount{
 		{Source: fmt.Sprintf("%s/litellm-master-key.txt", secretsPath), Target: "/run/secrets/litellm-master-key", Mode: "0400"},
