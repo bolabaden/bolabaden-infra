@@ -288,6 +288,14 @@ func (c *Config) LoadFromYAML(path string) error {
 	}
 
 	// Merge YAML config into existing config (YAML values take precedence)
+	// Check version compatibility
+	if yamlConfig.Version != "" {
+		if !isVersionCompatible(yamlConfig.Version, c.Version) {
+			return fmt.Errorf("configuration version %s is not compatible with current version %s", yamlConfig.Version, c.Version)
+		}
+		c.Version = yamlConfig.Version
+	}
+	
 	if yamlConfig.Domain != "" {
 		c.Domain = yamlConfig.Domain
 	}
