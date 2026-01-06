@@ -308,5 +308,168 @@ func defineServicesLLM(config *Config) []Service {
 		ExtraHosts: []string{"host.docker.internal:host-gateway"},
 	})
 
+	// Open WebUI
+	openWebUIPort := getEnv("OPEN_WEBUI_PORT", "8080")
+	services = append(services, Service{
+		Name:          "open-webui",
+		Image:         "ghcr.io/open-webui/open-webui:main",
+		ContainerName: "open-webui",
+		Hostname:      "open-webui",
+		Networks:      []string{"backend", "publicnet"},
+		Secrets: []SecretMount{
+			{Source: fmt.Sprintf("%s/open-webui-secret-key.txt", secretsPath), Target: "/run/secrets/open-webui-secret-key", Mode: "0400"},
+		},
+		Volumes: []VolumeMount{
+			{Source: fmt.Sprintf("%s/open-webui/uploads", configPath), Target: "/app/backend/data/uploads", Type: "bind"},
+			{Source: fmt.Sprintf("%s/open-webui/vector_db", configPath), Target: "/app/backend/data/vector_db", Type: "bind"},
+			{Source: fmt.Sprintf("%s/open-webui/webui.db", configPath), Target: "/app/backend/data/webui.db", Type: "bind"},
+		},
+		Environment: map[string]string{
+			"ENABLE_ADMIN_EXPORT":                    "True",
+			"ENABLE_ADMIN_CHAT_ACCESS":               "True",
+			"BYPASS_MODEL_ACCESS_CONTROL":            "True",
+			"ENV":                                    "prod",
+			"ENABLE_PERSISTENT_CONFIG":               "True",
+			"PORT":                                   openWebUIPort,
+			"ENABLE_REALTIME_CHAT_SAVE":              "True",
+			"WEBUI_BUILD_HASH":                       "dev-build",
+			"AIOHTTP_CLIENT_TIMEOUT":                 "300",
+			"AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST":      "10",
+			"AIOHTTP_CLIENT_TIMEOUT_OPENAI_MODEL_LIST": "10",
+			"DATA_DIR":                              "./data",
+			"FRONTEND_BUILD_DIR":                     "../build",
+			"STATIC_DIR":                             "./static",
+			"OLLAMA_BASE_URL":                        "/ollama",
+			"USE_OLLAMA_DOCKER":                      "false",
+			"K8S_FLAG":                              "False",
+			"ENABLE_FORWARD_USER_INFO_HEADERS":      "False",
+			"WEBUI_SESSION_COOKIE_SAME_SITE":         "lax",
+			"WEBUI_SESSION_COOKIE_SECURE":            "False",
+			"WEBUI_AUTH_COOKIE_SAME_SITE":            "lax",
+			"WEBUI_AUTH_COOKIE_SECURE":               "False",
+			"WEBUI_AUTH":                             getEnv("WEBUI_AUTH", "True"),
+			"WEBUI_SECRET_KEY_FILE":                  "/run/secrets/open-webui-secret-key",
+			"ENABLE_VERSION_UPDATE_CHECK":            "True",
+			"OFFLINE_MODE":                           "False",
+			"RESET_CONFIG_ON_START":                  "False",
+			"SAFE_MODE":                              "False",
+			"CORS_ALLOW_ORIGIN":                      getEnv("OPEN_WEBUI_CORS_ALLOWED_ORIGIN", "*"),
+			"RAG_EMBEDDING_MODEL_TRUST_REMOTE_CODE":  "True",
+			"RAG_RERANKING_MODEL_TRUST_REMOTE_CODE":  "True",
+			"RAG_EMBEDDING_MODEL_AUTO_UPDATE":        "True",
+			"RAG_RERANKING_MODEL_AUTO_UPDATE":        "True",
+			"VECTOR_DB":                              "chroma",
+			"TIKTOKEN_CACHE_DIR":                     "/app/backend/data/cache/tiktoken",
+			"RAG_EMBEDDING_OPENAI_BATCH_SIZE":        "1",
+			"DOCKER":                                 "true",
+			"HOME":                                   "/root",
+			"HF_HOME":                                "/app/backend/data/cache/embedding/models",
+			"SENTENCE_TRANSFORMERS_HOME":             "/app/backend/data/cache/embedding/models",
+			"USE_CUDA_DOCKER_VER":                    "cu128",
+			"USE_EMBEDDING_MODEL_DOCKER":             "sentence-transformers/all-MiniLM-L6-v2",
+			"ANONYMIZED_TELEMETRY":                   "false",
+			"DO_NOT_TRACK":                           "true",
+			"SCARF_NO_ANALYTICS":                     "true",
+		},
+		Command: []string{"bash", "start.sh"},
+		Labels: map[string]string{
+			"traefik.enable":                                         "true",
+			"traefik.http.routers.open-webui.rule":                   fmt.Sprintf("Host(`open-webui.%s`) || Host(`open-webui.%s.%s`)", domain, tsHostname, domain),
+			"traefik.http.services.open-webui.loadbalancer.server.port": openWebUIPort,
+			"homepage.group":                                        "AI",
+			"homepage.name":                                         "Open WebUI",
+			"homepage.icon":                                         "open-webui.png",
+			"homepage.href":                                         fmt.Sprintf("https://open-webui.%s/", domain),
+			"homepage.description":                                 "Web interface for chatting with local/remote LLMs, tools, and knowledge bases",
+			"kuma.open-webui.http.name":                             fmt.Sprintf("open-webui.%s.%s", tsHostname, domain),
+			"kuma.open-webui.http.url":                              fmt.Sprintf("https://open-webui.%s", domain),
+			"kuma.open-webui.http.interval":                         "20",
+		},
+		Healthcheck: &Healthcheck{
+			Test:     []string{"CMD-SHELL", fmt.Sprintf("curl -f http://127.0.0.1:%s", openWebUIPort)},
+			Interval: "5s",
+			Timeout:  "30s",
+			Retries:  10,
+		},
+		DependsOn:  []string{"mcpo", "litellm"},
+		Restart:    "always",
+		ExtraHosts: []string{"host.docker.internal:host-gateway"},
+	})
+
+	// Qdrant
+	services = append(services, Service{
+		Name:          "qdrant",
+		Image:         "qdrant/qdrant",
+		ContainerName: "qdrant",
+		Hostname:      "qdrant",
+		Networks:      []string{"publicnet"},
+		Volumes: []VolumeMount{
+			{Source: fmt.Sprintf("%s/qdrant/storage", configPath), Target: "/qdrant/storage", Type: "bind"},
+		},
+		Environment: map[string]string{
+			"QDRANT_STORAGE_PATH":   "/qdrant/storage",
+			"QDRANT_STORAGE_TYPE":   "disk",
+			"QDRANT_STORAGE_DISK_PATH": "/qdrant/storage",
+			"QDRANT_STORAGE_DISK_TYPE": "disk",
+		},
+		Labels: map[string]string{
+			"traefik.enable":                                         "true",
+			"traefik.http.services.qdrant.loadbalancer.server.port": "6333",
+			"homepage.group":                                        "AI",
+			"homepage.name":                                         "Qdrant",
+			"homepage.icon":                                         "qdrant.png",
+			"homepage.href":                                         fmt.Sprintf("https://qdrant.%s", domain),
+			"homepage.description":                                 "Qdrant is a vector database for storing and querying vectors.",
+		},
+		Restart: "always",
+	})
+
+	// MCP Proxy
+	mcpProxyPort := getEnv("MCP_PROXY_PORT", "9090")
+	services = append(services, Service{
+		Name:          "mcp-proxy",
+		Image:         "ghcr.io/tbxark/mcp-proxy",
+		ContainerName: "mcp-proxy",
+		Hostname:      "mcp",
+		Networks:      []string{"publicnet"},
+		Configs: []ConfigMount{
+			{Source: fmt.Sprintf("%s/llm/mcpProxy.json", configPath), Target: "/config.json", Mode: "0777"},
+		},
+		Labels: map[string]string{
+			"traefik.enable":                                         "true",
+			"traefik.http.routers.mcp-proxy.rule":                    fmt.Sprintf("Host(`mcp.%s`) || Host(`mcp.%s.%s`)", domain, tsHostname, domain),
+			"traefik.http.services.mcp-proxy.loadbalancer.server.port": mcpProxyPort,
+			"homepage.group":                                        "MCP",
+			"homepage.name":                                         "MCP Proxy",
+			"homepage.icon":                                         "mcp-proxy.png",
+			"homepage.href":                                         fmt.Sprintf("https://mcp.%s", domain),
+			"homepage.description":                                 "MCP Proxy is a tool for proxying MCP servers.",
+		},
+		Command: []string{
+			"--config", "config.json",
+			"-expand-env",
+		},
+		Restart:    "always",
+		ExtraHosts: []string{"host.docker.internal:host-gateway"},
+	})
+
+	// Model Updater
+	services = append(services, Service{
+		Name:          "model-updater",
+		Image:         "th3w1zard1/llm_fallbacks:latest",
+		ContainerName: "model-updater",
+		Hostname:      "model-updater",
+		Networks:      []string{"backend", "publicnet"},
+		Volumes: []VolumeMount{
+			{Source: fmt.Sprintf("%s/litellm", configPath), Target: "/app/config", Type: "bind"},
+		},
+		Environment: map[string]string{
+			"OPENROUTER_API_KEY":      getEnv("OPENROUTER_API_KEY", ""),
+			"POSTGRES_PASSWORD":       getEnv("LITELLM_POSTGRES_PASSWORD", "postgres"),
+			"TZ":                      getEnv("TZ", "America/Chicago"),
+		},
+		Restart: "no",
+	})
+
 	return services
 }
