@@ -193,6 +193,7 @@ The original Constellation Python project provided several features that should 
 1. **Unit Tests**
    - `api/server_test.go` - 22 tests for API server endpoints (includes GET and POST operations)
    - `api/websocket_test.go` - 9 tests for WebSocket functionality
+   - `api/shutdown_test.go` - 3 tests for graceful shutdown functionality
    - `failover/migration_test.go` - 15 tests for migration manager
 
 2. **Integration Tests**
@@ -355,8 +356,8 @@ The infrastructure is fully tested and ready for production use. The migration s
 - `failover/migration_test.go` - 15 unit tests
 - `main_test.go` - 4 unit tests
 
-**Total Test Functions**: 56 test functions across 7 files
-**Total Test Cases Executed**: 54 passing test cases
+**Total Test Functions**: 59 test functions across 8 test files (includes shutdown tests)
+**Total Test Cases Executed**: 57 passing test cases
 **All Critical Tests**: ✅ Passing (verified with `go test ./api/... ./failover/... -v -count=1`)
 
 ## Verification Checklist
@@ -398,6 +399,28 @@ The infrastructure is fully tested and ready for production use. The migration s
   - Only allows cordoning/uncordoning the current node (nodes manage their own state)
 - ✅ Added `GetNodeName()` method to `GossipCluster` for API access
 - ✅ Comprehensive tests for all new POST endpoints (7 new tests)
+
+### Graceful Shutdown Implementation
+- ✅ **API Server Graceful Shutdown**: Implemented context-based graceful shutdown
+  - `Shutdown(ctx context.Context)` method with 10-second timeout
+  - Properly closes HTTP server and all active connections
+  - WebSocket server shutdown called before HTTP server shutdown
+  - Force close if graceful shutdown fails
+- ✅ **WebSocket Server Shutdown**: Implemented graceful connection closure
+  - `Shutdown()` method closes all active WebSocket connections
+  - Sends close frames to clients before closing connections
+  - Thread-safe connection cleanup
+  - Idempotent shutdown (safe to call multiple times)
+- ✅ **Agent Integration**: Updated `cmd/agent/main.go` to properly shutdown on signals
+  - Calls `apiServer.Shutdown(ctx)` on SIGINT/SIGTERM
+  - Uses 15-second timeout for graceful shutdown
+  - Cancels main context to stop all goroutines
+  - Proper cleanup order: API server → WebSocket → HTTP server
+- ✅ **Shutdown Tests**: Added comprehensive tests for graceful shutdown
+  - `TestServer_Shutdown`: Tests API server graceful shutdown
+  - `TestServer_Shutdown_NoServer`: Tests shutdown before server start
+  - `TestWebSocketServer_Shutdown`: Tests WebSocket server shutdown
+  - All shutdown tests passing
 
 ## Final Verification and Completion Status
 

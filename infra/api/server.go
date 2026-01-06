@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -78,12 +79,30 @@ func (s *Server) Start() error {
 	return s.server.ListenAndServe()
 }
 
-// Shutdown gracefully shuts down the server
-func (s *Server) Shutdown() error {
+// Shutdown gracefully shuts down the server with a timeout
+func (s *Server) Shutdown(ctx context.Context) error {
 	if s.server == nil {
 		return nil
 	}
-	return s.server.Close()
+	log.Printf("Shutting down API server...")
+	
+	// Shutdown WebSocket server first to close all connections
+	if s.wsServer != nil {
+		s.wsServer.Shutdown()
+	}
+	
+	// Gracefully shutdown HTTP server with context timeout
+	shutdownCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	
+	if err := s.server.Shutdown(shutdownCtx); err != nil {
+		log.Printf("Error during API server shutdown: %v", err)
+		// Force close if graceful shutdown fails
+		return s.server.Close()
+	}
+	
+	log.Printf("API server shutdown complete")
+	return nil
 }
 
 // handleHealth handles health check requests

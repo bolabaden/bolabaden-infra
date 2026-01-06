@@ -95,6 +95,34 @@ func (ws *WebSocketServer) HandleWebSocket(w http.ResponseWriter, r *http.Reques
 	log.Printf("WebSocket client disconnected: %s", r.RemoteAddr)
 }
 
+// Shutdown gracefully closes all WebSocket connections
+func (ws *WebSocketServer) Shutdown() {
+	log.Printf("Shutting down WebSocket server...")
+
+	// Collect all connections first while holding the lock
+	ws.mu.Lock()
+	conns := make([]*websocket.Conn, 0, len(ws.clients))
+	for conn := range ws.clients {
+		conns = append(conns, conn)
+	}
+	clientCount := len(ws.clients)
+	// Clear client maps immediately to prevent new messages
+	ws.clients = make(map[*websocket.Conn]bool)
+	ws.clientMu = make(map[*websocket.Conn]*sync.Mutex)
+	ws.mu.Unlock()
+
+	// Close all connections outside the lock
+	for _, conn := range conns {
+		// Try to send close frame, but don't fail if connection is already closed
+		closeMsg := websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Server shutting down")
+		// Write directly since we've already removed from clients map
+		_ = conn.WriteMessage(websocket.CloseMessage, closeMsg)
+		conn.Close()
+	}
+
+	log.Printf("WebSocket server shutdown complete (%d connections closed)", clientCount)
+}
+
 // sendInitialState sends the current cluster state to a new client
 func (ws *WebSocketServer) sendInitialState(conn *websocket.Conn) {
 	state := ws.gossipCluster.GetState()

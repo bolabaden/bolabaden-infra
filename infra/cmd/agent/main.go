@@ -221,6 +221,21 @@ func main() {
 
 	<-sigCh
 	log.Printf("Shutting down...")
+
+	// Create shutdown context with timeout
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer shutdownCancel()
+
+	// Cancel main context to stop all goroutines
+	cancel()
+
+	// Gracefully shutdown API server (includes WebSocket server)
+	if err := apiServer.Shutdown(shutdownCtx); err != nil {
+		log.Printf("Error shutting down API server: %v", err)
+	}
+
+	// Additional shutdown is handled by defer statements for gossip, consensus, and lease manager
+	log.Printf("Shutdown complete")
 }
 
 // Helper functions
