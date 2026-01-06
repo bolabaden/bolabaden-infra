@@ -295,7 +295,7 @@ func (mm *MigrationManager) executeMigration(ctx context.Context, migration *Mig
 	// Step 6: Transfer volumes (if any)
 	if len(containerConfig.Mounts) > 0 {
 		log.Printf("Transferring %d volume(s) to target node", len(containerConfig.Mounts))
-		if err := TransferVolumes(ctx, mm.dockerClient, remoteCli, containerID, containerConfig.Mounts); err != nil {
+		if err := TransferVolumes(ctx, mm.dockerClient, remoteCli, containerID, containerConfig.Mounts, targetNode.TailscaleIP); err != nil {
 			log.Printf("Warning: Volume transfer failed (continuing anyway): %v", err)
 			// Continue migration even if volume transfer fails (volumes may be shared or not critical)
 		}

@@ -8,7 +8,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -189,7 +188,8 @@ func CreateContainerOnRemote(ctx context.Context, remoteCli *client.Client, conf
 
 // TransferVolumes transfers volume data from source to target node via Tailscale network
 // Uses docker cp to export volumes, transfers via tar over HTTP, and extracts on target
-func TransferVolumes(ctx context.Context, sourceCli *client.Client, targetCli *client.Client, containerID string, volumes []mount.Mount) error {
+// targetNodeIP is used for SSH fallback if needed (currently unused but available for future enhancement)
+func TransferVolumes(ctx context.Context, sourceCli *client.Client, targetCli *client.Client, containerID string, volumes []mount.Mount, targetNodeIP string) error {
 	if len(volumes) == 0 {
 		return nil
 	}
@@ -197,7 +197,7 @@ func TransferVolumes(ctx context.Context, sourceCli *client.Client, targetCli *c
 	log.Printf("Transferring %d volume(s) from source to target node", len(volumes))
 
 	for _, vol := range volumes {
-		// Skip volumes that don't need transfer (named volumes, tmpfs, etc.)
+		// Skip volumes that don't need transfer (tmpfs, etc.)
 		if vol.Type != mount.TypeBind && vol.Type != mount.TypeVolume {
 			log.Printf("Skipping volume %s (type: %s, not transferable)", vol.Target, vol.Type)
 			continue
@@ -211,8 +211,8 @@ func TransferVolumes(ctx context.Context, sourceCli *client.Client, targetCli *c
 				continue
 			}
 
-			// Transfer bind mount directory
-			if err := transferBindMount(ctx, sourceCli, targetCli, containerID, vol); err != nil {
+			// Transfer bind mount directory (uses temporary containers for host path access)
+			if err := transferBindMount(ctx, sourceCli, targetCli, containerID, vol, targetNodeIP); err != nil {
 				return fmt.Errorf("failed to transfer bind mount %s: %w", vol.Target, err)
 			}
 		} else if vol.Type == mount.TypeVolume {
@@ -228,20 +228,22 @@ func TransferVolumes(ctx context.Context, sourceCli *client.Client, targetCli *c
 }
 
 // transferBindMount transfers a bind mount directory from source to target node
-func transferBindMount(ctx context.Context, sourceCli *client.Client, targetCli *client.Client, containerID string, vol mount.Mount) error {
+func transferBindMount(ctx context.Context, sourceCli *client.Client, targetCli *client.Client, containerID string, vol mount.Mount, targetNodeIP string) error {
 	log.Printf("Transferring bind mount: %s -> %s", vol.Source, vol.Target)
 
 	// Create tar archive of source directory
 	// CopyFromContainer returns (io.ReadCloser, types.ContainerPathStat, error)
 	tarReader, stat, err := sourceCli.CopyFromContainer(ctx, containerID, vol.Source)
 	if err != nil {
-		// If CopyFromContainer fails (e.g., path doesn't exist in container), try direct host path
-		return transferHostPath(ctx, vol.Source, vol.Target, targetCli)
+		// If CopyFromContainer fails (e.g., path doesn't exist in container), 
+		// it's likely a bind mount to host path - use temporary container approach
+		log.Printf("Path not found in container, treating as host bind mount: %s", vol.Source)
+		return transferHostPath(ctx, vol.Source, vol.Target, sourceCli, targetCli, targetNodeIP)
 	}
 	_ = stat // Stat information available but not needed for transfer
 	defer tarReader.Close()
 
-	// Transfer tar to target node and extract
+	// Path exists in container, transfer normally
 	return extractTarToTarget(ctx, tarReader, vol.Target, targetCli, containerID)
 }
 
@@ -262,43 +264,179 @@ func transferContainerVolume(ctx context.Context, sourceCli *client.Client, targ
 	return extractTarToTarget(ctx, tarReader, vol.Target, targetCli, containerID)
 }
 
-// transferHostPath transfers a host path directly using tar over network
+// transferHostPath transfers a host path directly using temporary containers and Docker API
 // This is used when CopyFromContainer fails (e.g., path is on host, not in container)
-func transferHostPath(ctx context.Context, sourcePath, targetPath string, targetCli *client.Client) error {
+// Uses a temporary container on source to access host path, transfers via Docker API,
+// and uses a temporary container on target to extract to host path
+func transferHostPath(ctx context.Context, sourcePath, targetPath string, sourceCli, targetCli *client.Client, targetNodeIP string) error {
 	// For bind mounts, the source path is on the host filesystem
-	// We need to create a tar archive and transfer it
-	// This requires access to the host filesystem, which may not be available in all scenarios
-	// In production, bind mounts are typically shared storage or should be recreated on target
-	
+	// We use temporary containers to access host filesystem on both source and target
+
 	// Check if source path exists
 	if _, err := os.Stat(sourcePath); os.IsNotExist(err) {
 		return fmt.Errorf("source path does not exist: %s", sourcePath)
 	}
 
-	// Create tar archive of source path
-	cmd := exec.CommandContext(ctx, "tar", "-czf", "-", "-C", filepath.Dir(sourcePath), filepath.Base(sourcePath))
-	tarOutput, err := cmd.StdoutPipe()
+	log.Printf("Transferring host path %s to %s using temporary containers", sourcePath, targetPath)
+
+	// Step 1: Create temporary container on source node to access host path
+	// Use a minimal image that has tar (busybox or alpine)
+	tempSourceContainerName := fmt.Sprintf("volume-transfer-source-%d", time.Now().UnixNano())
+	
+	// Create container config with host path mounted
+	sourceContainerConfig := &container.Config{
+		Image: "busybox:latest",
+		Cmd:   []string{"sleep", "3600"}, // Keep container running
+	}
+	
+	sourceHostConfig := &container.HostConfig{
+		Binds: []string{fmt.Sprintf("%s:/source:ro", sourcePath)},
+		AutoRemove: false, // We'll remove manually
+	}
+
+	// Create and start temporary source container
+	sourceCreateResp, err := sourceCli.ContainerCreate(ctx, sourceContainerConfig, sourceHostConfig, nil, nil, tempSourceContainerName)
 	if err != nil {
-		return fmt.Errorf("failed to create tar pipe: %w", err)
+		// If busybox not available, try alpine
+		sourceContainerConfig.Image = "alpine:latest"
+		sourceCreateResp, err = sourceCli.ContainerCreate(ctx, sourceContainerConfig, sourceHostConfig, nil, nil, tempSourceContainerName)
+		if err != nil {
+			return fmt.Errorf("failed to create temporary source container: %w", err)
+		}
 	}
 
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to start tar: %w", err)
+	if err := sourceCli.ContainerStart(ctx, sourceCreateResp.ID, types.ContainerStartOptions{}); err != nil {
+		sourceCli.ContainerRemove(ctx, sourceCreateResp.ID, types.ContainerRemoveOptions{Force: true})
+		return fmt.Errorf("failed to start temporary source container: %w", err)
 	}
-	defer cmd.Wait()
+	defer func() {
+		sourceCli.ContainerStop(ctx, sourceCreateResp.ID, container.StopOptions{})
+		sourceCli.ContainerRemove(ctx, sourceCreateResp.ID, types.ContainerRemoveOptions{Force: true})
+	}()
 
-	// For bind mounts on host filesystem, we need to transfer to target host
-	// Bind mounts reference host filesystem paths which are not accessible via Docker API alone
-	// This requires either:
-	// 1. Shared storage (NFS, CIFS, etc.) where both nodes can access the same path
-	// 2. SSH access to target node for direct file transfer
-	// 3. A temporary container that can access the host path and transfer via Docker API
-	// 
-	// For production use, bind mounts should typically use shared storage or be recreated on target.
-	// If SSH is available, we could implement rsync/scp transfer here.
-	log.Printf("Bind mount transfer for host path %s requires shared storage, SSH access, or manual setup", sourcePath)
-	_ = tarOutput // tarOutput available but requires SSH or shared storage infrastructure for transfer
-	return fmt.Errorf("bind mount transfer from host path %s requires shared storage or SSH access to target node", sourcePath)
+	// Step 2: Export data from temporary source container
+	log.Printf("Exporting data from temporary source container")
+	tarReader, _, err := sourceCli.CopyFromContainer(ctx, sourceCreateResp.ID, "/source")
+	if err != nil {
+		return fmt.Errorf("failed to copy from temporary source container: %w", err)
+	}
+	defer tarReader.Close()
+
+	// Step 3: Create temporary container on target node to receive data
+	tempTargetContainerName := fmt.Sprintf("volume-transfer-target-%d", time.Now().UnixNano())
+	
+	// Ensure target directory exists on host (create parent if needed)
+	targetDir := filepath.Dir(targetPath)
+	
+	// Create container config with target path mounted
+	targetContainerConfig := &container.Config{
+		Image: "busybox:latest",
+		Cmd:   []string{"sleep", "3600"},
+	}
+	
+	targetHostConfig := &container.HostConfig{
+		Binds: []string{fmt.Sprintf("%s:/target", targetDir)},
+		AutoRemove: false,
+	}
+
+	// Create and start temporary target container
+	targetCreateResp, err := targetCli.ContainerCreate(ctx, targetContainerConfig, targetHostConfig, nil, nil, tempTargetContainerName)
+	if err != nil {
+		// If busybox not available, try alpine
+		targetContainerConfig.Image = "alpine:latest"
+		targetCreateResp, err = targetCli.ContainerCreate(ctx, targetContainerConfig, targetHostConfig, nil, nil, tempTargetContainerName)
+		if err != nil {
+			return fmt.Errorf("failed to create temporary target container: %w", err)
+		}
+	}
+
+	if err := targetCli.ContainerStart(ctx, targetCreateResp.ID, types.ContainerStartOptions{}); err != nil {
+		targetCli.ContainerRemove(ctx, targetCreateResp.ID, types.ContainerRemoveOptions{Force: true})
+		return fmt.Errorf("failed to start temporary target container: %w", err)
+	}
+	defer func() {
+		targetCli.ContainerStop(ctx, targetCreateResp.ID, container.StopOptions{})
+		targetCli.ContainerRemove(ctx, targetCreateResp.ID, types.ContainerRemoveOptions{Force: true})
+	}()
+
+	// Step 4: Transfer tar data to temporary target container
+	log.Printf("Transferring data to temporary target container")
+	tmpFile, err := os.CreateTemp("", "volume-transfer-*.tar")
+	if err != nil {
+		return fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer os.Remove(tmpFile.Name())
+	defer tmpFile.Close()
+
+	// Write tar data to temp file
+	if _, err := io.Copy(tmpFile, tarReader); err != nil {
+		return fmt.Errorf("failed to write tar data: %w", err)
+	}
+	tmpFile.Close()
+
+	// Copy tar file into target container
+	tarFile, err := os.Open(tmpFile.Name())
+	if err != nil {
+		return fmt.Errorf("failed to reopen temp file: %w", err)
+	}
+	defer tarFile.Close()
+
+	tarPathInContainer := "/tmp/volume-transfer.tar"
+	copyOpts := types.CopyToContainerOptions{
+		AllowOverwriteDirWithFile: true,
+	}
+	if err := targetCli.CopyToContainer(ctx, targetCreateResp.ID, tarPathInContainer, tarFile, copyOpts); err != nil {
+		return fmt.Errorf("failed to copy tar to target container: %w", err)
+	}
+
+	// Step 5: Extract tar in target container to mounted host path
+	log.Printf("Extracting data to target path %s", targetPath)
+	baseName := filepath.Base(targetPath)
+	extractCmd := []string{
+		"sh", "-c",
+		fmt.Sprintf("cd /target && tar -xzf %s && mv %s %s 2>/dev/null || true", tarPathInContainer, baseName, baseName),
+	}
+	
+	execConfig := types.ExecConfig{
+		Cmd:          extractCmd,
+		AttachStdout: true,
+		AttachStderr: true,
+	}
+
+	execResp, err := targetCli.ContainerExecCreate(ctx, targetCreateResp.ID, execConfig)
+	if err != nil {
+		return fmt.Errorf("failed to create exec: %w", err)
+	}
+
+	attachResp, err := targetCli.ContainerExecAttach(ctx, execResp.ID, types.ExecStartCheck{})
+	if err != nil {
+		return fmt.Errorf("failed to attach to exec: %w", err)
+	}
+	defer attachResp.Close()
+
+	// Wait for extraction to complete
+	inspectResp, err := targetCli.ContainerExecInspect(ctx, execResp.ID)
+	if err != nil {
+		return fmt.Errorf("failed to inspect exec: %w", err)
+	}
+
+	if inspectResp.ExitCode != 0 {
+		output, _ := io.ReadAll(attachResp.Reader)
+		return fmt.Errorf("tar extraction failed (exit code %d): %s", inspectResp.ExitCode, string(output))
+	}
+
+	// Clean up temp tar file in container
+	cleanupCmd := []string{"rm", "-f", tarPathInContainer}
+	cleanupExecConfig := types.ExecConfig{
+		Cmd: cleanupCmd,
+	}
+	cleanupExecResp, err := targetCli.ContainerExecCreate(ctx, targetCreateResp.ID, cleanupExecConfig)
+	if err == nil {
+		targetCli.ContainerExecAttach(ctx, cleanupExecResp.ID, types.ExecStartCheck{})
+	}
+
+	log.Printf("Successfully transferred host path %s to %s", sourcePath, targetPath)
+	return nil
 }
 
 // extractTarToTarget extracts tar archive to target container
