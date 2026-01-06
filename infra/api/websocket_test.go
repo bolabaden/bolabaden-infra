@@ -33,7 +33,7 @@ func createTestWebSocketServer() (*WebSocketServer, *gossip.GossipCluster, *raft
 	gossipPort := getNextPort()
 	raftPort := getNextPort()
 	nodeID := fmt.Sprintf("%d-%d", time.Now().UnixNano(), gossipPort)
-	
+
 	gossip.NewClusterState()
 	config := &gossip.Config{
 		NodeName:     "test-node-" + nodeID,
