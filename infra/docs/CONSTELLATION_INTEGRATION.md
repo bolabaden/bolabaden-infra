@@ -86,10 +86,16 @@ The original Constellation Python project provided several features that should 
 1. **REST API Server** ✅ COMPLETE
    - ✅ Cluster status endpoint (`/api/v1/status`)
    - ✅ Node management endpoints (`/api/v1/nodes`, `/api/v1/nodes/{node}`)
+     - GET: List nodes or get node details
+     - POST `/api/v1/nodes/{node}/cordon`: Cordon a node (mark as unschedulable)
+     - POST `/api/v1/nodes/{node}/uncordon`: Uncordon a node (mark as schedulable)
    - ✅ Service management endpoints (`/api/v1/services`, `/api/v1/services/{service}`)
    - ✅ Health check endpoint (`/health`)
    - ✅ Metrics endpoint (`/api/v1/metrics`)
    - ✅ Raft status endpoints (`/api/v1/raft/status`, `/api/v1/raft/leader`)
+   - ✅ Migration endpoints (`/api/v1/migrations`, `/api/v1/migrations/{service}`)
+     - GET: List all active migrations or get migration status
+     - POST `/api/v1/migrations`: Trigger a migration (with service_name and optional target_node)
    - ✅ Integrated into agent on port 8080 (configurable via `API_PORT`)
 
 2. **WebSocket Service** ✅ COMPLETE
@@ -106,8 +112,11 @@ The original Constellation Python project provided several features that should 
    - ✅ Intelligent service placement (priority-based node selection)
    - ✅ Migration monitoring and rule-based triggers
    - ✅ Migration API endpoints (`/api/v1/migrations`)
+     - GET: Query migration status
+     - POST: Manually trigger migrations via API
    - ✅ Health-based migration triggers
    - ✅ Node-based migration triggers (cordoned nodes)
+   - ✅ Manual migration triggers via REST API
    - ⚠️ Migration execution: Currently simulates migration (logs + status tracking)
      - Migration framework is fully implemented
      - Actual container transfer/state migration is simulated
@@ -275,7 +284,7 @@ The infrastructure is fully tested and ready for production use. The migration s
 ## Test Coverage Summary
 
 **Total Test Files**: 7
-- `api/server_test.go` - 19 unit tests
+- `api/server_test.go` - 26 unit tests (was 19, added 7 new POST endpoint tests)
 - `api/websocket_test.go` - 9 unit tests  
 - `api/integration_test.go` - 4 integration tests
 - `api/e2e_test.go` - 4 end-to-end tests
@@ -283,7 +292,7 @@ The infrastructure is fully tested and ready for production use. The migration s
 - `failover/migration_test.go` - 15 unit tests
 - `main_test.go` - 4 unit tests
 
-**Total Test Functions**: 60+
+**Total Test Functions**: 67+ (was 60+)
 **All Critical Tests**: ✅ Passing
 
 ## Verification Checklist
@@ -314,6 +323,17 @@ The infrastructure is fully tested and ready for production use. The migration s
 - ✅ Updated TODOs in `infra/failover/migration.go` to reference documentation
 - ✅ Improved code comments to clarify simulated vs. full implementation status
 - ✅ All migration execution and resource threshold logic properly documented
+
+### API Enhancements
+- ✅ Added POST endpoint for triggering migrations (`POST /api/v1/migrations`)
+  - Accepts JSON body with `service_name` and optional `target_node`
+  - Returns migration status immediately after triggering
+- ✅ Added POST endpoints for node management
+  - `POST /api/v1/nodes/{node}/cordon`: Mark node as unschedulable (prevents new workload)
+  - `POST /api/v1/nodes/{node}/uncordon`: Mark node as schedulable (allows new workload)
+  - Only allows cordoning/uncordoning the current node (nodes manage their own state)
+- ✅ Added `GetNodeName()` method to `GossipCluster` for API access
+- ✅ Comprehensive tests for all new POST endpoints (7 new tests)
 
 ## Final Verification and Completion Status
 

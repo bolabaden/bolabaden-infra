@@ -163,12 +163,44 @@ func (s *Server) handleNodes(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleNode handles individual node requests
+// handleNode handles individual node requests and operations
 func (s *Server) handleNode(w http.ResponseWriter, r *http.Request) {
-	// Extract node name from path
-	nodeName := r.URL.Path[len("/api/v1/nodes/"):]
+	// Extract node name and operation from path
+	path := r.URL.Path[len("/api/v1/nodes/"):]
+	
+	// Check for operations (cordon/uncordon)
+	if path != "" {
+		parts := splitPath(path)
+		if len(parts) == 2 {
+			nodeName := parts[0]
+			operation := parts[1]
+			
+			if r.Method == http.MethodPost {
+				if operation == "cordon" {
+					s.handleNodeCordon(w, r, nodeName)
+					return
+				} else if operation == "uncordon" {
+					s.handleNodeUncordon(w, r, nodeName)
+					return
+				}
+			}
+		}
+	}
+	
+	// Extract node name from path (before any operation)
+	var nodeName string
+	if path != "" {
+		parts := splitPath(path)
+		nodeName = parts[0]
+	}
+	
 	if nodeName == "" {
 		http.Error(w, "Node name required", http.StatusBadRequest)
+		return
+	}
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -210,6 +242,97 @@ func (s *Server) handleNode(w http.ResponseWriter, r *http.Request) {
 		"warp_healthy": warpHealth != nil && warpHealth.Healthy,
 		"services":     nodeServices,
 	})
+}
+
+// handleNodeCordon handles node cordoning
+func (s *Server) handleNodeCordon(w http.ResponseWriter, r *http.Request, nodeName string) {
+	// Only allow cordoning the current node (nodes manage their own state)
+	currentNodeName := s.gossipCluster.GetNodeName()
+	if nodeName != currentNodeName {
+		http.Error(w, fmt.Sprintf("Can only cordon the current node (%s), not %s", currentNodeName, nodeName), http.StatusForbidden)
+		return
+	}
+
+	// Get current node to preserve capabilities
+	state := s.gossipCluster.GetState()
+	currentNode, exists := state.GetNode(nodeName)
+	if !exists {
+		http.Error(w, "Node not found in cluster state", http.StatusNotFound)
+		return
+	}
+
+	// Get current capabilities
+	capabilities := currentNode.Capabilities
+	if capabilities == nil {
+		capabilities = []string{}
+	}
+
+	// Update node metadata to cordoned
+	s.gossipCluster.UpdateNodeMetadata(true, capabilities)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": fmt.Sprintf("Node %s cordoned", nodeName),
+		"cordoned": true,
+	})
+}
+
+// handleNodeUncordon handles node uncordoning
+func (s *Server) handleNodeUncordon(w http.ResponseWriter, r *http.Request, nodeName string) {
+	// Only allow uncordoning the current node (nodes manage their own state)
+	currentNodeName := s.gossipCluster.GetNodeName()
+	if nodeName != currentNodeName {
+		http.Error(w, fmt.Sprintf("Can only uncordon the current node (%s), not %s", currentNodeName, nodeName), http.StatusForbidden)
+		return
+	}
+
+	// Get current node to preserve capabilities
+	state := s.gossipCluster.GetState()
+	currentNode, exists := state.GetNode(nodeName)
+	if !exists {
+		http.Error(w, "Node not found in cluster state", http.StatusNotFound)
+		return
+	}
+
+	// Get current capabilities
+	capabilities := currentNode.Capabilities
+	if capabilities == nil {
+		capabilities = []string{}
+	}
+
+	// Update node metadata to uncordoned
+	s.gossipCluster.UpdateNodeMetadata(false, capabilities)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": fmt.Sprintf("Node %s uncordoned", nodeName),
+		"cordoned": false,
+	})
+}
+
+// splitPath splits a URL path by '/' separator
+func splitPath(path string) []string {
+	if path == "" {
+		return []string{}
+	}
+	parts := []string{}
+	current := ""
+	for _, char := range path {
+		if char == '/' {
+			if current != "" {
+				parts = append(parts, current)
+				current = ""
+			}
+		} else {
+			current += string(char)
+		}
+	}
+	if current != "" {
+		parts = append(parts, current)
+	}
+	return parts
 }
 
 // handleServices handles service list requests
@@ -368,7 +491,7 @@ func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleMigrations handles migration list requests
+// handleMigrations handles migration list requests and migration creation
 func (s *Server) handleMigrations(w http.ResponseWriter, r *http.Request) {
 	if s.migrationManager == nil {
 		http.Error(w, "Migration manager not available", http.StatusServiceUnavailable)
@@ -397,6 +520,63 @@ func (s *Server) handleMigrations(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"migrations": migrations,
 		})
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		var req struct {
+			ServiceName string `json:"service_name"`
+			TargetNode  string `json:"target_node,omitempty"`
+			Priority    int    `json:"priority,omitempty"`
+		}
+
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+			return
+		}
+
+		if req.ServiceName == "" {
+			http.Error(w, "service_name is required", http.StatusBadRequest)
+			return
+		}
+
+		// Create migration rule
+		rule := failover.MigrationRule{
+			ServiceName: req.ServiceName,
+			TargetNode:  req.TargetNode,
+			Priority:    req.Priority,
+			MaxRetries:  3,
+			RetryDelay:  5 * time.Second,
+			Trigger: failover.MigrationTrigger{
+				HealthCheckFailures: 0, // Manual trigger
+			},
+		}
+
+		// Start migration
+		ctx := r.Context()
+		if err := s.migrationManager.StartMigration(ctx, rule); err != nil {
+			http.Error(w, fmt.Sprintf("Failed to start migration: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		// Get migration status
+		migration, exists := s.migrationManager.GetMigrationStatus(req.ServiceName)
+		if !exists {
+			http.Error(w, "Migration started but status not found", http.StatusInternalServerError)
+			return
+		}
+
+		result := map[string]interface{}{
+			"service_name": migration.ServiceName,
+			"source_node":  migration.SourceNode,
+			"target_node":  migration.TargetNode,
+			"status":       string(migration.Status),
+			"started_at":   migration.StartedAt.Format(time.RFC3339),
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusAccepted)
+		json.NewEncoder(w).Encode(result)
 		return
 	}
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -471,6 +472,7 @@ func TestServer_HandleMigration(t *testing.T) {
 
 func TestServer_HandleMigration_NoManager(t *testing.T) {
 	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
 	consensusManager := createTestConsensusManager()
 	defer consensusManager.Shutdown()
 	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
@@ -482,4 +484,175 @@ func TestServer_HandleMigration_NoManager(t *testing.T) {
 	server.handleMigration(w, req)
 
 	assert.Equal(t, http.StatusServiceUnavailable, w.Code)
+}
+
+func TestServer_HandleMigrations_POST(t *testing.T) {
+	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
+	consensusManager := createTestConsensusManager()
+	defer consensusManager.Shutdown()
+	migrationManager := createTestMigrationManager()
+	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
+	server := NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
+
+	// Create a migration request
+	body := `{"service_name": "test-service", "target_node": "target-node"}`
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/migrations", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	server.handleMigrations(w, req)
+
+	assert.Equal(t, http.StatusAccepted, w.Code)
+	
+	var response map[string]interface{}
+	err := json.NewDecoder(w.Body).Decode(&response)
+	require.NoError(t, err)
+	assert.Equal(t, "test-service", response["service_name"])
+	assert.Equal(t, "pending", response["status"])
+}
+
+func TestServer_HandleMigrations_POST_InvalidBody(t *testing.T) {
+	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
+	consensusManager := createTestConsensusManager()
+	defer consensusManager.Shutdown()
+	migrationManager := createTestMigrationManager()
+	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
+	server := NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
+
+	// Invalid JSON
+	body := `{"service_name": invalid}`
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/migrations", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	server.handleMigrations(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestServer_HandleMigrations_POST_MissingServiceName(t *testing.T) {
+	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
+	consensusManager := createTestConsensusManager()
+	defer consensusManager.Shutdown()
+	migrationManager := createTestMigrationManager()
+	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
+	server := NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
+
+	// Missing service_name
+	body := `{}`
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/migrations", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	server.handleMigrations(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestServer_HandleNodeCordon(t *testing.T) {
+	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
+	consensusManager := createTestConsensusManager()
+	defer consensusManager.Shutdown()
+	migrationManager := createTestMigrationManager()
+	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
+	server := NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
+
+	// Get current node name
+	nodeName := gossipCluster.GetNodeName()
+
+	// Cordon the current node
+	req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/nodes/%s/cordon", nodeName), nil)
+	w := httptest.NewRecorder()
+
+	server.handleNode(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response map[string]interface{}
+	err := json.NewDecoder(w.Body).Decode(&response)
+	require.NoError(t, err)
+	assert.Equal(t, fmt.Sprintf("Node %s cordoned", nodeName), response["message"])
+	assert.True(t, response["cordoned"].(bool))
+
+	// Verify node is actually cordoned
+	state := gossipCluster.GetState()
+	node, exists := state.GetNode(nodeName)
+	require.True(t, exists)
+	assert.True(t, node.Cordoned)
+}
+
+func TestServer_HandleNodeCordon_OtherNode(t *testing.T) {
+	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
+	consensusManager := createTestConsensusManager()
+	defer consensusManager.Shutdown()
+	migrationManager := createTestMigrationManager()
+	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
+	server := NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
+
+	// Try to cordon a different node
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/nodes/other-node/cordon", nil)
+	w := httptest.NewRecorder()
+
+	server.handleNode(w, req)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
+}
+
+func TestServer_HandleNodeUncordon(t *testing.T) {
+	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
+	consensusManager := createTestConsensusManager()
+	defer consensusManager.Shutdown()
+	migrationManager := createTestMigrationManager()
+	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
+	server := NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
+
+	// Get current node name
+	nodeName := gossipCluster.GetNodeName()
+
+	// First cordon the node
+	gossipCluster.UpdateNodeMetadata(true, []string{})
+
+	// Uncordon the current node
+	req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/nodes/%s/uncordon", nodeName), nil)
+	w := httptest.NewRecorder()
+
+	server.handleNode(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response map[string]interface{}
+	err := json.NewDecoder(w.Body).Decode(&response)
+	require.NoError(t, err)
+	assert.Equal(t, fmt.Sprintf("Node %s uncordoned", nodeName), response["message"])
+	assert.False(t, response["cordoned"].(bool))
+
+	// Verify node is actually uncordoned
+	state := gossipCluster.GetState()
+	node, exists := state.GetNode(nodeName)
+	require.True(t, exists)
+	assert.False(t, node.Cordoned)
+}
+
+func TestServer_HandleNodeUncordon_OtherNode(t *testing.T) {
+	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
+	consensusManager := createTestConsensusManager()
+	defer consensusManager.Shutdown()
+	migrationManager := createTestMigrationManager()
+	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
+	server := NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
+
+	// Try to uncordon a different node
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/nodes/other-node/uncordon", nil)
+	w := httptest.NewRecorder()
+
+	server.handleNode(w, req)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }

@@ -132,6 +132,11 @@ func (gc *GossipCluster) GetState() *ClusterState {
 	return gc.state
 }
 
+// GetNodeName returns the name of this node
+func (gc *GossipCluster) GetNodeName() string {
+	return gc.config.NodeName
+}
+
 // GetMembers returns all members in the cluster
 func (gc *GossipCluster) GetMembers() []*memberlist.Node {
 	return gc.memberlist.Members()
