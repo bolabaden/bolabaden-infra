@@ -8,6 +8,20 @@ import (
 
 // defineServicesCoolifyProxy returns all services from compose/docker-compose.coolify-proxy.yml
 func defineServicesCoolifyProxy(config *Config) []Service {
+	// Get canonical config for image name resolution and Traefik command
+	var cfg *infraconfig.Config
+	if config.NewConfig != nil {
+		cfg = config.NewConfig
+	} else {
+		cfg = infraconfig.MigrateFromOldConfig(
+			config.Domain,
+			config.StackName,
+			config.ConfigPath,
+			config.SecretsPath,
+			config.RootPath,
+		)
+	}
+	
 	domain := config.Domain
 	configPath := config.ConfigPath
 	secretsPath := config.SecretsPath
@@ -285,7 +299,7 @@ func defineServicesCoolifyProxy(config *Config) []Service {
 	// logrotate-traefik
 	services = append(services, Service{
 		Name:          "logrotate-traefik",
-		Image:         traefikCfg.GetImageName("logrotate-traefik"),
+		Image:         cfg.GetImageName("logrotate-traefik"),
 		ContainerName: "logrotate-traefik",
 		Networks:      []string{}, // network_mode: none
 		Volumes: []VolumeMount{
