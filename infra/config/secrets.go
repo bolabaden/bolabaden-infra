@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 
+	"path/filepath"
 	"golang.org/x/crypto/pbkdf2"
 )
 
