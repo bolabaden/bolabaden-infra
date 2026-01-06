@@ -291,7 +291,7 @@ func transferHostPath(ctx context.Context, sourcePath, targetPath string, source
 
 	sourceHostConfig := &container.HostConfig{
 		Binds:      []string{fmt.Sprintf("%s:/source:ro", sourcePath)},
-		AutoRemove: false, // We'll remove manually
+		AutoRemove: false, // Manual removal via defer ensures proper cleanup
 	}
 
 	// Create and start temporary source container
