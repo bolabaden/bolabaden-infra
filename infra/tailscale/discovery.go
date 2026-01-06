@@ -110,50 +110,65 @@ func firstString(v any) string {
 	return ""
 }
 
-// HeadscaleFallback implements fallback logic for Headscale.
-// If Headscale is unavailable, it attempts to switch Tailscale to use default login servers.
-func HeadscaleFallback(ctx context.Context) error {
+// ConfigureLoginServer configures Tailscale to use Headscale by default, falling back to Tailscale if Headscale is unavailable.
+// Headscale is the preferred/default option, with Tailscale as the fallback.
+func ConfigureLoginServer(ctx context.Context) error {
 	headscaleURL := os.Getenv("HEADSCALE_URL")
 	if headscaleURL == "" {
-		// Try to detect Headscale from common locations
+		// Try to detect Headscale from common locations (default behavior)
 		headscaleURL = detectHeadscaleURL()
 	}
 
-	if headscaleURL == "" {
-		// No Headscale configured, use default Tailscale servers
-		return switchToDefaultTailscale(ctx)
+	// If Headscale URL is found, try to use it
+	if headscaleURL != "" {
+		// Check if Headscale is available
+		if isHeadscaleAvailable(ctx, headscaleURL) {
+			// Headscale is available, use it (default/preferred)
+			log.Printf("Using Headscale at %s (default)", headscaleURL)
+			return switchToHeadscale(ctx, headscaleURL)
+		}
+		// Headscale URL configured but unavailable, fall back to Tailscale
+		log.Printf("Headscale unavailable at %s, falling back to Tailscale", headscaleURL)
 	}
 
-	// Check if Headscale is available
-	if !isHeadscaleAvailable(ctx, headscaleURL) {
-		log.Printf("Headscale unavailable at %s, falling back to default Tailscale servers", headscaleURL)
-		return switchToDefaultTailscale(ctx)
-	}
-
-	// Headscale is available, ensure we're using it
-	return switchToHeadscale(ctx, headscaleURL)
+	// No Headscale configured or Headscale unavailable - fall back to default Tailscale servers
+	return switchToDefaultTailscale(ctx)
 }
 
-// detectHeadscaleURL attempts to detect Headscale URL from environment or common locations
+// detectHeadscaleURL attempts to detect Headscale URL from environment or common locations.
+// This is called by default to try to use Headscale first.
 func detectHeadscaleURL() string {
-	// Try environment variable
+	// Try environment variable first
 	if url := os.Getenv("HEADSCALE_URL"); url != "" {
 		return url
 	}
 
-	// Try common Headscale hostnames
+	// Try common Headscale hostnames (default detection)
 	domain := os.Getenv("DOMAIN")
 	if domain != "" {
-		// Try headscale.<domain>
+		// Try headscale.<domain> (most common pattern)
 		candidate := fmt.Sprintf("https://headscale.%s", domain)
+		if isHeadscaleAvailable(context.Background(), candidate) {
+			return candidate
+		}
+		// Try headscale subdomain with http
+		candidate = fmt.Sprintf("http://headscale.%s", domain)
 		if isHeadscaleAvailable(context.Background(), candidate) {
 			return candidate
 		}
 	}
 
-	// Try localhost
+	// Try localhost (common for local development)
 	if isHeadscaleAvailable(context.Background(), "http://localhost:8080") {
 		return "http://localhost:8080"
+	}
+	if isHeadscaleAvailable(context.Background(), "https://localhost:8080") {
+		return "https://localhost:8080"
+	}
+
+	// Try common localhost ports
+	if isHeadscaleAvailable(context.Background(), "http://localhost:8443") {
+		return "http://localhost:8443"
 	}
 
 	return ""
