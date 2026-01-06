@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
+	"cluster/infra/cluster/gossip"
 )
 
 // computeTCPConfig computes TCP routers and services from gossip state

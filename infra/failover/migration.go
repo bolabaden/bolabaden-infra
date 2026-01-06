@@ -11,7 +11,7 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 
-	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
+	"cluster/infra/cluster/gossip"
 )
 
 // MigrationManager handles container migration between nodes

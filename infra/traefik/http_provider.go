@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
+	"cluster/infra/cluster/gossip"
 )
 
 // HTTPProviderServer serves Traefik dynamic configuration via HTTP provider API

@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
-	"github.com/bolabaden/my-media-stack/infra/cluster/raft"
-	"github.com/bolabaden/my-media-stack/infra/failover"
+	"cluster/infra/cluster/gossip"
+	"cluster/infra/cluster/raft"
+	"cluster/infra/failover"
 )
 
 // Server provides REST API for cluster management

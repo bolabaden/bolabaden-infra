@@ -21,7 +21,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"gopkg.in/yaml.v3"
 
-	"github.com/bolabaden/my-media-stack/infra/tailscale"
+	"cluster/infra/tailscale"
 )
 
 // Config holds the infrastructure configuration

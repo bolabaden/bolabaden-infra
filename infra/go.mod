@@ -1,4 +1,4 @@
-module github.com/bolabaden/my-media-stack/infra
+module cluster/infra
 
 go 1.24.0
 

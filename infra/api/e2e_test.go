@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
-	"github.com/bolabaden/my-media-stack/infra/failover"
+	"cluster/infra/cluster/gossip"
+	"cluster/infra/failover"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

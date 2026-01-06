@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
-	"github.com/bolabaden/my-media-stack/infra/cluster/raft"
+	"cluster/infra/cluster/gossip"
+	"cluster/infra/cluster/raft"
 	"github.com/gorilla/websocket"
 )
 

@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
+	"cluster/infra/cluster/gossip"
 )
 
 // SmartProxy implements an intelligent HTTP proxy with failover capabilities

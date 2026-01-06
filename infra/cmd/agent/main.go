@@ -18,14 +18,14 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 
-	"github.com/bolabaden/my-media-stack/infra/api"
-	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
-	"github.com/bolabaden/my-media-stack/infra/cluster/raft"
-	"github.com/bolabaden/my-media-stack/infra/dns"
-	"github.com/bolabaden/my-media-stack/infra/failover"
-	"github.com/bolabaden/my-media-stack/infra/monitoring"
-	"github.com/bolabaden/my-media-stack/infra/tailscale"
-	"github.com/bolabaden/my-media-stack/infra/traefik"
+	"cluster/infra/api"
+	"cluster/infra/cluster/gossip"
+	"cluster/infra/cluster/raft"
+	"cluster/infra/dns"
+	"cluster/infra/failover"
+	"cluster/infra/monitoring"
+	"cluster/infra/tailscale"
+	"cluster/infra/traefik"
 )
 
 var (

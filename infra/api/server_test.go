@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
-	"github.com/bolabaden/my-media-stack/infra/cluster/raft"
-	"github.com/bolabaden/my-media-stack/infra/failover"
+	"cluster/infra/cluster/gossip"
+	"cluster/infra/cluster/raft"
+	"cluster/infra/failover"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

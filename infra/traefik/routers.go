@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/bolabaden/my-media-stack/infra/cluster/gossip"
+	"cluster/infra/cluster/gossip"
 )
 
 // computeHTTPConfig computes HTTP/HTTPS routers and services from gossip state
