@@ -14,6 +14,9 @@ import (
 // This is the canonical configuration structure that can be loaded from
 // environment variables, YAML files, or programmatically
 type Config struct {
+	// Version of the configuration schema
+	Version string `yaml:"version" default:"1.0"`
+	
 	// Core identity
 	Domain    string `yaml:"domain" env:"DOMAIN" default:"example.com"`
 	StackName string `yaml:"stack_name" env:"STACK_NAME" default:"infra"`
