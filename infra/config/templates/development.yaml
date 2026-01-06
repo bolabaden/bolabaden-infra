@@ -1,0 +1,49 @@
+# Development Configuration Template
+# This is a template for development/local deployments
+
+domain: localhost
+stack_name: dev
+node_name: dev-node
+
+# Paths - use local paths for development
+config_path: ./volumes
+secrets_path: ./secrets
+root_path: .
+data_dir: ./data
+
+# Traefik configuration
+traefik:
+  web_port: 80
+  websecure_port: 443
+  error_pages_middleware: "error-pages@file"
+  crowdsec_middleware: "crowdsec@file"
+  strip_www_middleware: "strip-www@file"
+  cert_resolver: "letsencrypt"
+  http_provider_port: 8081
+  cloudflare_trusted_ips: []  # Not needed for local development
+
+# DNS configuration (optional for local dev)
+dns:
+  provider: cloudflare
+  domain: localhost
+
+# Cluster configuration
+cluster:
+  bind_port: 7946
+  raft_port: 8300
+  api_port: 8080
+  priority: 100
+
+# Middleware configuration
+middlewares:
+  error_pages_enabled: true
+  error_pages_name: "error-pages"
+  crowdsec_enabled: false  # Disable for local dev
+  crowdsec_name: "crowdsec"
+  strip_www_enabled: true
+  strip_www_name: "strip-www"
+
+# Docker registry configuration
+registry:
+  image_prefix: ""  # Use public images in dev
+  default_registry: "docker.io"

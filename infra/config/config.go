@@ -2,9 +2,12 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 // Config holds all configuration for the infrastructure system
@@ -267,29 +270,238 @@ func LoadConfig(configPath string) (*Config, error) {
 }
 
 // LoadFromYAML loads configuration from a YAML file
+// This merges YAML values into the existing config (YAML takes precedence over defaults)
 func (c *Config) LoadFromYAML(path string) error {
-	// This would use gopkg.in/yaml.v3 to load the file
-	// For now, we'll implement a basic version
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	// Parse YAML (simplified - in real implementation, use yaml.v3)
-	// For now, we'll just validate the file exists and is readable
-	_ = data
+	// Create a temporary config to unmarshal into
+	var yamlConfig Config
+	if err := yaml.Unmarshal(data, &yamlConfig); err != nil {
+		return fmt.Errorf("failed to parse YAML: %w", err)
+	}
+
+	// Merge YAML config into existing config (YAML values take precedence)
+	if yamlConfig.Domain != "" {
+		c.Domain = yamlConfig.Domain
+	}
+	if yamlConfig.StackName != "" {
+		c.StackName = yamlConfig.StackName
+	}
+	if yamlConfig.NodeName != "" {
+		c.NodeName = yamlConfig.NodeName
+	}
+	if yamlConfig.ConfigPath != "" {
+		c.ConfigPath = yamlConfig.ConfigPath
+	}
+	if yamlConfig.SecretsPath != "" {
+		c.SecretsPath = yamlConfig.SecretsPath
+	}
+	if yamlConfig.RootPath != "" {
+		c.RootPath = yamlConfig.RootPath
+	}
+	if yamlConfig.DataDir != "" {
+		c.DataDir = yamlConfig.DataDir
+	}
+
+	// Merge Traefik config
+	if yamlConfig.Traefik.WebPort != 0 {
+		c.Traefik.WebPort = yamlConfig.Traefik.WebPort
+	}
+	if yamlConfig.Traefik.WebSecurePort != 0 {
+		c.Traefik.WebSecurePort = yamlConfig.Traefik.WebSecurePort
+	}
+	if yamlConfig.Traefik.ErrorPagesMiddleware != "" {
+		c.Traefik.ErrorPagesMiddleware = yamlConfig.Traefik.ErrorPagesMiddleware
+	}
+	if yamlConfig.Traefik.CrowdsecMiddleware != "" {
+		c.Traefik.CrowdsecMiddleware = yamlConfig.Traefik.CrowdsecMiddleware
+	}
+	if yamlConfig.Traefik.StripWWWMiddleware != "" {
+		c.Traefik.StripWWWMiddleware = yamlConfig.Traefik.StripWWWMiddleware
+	}
+	if yamlConfig.Traefik.CertResolver != "" {
+		c.Traefik.CertResolver = yamlConfig.Traefik.CertResolver
+	}
+	if yamlConfig.Traefik.HTTPProviderPort != 0 {
+		c.Traefik.HTTPProviderPort = yamlConfig.Traefik.HTTPProviderPort
+	}
+	if len(yamlConfig.Traefik.CloudflareTrustedIPs) > 0 {
+		c.Traefik.CloudflareTrustedIPs = yamlConfig.Traefik.CloudflareTrustedIPs
+	}
+
+	// Merge DNS config
+	if yamlConfig.DNS.Provider != "" {
+		c.DNS.Provider = yamlConfig.DNS.Provider
+	}
+	if yamlConfig.DNS.Domain != "" {
+		c.DNS.Domain = yamlConfig.DNS.Domain
+	}
+	if yamlConfig.DNS.APIKey != "" {
+		c.DNS.APIKey = yamlConfig.DNS.APIKey
+	}
+	if yamlConfig.DNS.APIEmail != "" {
+		c.DNS.APIEmail = yamlConfig.DNS.APIEmail
+	}
+	if yamlConfig.DNS.ZoneID != "" {
+		c.DNS.ZoneID = yamlConfig.DNS.ZoneID
+	}
+
+	// Merge Cluster config
+	if yamlConfig.Cluster.BindPort != 0 {
+		c.Cluster.BindPort = yamlConfig.Cluster.BindPort
+	}
+	if yamlConfig.Cluster.RaftPort != 0 {
+		c.Cluster.RaftPort = yamlConfig.Cluster.RaftPort
+	}
+	if yamlConfig.Cluster.APIPort != 0 {
+		c.Cluster.APIPort = yamlConfig.Cluster.APIPort
+	}
+	if yamlConfig.Cluster.Priority != 0 {
+		c.Cluster.Priority = yamlConfig.Cluster.Priority
+	}
+	if yamlConfig.Cluster.BindAddr != "" {
+		c.Cluster.BindAddr = yamlConfig.Cluster.BindAddr
+	}
+	if yamlConfig.Cluster.PublicIP != "" {
+		c.Cluster.PublicIP = yamlConfig.Cluster.PublicIP
+	}
+	if yamlConfig.Cluster.TailscaleIP != "" {
+		c.Cluster.TailscaleIP = yamlConfig.Cluster.TailscaleIP
+	}
+
+	// Merge Middleware config
+	c.Middlewares.ErrorPagesEnabled = yamlConfig.Middlewares.ErrorPagesEnabled || c.Middlewares.ErrorPagesEnabled
+	if yamlConfig.Middlewares.ErrorPagesName != "" {
+		c.Middlewares.ErrorPagesName = yamlConfig.Middlewares.ErrorPagesName
+	}
+	c.Middlewares.CrowdsecEnabled = yamlConfig.Middlewares.CrowdsecEnabled || c.Middlewares.CrowdsecEnabled
+	if yamlConfig.Middlewares.CrowdsecName != "" {
+		c.Middlewares.CrowdsecName = yamlConfig.Middlewares.CrowdsecName
+	}
+	c.Middlewares.StripWWWEnabled = yamlConfig.Middlewares.StripWWWEnabled || c.Middlewares.StripWWWEnabled
+	if yamlConfig.Middlewares.StripWWWName != "" {
+		c.Middlewares.StripWWWName = yamlConfig.Middlewares.StripWWWName
+	}
+
+	// Merge Registry config
+	if yamlConfig.Registry.ImagePrefix != "" {
+		c.Registry.ImagePrefix = yamlConfig.Registry.ImagePrefix
+	}
+	if yamlConfig.Registry.DefaultRegistry != "" {
+		c.Registry.DefaultRegistry = yamlConfig.Registry.DefaultRegistry
+	}
+
+	// Merge Networks (replace entire map)
+	if len(yamlConfig.Networks) > 0 {
+		if c.Networks == nil {
+			c.Networks = make(map[string]NetworkConfig)
+		}
+		for k, v := range yamlConfig.Networks {
+			c.Networks[k] = v
+		}
+	}
+
+	// Merge Services (append)
+	if len(yamlConfig.Services) > 0 {
+		c.Services = append(c.Services, yamlConfig.Services...)
+	}
+
+	// DNS domain inherits from top-level domain if not set
+	if c.DNS.Domain == "" {
+		c.DNS.Domain = c.Domain
+	}
 
 	return nil
 }
 
 // Validate validates the configuration
 func (c *Config) Validate() error {
+	var errors []string
+
+	// Validate domain
 	if c.Domain == "" {
-		return fmt.Errorf("domain is required")
+		errors = append(errors, "domain is required")
+	} else if !isValidDomain(c.Domain) {
+		errors = append(errors, fmt.Sprintf("domain '%s' is not a valid domain name", c.Domain))
 	}
 
+	// Validate stack name
 	if c.StackName == "" {
-		return fmt.Errorf("stack_name is required")
+		errors = append(errors, "stack_name is required")
+	} else if !isValidStackName(c.StackName) {
+		errors = append(errors, fmt.Sprintf("stack_name '%s' contains invalid characters (must be alphanumeric, hyphens, or underscores)", c.StackName))
+	}
+
+	// Validate ports
+	if c.Traefik.WebPort < 1 || c.Traefik.WebPort > 65535 {
+		errors = append(errors, fmt.Sprintf("traefik.web_port must be between 1 and 65535, got %d", c.Traefik.WebPort))
+	}
+	if c.Traefik.WebSecurePort < 1 || c.Traefik.WebSecurePort > 65535 {
+		errors = append(errors, fmt.Sprintf("traefik.websecure_port must be between 1 and 65535, got %d", c.Traefik.WebSecurePort))
+	}
+	if c.Traefik.HTTPProviderPort < 1 || c.Traefik.HTTPProviderPort > 65535 {
+		errors = append(errors, fmt.Sprintf("traefik.http_provider_port must be between 1 and 65535, got %d", c.Traefik.HTTPProviderPort))
+	}
+	if c.Cluster.BindPort < 1 || c.Cluster.BindPort > 65535 {
+		errors = append(errors, fmt.Sprintf("cluster.bind_port must be between 1 and 65535, got %d", c.Cluster.BindPort))
+	}
+	if c.Cluster.RaftPort < 1 || c.Cluster.RaftPort > 65535 {
+		errors = append(errors, fmt.Sprintf("cluster.raft_port must be between 1 and 65535, got %d", c.Cluster.RaftPort))
+	}
+	if c.Cluster.APIPort < 1 || c.Cluster.APIPort > 65535 {
+		errors = append(errors, fmt.Sprintf("cluster.api_port must be between 1 and 65535, got %d", c.Cluster.APIPort))
+	}
+
+	// Validate port uniqueness
+	ports := map[int]string{
+		c.Traefik.WebPort:        "traefik.web_port",
+		c.Traefik.WebSecurePort:  "traefik.websecure_port",
+		c.Traefik.HTTPProviderPort: "traefik.http_provider_port",
+		c.Cluster.BindPort:      "cluster.bind_port",
+		c.Cluster.RaftPort:      "cluster.raft_port",
+		c.Cluster.APIPort:       "cluster.api_port",
+	}
+	portUsage := make(map[int][]string)
+	for port, name := range ports {
+		if port > 0 {
+			portUsage[port] = append(portUsage[port], name)
+		}
+	}
+	for port, names := range portUsage {
+		if len(names) > 1 {
+			errors = append(errors, fmt.Sprintf("port %d is used by multiple services: %s", port, strings.Join(names, ", ")))
+		}
+	}
+
+	// Validate paths
+	if c.ConfigPath == "" {
+		errors = append(errors, "config_path is required")
+	}
+	if c.SecretsPath == "" {
+		errors = append(errors, "secrets_path is required")
+	}
+	if c.DataDir == "" {
+		errors = append(errors, "data_dir is required")
+	}
+
+	// Validate DNS provider
+	if c.DNS.Provider != "" && c.DNS.Provider != "cloudflare" && c.DNS.Provider != "route53" {
+		errors = append(errors, fmt.Sprintf("dns.provider '%s' is not supported (supported: cloudflare, route53)", c.DNS.Provider))
+	}
+
+	// Validate Cloudflare trusted IPs
+	for _, ip := range c.Traefik.CloudflareTrustedIPs {
+		if _, _, err := net.ParseCIDR(ip); err != nil {
+			errors = append(errors, fmt.Sprintf("invalid Cloudflare trusted IP CIDR: %s", ip))
+		}
+	}
+
+	// Validate registry
+	if c.Registry.DefaultRegistry != "" && !isValidRegistry(c.Registry.DefaultRegistry) {
+		errors = append(errors, fmt.Sprintf("registry.default_registry '%s' is not a valid registry", c.Registry.DefaultRegistry))
 	}
 
 	// Resolve relative paths
@@ -300,7 +512,54 @@ func (c *Config) Validate() error {
 		c.SecretsPath = filepath.Join(c.RootPath, c.SecretsPath)
 	}
 
+	if len(errors) > 0 {
+		return fmt.Errorf("validation errors: %s", strings.Join(errors, "; "))
+	}
+
 	return nil
+}
+
+// Helper validation functions
+func isValidDomain(domain string) bool {
+	if len(domain) == 0 || len(domain) > 253 {
+		return false
+	}
+	// Basic domain validation - must contain at least one dot and valid characters
+	if !strings.Contains(domain, ".") {
+		return false
+	}
+	// Check for valid characters (alphanumeric, dots, hyphens)
+	for _, r := range domain {
+		if !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '.' || r == '-') {
+			return false
+		}
+	}
+	return true
+}
+
+func isValidStackName(name string) bool {
+	if len(name) == 0 {
+		return false
+	}
+	// Stack name must be alphanumeric, hyphens, or underscores
+	for _, r := range name {
+		if !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-' || r == '_') {
+			return false
+		}
+	}
+	return true
+}
+
+func isValidRegistry(registry string) bool {
+	if len(registry) == 0 {
+		return false
+	}
+	// Basic registry validation - must be a valid hostname or docker.io
+	if registry == "docker.io" || registry == "docker.com" {
+		return true
+	}
+	// Check if it's a valid hostname
+	return isValidDomain(registry) || strings.HasPrefix(registry, "localhost")
 }
 
 // GetFullNetworkName returns the full network name with stack prefix
