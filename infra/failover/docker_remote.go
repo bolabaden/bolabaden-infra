@@ -235,7 +235,7 @@ func transferBindMount(ctx context.Context, sourceCli *client.Client, targetCli 
 	// CopyFromContainer returns (io.ReadCloser, types.ContainerPathStat, error)
 	tarReader, stat, err := sourceCli.CopyFromContainer(ctx, containerID, vol.Source)
 	if err != nil {
-		// If CopyFromContainer fails (e.g., path doesn't exist in container), 
+		// If CopyFromContainer fails (e.g., path doesn't exist in container),
 		// it's likely a bind mount to host path - use temporary container approach
 		log.Printf("Path not found in container, treating as host bind mount: %s", vol.Source)
 		return transferHostPath(ctx, vol.Source, vol.Target, sourceCli, targetCli, targetNodeIP)
@@ -282,15 +282,15 @@ func transferHostPath(ctx context.Context, sourcePath, targetPath string, source
 	// Step 1: Create temporary container on source node to access host path
 	// Use a minimal image that has tar (busybox or alpine)
 	tempSourceContainerName := fmt.Sprintf("volume-transfer-source-%d", time.Now().UnixNano())
-	
+
 	// Create container config with host path mounted
 	sourceContainerConfig := &container.Config{
 		Image: "busybox:latest",
 		Cmd:   []string{"sleep", "3600"}, // Keep container running
 	}
-	
+
 	sourceHostConfig := &container.HostConfig{
-		Binds: []string{fmt.Sprintf("%s:/source:ro", sourcePath)},
+		Binds:      []string{fmt.Sprintf("%s:/source:ro", sourcePath)},
 		AutoRemove: false, // We'll remove manually
 	}
 
@@ -324,18 +324,18 @@ func transferHostPath(ctx context.Context, sourcePath, targetPath string, source
 
 	// Step 3: Create temporary container on target node to receive data
 	tempTargetContainerName := fmt.Sprintf("volume-transfer-target-%d", time.Now().UnixNano())
-	
+
 	// Ensure target directory exists on host (create parent if needed)
 	targetDir := filepath.Dir(targetPath)
-	
+
 	// Create container config with target path mounted
 	targetContainerConfig := &container.Config{
 		Image: "busybox:latest",
 		Cmd:   []string{"sleep", "3600"},
 	}
-	
+
 	targetHostConfig := &container.HostConfig{
-		Binds: []string{fmt.Sprintf("%s:/target", targetDir)},
+		Binds:      []string{fmt.Sprintf("%s:/target", targetDir)},
 		AutoRemove: false,
 	}
 
@@ -396,7 +396,7 @@ func transferHostPath(ctx context.Context, sourcePath, targetPath string, source
 		"sh", "-c",
 		fmt.Sprintf("cd /target && tar -xzf %s && mv %s %s 2>/dev/null || true", tarPathInContainer, baseName, baseName),
 	}
-	
+
 	execConfig := types.ExecConfig{
 		Cmd:          extractCmd,
 		AttachStdout: true,

@@ -183,7 +183,7 @@ func TestE2E_FailoverScenario(t *testing.T) {
 	defer cancel()
 
 	// Use CheckAndMigrate to test the full migration trigger logic
-	// In a real scenario, this would be called via MonitorAndMigrate
+	// This directly tests the migration trigger, which is also called by MonitorAndMigrate
 	migrationManager.CheckAndMigrate(ctx, []failover.MigrationRule{rule})
 
 	// Wait for migration to start
@@ -202,7 +202,7 @@ func TestE2E_FailoverScenario(t *testing.T) {
 	require.True(t, exists, "Migration record should exist")
 	
 	// Migration may have failed if Docker is not available, but the attempt should be recorded
-	// In a real environment with Docker, it would succeed
+	// With a Docker daemon available, the migration would proceed to completion
 	if migration.Status == failover.MigrationStatusFailed {
 		t.Logf("Migration failed (expected if Docker unavailable): %v", migration.Error)
 	}
