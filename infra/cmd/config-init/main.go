@@ -184,11 +184,11 @@ func promptInt(prompt string, defaultValue int) int {
 
 func promptBool(prompt string, defaultValue bool) bool {
 	reader := bufio.NewReader(os.Stdin)
-	defaultStr := "n"
 	if defaultValue {
-		defaultStr = "y"
+		fmt.Printf("%s [Y/n]: ", prompt)
+	} else {
+		fmt.Printf("%s [y/N]: ", prompt)
 	}
-	fmt.Printf("%s [y/N]: ", prompt)
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(strings.ToLower(input))
 	if input == "" {

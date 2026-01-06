@@ -643,3 +643,38 @@ func getCloudflareTrustedIPs() []string {
 		"2c0f:f248::/32",
 	}
 }
+
+// isVersionCompatible checks if a configuration version is compatible with the current version
+// Currently, we support version 1.0 and above
+func isVersionCompatible(configVersion, currentVersion string) bool {
+	// For now, we only support version 1.0
+	// Future versions can implement more sophisticated compatibility checking
+	if configVersion == "1.0" || configVersion == "" {
+		return true
+	}
+	// In the future, we can parse semantic versions and check compatibility
+	// For now, exact match or empty (defaults to 1.0)
+	return configVersion == currentVersion
+}
+
+// GetVersion returns the configuration version
+func (c *Config) GetVersion() string {
+	if c.Version == "" {
+		return "1.0"
+	}
+	return c.Version
+}
+
+// UpgradeConfig upgrades a configuration to the latest version
+// Currently a no-op, but can be extended for future versions
+func UpgradeConfig(cfg *Config) (*Config, error) {
+	version := cfg.GetVersion()
+	
+	// Currently only version 1.0 exists, so no upgrade needed
+	if version == "1.0" {
+		return cfg, nil
+	}
+	
+	// Future: implement upgrade logic for newer versions
+	return cfg, fmt.Errorf("upgrade from version %s not yet implemented", version)
+}
