@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-
 	"path/filepath"
+
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -33,7 +33,7 @@ func NewSecretManagerFromEnv() (*SecretManager, error) {
 	if key == "" {
 		return nil, fmt.Errorf("CONFIG_ENCRYPTION_KEY environment variable not set")
 	}
-	
+
 	// Use a fixed salt for environment-based encryption
 	// In production, consider using a configurable salt
 	salt := []byte("config-encryption-salt")
@@ -115,7 +115,7 @@ func (sm *SecretManager) DecryptConfigValue(encryptedValue string) (string, erro
 	if !IsEncryptedValue(encryptedValue) {
 		return encryptedValue, nil // Not encrypted, return as-is
 	}
-	
+
 	// Remove "encrypted:" prefix
 	encrypted := encryptedValue[len("encrypted:"):]
 	return sm.Decrypt(encrypted)
