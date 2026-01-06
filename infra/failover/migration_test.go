@@ -235,10 +235,10 @@ func TestMigrationManager_GetActiveMigrations(t *testing.T) {
 	// Check that migrations were at least attempted
 	migration1, exists1 := manager.GetMigrationStatus("service1")
 	migration2, exists2 := manager.GetMigrationStatus("service2")
-	
+
 	// At least one migration should exist (may be failed if Docker unavailable)
 	assert.True(t, exists1 || exists2, "At least one migration should be recorded")
-	
+
 	// If migrations are still active, verify count
 	if len(active) > 0 {
 		assert.GreaterOrEqual(t, len(active), 1, "Should have at least one active migration if Docker available")

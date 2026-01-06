@@ -67,4 +67,3 @@ func LoadMigrationRules(configPath string) ([]MigrationRule, error) {
 	// Return empty rules if no configuration found
 	return []MigrationRule{}, nil
 }
-

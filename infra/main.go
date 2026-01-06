@@ -594,15 +594,19 @@ func main() {
 	}
 	defer infra.client.Close()
 
-	// Discover nodes via Tailscale (optional, for informational purposes)
+	// Discover nodes via Tailscale for logging and informational purposes
+	// Note: In the agent (cmd/agent/main.go), node discovery is integrated with gossip state
+	// and DNS updates. In this standalone deployment tool, we only log discovered nodes.
 	nodeIPs, err := tailscale.DiscoverPeers()
 	if err != nil {
 		log.Printf("Warning: Failed to discover nodes via Tailscale: %v (continuing anyway)", err)
 		nodeIPs = []string{}
 	} else {
 		log.Printf("Discovered %d nodes via Tailscale", len(nodeIPs))
+		for _, ip := range nodeIPs {
+			log.Printf("  - Node IP: %s", ip)
+		}
 	}
-	_ = nodeIPs // Used for future enhancements
 
 	// Ensure networks exist
 	if err := infra.EnsureNetworks(); err != nil {

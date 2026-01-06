@@ -193,7 +193,7 @@ func (cm *ConsensusManager) JoinCluster(seedNodes []string) error {
 			// We became leader, add ourselves
 			serverID := raft.ServerID(cm.nodeName)
 			serverAddr := raft.ServerAddress(fmt.Sprintf("%s:%d", cm.bindAddr, cm.bindPort))
-			
+
 			addFuture := cm.raft.AddVoter(serverID, serverAddr, 0, timeout)
 			if err := addFuture.Error(); err != nil {
 				return fmt.Errorf("failed to add voter: %w", err)

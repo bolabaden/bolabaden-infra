@@ -13,6 +13,7 @@ import (
 	"cluster/infra/cluster/gossip"
 	"cluster/infra/cluster/raft"
 	"cluster/infra/failover"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

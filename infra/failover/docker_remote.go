@@ -188,7 +188,7 @@ func CreateContainerOnRemote(ctx context.Context, remoteCli *client.Client, conf
 
 // TransferVolumes transfers volume data from source to target node via Tailscale network
 // Uses docker cp to export volumes, transfers via tar over HTTP, and extracts on target
-// targetNodeIP is used for SSH fallback if needed (currently unused but available for future enhancement)
+// targetNodeIP is provided for potential SSH fallback or network diagnostics (Docker API is primary method)
 func TransferVolumes(ctx context.Context, sourceCli *client.Client, targetCli *client.Client, containerID string, volumes []mount.Mount, targetNodeIP string) error {
 	if len(volumes) == 0 {
 		return nil

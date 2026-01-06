@@ -194,4 +194,3 @@ func EvaluateResourceThreshold(metrics *NodeMetrics, threshold string) (bool, er
 		return false, fmt.Errorf("unsupported operator: %s", operator)
 	}
 }
-

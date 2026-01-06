@@ -11,6 +11,7 @@ import (
 
 	"cluster/infra/cluster/gossip"
 	"cluster/infra/failover"
+
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -193,14 +194,14 @@ func TestE2E_FailoverScenario(t *testing.T) {
 	migration, exists := migrationManager.GetMigrationStatus("critical-service")
 	require.True(t, exists, "Migration should be triggered when node becomes cordoned")
 	assert.Equal(t, "node2", migration.TargetNode)
-	
+
 	// Wait a bit longer for migration to complete or fail
 	time.Sleep(500 * time.Millisecond)
-	
+
 	// Re-check migration status (may have failed if Docker unavailable, but should exist)
 	migration, exists = migrationManager.GetMigrationStatus("critical-service")
 	require.True(t, exists, "Migration record should exist")
-	
+
 	// Migration may have failed if Docker is not available, but the attempt should be recorded
 	// With a Docker daemon available, the migration would proceed to completion
 	if migration.Status == failover.MigrationStatusFailed {
@@ -228,7 +229,7 @@ func TestE2E_FailoverScenario(t *testing.T) {
 	require.NoError(t, err)
 	migrations, ok := migrationsResp["migrations"].([]interface{})
 	require.True(t, ok, "Response should contain migrations array")
-	
+
 	// GetActiveMigrations only returns Running/Pending migrations
 	// If migration failed quickly, it won't be in active list, but that's expected behavior
 	// The important thing is that the migration was attempted (verified above via GetMigrationStatus)

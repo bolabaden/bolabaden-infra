@@ -85,22 +85,22 @@ func (s *Server) Shutdown(ctx context.Context) error {
 		return nil
 	}
 	log.Printf("Shutting down API server...")
-	
+
 	// Shutdown WebSocket server first to close all connections
 	if s.wsServer != nil {
 		s.wsServer.Shutdown()
 	}
-	
+
 	// Gracefully shutdown HTTP server with context timeout
 	shutdownCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	
+
 	if err := s.server.Shutdown(shutdownCtx); err != nil {
 		log.Printf("Error during API server shutdown: %v", err)
 		// Force close if graceful shutdown fails
 		return s.server.Close()
 	}
-	
+
 	log.Printf("API server shutdown complete")
 	return nil
 }
@@ -186,14 +186,14 @@ func (s *Server) handleNodes(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleNode(w http.ResponseWriter, r *http.Request) {
 	// Extract node name and operation from path
 	path := r.URL.Path[len("/api/v1/nodes/"):]
-	
+
 	// Check for operations (cordon/uncordon)
 	if path != "" {
 		parts := splitPath(path)
 		if len(parts) == 2 {
 			nodeName := parts[0]
 			operation := parts[1]
-			
+
 			if r.Method == http.MethodPost {
 				if operation == "cordon" {
 					s.handleNodeCordon(w, r, nodeName)
@@ -205,14 +205,14 @@ func (s *Server) handleNode(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	
+
 	// Extract node name from path (before any operation)
 	var nodeName string
 	if path != "" {
 		parts := splitPath(path)
 		nodeName = parts[0]
 	}
-	
+
 	if nodeName == "" {
 		http.Error(w, "Node name required", http.StatusBadRequest)
 		return
@@ -292,7 +292,7 @@ func (s *Server) handleNodeCordon(w http.ResponseWriter, r *http.Request, nodeNa
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": fmt.Sprintf("Node %s cordoned", nodeName),
+		"message":  fmt.Sprintf("Node %s cordoned", nodeName),
 		"cordoned": true,
 	})
 }
@@ -326,7 +326,7 @@ func (s *Server) handleNodeUncordon(w http.ResponseWriter, r *http.Request, node
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": fmt.Sprintf("Node %s uncordoned", nodeName),
+		"message":  fmt.Sprintf("Node %s uncordoned", nodeName),
 		"cordoned": false,
 	})
 }
@@ -522,7 +522,7 @@ func (s *Server) handleMigrations(w http.ResponseWriter, r *http.Request) {
 		// First get active ones, then check for any failed/completed ones
 		activeMigrations := s.migrationManager.GetActiveMigrations()
 		migrations := make([]map[string]interface{}, 0, len(activeMigrations))
-		
+
 		// Add active migrations
 		for _, migration := range activeMigrations {
 			mig := map[string]interface{}{

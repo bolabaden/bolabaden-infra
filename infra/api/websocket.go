@@ -12,6 +12,7 @@ import (
 
 	"cluster/infra/cluster/gossip"
 	"cluster/infra/cluster/raft"
+
 	"github.com/gorilla/websocket"
 )
 

@@ -2,15 +2,24 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 )
 
 // Define all services from docker-compose.yml
 func defineServicesFromConfig(config *Config) []Service {
 	domain := config.Domain
+	// Resolve configPath relative to RootPath if configPath is relative
 	configPath := config.ConfigPath
+	if !filepath.IsAbs(configPath) && config.RootPath != "." {
+		configPath = filepath.Join(config.RootPath, configPath)
+	}
+	// Resolve secretsPath relative to RootPath if secretsPath is relative
 	secretsPath := config.SecretsPath
-	_ = config.StackName // Reserved for future use
-	_ = config.RootPath  // Reserved for future use
+	if !filepath.IsAbs(secretsPath) && config.RootPath != "." {
+		secretsPath = filepath.Join(config.RootPath, secretsPath)
+	}
+	// StackName is used in network naming and service definitions (see buildTraefikCommand and services_coolify_proxy.go)
+	_ = config.StackName // Used in buildTraefikCommand and network naming
 
 	services := []Service{}
 
