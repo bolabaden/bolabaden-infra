@@ -189,12 +189,25 @@ func TestE2E_FailoverScenario(t *testing.T) {
 	// Wait for migration to start
 	time.Sleep(300 * time.Millisecond)
 
-	// Verify migration was triggered
+	// Verify migration was triggered (may fail if Docker not available, but should be attempted)
 	migration, exists := migrationManager.GetMigrationStatus("critical-service")
 	require.True(t, exists, "Migration should be triggered when node becomes cordoned")
 	assert.Equal(t, "node2", migration.TargetNode)
+	
+	// Wait a bit longer for migration to complete or fail
+	time.Sleep(500 * time.Millisecond)
+	
+	// Re-check migration status (may have failed if Docker unavailable, but should exist)
+	migration, exists = migrationManager.GetMigrationStatus("critical-service")
+	require.True(t, exists, "Migration record should exist")
+	
+	// Migration may have failed if Docker is not available, but the attempt should be recorded
+	// In a real environment with Docker, it would succeed
+	if migration.Status == failover.MigrationStatusFailed {
+		t.Logf("Migration failed (expected if Docker unavailable): %v", migration.Error)
+	}
 
-	// Verify via API
+	// Verify via API - should show at least one migration record (even if failed)
 	apiServer := NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -213,7 +226,8 @@ func TestE2E_FailoverScenario(t *testing.T) {
 	var migrationsResp map[string]interface{}
 	json.NewDecoder(resp.Body).Decode(&migrationsResp)
 	migrations := migrationsResp["migrations"].([]interface{})
-	assert.Greater(t, len(migrations), 0)
+	// Migration should exist (even if failed) - the framework is working
+	assert.Greater(t, len(migrations), 0, "Migration should be recorded (may be failed if Docker unavailable)")
 }
 
 func TestE2E_MultipleClientsWebSocketUpdates(t *testing.T) {

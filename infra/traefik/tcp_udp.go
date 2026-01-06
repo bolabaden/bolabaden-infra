@@ -110,9 +110,15 @@ func (s *HTTPProviderServer) computeTCPConfig() *TCPConfig {
 			for _, health := range healthyEntries {
 				tcpEndpoint := health.Endpoints["tcp"]
 				if tcpEndpoint == "" {
-					// For cross-node access, we'd use Tailscale IPs or node-specific domains
-					// For now, use service name (assuming same network)
-					tcpEndpoint = fmt.Sprintf("%s:%d", serviceName, tcpPort)
+					// Use Tailscale IP for cross-node access if available
+					node, exists := s.gossipState.GetNode(health.NodeName)
+					if exists && node.TailscaleIP != "" {
+						// Use Tailscale IP for direct node access
+						tcpEndpoint = fmt.Sprintf("%s:%d", node.TailscaleIP, tcpPort)
+					} else {
+						// Fallback to service name (same network)
+						tcpEndpoint = fmt.Sprintf("%s:%d", serviceName, tcpPort)
+					}
 				}
 
 				address := parseTCPAddress(tcpEndpoint)

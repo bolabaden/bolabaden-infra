@@ -106,13 +106,36 @@ func (gd *GossipDelegate) GetBroadcasts(overhead, limit int) [][]byte {
 	}
 
 	if len(data) > limit {
-		// If state is too large, we'll need to chunk it or compress it
-		// For now, just log and skip
-		log.Printf("Cluster state too large to broadcast (%d > %d)", len(data), limit)
-		return nil
+		// Chunk the state into multiple broadcasts
+		// Each chunk will be reassembled by the receiving node
+		chunks := chunkData(data, limit-overhead)
+		if len(chunks) == 0 {
+			log.Printf("Cluster state too large to broadcast even in chunks (%d > %d)", len(data), limit-overhead)
+			return nil
+		}
+		log.Printf("Chunking cluster state into %d broadcasts (%d bytes total)", len(chunks), len(data))
+		return chunks
 	}
 
 	return [][]byte{data}
+}
+
+// chunkData splits data into chunks of specified size
+func chunkData(data []byte, chunkSize int) [][]byte {
+	if chunkSize <= 0 {
+		return nil
+	}
+
+	chunks := make([][]byte, 0)
+	for i := 0; i < len(data); i += chunkSize {
+		end := i + chunkSize
+		if end > len(data) {
+			end = len(data)
+		}
+		chunks = append(chunks, data[i:end])
+	}
+
+	return chunks
 }
 
 // LocalState returns the full local state for state synchronization

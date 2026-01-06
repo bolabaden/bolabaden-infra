@@ -189,8 +189,18 @@ func main() {
 	log.Printf("Initializing migration manager...")
 	migrationManager := failover.NewMigrationManager(dockerClient, gossipCluster.GetState(), *nodeName)
 
-	// Start migration monitoring (with empty rules for now - can be configured later)
-	go migrationManager.MonitorAndMigrate(ctx, []failover.MigrationRule{})
+	// Load migration rules from configuration
+	migrationRulesPath := getEnv("MIGRATION_RULES_PATH", "/opt/constellation/config/migration-rules.json")
+	migrationRules, err := failover.LoadMigrationRules(migrationRulesPath)
+	if err != nil {
+		log.Printf("Warning: Failed to load migration rules: %v (using empty rules)", err)
+		migrationRules = []failover.MigrationRule{}
+	} else {
+		log.Printf("Loaded %d migration rule(s) from %s", len(migrationRules), migrationRulesPath)
+	}
+
+	// Start migration monitoring with loaded rules
+	go migrationManager.MonitorAndMigrate(ctx, migrationRules)
 
 	// Initialize WebSocket server
 	log.Printf("Initializing WebSocket server...")

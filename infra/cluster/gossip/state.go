@@ -19,12 +19,15 @@ type NodeMetadata struct {
 
 // ServiceHealth represents health status of a service
 type ServiceHealth struct {
-	ServiceName string            `json:"service_name"`
-	NodeName    string            `json:"node_name"`
-	Healthy     bool              `json:"healthy"`
-	CheckedAt   time.Time         `json:"checked_at"`
-	Endpoints   map[string]string `json:"endpoints"` // protocol -> endpoint (e.g., "http" -> "http://service:8080")
-	Networks    []string          `json:"networks"`  // Which Docker networks this service is on
+	ServiceName         string            `json:"service_name"`
+	NodeName            string            `json:"node_name"`
+	Healthy             bool              `json:"healthy"`
+	CheckedAt           time.Time         `json:"checked_at"`
+	Endpoints           map[string]string `json:"endpoints"`                   // protocol -> endpoint (e.g., "http" -> "http://service:8080")
+	Networks            []string          `json:"networks"`                    // Which Docker networks this service is on
+	ConsecutiveFailures int               `json:"consecutive_failures"`        // Track consecutive health check failures
+	LastFailureTime     *time.Time        `json:"last_failure_time,omitempty"` // When the last failure occurred
+	LastSuccessTime     *time.Time        `json:"last_success_time,omitempty"` // When the last success occurred
 }
 
 // WARPHealth represents the health status of the WARP gateway
@@ -97,7 +100,39 @@ func (cs *ClusterState) UpdateServiceHealth(health *ServiceHealth) {
 	defer cs.mu.Unlock()
 
 	key := health.ServiceName + "@" + health.NodeName
-	health.CheckedAt = time.Now()
+	now := time.Now()
+	health.CheckedAt = now
+
+	// Track consecutive failures for migration triggers
+	if existing, exists := cs.ServiceHealth[key]; exists {
+		if health.Healthy {
+			// Service is now healthy, reset failure count
+			health.ConsecutiveFailures = 0
+			health.LastSuccessTime = &now
+			health.LastFailureTime = existing.LastFailureTime // Preserve last failure time for history
+		} else {
+			// Service is unhealthy
+			if existing.Healthy {
+				// Was healthy, now unhealthy - start counting
+				health.ConsecutiveFailures = 1
+			} else {
+				// Was already unhealthy - increment count
+				health.ConsecutiveFailures = existing.ConsecutiveFailures + 1
+			}
+			health.LastFailureTime = &now
+			health.LastSuccessTime = existing.LastSuccessTime // Preserve last success time
+		}
+	} else {
+		// New service entry
+		if health.Healthy {
+			health.ConsecutiveFailures = 0
+			health.LastSuccessTime = &now
+		} else {
+			health.ConsecutiveFailures = 1
+			health.LastFailureTime = &now
+		}
+	}
+
 	cs.ServiceHealth[key] = health
 	cs.Version++
 }

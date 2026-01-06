@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -15,8 +17,37 @@ import (
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		// Allow all origins for now - in production, restrict this
-		return true
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			// No origin header (e.g., non-browser client), allow
+			return true
+		}
+
+		// Get allowed origins from environment or use default
+		allowedOrigins := os.Getenv("WEBSOCKET_ALLOWED_ORIGINS")
+		if allowedOrigins == "" {
+			// Default: allow same-origin and localhost
+			host := r.Host
+			if strings.HasPrefix(origin, "http://"+host) || strings.HasPrefix(origin, "https://"+host) {
+				return true
+			}
+			if strings.Contains(origin, "localhost") || strings.Contains(origin, "127.0.0.1") {
+				return true
+			}
+			// Deny by default for security
+			return false
+		}
+
+		// Check against allowed origins list
+		allowedList := strings.Split(allowedOrigins, ",")
+		for _, allowed := range allowedList {
+			allowed = strings.TrimSpace(allowed)
+			if origin == allowed || strings.HasPrefix(origin, allowed) {
+				return true
+			}
+		}
+
+		return false
 	},
 }
 

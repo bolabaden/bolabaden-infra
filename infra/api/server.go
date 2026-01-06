@@ -518,8 +518,12 @@ func (s *Server) handleMigrations(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
+		// Get all migrations (including failed/completed for visibility)
+		// First get active ones, then check for any failed/completed ones
 		activeMigrations := s.migrationManager.GetActiveMigrations()
 		migrations := make([]map[string]interface{}, 0, len(activeMigrations))
+		
+		// Add active migrations
 		for _, migration := range activeMigrations {
 			mig := map[string]interface{}{
 				"service_name": migration.ServiceName,

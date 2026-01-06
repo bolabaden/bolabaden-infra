@@ -144,11 +144,84 @@ func NewConsensusManager(config *Config) (*ConsensusManager, error) {
 
 // JoinCluster joins an existing Raft cluster
 func (cm *ConsensusManager) JoinCluster(seedNodes []string) error {
-	// For now, we'll use the AddVoter API once we're connected
-	// In production, you'd typically use a join API endpoint
 	log.Printf("Attempting to join Raft cluster via seed nodes: %v", seedNodes)
-	// Note: Raft doesn't have a built-in join API, so we'd need to implement
-	// a custom join mechanism or use a discovery service
+
+	// Wait for Raft to be ready
+	timeout := 30 * time.Second
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		if cm.raft.State() != raft.Shutdown {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	// Get current configuration
+	future := cm.raft.GetConfiguration()
+	if err := future.Error(); err != nil {
+		return fmt.Errorf("failed to get Raft configuration: %w", err)
+	}
+
+	config := future.Configuration()
+
+	// Check if we're already in the cluster
+	for _, server := range config.Servers {
+		if server.ID == raft.ServerID(cm.nodeName) {
+			log.Printf("Node %s is already in the Raft cluster", cm.nodeName)
+			return nil
+		}
+	}
+
+	// Try to add ourselves as a voter
+	// We need to contact an existing leader to add us
+	// For now, we'll try to add ourselves directly (requires leader)
+	// In production, you'd contact a join API endpoint on the leader
+
+	// Check if there's a leader
+	if cm.raft.State() == raft.Leader {
+		// We're the leader, add ourselves (shouldn't happen in join scenario)
+		log.Printf("Warning: Attempting to join but we're already the leader")
+		return nil
+	}
+
+	// Wait for a leader to be elected
+	leaderCh := cm.raft.LeaderCh()
+	select {
+	case isLeader := <-leaderCh:
+		if isLeader {
+			// We became leader, add ourselves
+			serverID := raft.ServerID(cm.nodeName)
+			serverAddr := raft.ServerAddress(fmt.Sprintf("%s:%d", cm.bindAddr, cm.bindPort))
+			
+			addFuture := cm.raft.AddVoter(serverID, serverAddr, 0, timeout)
+			if err := addFuture.Error(); err != nil {
+				return fmt.Errorf("failed to add voter: %w", err)
+			}
+			log.Printf("Successfully joined Raft cluster as voter")
+			return nil
+		}
+	case <-time.After(10 * time.Second):
+		// No leader elected yet, try to bootstrap if we're the first node
+		if len(config.Servers) == 0 {
+			log.Printf("No existing cluster found, bootstrapping as single node")
+			bootstrapConfig := raft.Configuration{
+				Servers: []raft.Server{
+					{
+						ID:      raft.ServerID(cm.nodeName),
+						Address: raft.ServerAddress(fmt.Sprintf("%s:%d", cm.bindAddr, cm.bindPort)),
+					},
+				},
+			}
+			future := cm.raft.BootstrapCluster(bootstrapConfig)
+			if err := future.Error(); err != nil {
+				return fmt.Errorf("failed to bootstrap cluster: %w", err)
+			}
+			log.Printf("Bootstrapped Raft cluster")
+			return nil
+		}
+		return fmt.Errorf("timeout waiting for leader to join cluster")
+	}
+
 	return nil
 }
 
