@@ -303,6 +303,8 @@ func buildTraefikCommand(config *Config) []string {
 		"--entryPoints.web.http.redirections.entryPoint.to=websecure",
 		"--entryPoints.websecure.address=:443",
 		"--entryPoints.websecure.http.encodeQuerySemiColons=true",
+		// Middlewares are now configurable via config.GetTraefikMiddlewares()
+		// This will be replaced when we update buildTraefikCommand to accept config.Config
 		"--entryPoints.websecure.http.middlewares=bolabaden-error-pages@file,crowdsec@file,strip-www@file",
 		"--entryPoints.websecure.http.tls=true",
 		"--entryPoints.websecure.http.tls.certResolver=letsencrypt",
