@@ -976,7 +976,7 @@ func ensureConfigFilesFromCompose(rootPath, configPath string) error {
 			var content string
 			if c, ok := cfgMap["content"].(string); ok {
 				content = c
-			} else if file, ok := cfgMap["file"].(string); ok {
+			} else if _, ok := cfgMap["file"].(string); ok {
 				// Config references a file - skip for now (would need to resolve path)
 				continue
 			} else {
