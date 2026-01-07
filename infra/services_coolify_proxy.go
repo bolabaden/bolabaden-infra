@@ -309,6 +309,35 @@ func defineServicesCoolifyProxy(config *Config) []Service {
 		},
 	})
 
+	// docker-gen-failover
+	services = append(services, Service{
+		Name:          "docker-gen-failover",
+		Image:         "docker.io/nginxproxy/docker-gen",
+		ContainerName: "docker-gen-failover",
+		Hostname:      "docker-gen-failover",
+		Networks:      []string{"backend", "default"},
+		Configs: []ConfigMount{
+			{Source: "traefik-failover-dynamic.conf.tmpl", Target: "/templates/traefik-failover-dynamic.conf.tmpl", Mode: "0400"},
+		},
+		Volumes: []VolumeMount{
+			{Source: fmt.Sprintf("%s/traefik/dynamic", configPath), Target: "/traefik/dynamic", Type: "bind"},
+		},
+		Command: []string{
+			"-endpoint", "tcp://dockerproxy-rw:2375",
+			"-only-exposed",
+			"-include-stopped",
+			"-event-filter", "event=start",
+			"-event-filter", "event=create",
+			"-event-filter", "event=expose",
+			"-event-filter", "event=update",
+			"-event-filter", "event=connect",
+			"-event-filter", "label=traefik.enable=true",
+			"-container-filter", "label=traefik.enable=true",
+			"-watch", "/templates/traefik-failover-dynamic.conf.tmpl", "/traefik/dynamic/failover-fallbacks.yaml",
+		},
+		Restart: "no",
+	})
+
 	// autokuma
 	services = append(services, Service{
 		Name:          "autokuma",
