@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"gopkg.in/yaml.v3"
 )
 
 // ConfigFile represents a config file that needs to be created
@@ -901,18 +903,120 @@ scrape_configs:
 `,
 			Permissions: 0644,
 		},
-		// Load remaining metrics configs from docker-compose file if it exists
-		// This includes: grafana.ini (2166 lines), alert.rules, and all dashboard JSON files
-		// For now, we'll load them from the compose file at runtime via loadConfigsFromComposeFile()
-		// TODO: Add all configs inline for complete quick-start support
+		// Additional metrics configs (alert.rules, loki, promtail, blackbox, grafana configs)
+		// are loaded via ensureConfigFilesFromCompose() which reads from docker-compose.metrics.yml
+		// This handles very large files like grafana.ini (2166 lines) and dashboard JSONs
 	}
 }
 
-// loadConfigsFromComposeFile loads configs from docker-compose files as fallback
-// This is used for very large configs like grafana.ini that are too big to inline
-func loadConfigsFromComposeFile(composePath, configPath string) error {
-	// TODO: Implement YAML parsing to extract configs from docker-compose files
-	// This allows us to support very large configs without bloating the Go binary
-	// For now, all critical configs are inlined above
+// ensureConfigFilesFromCompose extracts and creates configs from docker-compose files
+// This is called after ensureConfigFiles() to handle configs defined in compose files
+func ensureConfigFilesFromCompose(rootPath, configPath string) error {
+	composeFiles := []string{
+		filepath.Join(rootPath, "compose", "docker-compose.metrics.yml"),
+		filepath.Join(rootPath, "compose", "docker-compose.coolify-proxy.yml"),
+		filepath.Join(rootPath, "compose", "docker-compose.warp-nat-routing.yml"),
+	}
+
+	for _, composeFile := range composeFiles {
+		if _, err := os.Stat(composeFile); os.IsNotExist(err) {
+			continue
+		}
+
+		data, err := os.ReadFile(composeFile)
+		if err != nil {
+			continue
+		}
+
+		var compose map[string]interface{}
+		if err := yaml.Unmarshal(data, &compose); err != nil {
+			continue
+		}
+
+		configs, ok := compose["configs"].(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		// Map config names to target paths
+		configPathMap := map[string]string{
+			// Metrics configs
+			"grafana.ini":                    "grafana/grafana.ini",
+			"alert.rules":                    "prometheus/alert.rules",
+			"loki.yaml":                      "loki/loki.yaml",
+			"promtail.yaml":                  "promtail/promtail.yaml",
+			"blackbox.yml":                   "blackbox-exporter/blackbox.yml",
+			"grafana-datasource.yaml":        "grafana/provisioning/datasources/grafana-datasource.yaml",
+			"grafana-dashboard.yaml":         "grafana/provisioning/dashboards/grafana-dashboard.yaml",
+			"grafana-alerting.yaml":          "grafana/provisioning/alerting/grafana-alerting.yaml",
+			"grafana-notifications.yaml":     "grafana/provisioning/notifiers/grafana-notifications.yaml",
+			"grafana-plugins.yaml":           "grafana/provisioning/plugins/grafana-plugins.yaml",
+			"node-exporter-dashboard.json":   "grafana/dashboards/system/node-exporter-dashboard.json",
+			"cadvisor-dashboard.json":        "grafana/dashboards/infrastructure/cadvisor-dashboard.json",
+			"blackbox-dashboard.json":        "grafana/dashboards/network/blackbox-dashboard.json",
+			"traefik-dashboard.json":         "grafana/dashboards/infrastructure/traefik-dashboard.json",
+			"crowdsec-dashboard.json":        "grafana/dashboards/infrastructure/crowdsec-dashboard.json",
+			"flaresolverr-dashboard.json":    "grafana/dashboards/apps/flaresolverr-dashboard.json",
+			"victoriametrics-dashboard.json": "grafana/dashboards/infrastructure/victoriametrics-dashboard.json",
+			// WARP configs
+			"warp-nat-setup.sh": "warp-nat-routing/warp-nat-setup.sh",
+			"warp-monitor.sh":   "warp-nat-routing/warp-monitor.sh",
+			// Coolify-proxy configs
+			"traefik-dynamic.yaml":            "traefik/dynamic/core.yaml",
+			"traefik-failover-dynamic.conf.tmpl": "traefik/dynamic/failover-fallbacks.yaml",
+			"nginx-traefik-extensions.conf":   "traefik/nginx-middlewares/nginx.conf",
+		}
+
+		for name, cfg := range configs {
+			cfgMap, ok := cfg.(map[string]interface{})
+			if !ok {
+				continue
+			}
+
+			var content string
+			if c, ok := cfgMap["content"].(string); ok {
+				content = c
+			} else if file, ok := cfgMap["file"].(string); ok {
+				// Config references a file - skip for now (would need to resolve path)
+				continue
+			} else {
+				continue
+			}
+
+			// Map config name to target path
+			targetPath, exists := configPathMap[name]
+			if !exists {
+				// Use name as path if no mapping exists
+				targetPath = name
+			}
+
+			fullPath := filepath.Join(configPath, targetPath)
+
+			// Skip if file already exists
+			if _, err := os.Stat(fullPath); err == nil {
+				continue
+			}
+
+			// Create directory
+			dir := filepath.Dir(fullPath)
+			if err := os.MkdirAll(dir, 0755); err != nil {
+				return fmt.Errorf("failed to create directory %s: %w", dir, err)
+			}
+
+			// Determine permissions (default 0644, scripts 0700)
+			perm := os.FileMode(0644)
+			if filepath.Ext(fullPath) == ".sh" {
+				perm = 0700
+			}
+
+			// Write file
+			if err := os.WriteFile(fullPath, []byte(content), perm); err != nil {
+				return fmt.Errorf("failed to write config file %s: %w", fullPath, err)
+			}
+
+			fmt.Printf("Created config from compose: %s\n", fullPath)
+		}
+	}
+
 	return nil
 }

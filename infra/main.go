@@ -683,6 +683,11 @@ func main() {
 		log.Fatalf("Failed to ensure config files: %v", err)
 	}
 
+	// Also load configs from compose files (for large configs like grafana.ini)
+	if err := ensureConfigFilesFromCompose(config.RootPath, config.ConfigPath); err != nil {
+		log.Printf("Warning: Failed to load configs from compose files: %v (continuing anyway)", err)
+	}
+
 	// Ensure networks exist
 	if err := infra.EnsureNetworks(); err != nil {
 		log.Fatalf("Failed to ensure networks: %v", err)
