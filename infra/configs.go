@@ -913,9 +913,14 @@ scrape_configs:
 // This is called after ensureConfigFiles() to handle configs defined in compose files
 func ensureConfigFilesFromCompose(rootPath, configPath string) error {
 	composeFiles := []string{
+		filepath.Join(rootPath, "docker-compose.yml"),
 		filepath.Join(rootPath, "compose", "docker-compose.metrics.yml"),
 		filepath.Join(rootPath, "compose", "docker-compose.coolify-proxy.yml"),
 		filepath.Join(rootPath, "compose", "docker-compose.warp-nat-routing.yml"),
+		filepath.Join(rootPath, "compose", "docker-compose.authentik.yml"),
+		filepath.Join(rootPath, "compose", "docker-compose.headscale.yml"),
+		filepath.Join(rootPath, "compose", "docker-compose.stremio-group.yml"),
+		filepath.Join(rootPath, "compose", "docker-compose.firecrawl.yml"),
 	}
 
 	for _, composeFile := range composeFiles {
@@ -965,6 +970,25 @@ func ensureConfigFilesFromCompose(rootPath, configPath string) error {
 			"traefik-dynamic.yaml":            "traefik/dynamic/core.yaml",
 			"traefik-failover-dynamic.conf.tmpl": "traefik/dynamic/failover-fallbacks.yaml",
 			"nginx-traefik-extensions.conf":   "traefik/nginx-middlewares/nginx.conf",
+			// Authentik configs (file reference, skip for now)
+			// "authentik-secret-key": "",
+			// Headscale configs
+			"headscale-config": "headscale/config.yaml",
+			// Stremio configs
+			"jackett-serverconfig.json": "jackett/ServerConfig.json",
+			// "fuse.conf": "", // file reference to /etc/fuse.conf, skip
+			// Main docker-compose.yml configs
+			"gethomepage-custom.css":    "homepage/custom.css",
+			"gethomepage-custom.js":     "homepage/custom.js",
+			"gethomepage-docker.yaml":   "homepage/docker.yaml",
+			"gethomepage-widgets.yaml":  "homepage/widgets.yaml",
+			"gethomepage-settings.yaml": "homepage/settings.yaml",
+			"gethomepage-bookmarks.yaml": "homepage/bookmarks.yaml",
+			// File references (skip for now)
+			// "watchtower-config.json": "",
+			// "session_manager.py": "",
+			// "session_manager_index.html": "",
+			// "session_manager_waiting.html": "",
 		}
 
 		for name, cfg := range configs {
