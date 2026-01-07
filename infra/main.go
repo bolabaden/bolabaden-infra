@@ -19,6 +19,7 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+	"github.com/docker/go-units"
 	"gopkg.in/yaml.v3"
 
 	infraconfig "cluster/infra/config"
@@ -61,31 +62,39 @@ type NetworkConfig struct {
 
 // Service represents a containerized service
 type Service struct {
-	Name           string
-	Image          string
-	ContainerName  string
-	Hostname       string
-	Networks       []string
-	Ports          []PortMapping
-	Volumes        []VolumeMount
-	Environment    map[string]string
-	Labels         map[string]string
-	Command        []string
-	Entrypoint     []string
-	User           string
-	Devices        []string
-	Restart        string
-	Healthcheck    *Healthcheck
-	DependsOn      []string
-	Privileged     bool
-	CapAdd         []string
-	MemLimit       string
-	MemReservation string
-	CPUs           string
-	ExtraHosts     []string
-	Build          *BuildConfig
-	Secrets        []SecretMount
-	Configs        []ConfigMount
+	Name                string
+	Image               string
+	ContainerName       string
+	Hostname            string
+	Networks            []string
+	Ports               []PortMapping
+	Expose              []ExposePort // Internal ports exposed but not published
+	Volumes             []VolumeMount
+	Environment         map[string]string
+	Labels              map[string]string
+	Command             []string
+	Entrypoint          []string
+	User                string
+	Devices             []string
+	Restart             string
+	Healthcheck         *Healthcheck
+	DependsOn           []string
+	DependsOnConditions map[string]string // Service name -> condition (service_healthy, service_started)
+	Privileged          bool
+	CapAdd              []string
+	MemLimit            string
+	MemReservation      string
+	CPUs                string
+	ExtraHosts          []string
+	Build               *BuildConfig
+	Secrets             []SecretMount
+	Configs             []ConfigMount
+	Ulimits             *Ulimits
+	UserNSMode          string // "host" for userns_mode: host
+	PullPolicy          string // "always", "build", "missing", "never"
+	WorkingDir          string
+	StdinOpen           bool
+	Tty                 bool
 }
 
 type PortMapping struct {
@@ -93,6 +102,11 @@ type PortMapping struct {
 	ContainerPort string
 	Protocol      string
 	HostIP        string // "127.0.0.1" for localhost-only
+}
+
+type ExposePort struct {
+	Port     string // e.g., "3000", "53/udp"
+	Protocol string // "tcp" or "udp"
 }
 
 type VolumeMount struct {
@@ -125,6 +139,15 @@ type Healthcheck struct {
 type BuildConfig struct {
 	Context    string
 	Dockerfile string
+}
+
+type Ulimits struct {
+	Nofile *NofileLimit
+}
+
+type NofileLimit struct {
+	Soft int
+	Hard int
 }
 
 // Infrastructure manages the entire stack
@@ -284,6 +307,48 @@ func (infra *Infrastructure) DeployService(svc Service) error {
 			MemoryReservation: infra.parseMemory(svc.MemReservation),
 			NanoCPUs:          infra.parseCPUs(svc.CPUs),
 		},
+	}
+	// Add ulimits if specified
+	if svc.Ulimits != nil && svc.Ulimits.Nofile != nil {
+		hostConfig.Ulimits = []*units.Ulimit{
+			{
+				Name: "nofile",
+				Soft: int64(svc.Ulimits.Nofile.Soft),
+				Hard: int64(svc.Ulimits.Nofile.Hard),
+			},
+		}
+	}
+	// Add userns_mode if specified
+	if svc.UserNSMode == "host" {
+		hostConfig.UsernsMode = "host"
+	}
+	// Expose ports (internal ports exposed but not published)
+	if len(svc.Expose) > 0 {
+		exposedPorts := make(nat.PortSet)
+		for _, exp := range svc.Expose {
+			protocol := exp.Protocol
+			if protocol == "" {
+				protocol = "tcp" // Default to tcp
+			}
+			port, err := nat.NewPort(protocol, exp.Port)
+			if err == nil {
+				exposedPorts[port] = struct{}{}
+			}
+		}
+		containerConfig.ExposedPorts = exposedPorts
+	}
+	// Set working directory if specified
+	if svc.WorkingDir != "" {
+		containerConfig.WorkingDir = svc.WorkingDir
+	}
+	// Set stdin_open and tty if specified
+	if svc.StdinOpen {
+		containerConfig.AttachStdin = true
+	}
+	if svc.Tty {
+		containerConfig.Tty = true
+		containerConfig.AttachStdout = true
+		containerConfig.AttachStderr = true
 	}
 	// Add devices
 	if len(svc.Devices) > 0 {
@@ -611,6 +676,11 @@ func main() {
 		for _, ip := range nodeIPs {
 			log.Printf("  - Node IP: %s", ip)
 		}
+	}
+
+	// Ensure config files exist (create defaults from docker-compose configs blocks)
+	if err := ensureConfigFiles(config.ConfigPath); err != nil {
+		log.Fatalf("Failed to ensure config files: %v", err)
 	}
 
 	// Ensure networks exist
