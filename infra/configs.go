@@ -947,6 +947,7 @@ func ensureConfigFilesFromCompose(rootPath, configPath string) error {
 		configPathMap := map[string]string{
 			// Metrics configs
 			"grafana.ini":                    "grafana/grafana.ini",
+			"prometheus.yml":                 "prometheus/prometheus.yml",
 			"alert.rules":                    "prometheus/alert.rules",
 			"loki.yaml":                      "loki/loki.yaml",
 			"promtail.yaml":                  "promtail/promtail.yaml",
@@ -961,6 +962,18 @@ func ensureConfigFilesFromCompose(rootPath, configPath string) error {
 			"blackbox-dashboard.json":        "grafana/dashboards/network/blackbox-dashboard.json",
 			"traefik-dashboard.json":         "grafana/dashboards/infrastructure/traefik-dashboard.json",
 			"crowdsec-dashboard.json":        "grafana/dashboards/infrastructure/crowdsec-dashboard.json",
+			"crowdsec-acquis.yaml":           "crowdsec/acquis.yaml",
+			"crowdsec-auth.log":             "crowdsec/auth.log",
+			"crowdsec-config.yaml":          "crowdsec/config.yaml",
+			"crowdsec-email.yaml":           "crowdsec/notifications/email.yaml",
+			"crowdsec-file.yaml":            "crowdsec/notifications/file.yaml",
+			"crowdsec-http.yaml":            "crowdsec/notifications/http.yaml",
+			"crowdsec-profiles.yaml":        "crowdsec/profiles.yaml",
+			"crowdsec-sentinel.yaml":        "crowdsec/notifications/sentinel.yaml",
+			"crowdsec-slack.yaml":           "crowdsec/notifications/slack.yaml",
+			"crowdsec-splunk.yaml":          "crowdsec/notifications/splunk.yaml",
+			"crowdsec-syslog":               "crowdsec/notifications/syslog.yaml",
+			"crowdsec-victoriametrics.yaml": "crowdsec/notifications/victoriametrics.yaml",
 			"flaresolverr-dashboard.json":    "grafana/dashboards/apps/flaresolverr-dashboard.json",
 			"victoriametrics-dashboard.json": "grafana/dashboards/infrastructure/victoriametrics-dashboard.json",
 			// WARP configs
@@ -975,7 +988,11 @@ func ensureConfigFilesFromCompose(rootPath, configPath string) error {
 			// Headscale configs
 			"headscale-config": "headscale/config.yaml",
 			// Stremio configs
-			"jackett-serverconfig.json": "jackett/ServerConfig.json",
+			"jackett-serverconfig.json":   "jackett/ServerConfig.json",
+			"jackett-indexer-blacklist.txt": "jackett/indexer-blacklist.txt",
+			"jackett-init.sh":             "jackett/init.sh",
+			"rclone.conf":                 "rclone/rclone.conf",
+			"rclone-mounts.json":          "rclone/mounts.json",
 			// "fuse.conf": "", // file reference to /etc/fuse.conf, skip
 			// Main docker-compose.yml configs
 			"gethomepage-custom.css":    "homepage/custom.css",
