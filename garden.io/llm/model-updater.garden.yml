@@ -34,6 +34,8 @@ spec:
   replicas: 3
   image: ${actions.build.model-updater.outputs.deploymentImageId}
   hostname: model-updater
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     OPENROUTER_API_KEY: ${var.OPENROUTER_API_KEY}
     POSTGRES_PASSWORD: ${var.LITELLM_POSTGRES_PASSWORD || "postgres"}
@@ -42,6 +44,8 @@ spec:
     - name: config
       containerPath: /app/config
       sourcePath: ${var.config-path}/litellm
+      readOnly: false
     - name: cache
       containerPath: /app/cache
+      sourcePath: ${var.config-path}/model-updater/cache
   restartPolicy: never

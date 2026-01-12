@@ -24,6 +24,9 @@ spec:
       containerPath: /var/lib/headscale/private.key
       sourcePath: ${var.certs-path}/private/${var.domain}.key
       readOnly: true
+    - name: config
+      containerPath: /etc/headscale
+      sourcePath: ${var.config-path}/headscale/config
     - name: config-yaml
       containerPath: /etc/headscale/config.yaml
       sourcePath: ${var.config-path}/headscale/config.yaml

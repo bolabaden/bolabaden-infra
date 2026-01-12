@@ -161,11 +161,8 @@ spec:
     kuma.litellm.http.interval: "60"
   healthCheck:
     exec:
-      command:
-        - sh
-        - -c
-        - 'wget -qO- http://127.0.0.1:${var.LITELLM_PORT || "4000"}/health/liveliness'
-    initialDelaySeconds: 30
+      command: [sh, -c, "wget -qO- http://127.0.0.1:${var.LITELLM_PORT || \"4000\"}/health/liveliness"]
+    initialDelaySeconds: 0
     periodSeconds: 15
     timeoutSeconds: 15
     failureThreshold: 5

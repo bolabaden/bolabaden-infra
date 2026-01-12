@@ -10,6 +10,7 @@ dependencies:
 spec:
   replicas: 3
   image: docker.io/traefik:latest
+  hostname: traefik
   capAdd: [NET_ADMIN]
   extraHosts:
     - host.docker.internal:host-gateway
@@ -50,6 +51,7 @@ spec:
     - name: logs
       containerPath: /var/log/traefik
       sourcePath: ${var.config-path}/traefik/logs
+      readOnly: false
     - name: traefik-dynamic-core
       containerPath: /traefik/dynamic/core.yaml
       sourcePath: ${var.config-path}/traefik/traefik/dynamic/core.yaml
@@ -141,4 +143,5 @@ spec:
     periodSeconds: 10
     timeoutSeconds: 3
     failureThreshold: 3
+    startPeriodSeconds: 10
   restartPolicy: always
