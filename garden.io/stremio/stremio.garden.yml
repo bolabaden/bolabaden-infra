@@ -21,9 +21,11 @@ spec:
     - name: streaming-http
       containerPort: 11470
       hostPort: 11470
+      protocol: TCP
     - name: streaming-https
       containerPort: 12470
       hostPort: 12470
+      protocol: TCP
   volumes:
     - name: config
       containerPath: /root/.stremio-server
@@ -52,16 +54,16 @@ spec:
     traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.regex: '^(http|https)://stremio\.(${var.domain}|${var.ts-hostname}\.${var.domain})(/shell[^#?]*)(\\?[^#]*?streamingServer=[^&#]*)?([^#]*)(#.*)?$'
     traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.replacement: '$1://stremio.$2$3?streamingServer=https%3A%2F%2Fstremio.$2$5$6'
     traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.permanent: "false"
-    traefik.http.routers.stremio.service: stremio@docker
+    traefik.http.routers.stremio.service: stremio
     traefik.http.routers.stremio.rule: Host(`stremio-web.${var.domain}`) || Host(`stremio-web.${var.ts-hostname}.${var.domain}`) || Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts-hostname}.${var.domain}`)
     traefik.http.routers.stremio.middlewares: stremio-web-redirect@docker,stremio-shell-redirect@docker,stremio-streaming-server-redirect@docker
     traefik.http.services.stremio.loadbalancer.server.scheme: https
     traefik.http.services.stremio.loadbalancer.server.port: "8080"
-    traefik.http.routers.stremio-http11470.service: stremio-http11470@docker
+    traefik.http.routers.stremio-http11470.service: stremio-http11470
     traefik.http.services.stremio-http11470.loadbalancer.server.scheme: http
     traefik.http.services.stremio-http11470.loadbalancer.server.port: "11470"
     traefik.http.routers.stremio-http11470.rule: (Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts-hostname}.${var.domain}`)) && ( PathPrefix(`/hlsv2`) || PathPrefix(`/casting`) || PathPrefix(`/local-addon`) || PathPrefix(`/proxy`) || PathPrefix(`/rar`) || PathPrefix(`/zip`) || PathPrefix(`/settings`) || PathPrefix(`/create`) || PathPrefix(`/removeAll`) || PathPrefix(`/samples`) || PathPrefix(`/probe`) || PathPrefix(`/subtitlesTracks`) || PathPrefix(`/opensubHash`) || PathPrefix(`/subtitles`) || PathPrefix(`/network-info`) || PathPrefix(`/device-info`) || PathPrefix(`/get-https`) || PathPrefix(`/hwaccel-profiler`) || PathPrefix(`/status`) || PathPrefix(`/exec`) || PathPrefix(`/stream`) || PathRegexp(`^/[^/]+/(stats\\.json|create|remove|destroy)$`) || PathRegexp(`^/[^/]+/[^/]+/(stats\\.json|hls\\.m3u8|master\\.m3u8|stream\\.m3u8|dlna|thumb\\.jpg)$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+\\.m3u8|stream-[^/]+\\.m3u8|subs-[^/]+\\.m3u8)$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+|stream-[^/]+)/[^/]+\\.(ts|mp4)$`) || PathRegexp(`^/yt/[^/]+(\\.json)?$`) || Path(`/thumb.jpg`) || Path(`/stats.json`) )
-    traefik.http.routers.stremio-https12470.service: stremio-https12470@docker
+    traefik.http.routers.stremio-https12470.service: stremio-https12470
     traefik.http.services.stremio-https12470.loadbalancer.server.scheme: https
     traefik.http.services.stremio-https12470.loadbalancer.server.port: "12470"
     traefik.http.routers.stremio-https12470.rule: (Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts-hostname}.${var.domain}`)) && ( PathPrefix(`/hlsv2`) || PathPrefix(`/casting`) || PathPrefix(`/local-addon`) || PathPrefix(`/proxy`) || PathPrefix(`/rar`) || PathPrefix(`/zip`) || PathPrefix(`/settings`) || PathPrefix(`/create`) || PathPrefix(`/removeAll`) || PathPrefix(`/samples`) || PathPrefix(`/probe`) || PathPrefix(`/subtitlesTracks`) || PathPrefix(`/opensubHash`) || PathPrefix(`/subtitles`) || PathPrefix(`/network-info`) || PathPrefix(`/device-info`) || PathPrefix(`/get-https`) || PathPrefix(`/hwaccel-profiler`) || PathPrefix(`/status`) || PathPrefix(`/exec`) || PathPrefix(`/stream`) || PathRegexp(`^/[^/]+/(stats\\.json|create|remove|destroy)$`) || PathRegexp(`^/[^/]+/[^/]+/(stats\\.json|hls\\.m3u8|master\\.m3u8|stream\\.m3u8|dlna|thumb\\.jpg)$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+\\.m3u8|stream-[^/]+\\.m3u8|subs-[^/]+\\.m3u8)$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+|stream-[^/]+)/[^/]+\\.(ts|mp4)$`) || PathRegexp(`^/yt/[^/]+(\\.json)?$`) || Path(`/thumb.jpg`) || Path(`/stats.json`) )

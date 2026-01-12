@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: lscr.io/linuxserver/code-server
+  hostname: code-server
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -41,4 +42,25 @@ spec:
     - path: /
       port: http
       hostname: code-server.${var.domain}
+    - path: /
+      port: http
+      hostname: code-server.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.middlewares.codeserver-redirect.redirectRegex.regex: '^https?://codeserver\.((?:${var.domain}|${var.ts-hostname}\.${var.domain}))(.*)$'
+    traefik.http.middlewares.codeserver-redirect.redirectRegex.replacement: 'https://code-server.$1$2'
+    traefik.http.middlewares.codeserver-redirect.redirectRegex.permanent: "false"
+    traefik.http.routers.code-server.middlewares: nginx-auth@file
+    traefik.http.services.code-server.loadbalancer.server.port: "8443"
+    traefik.http.routers.codeserver-redirect.rule: Host(`codeserver.${var.domain}`) || Host(`codeserver.${var.ts-hostname}.${var.domain}`)
+    traefik.http.routers.codeserver-redirect.middlewares: codeserver-redirect@docker
+    traefik.http.routers.codeserver-redirect.service: code-server@docker
+    homepage.group: Infrastructure
+    homepage.name: Code Dev
+    homepage.icon: code-server.png
+    homepage.href: https://code-server.${var.domain}/
+    homepage.description: In-browser VS Code environment for editing and managing code on this server
+    kuma.code-server.http.name: code-server.${var.ts-hostname}.${var.domain}
+    kuma.code-server.http.url: https://code-server.${var.domain}
+    kuma.code-server.http.interval: "60"
   restartPolicy: always

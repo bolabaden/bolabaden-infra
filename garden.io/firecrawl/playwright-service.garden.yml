@@ -11,14 +11,15 @@ source:
 kind: Deploy
 apiVersion: garden.io/v0
 name: playwright-service
-description: Playwright service container
+description: Playwright service container for Firecrawl
 type: container
 dependencies:
   - build.playwright-service
 
 spec:
   replicas: 3
-  image: ${actions.build.playwright-service.outputs.deploymentImageId}
+  image: ghcr.io/firecrawl/playwright-service
+  hostname: playwright-service
   extraHosts:
     - host.docker.internal:host-gateway
   env:

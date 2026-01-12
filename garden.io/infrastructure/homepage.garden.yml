@@ -9,6 +9,9 @@ dependencies:
 spec:
   replicas: 3
   image: ghcr.io/gethomepage/homepage
+  hostname: homepage
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     DOCKER_HOST: tcp://dockerproxy-ro:2375
     HOMEPAGE_ALLOWED_HOSTS: "*"
@@ -29,24 +32,6 @@ spec:
     - name: config
       containerPath: /app/config
       sourcePath: ${var.config-path}/homepage
-    - name: custom-css
-      containerPath: /app/config/custom.css
-      sourcePath: ${var.config-path}/homepage/custom.css
-    - name: custom-js
-      containerPath: /app/config/custom.js
-      sourcePath: ${var.config-path}/homepage/custom.js
-    - name: docker-yaml
-      containerPath: /app/config/docker.yaml
-      sourcePath: ${var.config-path}/homepage/docker.yaml
-    - name: widgets-yaml
-      containerPath: /app/config/widgets.yaml
-      sourcePath: ${var.config-path}/homepage/widgets.yaml
-    - name: settings-yaml
-      containerPath: /app/config/settings.yaml
-      sourcePath: ${var.config-path}/homepage/settings.yaml
-    - name: bookmarks-yaml
-      containerPath: /app/config/bookmarks.yaml
-      sourcePath: ${var.config-path}/homepage/bookmarks.yaml
   resources:
     limits:
       cpu: 250m
@@ -57,6 +42,14 @@ spec:
     - path: /
       port: http
       hostname: homepage.${var.domain}
+    - path: /
+      port: http
+      hostname: homepage.${var.ts-hostname}.${var.domain}
+  annotations:
+    deunhealth.restart.on.unhealthy: "true"
+    kuma.homepage.http.name: homepage.${var.ts-hostname}.${var.domain}
+    kuma.homepage.http.url: https://homepage.${var.domain}
+    kuma.homepage.http.interval: "30"
   healthCheck:
     exec:
       command: [sh, -c, "wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1"]

@@ -1,7 +1,7 @@
 kind: Build
 apiVersion: garden.io/v0
 name: nuq-postgres
-description: PostgreSQL database for Firecrawl
+description: PostgreSQL database for Firecrawl NUQ
 type: container
 source:
   repository:
@@ -11,7 +11,7 @@ source:
 kind: Deploy
 apiVersion: garden.io/v0
 name: nuq-postgres
-description: PostgreSQL database container
+description: PostgreSQL database container for Firecrawl NUQ
 type: container
 dependencies:
   - build.nuq-postgres
@@ -19,6 +19,7 @@ dependencies:
 spec:
   replicas: 3
   image: ${actions.build.nuq-postgres.outputs.deploymentImageId}
+  hostname: ${var.NUQ_POSTGRES_HOSTNAME || "nuq-postgres"}
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -26,19 +27,21 @@ spec:
     POSTGRES_PASSWORD: ${var.FIRECRAWL_POSTGRES_PASSWORD || "postgres"}
     POSTGRES_DB: ${var.FIRECRAWL_POSTGRES_DB || "postgres"}
   ports:
-    - name: db
+    - name: postgres
       containerPort: 5432
   volumes:
     - name: data
       containerPath: /var/lib/postgresql/data
       sourcePath: ${var.config-path}/nuq-postgres/data
+  annotations:
+    deunhealth.restart.on.unhealthy: "true"
+    kuma.nuq-postgres.http.name: nuq-postgres.${var.ts-hostname}.${var.domain}
+    kuma.nuq-postgres.http.url: https://nuq-postgres.${var.domain}
+    kuma.nuq-postgres.http.interval: "60"
   healthCheck:
     exec:
-      command:
-        - sh
-        - -c
-        - 'pg_isready -U ${var.FIRECRAWL_POSTGRES_USER || "postgres"} -d ${var.FIRECRAWL_POSTGRES_DB || "postgres"}'
-    initialDelaySeconds: 10
+      command: [sh, -c, "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} >/dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 0
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 5
