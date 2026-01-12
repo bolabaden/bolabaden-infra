@@ -47,13 +47,13 @@ spec:
     traefik.enable: "true"
     traefik.http.middlewares.stremio-web-redirect.redirectRegex.regex: '^(http|https)://stremio(-web)\.(${var.domain}|${var.ts-hostname}\.${var.domain})(.*)$'
     traefik.http.middlewares.stremio-web-redirect.redirectRegex.replacement: '$1://stremio.$3$4'
-    traefik.http.middlewares.stremio-web-redirect.redirectRegex.permanent: "false"
+    traefik.http.middlewares.stremio-web-redirect.redirectRegex.permanent: false
     traefik.http.middlewares.stremio-shell-redirect.redirectRegex.regex: '^(http|https)://stremio\.(${var.domain}|${var.ts-hostname}\.${var.domain})(.*)$'
     traefik.http.middlewares.stremio-shell-redirect.redirectRegex.replacement: '$1://stremio.$2$3'
-    traefik.http.middlewares.stremio-shell-redirect.redirectRegex.permanent: "false"
+    traefik.http.middlewares.stremio-shell-redirect.redirectRegex.permanent: false
     traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.regex: '^(http|https)://stremio\.(${var.domain}|${var.ts-hostname}\.${var.domain})(/shell[^#?]*)(\\?[^#]*?streamingServer=[^&#]*)?([^#]*)(#.*)?$'
     traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.replacement: '$1://stremio.$2$3?streamingServer=https%3A%2F%2Fstremio.$2$5$6'
-    traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.permanent: "false"
+    traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.permanent: false
     traefik.http.routers.stremio.service: stremio
     traefik.http.routers.stremio.rule: Host(`stremio-web.${var.domain}`) || Host(`stremio-web.${var.ts-hostname}.${var.domain}`) || Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts-hostname}.${var.domain}`)
     traefik.http.routers.stremio.middlewares: stremio-web-redirect@docker,stremio-shell-redirect@docker,stremio-streaming-server-redirect@docker
