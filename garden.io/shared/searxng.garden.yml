@@ -32,7 +32,7 @@ spec:
       hostname: searxng.${var.ts-hostname}.${var.domain}
   annotations:
     traefik.enable: "true"
-    traefik.http.services.searxng.loadbalancer.server.port: ${var.SEARXNG_PORT || "8080"}
+    traefik.http.services.searxng.loadbalancer.server.port: ${var.SEARXNG_PORT || 8080}
     deunhealth.restart.on.unhealthy: "true"
     homepage.group: Search
     homepage.name: SearxNG

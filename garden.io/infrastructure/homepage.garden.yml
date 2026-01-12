@@ -48,7 +48,7 @@ spec:
   annotations:
     deunhealth.restart.on.unhealthy: "true"
     traefik.enable: "true"
-    traefik.http.services.homepage.loadbalancer.server.port: "3000"
+    traefik.http.services.homepage.loadbalancer.server.port: 3000
     kuma.homepage.http.name: homepage.${var.ts-hostname}.${var.domain}
     kuma.homepage.http.url: https://homepage.${var.domain}
     kuma.homepage.http.interval: "30"

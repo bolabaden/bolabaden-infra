@@ -50,9 +50,9 @@ spec:
     traefik.enable: "true"
     traefik.http.middlewares.codeserver-redirect.redirectRegex.regex: '^https?://codeserver\.((?:${var.domain}|${var.ts-hostname}\.${var.domain}))(.*)$'
     traefik.http.middlewares.codeserver-redirect.redirectRegex.replacement: 'https://code-server.$1$2'
-    traefik.http.middlewares.codeserver-redirect.redirectRegex.permanent: "false"
+    traefik.http.middlewares.codeserver-redirect.redirectRegex.permanent: false
     traefik.http.routers.code-server.middlewares: nginx-auth@file
-    traefik.http.services.code-server.loadbalancer.server.port: "8443"
+    traefik.http.services.code-server.loadbalancer.server.port: 8443
     traefik.http.routers.codeserver-redirect.rule: Host(`codeserver.${var.domain}`) || Host(`codeserver.${var.ts-hostname}.${var.domain}`)
     traefik.http.routers.codeserver-redirect.middlewares: codeserver-redirect@docker
     traefik.http.routers.codeserver-redirect.service: code-server@docker
