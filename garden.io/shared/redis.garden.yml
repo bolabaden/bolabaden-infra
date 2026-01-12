@@ -24,7 +24,7 @@ spec:
   volumes:
     - name: data
       containerPath: /data
-      sourcePath: ${var.config-path}/redis/data
+      sourcePath: ${var.config-path}/redis
   command:
     - sh
     - -c
@@ -35,7 +35,7 @@ spec:
       --save 60 1
       --bind 0.0.0.0
       --port ${var.REDIS_PORT || "6379"}
-      --requirepass ${var.REDIS_PASSWORD || "redis"}
+      --requirepass ${var.REDIS_PASSWORD}
   resources:
     limits:
       memory: 4Gi
