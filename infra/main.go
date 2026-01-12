@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -20,6 +21,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/docker/go-units"
+	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
 	infraconfig "cluster/infra/config"
@@ -654,6 +656,32 @@ func parseDuration(dur string) time.Duration {
 }
 
 func main() {
+	// Check if running as docker CLI
+	if len(os.Args) > 0 && (filepath.Base(os.Args[0]) == "docker" || strings.Contains(os.Args[0], "docker")) {
+		config := loadConfig()
+		dockerCLI, err := NewDockerCLI(config)
+		if err != nil {
+			log.Fatalf("Failed to create Docker CLI: %v", err)
+		}
+		if err := dockerCLI.ExecuteDockerCommand(os.Args[1:]); err != nil {
+			log.Fatalf("Docker command failed: %v", err)
+		}
+		return
+	}
+
+	// Check for environment variable to enable docker CLI compatibility
+	if os.Getenv("DOCKER_CLI_COMPAT") == "infra" {
+		config := loadConfig()
+		dockerCLI, err := NewDockerCLI(config)
+		if err != nil {
+			log.Fatalf("Failed to create Docker CLI: %v", err)
+		}
+		if err := dockerCLI.ExecuteDockerCommand(os.Args[1:]); err != nil {
+			log.Fatalf("Docker command failed: %v", err)
+		}
+		return
+	}
+
 	// Load configuration
 	config := loadConfig()
 
