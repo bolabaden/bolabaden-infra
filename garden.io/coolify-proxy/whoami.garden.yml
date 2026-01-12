@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: docker.io/traefik/whoami:latest
+  hostname: whoami
   extraHosts:
     - host.docker.internal:host-gateway
   ports:
@@ -16,4 +17,19 @@ spec:
     - path: /
       port: http
       hostname: whoami.${var.domain}
+    - path: /
+      port: http
+      hostname: whoami.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.whoami.service: whoami@docker
+    traefik.http.services.whoami.loadBalancer.server.port: "80"
+    homepage.group: Web Services
+    homepage.name: whoami
+    homepage.icon: whoami.png
+    homepage.href: https://whoami.${var.domain}
+    homepage.description: Request echo service used to verify reverse-proxy, headers, and auth middleware
+    kuma.whoami.http.name: whoami.${var.ts-hostname}.${var.domain}
+    kuma.whoami.http.url: https://whoami.${var.domain}
+    kuma.whoami.http.interval: "60"
   restartPolicy: always

@@ -105,7 +105,7 @@ spec:
     - '--providers.file.directory=/traefik/dynamic/'
     - '--providers.file.watch=true'
     - '--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin'
-    - '--experimental.plugins.bouncer.version=v1.4.5'
+    - '--experimental.plugins.bouncer.version=v1.4.6'
     - '--experimental.plugins.traefikerrorreplace.modulename=github.com/PseudoResonance/traefikerrorreplace'
     - '--experimental.plugins.traefikerrorreplace.version=v1.0.1'
     - '--serversTransport.insecureSkipVerify=true'
@@ -113,6 +113,24 @@ spec:
     - path: /
       port: dashboard
       hostname: traefik.${var.domain}
+    - path: /
+      port: dashboard
+      hostname: traefik.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.traefik.service: api@internal
+    traefik.http.routers.traefik.rule: Host(`traefik.${var.domain}`) || Host(`traefik.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.traefik.loadbalancer.server.port: "8080"
+    homepage.group: Infrastructure
+    homepage.name: Traefik
+    homepage.icon: traefik.png
+    homepage.href: https://traefik.${var.domain}/dashboard
+    homepage.widget.type: traefik
+    homepage.widget.url: http://traefik:8080
+    homepage.description: Reverse proxy entrypoint for all services with TLS, Cloudflare integration, and auth middleware
+    kuma.traefik.http.name: traefik.${var.ts-hostname}.${var.domain}
+    kuma.traefik.http.url: https://traefik.${var.domain}/dashboard
+    kuma.traefik.http.interval: "20"
   healthCheck:
     exec:
       command: [traefik, healthcheck, --ping]

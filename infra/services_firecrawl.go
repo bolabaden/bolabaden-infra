@@ -34,11 +34,10 @@ func defineServicesFirecrawl(config *Config) []Service {
 			"kuma.playwright-service.http.interval": "60",
 		},
 		Healthcheck: &Healthcheck{
-			Test:        []string{"CMD-SHELL", "apt update && apt install curl -y && apt autoremove -y && curl -f http://127.0.0.1:3000/health >/dev/null 2>&1 || exit 1"},
-			Interval:    "2s",
-			Timeout:     "10s",
-			Retries:     10,
-			StartPeriod: "30s",
+			Test:     []string{"CMD-SHELL", "apt update && apt install curl -y && apt autoremove -y && curl -f http://127.0.0.1:3000/health >/dev/null 2>&1 || exit 1"},
+			Interval: "2s",
+			Timeout:  "10s",
+			Retries:  10,
 		},
 		Restart:    "always",
 		ExtraHosts: []string{"host.docker.internal:host-gateway"},
@@ -46,12 +45,26 @@ func defineServicesFirecrawl(config *Config) []Service {
 
 	// firecrawl
 	firecrawlInternalPort := getEnv("FIRECRAWL_INTERNAL_PORT", "3002")
+	firecrawlExtractWorkerPort := getEnv("FIRECRAWL_EXTRACT_WORKER_PORT", "3004")
+	firecrawlWorkerPort := getEnv("FIRECRAWL_WORKER_PORT", "3005")
 	services = append(services, Service{
 		Name:          "firecrawl",
 		Image:         "ghcr.io/firecrawl/firecrawl",
 		ContainerName: "firecrawl",
 		Hostname:      "api",
 		Networks:      []string{"backend", "publicnet"},
+		PullPolicy:    "build", // pull_policy: build
+		Expose: []ExposePort{
+			{Port: firecrawlInternalPort, Protocol: "tcp"},
+			{Port: firecrawlExtractWorkerPort, Protocol: "tcp"},
+			{Port: firecrawlWorkerPort, Protocol: "tcp"},
+		},
+		Ulimits: &Ulimits{
+			Nofile: &NofileLimit{
+				Soft: 65535,
+				Hard: 65535,
+			},
+		},
 		Secrets: []SecretMount{
 			{Source: fmt.Sprintf("%s/openai-api-key.txt", secretsPath), Target: "/run/secrets/openai-api-key", Mode: "0400"},
 			{Source: fmt.Sprintf("%s/firecrawl-api-key.txt", secretsPath), Target: "/run/secrets/firecrawl-api-key", Mode: "0400"},
@@ -75,7 +88,7 @@ func defineServicesFirecrawl(config *Config) []Service {
 			"POSTHOG_API_KEY":             getEnv("POSTHOG_API_KEY", ""),
 			"POSTHOG_HOST":                getEnv("POSTHOG_HOST", ""),
 			"SUPABASE_ANON_TOKEN":         getEnv("SUPABASE_ANON_TOKEN", ""),
-			"SUPABASE_URL":                getEnv("SUPABASE_URL", ""),
+			"SUPABASE_URL":                getEnv("SUPABASE_URL", ""), // Required but may be empty
 			"SUPABASE_SERVICE_TOKEN":      getEnv("SUPABASE_SERVICE_TOKEN", ""),
 			"SELF_HOSTED_WEBHOOK_URL":     getEnv("FIRECRAWL_SELF_HOSTED_WEBHOOK_URL", ""),
 			"SERPER_API_KEY":              getEnv("SERPER_API_KEY", ""),
@@ -110,7 +123,13 @@ func defineServicesFirecrawl(config *Config) []Service {
 			Retries:     3,
 			StartPeriod: "60s",
 		},
-		DependsOn:  []string{"redis", "playwright-service", "nuq-postgres", "rabbitmq"},
+		DependsOn: []string{"redis", "playwright-service", "nuq-postgres", "rabbitmq"},
+		DependsOnConditions: map[string]string{
+			"redis":              "service_healthy",
+			"playwright-service": "service_started",
+			"nuq-postgres":       "service_healthy",
+			"rabbitmq":           "service_healthy",
+		},
 		Restart:    "always",
 		ExtraHosts: []string{"host.docker.internal:host-gateway"},
 	})
@@ -138,11 +157,10 @@ func defineServicesFirecrawl(config *Config) []Service {
 			"kuma.nuq-postgres.http.interval": "60",
 		},
 		Healthcheck: &Healthcheck{
-			Test:        []string{"CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB >/dev/null 2>&1 || exit 1"},
-			Interval:    "10s",
-			Timeout:     "5s",
-			Retries:     5,
-			StartPeriod: "30s",
+			Test:     []string{"CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB >/dev/null 2>&1 || exit 1"},
+			Interval: "10s",
+			Timeout:  "5s",
+			Retries:  5,
 		},
 		Restart:    "always",
 		ExtraHosts: []string{"host.docker.internal:host-gateway"},
@@ -156,7 +174,7 @@ func defineServicesFirecrawl(config *Config) []Service {
 		Hostname:      "rabbitmq",
 		Networks:      []string{"backend"},
 		Volumes: []VolumeMount{
-			{Source: "./rabbitmq-init.sh", Target: "/rabbitmq-init.sh", Type: "bind", ReadOnly: true},
+			{Source: fmt.Sprintf("%s/rabbitmq-init.sh", getEnv("ROOT_PATH", ".")), Target: "/rabbitmq-init.sh", Type: "bind", ReadOnly: true},
 		},
 		Environment: map[string]string{
 			"RABBITMQ_DEFAULT_USER": getEnv("RABBITMQ_USERNAME", "rabbitmq"),

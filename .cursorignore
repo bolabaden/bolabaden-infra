@@ -106,3 +106,5 @@ vendor/traefik/traefik_docker_provider_example.json
 vendor/traefik/traefik_docker_provider_example.yaml
 volumes/
 .history/
+**/__snapshots__/
+*.snap

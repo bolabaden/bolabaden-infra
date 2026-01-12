@@ -10,6 +10,7 @@ dependencies:
 spec:
   replicas: 3
   image: docker.io/grafana/grafana
+  hostname: grafana
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -92,6 +93,21 @@ spec:
     - path: /
       port: http
       hostname: grafana.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.grafana.rule: Host(`grafana.${var.domain}`) || Host(`grafana.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.grafana.loadbalancer.server.port: "3000"
+    homepage.group: Infrastructure
+    homepage.name: Grafana
+    homepage.icon: grafana.png
+    homepage.href: https://grafana.${var.domain}
+    homepage.description: Grafana is an open-source platform for monitoring and observability.
+    kuma.grafana.http.name: grafana.${var.ts-hostname}.${var.domain}
+    kuma.grafana.http.url: https://grafana.${var.domain}
+    kuma.grafana.http.interval: "60"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3000"
+    prometheus.io/path: metrics
   healthCheck:
     exec:
       command: [sh, -c, "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1"]

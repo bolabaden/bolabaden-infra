@@ -3,6 +3,8 @@ apiVersion: garden.io/v0
 name: litellm
 description: LiteLLM gateway for multiple LLM providers
 type: container
+profiles:
+  - fixme
 dependencies:
   - deploy.litellm-postgres
   - deploy.redis
@@ -10,6 +12,7 @@ dependencies:
 spec:
   replicas: 3
   image: ghcr.io/berriai/litellm-database:main-stable
+  hostname: litellm
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -146,6 +149,16 @@ spec:
     - path: /
       port: http
       hostname: litellm.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    homepage.group: AI
+    homepage.name: Litellm
+    homepage.icon: litellm.png
+    homepage.href: https://litellm.${var.domain}/
+    homepage.description: LLM gateway/router with provider failover, caching, rate limits, and analytics
+    kuma.litellm.http.name: litellm.${var.ts-hostname}.${var.domain}
+    kuma.litellm.http.url: https://litellm.${var.domain}
+    kuma.litellm.http.interval: "60"
   healthCheck:
     exec:
       command:

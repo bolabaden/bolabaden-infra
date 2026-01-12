@@ -18,6 +18,7 @@ dependencies:
   - deploy.redis
   - deploy.playwright-service
   - deploy.nuq-postgres
+  - deploy.rabbitmq
 
 spec:
   replicas: 3
@@ -25,10 +26,11 @@ spec:
   extraHosts:
     - host.docker.internal:host-gateway
   env:
-    REDIS_URL: redis://redis:6379
-    REDIS_RATE_LIMIT_URL: redis://redis:6379
+    REDIS_URL: ${var.FIRECRAWL_REDIS_URL || "redis://${var.REDIS_HOSTNAME || \"redis\"}:${var.REDIS_PORT || \"6379\"}"}
+    REDIS_RATE_LIMIT_URL: ${var.FIRECRAWL_REDIS_RATE_LIMIT_URL || "redis://${var.REDIS_HOSTNAME || \"redis\"}:${var.REDIS_PORT || \"6379\"}"}
     PLAYWRIGHT_MICROSERVICE_URL: ${var.PLAYWRIGHT_HOST || "http://playwright-service:3000/scrape"}
-    NUQ_DATABASE_URL: postgres://postgres:postgres@nuq-postgres:5432/postgres
+    NUQ_DATABASE_URL: ${var.FIRECRAWL_NUQ_DATABASE_URL || "postgres://${var.FIRECRAWL_POSTGRES_USERNAME || \"postgres\"}:${var.FIRECRAWL_POSTGRES_PASSWORD || \"postgres\"}@${var.FIRECRAWL_POSTGRES_HOSTNAME || \"nuq-postgres\"}:${var.FIRECRAWL_POSTGRES_PORT || \"5432\"}/${var.FIRECRAWL_POSTGRES_DB || \"postgres\"}"}
+    NUQ_RABBITMQ_URL: ${var.FIRECRAWL_NUQ_RABBITMQ_URL || "amqp://${var.RABBITMQ_USERNAME || \"rabbitmq\"}:${var.RABBITMQ_PASSWORD || \"rabbitmq\"}@${var.RABBITMQ_HOSTNAME || \"rabbitmq\"}:${var.RABBITMQ_PORT || \"5672\"}"}
     EXTRACT_WORKER_PORT: ${var.FIRECRAWL_EXTRACT_WORKER_PORT || "3004"}
     USE_DB_AUTHENTICATION: ${var.FIRECRAWL_USE_DB_AUTHENTICATION || ""}
     OPENAI_API_KEY_FILE: /run/secrets/openai-api-key
@@ -85,4 +87,21 @@ spec:
     - path: /
       port: http
       hostname: firecrawl-api.${var.ts-hostname}.${var.domain}
+  annotations:
+    deunhealth.restart.on.unhealthy: "true"
+    homepage.group: AI
+    homepage.name: Firecrawl
+    homepage.icon: firecrawl.png
+    homepage.href: https://firecrawl.${var.domain}
+    homepage.description: Firecrawl is a tool for crawling and indexing web pages.
+    kuma.firecrawl.http.name: firecrawl.${var.ts-hostname}.${var.domain}
+    kuma.firecrawl.http.url: https://firecrawl.${var.domain}
+    kuma.firecrawl.http.interval: "60"
+  healthCheck:
+    exec:
+      command: [sh, -c, "node -e \"require('http').get('http://127.0.0.1:${var.FIRECRAWL_INTERNAL_PORT || \"3002\"}/v0/health/liveness', (r) => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>process.exit(r.statusCode===200?0:1)); }).on('error',()=>process.exit(1));\" >/dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
   restartPolicy: always

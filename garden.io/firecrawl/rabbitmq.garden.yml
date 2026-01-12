@@ -1,0 +1,36 @@
+kind: Deploy
+apiVersion: garden.io/v0
+name: rabbitmq
+description: RabbitMQ message broker for Firecrawl
+type: container
+
+spec:
+  replicas: 3
+  image: docker.io/rabbitmq:3-management
+  hostname: rabbitmq
+  extraHosts:
+    - host.docker.internal:host-gateway
+  env:
+    RABBITMQ_DEFAULT_USER: ${var.RABBITMQ_USERNAME || "rabbitmq"}
+    RABBITMQ_DEFAULT_PASS: ${var.RABBITMQ_PASSWORD || "rabbitmq"}
+  volumes:
+    - name: rabbitmq-init
+      containerPath: /rabbitmq-init.sh
+      sourcePath: ${var.root-path || "."}/rabbitmq-init.sh
+      readOnly: true
+  command:
+    - /bin/bash
+    - /rabbitmq-init.sh
+  annotations:
+    deunhealth.restart.on.unhealthy: "true"
+    kuma.rabbitmq.http.name: rabbitmq.${var.ts-hostname}.${var.domain}
+    kuma.rabbitmq.http.url: https://rabbitmq.${var.domain}
+    kuma.rabbitmq.http.interval: "60"
+  healthCheck:
+    exec:
+      command: [sh, -c, "rabbitmq-diagnostics -q check_running >/dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 5
+  restartPolicy: always

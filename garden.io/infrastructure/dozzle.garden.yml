@@ -9,6 +9,9 @@ dependencies:
 spec:
   replicas: 3
   image: docker.io/amir20/dozzle
+  hostname: dozzle
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     DOZZLE_NO_ANALYTICS: ${var.DOZZLE_NO_ANALYTICS || "true"}
     DOZZLE_FILTER: ${var.DOZZLE_FILTER || ""}
@@ -29,4 +32,19 @@ spec:
     - path: /
       port: http
       hostname: dozzle.${var.domain}
+    - path: /
+      port: http
+      hostname: dozzle.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.dozzle.middlewares: nginx-auth@file
+    traefik.http.services.dozzle.loadbalancer.server.port: ${var.DOZZLE_PORT || "8080"}
+    homepage.group: System Monitoring
+    homepage.name: Dozzle
+    homepage.icon: dozzle.png
+    homepage.href: https://dozzle.${var.domain}
+    homepage.description: Real-time web UI for viewing Docker container logs across the host
+    kuma.dozzle.http.name: dozzle.${var.ts-hostname}.${var.domain}
+    kuma.dozzle.http.url: https://dozzle.${var.domain}
+    kuma.dozzle.http.interval: "60"
   restartPolicy: always

@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: docker.io/headscale/headscale
+  hostname: headscale-server
   extraHosts:
     - host.docker.internal:host-gateway
   ports:
@@ -50,4 +51,19 @@ spec:
     - path: /metrics
       port: metrics
       hostname: headscale.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.middlewares.headscale-admin-redirect.redirectRegex.regex: '^https?://headscale(-server)?\.(${var.domain}|${var.ts-hostname}\.${var.domain})/admin(.*)$'
+    traefik.http.middlewares.headscale-admin-redirect.redirectRegex.replacement: https://headscale.${var.domain}/web$3
+    traefik.http.middlewares.headscale-admin-redirect.redirectRegex.permanent: "false"
+    traefik.http.middlewares.headscale-server-redirect.redirectRegex.regex: '^https?://headscale-server\.((?:${var.domain}|${var.ts-hostname}\.${var.domain}))(.*)$'
+    traefik.http.middlewares.headscale-server-redirect.redirectRegex.replacement: https://headscale.$1$2
+    traefik.http.middlewares.headscale-server-redirect.redirectRegex.permanent: "false"
+    traefik.http.routers.headscale-server.service: headscale-server@docker
+    traefik.http.routers.headscale-server.rule: Host(`headscale-server.${var.domain}`) || Host(`headscale-server.${var.ts-hostname}.${var.domain}`) || Host(`headscale.${var.domain}`) || Host(`headscale.${var.ts-hostname}.${var.domain}`)
+    traefik.http.routers.headscale-server.middlewares: headscale-admin-redirect@docker,headscale-server-redirect@docker
+    traefik.http.services.headscale-server.loadbalancer.server.port: ${var.HEADSCALE_HTTP_PORT || "8081"}
+    traefik.http.routers.headscale-metrics.service: headscale-metrics@docker
+    traefik.http.routers.headscale-metrics.rule: (Host(`headscale.${var.domain}`) || Host(`headscale.${var.ts-hostname}.${var.domain}`)) && PathPrefix(`/metrics`)
+    traefik.http.services.headscale-metrics.loadbalancer.server.port: ${var.HEADSCALE_METRICS_PORT || "8080"}
   restartPolicy: always

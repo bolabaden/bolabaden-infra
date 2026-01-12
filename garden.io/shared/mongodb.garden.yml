@@ -7,6 +7,9 @@ type: container
 spec:
   replicas: 3
   image: docker.io/mongo
+  hostname: ${var.MONGODB_HOSTNAME || "mongodb"}
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
   ports:
@@ -16,6 +19,15 @@ spec:
     - name: data
       containerPath: /data/db
       sourcePath: ${var.config-path}/mongodb/data
+  ingresses:
+    - path: /
+      port: db
+      hostname: mongodb.${var.domain}
+      protocol: TCP
+    - path: /
+      port: db
+      hostname: mongodb.${var.ts-hostname}.${var.domain}
+      protocol: TCP
   healthCheck:
     exec:
       command: [sh, -c, "mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand(\"ping\").ok' > /dev/null 2>&1 || exit 1"]

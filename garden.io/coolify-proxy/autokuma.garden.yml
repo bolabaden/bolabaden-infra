@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: ghcr.io/bigboot/autokuma
+  hostname: autokuma
   extraHosts:
     - host.docker.internal:host-gateway
   env:

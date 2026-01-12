@@ -13,9 +13,14 @@ spec:
   securityOpt: [no-new-privileges:true]
   env:
     TZ: ${var.tz}
-    CLOUDFLARE_API_TOKEN: ${var.CLOUDFLARE_API_TOKEN}
+    CLOUDFLARE_API_TOKEN_FILE: /run/secrets/cloudflare-api-token
     DOMAINS: ${var.ts-hostname}.${var.domain},*.${var.ts-hostname}.${var.domain}
     PROXIED: is(${var.domain})||is(*.${var.domain})
     TTL: 1
     RECORD_COMMENT: 'Updated by Cloudflare DDNS on server `${var.ts-hostname}.${var.domain}`'
+  volumes:
+    - name: cloudflare-api-token
+      containerPath: /run/secrets/cloudflare-api-token
+      sourcePath: ${var.config-path}/secrets/cf-api-token.txt
+      readOnly: true
   restartPolicy: always

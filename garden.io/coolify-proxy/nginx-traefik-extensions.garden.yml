@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: docker.io/nginx:alpine
+  hostname: nginx-traefik-extensions
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -20,7 +21,7 @@ spec:
   volumes:
     - name: nginx-config
       containerPath: /etc/nginx/nginx.conf
-      sourcePath: ${var.config-path}/traefik/nginx-middlewares/nginx.conf
+      sourcePath: ${var.config-path}/traefik/nginx-middlewares/nginx-traefik-extensions.conf
       readOnly: true
     - name: auth-config
       containerPath: /etc/nginx/auth
@@ -32,10 +33,13 @@ spec:
       memory: 1Gi
     requests:
       memory: 6Mi
+  annotations:
+    traefik.http.middlewares.nginx-auth.forwardAuth.address: http://nginx-traefik-extensions:80/auth
+    traefik.http.middlewares.nginx-auth.forwardAuth.trustForwardHeader: "true"
+    traefik.http.middlewares.nginx-auth.forwardAuth.authResponseHeaders: '["X-Auth-Method", "X-Auth-Passed", "X-Middleware-Name"]'
   healthCheck:
-    httpGet:
-      path: /health
-      port: http
+    exec:
+      command: [sh, -c, "wget -qO- http://127.0.0.1:80/health > /dev/null 2>&1 || exit 1"]
     initialDelaySeconds: 20
     periodSeconds: 30
     timeoutSeconds: 10

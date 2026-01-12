@@ -7,10 +7,11 @@ type: container
 spec:
   replicas: 3
   image: docker.io/searxng/searxng
+  hostname: searxng
   extraHosts:
     - host.docker.internal:host-gateway
   env:
-    SEARXNG_BASE_URL: ${var.SEARXNG_INTERNAL_URL || "http://searxng:8080"}
+    SEARXNG_BASE_URL: ${var.SEARXNG_INTERNAL_URL || "http://searxng:${var.SEARXNG_PORT || \"8080\"}"}
     SEARXNG_SECRET: ${var.SEARXNG_SECRET}
   ports:
     - name: http
@@ -26,6 +27,19 @@ spec:
     - path: /
       port: http
       hostname: searxng.${var.domain}
+    - path: /
+      port: http
+      hostname: searxng.${var.ts-hostname}.${var.domain}
+  annotations:
+    deunhealth.restart.on.unhealthy: "true"
+    homepage.group: Search
+    homepage.name: SearxNG
+    homepage.icon: searxng.png
+    homepage.href: https://searxng.${var.domain}/
+    homepage.description: Privacy-focused metasearch that aggregates results from many sources without tracking
+    kuma.searxng.http.name: searxng.${var.ts-hostname}.${var.domain}
+    kuma.searxng.http.url: https://searxng.${var.domain}
+    kuma.searxng.http.interval: "30"
   healthCheck:
     exec:
       command:
