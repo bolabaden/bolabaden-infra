@@ -5,7 +5,8 @@ description: Firecrawl API service
 type: container
 source:
   repository:
-    url: "git+https://github.com/firecrawl/firecrawl.git#main:/apps/api"
+    url: "https://github.com/firecrawl/firecrawl.git#main"
+  path: apps/api
 
 ---
 kind: Deploy
@@ -44,9 +45,9 @@ spec:
     TEST_API_KEY_FILE: /run/secrets/firecrawl-api-key
     POSTHOG_API_KEY: ${var.POSTHOG_API_KEY || ""}
     POSTHOG_HOST: ${var.POSTHOG_HOST || ""}
-      SUPABASE_ANON_TOKEN: ${var.SUPABASE_ANON_TOKEN || ""}
-      SUPABASE_URL: ${var.SUPABASE_URL}
-      SUPABASE_SERVICE_TOKEN: ${var.FIRECRAWL_SUPABASE_SERVICE_TOKEN || ""}
+    SUPABASE_ANON_TOKEN: ${var.SUPABASE_ANON_TOKEN || ""}
+    SUPABASE_URL: ${var.SUPABASE_URL}
+    SUPABASE_SERVICE_TOKEN: ${var.FIRECRAWL_SUPABASE_SERVICE_TOKEN || ""}
     SELF_HOSTED_WEBHOOK_URL: ${var.FIRECRAWL_SELF_HOSTED_WEBHOOK_URL || ""}
     SERPER_API_KEY: ${var.SERPER_API_KEY || ""}
     SEARCHAPI_API_KEY: ${var.SEARCHAPI_API_KEY || ""}

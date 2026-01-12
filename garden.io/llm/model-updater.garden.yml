@@ -5,7 +5,8 @@ description: Model updater service for updating free_chat_models.json<-->litellm
 type: container
 source:
   repository:
-    url: "git+https://github.com/th3w1zard1/llm_fallbacks.git"
+    url: "https://github.com/th3w1zard1/llm_fallbacks.git#main"
+spec:
   dockerfile: |
     FROM python:3.13-slim
     WORKDIR /app
@@ -25,8 +26,6 @@ apiVersion: garden.io/v0
 name: model-updater
 description: Model updater service
 type: container
-profiles:
-  - unfinished
 dependencies:
   - build.model-updater
 

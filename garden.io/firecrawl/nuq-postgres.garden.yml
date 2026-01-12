@@ -5,7 +5,8 @@ description: PostgreSQL database for Firecrawl NUQ
 type: container
 source:
   repository:
-    url: "git+https://github.com/firecrawl/firecrawl.git#main:/apps/nuq-postgres"
+    url: "https://github.com/firecrawl/firecrawl.git#main"
+  path: apps/nuq-postgres
 
 ---
 kind: Deploy

@@ -3,8 +3,6 @@ apiVersion: garden.io/v0
 name: mcp-proxy
 description: MCP Proxy for proxying MCP servers
 type: container
-profiles:
-  - extras
 
 spec:
   replicas: 3

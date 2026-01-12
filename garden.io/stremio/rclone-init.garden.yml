@@ -1,5 +1,5 @@
 kind: Run
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: rclone-init
 description: Initialize rclone mounts
 type: container

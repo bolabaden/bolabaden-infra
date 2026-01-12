@@ -1,6 +1,6 @@
 kind: Build
 apiVersion: garden.io/v0
-name: warp_router
+name: warp-router
 description: WARP router for NAT routing setup
 type: container
 
@@ -15,7 +15,7 @@ spec:
 ---
 kind: Deploy
 apiVersion: garden.io/v0
-name: warp_router
+name: warp-router
 description: WARP router container for NAT setup
 type: container
 dependencies:
@@ -34,7 +34,7 @@ spec:
     CONT_VETH_IP: ${var.CONT_VETH_IP || "169.254.100.2"}
     ROUTING_TABLE: ${var.ROUTING_TABLE || "warp-nat-routing"}
     VETH_HOST: ${var.VETH_HOST || "veth-warp"}
-    ROUTER_CONTAINER_NAME: ${var.ROUTER_CONTAINER_NAME || "warp_router"}
+    ROUTER_CONTAINER_NAME: ${var.ROUTER_CONTAINER_NAME || "warp-router"}
     WARP_NAT_NET_SUBNET: ${var.WARP_NAT_NET_SUBNET || "10.0.2.0/24"}
     WARP_NAT_NET_GATEWAY: ${var.WARP_NAT_NET_GATEWAY || "10.0.2.1"}
     RETRY_SETUP_AFTER: ${var.RETRY_SETUP_AFTER || "12"}

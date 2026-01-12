@@ -150,7 +150,7 @@ providers:
         namespace: default
     context: ${var.k8s-context || "kind-my-media-stack"}
     namespace: ${var.k8s-namespace || "my-media-stack-default"}
-    setupIngressController: true
+    setupIngressController: false
     ingressClass: nginx
     createSystemNamespace: true
   - name: ha-kubernetes
@@ -159,11 +159,16 @@ providers:
     defaultHostname: ${var.base-hostname}
     context: ${var.ha-k8s-context || "ha-cluster"}
     namespace: ${var.ha-k8s-namespace || "my-media-stack-ha"}
-    setupIngressController: true
+    setupIngressController: false
     ingressClass: nginx
     createSystemNamespace: true
     kubeconfig: ${var.ha-k8s-kubeconfig || "~/.kube/config"}
-  - name: local-docker
+  - name: local-kubernetes
     environments: [default]
     buildMode: local-docker
     defaultHostname: ${var.base-hostname}
+    context: ${var.k8s-context || "kind-my-media-stack"}
+    namespace: ${var.k8s-namespace || "my-media-stack-default"}
+    setupIngressController: false
+    ingressClass: nginx
+    createSystemNamespace: true

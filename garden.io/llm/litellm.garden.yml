@@ -3,8 +3,6 @@ apiVersion: garden.io/v0
 name: litellm
 description: LiteLLM gateway for multiple LLM providers
 type: container
-profiles:
-  - fixme
 dependencies:
   - deploy.litellm-postgres
   - deploy.redis
