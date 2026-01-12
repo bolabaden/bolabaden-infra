@@ -572,6 +572,7 @@ EOF
         port = "searxng"
         tags = [
           "traefik.enable=true",
+          "traefik.http.routers.searxng.rule=Host(`searxng.${var.domain}`) || Host(`searxng.${node.unique.name}.${var.domain}`)",
           "traefik.http.services.searxng.loadbalancer.server.port=${var.searxng_port}",
           "homepage.group=Search",
           "homepage.name=SearxNG",
@@ -873,6 +874,7 @@ EOF
         port = "dozzle"
         tags = [
           "traefik.enable=true",
+          "traefik.http.routers.dozzle.rule=Host(`dozzle.${var.domain}`) || Host(`dozzle.${node.unique.name}.${var.domain}`)",
           "traefik.http.routers.dozzle.middlewares=nginx-auth@file",
           "traefik.http.services.dozzle.loadbalancer.server.port=8080",
           "homepage.group=System Monitoring",
@@ -2669,7 +2671,7 @@ EOF
           "--providers.consulCatalog=true",
           "--providers.consulCatalog.endpoint.address=172.26.64.1:8500",
           "--providers.consulCatalog.exposedByDefault=false",
-          "--providers.consulCatalog.defaultRule=Host(`{{ normalize .Name }}.${var.domain}`) || Host(`{{ normalize .Name }}.${node.unique.name}.${var.domain}`)",
+          "--providers.consulCatalog.defaultRule=Host(`{{ normalize .Name }}.${var.domain}`)",
           "--providers.consulCatalog.watch=true",
           "--providers.consulCatalog.prefix=traefik",
           "--providers.file.directory=/local/dynamic/",
