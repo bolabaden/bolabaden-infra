@@ -9,6 +9,7 @@ dependencies:
 spec:
   replicas: 3
   image: docker.io/victoriametrics/victoria-metrics:latest
+  hostname: victoriametrics
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -47,6 +48,10 @@ spec:
     - "--search.maxUniqueTimeseries=${var.VICTORIAMETRICS_SEARCH_MAX_UNIQUE_TIMESERIES || \"300000\"}"
     - "--smallMergeConcurrency=${var.VICTORIAMETRICS_SMALL_MERGE_CONCURRENCY || \"0\"}"
     - "--storageDataPath=/storage"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: ${var.VICTORIAMETRICS_PORT || "8428"}
+    prometheus.io/path: /metrics
   healthCheck:
     exec:
       command: [sh, -c, "wget --no-verbose --tries=1 --spider http://127.0.0.1:${var.VICTORIAMETRICS_PORT || \"8428\"}/health || exit 1"]
