@@ -74,7 +74,7 @@ spec:
       readOnly: false
     - name: docker-config
       containerPath: /config.json
-      sourcePath: ${var.HOME || "~"}/.docker/config.json
+      sourcePath: ${(var.HOME || "~") + "/.docker/config.json"}
       readOnly: true
   restartPolicy: always
 
