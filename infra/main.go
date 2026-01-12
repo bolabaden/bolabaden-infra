@@ -20,7 +20,6 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/docker/go-units"
-	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
 	infraconfig "cluster/infra/config"
