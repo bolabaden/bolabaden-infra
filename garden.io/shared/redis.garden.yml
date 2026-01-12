@@ -38,10 +38,10 @@ spec:
       --requirepass ${var.REDIS_PASSWORD}
   resources:
     limits:
+      cpu: 500m
       memory: 4Gi
     requests:
       memory: 200Mi
-    cpu: 500m
   ingresses:
     - path: /
       port: redis
