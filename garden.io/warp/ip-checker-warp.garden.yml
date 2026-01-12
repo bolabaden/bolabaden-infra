@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: docker.io/alpine
+  hostname: ip-checker-warp
   command:
     - /bin/sh
     - -c

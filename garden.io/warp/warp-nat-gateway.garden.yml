@@ -9,6 +9,7 @@ dependencies:
 spec:
   replicas: 3
   image: docker.io/caomingjun/warp
+  hostname: warp-nat-gateway
   extraHosts:
     - host.docker.internal:host-gateway
   privileged: true
