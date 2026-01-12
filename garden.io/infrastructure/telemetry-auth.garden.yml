@@ -4,7 +4,7 @@ name: telemetry-auth
 description: Telemetry authentication service build
 type: container
 source:
-  path: ${var.src-path || "./src"}/projects/kotormodsync/telemetry-auth
+  path: ${var.root-path || "."}/projects/kotormodsync/telemetry-auth
 
 ---
 kind: Deploy
@@ -17,7 +17,7 @@ dependencies:
 
 spec:
   replicas: 3
-  image: ${actions.build.telemetry-auth.outputs.deploymentImageId}
+  image: bolabaden/kotormodsync-telemetry-auth
   hostname: telemetry-auth
   runAsUser: 0
   runAsGroup: 0
@@ -42,5 +42,6 @@ spec:
     periodSeconds: 10
     timeoutSeconds: 3
     failureThreshold: 5
+    startPeriodSeconds: 30
   restartPolicy: unless-stopped
 
