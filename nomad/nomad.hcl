@@ -2671,6 +2671,7 @@ EOF
           "--providers.consulCatalog=true",
           "--providers.consulCatalog.endpoint.address=127.0.0.1:8500",
           "--providers.consulCatalog.endpoint.scheme=http",
+          "--providers.consulCatalog.endpoint.datacenter=dc1",
           "--providers.consulCatalog.exposedByDefault=false",
           "--providers.consulCatalog.defaultRule=Host(`{{ normalize .Name }}.${var.domain}`)",
           "--providers.consulCatalog.watch=true",
