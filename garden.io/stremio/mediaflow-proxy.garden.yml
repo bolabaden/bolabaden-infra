@@ -36,7 +36,7 @@ spec:
       hostname: mediaflow-proxy.${var.ts-hostname}.${var.domain}
   healthCheck:
     exec:
-      command: [python3, -c, "import socket; s=socket.socket(); s.connect(('127.0.0.1', ${var.MEDIAFLOW_PROXY_PORT || 8888})); print('Healthcheck passed')"]
+      command: [sh, -c, "python3 -c \"import socket; s=socket.socket(); s.connect(('127.0.0.1', ${var.MEDIAFLOW_PROXY_PORT || 8888})); print('Healthcheck passed')\""]
     initialDelaySeconds: 10
     periodSeconds: 60
     timeoutSeconds: 10
