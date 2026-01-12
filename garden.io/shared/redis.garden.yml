@@ -52,7 +52,7 @@ spec:
       hostname: redis.${var.ts-hostname}.${var.domain}
       protocol: TCP
   annotations:
-    traefik.enable: "true"
+    traefik.enable: true
     traefik.tcp.routers.redis.rule: HostSNI(`redis.${var.domain}`) || HostSNI(`redis.${var.ts-hostname}.${var.domain}`)
     traefik.tcp.routers.redis.service: redis@docker
     traefik.tcp.routers.redis.tls.domains[0].main: ${var.domain}
