@@ -6,7 +6,7 @@ type: container
 
 spec:
   replicas: 3
-  image: docker.io/rclone/rclone:1.71
+  image: docker.io/rclone/rclone
   extraHosts:
     - host.docker.internal:host-gateway
   capAdd:
