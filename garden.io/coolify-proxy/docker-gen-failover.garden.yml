@@ -14,10 +14,10 @@ spec:
   volumes:
     - name: dynamic
       containerPath: /traefik/dynamic
-      sourcePath: ${var.config-path}/traefik/dynamic
+      hostPath: ${var.config-path}/traefik/dynamic
     - name: traefik-failover-template
       containerPath: /templates/traefik-failover-dynamic.conf.tmpl
-      sourcePath: ${var.config-path}/traefik/traefik-failover-dynamic.conf.tmpl
+      hostPath: ${var.config-path}/traefik/traefik-failover-dynamic.conf.tmpl
       readOnly: true
   command:
     - -endpoint

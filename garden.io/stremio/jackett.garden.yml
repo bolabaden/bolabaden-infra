@@ -26,21 +26,21 @@ spec:
   volumes:
     - name: config
       containerPath: /config
-      sourcePath: ${var.config-path}/jackett/config
+      hostPath: ${var.config-path}/jackett/config
     - name: blackhole
       containerPath: /blackhole
-      sourcePath: /mnt/remote/blackhole
+      hostPath: /mnt/remote/blackhole
     - name: serverconfig
       containerPath: /defaults/ServerConfig.json
-      sourcePath: ${var.config-path}/jackett/ServerConfig.json
+      hostPath: ${var.config-path}/jackett/ServerConfig.json
       readOnly: true
     - name: indexer-blacklist
       containerPath: /indexer-blacklist.txt
-      sourcePath: ${var.config-path}/jackett/indexer-blacklist.txt
+      hostPath: ${var.config-path}/jackett/indexer-blacklist.txt
       readOnly: true
     - name: init-script
       containerPath: /custom-cont-init.d/99-remove-slow-indexers
-      sourcePath: ${var.config-path}/jackett/99-remove-slow-indexers.sh
+      hostPath: ${var.config-path}/jackett/99-remove-slow-indexers.sh
       readOnly: true
   resources:
     limits:

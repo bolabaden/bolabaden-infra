@@ -31,7 +31,7 @@ spec:
   volumes:
     - name: config
       containerPath: /app/config
-      sourcePath: ${var.config-path}/homepage
+      hostPath: ${var.config-path}/homepage
   resources:
     limits:
       cpu: 250m

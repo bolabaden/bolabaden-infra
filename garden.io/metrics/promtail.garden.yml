@@ -21,14 +21,14 @@ spec:
   volumes:
     - name: config
       containerPath: /etc/promtail/config.yaml
-      sourcePath: ${var.config-path}/promtail/config.yaml
+      hostPath: ${var.config-path}/promtail/config.yaml
     - name: docker-containers
       containerPath: /var/lib/docker/containers
-      sourcePath: /var/lib/docker/containers
+      hostPath: /var/lib/docker/containers
       readOnly: true
     - name: var-log
       containerPath: /var/log
-      sourcePath: /var/log
+      hostPath: /var/log
       readOnly: true
   command:
     - -config.file=/etc/promtail/config.yaml

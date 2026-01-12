@@ -67,16 +67,16 @@ spec:
   volumes:
     - name: uploads
       containerPath: /app/backend/data/uploads
-      sourcePath: ${var.config-path}/open-webui/uploads
+      hostPath: ${var.config-path}/open-webui/uploads
     - name: vector-db
       containerPath: /app/backend/data/vector_db
-      sourcePath: ${var.config-path}/open-webui/vector_db
+      hostPath: ${var.config-path}/open-webui/vector_db
     - name: webui-db
       containerPath: /app/backend/data/webui.db
-      sourcePath: ${var.config-path}/open-webui/webui.db
+      hostPath: ${var.config-path}/open-webui/webui.db
     - name: open-webui-secret-key
       containerPath: /run/secrets/open-webui-secret-key
-      sourcePath: ${var.config-path}/secrets/open-webui-secret-key.txt
+      hostPath: ${var.config-path}/secrets/open-webui-secret-key.txt
       readOnly: true
   command: [bash, start.sh]
   workingDir: /app/backend

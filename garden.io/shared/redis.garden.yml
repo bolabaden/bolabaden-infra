@@ -24,7 +24,7 @@ spec:
   volumes:
     - name: data
       containerPath: /data
-      sourcePath: ${var.config-path}/redis
+      hostPath: ${var.config-path}/redis
   command:
     - sh
     - -c

@@ -21,6 +21,6 @@ spec:
   volumes:
     - name: data
       containerPath: /var/lib/mysql
-      sourcePath: ${var.config-path}/wordpress/mariadb-data
+      hostPath: ${var.config-path}/wordpress/mariadb-data
   restartPolicy: always
 

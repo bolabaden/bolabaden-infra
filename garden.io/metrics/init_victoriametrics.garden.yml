@@ -10,5 +10,5 @@ spec:
   volumes:
     - name: storage
       containerPath: /storage
-      sourcePath: ${var.config-path}/victoriametrics
+      hostPath: ${var.config-path}/victoriametrics
   user: root

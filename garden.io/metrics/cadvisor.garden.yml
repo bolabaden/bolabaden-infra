@@ -15,23 +15,23 @@ spec:
   volumes:
     - name: rootfs
       containerPath: /rootfs
-      sourcePath: /
+      hostPath: /
       readOnly: true
     - name: var-run
       containerPath: /var/run
-      sourcePath: /var/run
+      hostPath: /var/run
       readOnly: true
     - name: sys
       containerPath: /sys
-      sourcePath: /sys
+      hostPath: /sys
       readOnly: true
     - name: docker
       containerPath: /var/lib/docker
-      sourcePath: /var/lib/docker
+      hostPath: /var/lib/docker
       readOnly: true
     - name: dev-disk
       containerPath: /dev/disk
-      sourcePath: /dev/disk
+      hostPath: /dev/disk
       readOnly: true
   devices:
     - name: kmsg

@@ -37,28 +37,28 @@ spec:
   volumes:
     - name: docker-sock
       containerPath: /var/run/docker.sock
-      sourcePath: ${var.docker-socket}
+      hostPath: ${var.docker-socket}
       readOnly: true
     - name: dynamic
       containerPath: /traefik/dynamic
-      sourcePath: ${var.config-path}/traefik/traefik/dynamic
+      hostPath: ${var.config-path}/traefik/traefik/dynamic
     - name: certs
       containerPath: /certs
-      sourcePath: ${var.config-path}/traefik/certs
+      hostPath: ${var.config-path}/traefik/certs
     - name: plugins
       containerPath: /plugins-local
-      sourcePath: ${var.config-path}/traefik/plugins-local
+      hostPath: ${var.config-path}/traefik/plugins-local
     - name: logs
       containerPath: /var/log/traefik
-      sourcePath: ${var.config-path}/traefik/logs
+      hostPath: ${var.config-path}/traefik/logs
       readOnly: false
     - name: traefik-dynamic-core
       containerPath: /traefik/dynamic/core.yaml
-      sourcePath: ${var.config-path}/traefik/traefik/dynamic/core.yaml
+      hostPath: ${var.config-path}/traefik/traefik/dynamic/core.yaml
       readOnly: true
     - name: cloudflare-api-key
       containerPath: /run/secrets/cloudflare-api-key
-      sourcePath: ${var.config-path}/secrets/cf-api-key.txt
+      hostPath: ${var.config-path}/secrets/cf-api-key.txt
       readOnly: true
   command:
     - '--accessLog=true'

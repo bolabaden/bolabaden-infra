@@ -21,7 +21,7 @@ spec:
   volumes:
     - name: storage
       containerPath: /qdrant/storage
-      sourcePath: ${var.config-path}/qdrant/storage
+      hostPath: ${var.config-path}/qdrant/storage
   ingresses:
     - path: /
       port: http

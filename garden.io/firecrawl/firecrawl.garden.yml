@@ -65,11 +65,11 @@ spec:
   volumes:
     - name: openai-api-key
       containerPath: /run/secrets/openai-api-key
-      sourcePath: ${var.config-path}/secrets/openai-api-key.txt
+      hostPath: ${var.config-path}/secrets/openai-api-key.txt
       readOnly: true
     - name: firecrawl-api-key
       containerPath: /run/secrets/firecrawl-api-key
-      sourcePath: ${var.config-path}/secrets/firecrawl-api-key.txt
+      hostPath: ${var.config-path}/secrets/firecrawl-api-key.txt
       readOnly: true
   resources:
     limits:

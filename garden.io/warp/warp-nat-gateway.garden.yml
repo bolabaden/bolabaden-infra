@@ -39,7 +39,7 @@ spec:
       containerPath: /var/lib/cloudflare-warp
     - name: warp-license-key
       containerPath: /run/secrets/warp-license-key
-      sourcePath: ${var.config-path}/secrets/warp-license-key.txt
+      hostPath: ${var.config-path}/secrets/warp-license-key.txt
       readOnly: true
   healthCheck:
     exec:

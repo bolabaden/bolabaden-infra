@@ -83,10 +83,10 @@ spec:
   volumes:
     - name: data
       containerPath: /data
-      sourcePath: ${var.config-path}/stremio/addons/comet/data
+      hostPath: ${var.config-path}/stremio/addons/comet/data
     - name: sudo-password
       containerPath: /run/secrets/sudo-password
-      sourcePath: ${var.config-path}/secrets/sudo-password.txt
+      hostPath: ${var.config-path}/secrets/sudo-password.txt
       readOnly: true
   ingresses:
     - path: /

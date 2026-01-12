@@ -14,11 +14,11 @@ spec:
   volumes:
     - name: config
       containerPath: /etc/loki/config.yaml
-      sourcePath: ${var.config-path}/loki/config.yaml
+      hostPath: ${var.config-path}/loki/config.yaml
       readOnly: true
     - name: data
       containerPath: /loki
-      sourcePath: ${var.config-path}/loki/data
+      hostPath: ${var.config-path}/loki/data
   command:
     - -config.file=/etc/loki/config.yaml
   restartPolicy: always

@@ -19,10 +19,10 @@ spec:
   volumes:
     - name: config
       containerPath: /etc/searxng
-      sourcePath: ${var.config-path}/searxng/config
+      hostPath: ${var.config-path}/searxng/config
     - name: data
       containerPath: /var/cache/searxng
-      sourcePath: ${var.config-path}/searxng/data
+      hostPath: ${var.config-path}/searxng/data
   ingresses:
     - path: /
       port: http

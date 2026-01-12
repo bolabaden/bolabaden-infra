@@ -18,7 +18,7 @@ spec:
   volumes:
     - name: config
       containerPath: /app/config/mcp_servers.json
-      sourcePath: ${var.config-path}/mcpo/mcp_servers.json
+      hostPath: ${var.config-path}/mcpo/mcp_servers.json
       readOnly: true
   command:
     - --api-key

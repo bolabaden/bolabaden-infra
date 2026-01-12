@@ -21,6 +21,6 @@ spec:
   volumes:
     - name: cloudflare-api-token
       containerPath: /run/secrets/cloudflare-api-token
-      sourcePath: ${var.config-path}/secrets/cf-api-token.txt
+      hostPath: ${var.config-path}/secrets/cf-api-token.txt
       readOnly: true
   restartPolicy: always

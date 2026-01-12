@@ -16,27 +16,27 @@ spec:
   volumes:
     - name: proc
       containerPath: /host/proc
-      sourcePath: /proc
+      hostPath: /proc
       readOnly: true
     - name: sys
       containerPath: /host/sys
-      sourcePath: /sys
+      hostPath: /sys
       readOnly: true
     - name: rootfs
       containerPath: /rootfs
-      sourcePath: /
+      hostPath: /
       readOnly: true
     - name: dbus
       containerPath: /var/run/dbus/system_bus_socket
-      sourcePath: /run/dbus/system_bus_socket
+      hostPath: /run/dbus/system_bus_socket
       readOnly: true
     - name: machine-id
       containerPath: /etc/machine-id
-      sourcePath: /etc/machine-id
+      hostPath: /etc/machine-id
       readOnly: true
     - name: udev-data
       containerPath: /run/udev/data
-      sourcePath: /run/udev/data
+      hostPath: /run/udev/data
       readOnly: true
   command:
     - '--path.procfs=/host/proc'

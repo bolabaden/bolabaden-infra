@@ -22,35 +22,35 @@ spec:
   volumes:
     - name: hostfs
       containerPath: /hostfs
-      sourcePath: /
+      hostPath: /
       readOnly: true
     - name: etc-group
       containerPath: /etc/group
-      sourcePath: /etc/group
+      hostPath: /etc/group
       readOnly: true
     - name: etc-passwd
       containerPath: /etc/passwd
-      sourcePath: /etc/passwd
+      hostPath: /etc/passwd
       readOnly: true
     - name: remote-mounts
       containerPath: /mnt/remote
-      sourcePath: /mnt/remote
+      hostPath: /mnt/remote
     - name: cache
       containerPath: /.cache
-      sourcePath: ${var.config-path}/rclone/.cache
+      hostPath: ${var.config-path}/rclone/.cache
     - name: config
       containerPath: /config/rclone
-      sourcePath: ${var.config-path}/rclone/config/rclone
+      hostPath: ${var.config-path}/rclone/config/rclone
     - name: rclonefm-js
       containerPath: /var/lib/rclonefm/js
-      sourcePath: ${var.config-path}/rclonefm/js
+      hostPath: ${var.config-path}/rclonefm/js
     - name: rclone-conf
       containerPath: /config/rclone/rclone.conf
-      sourcePath: ${var.config-path}/rclone/rclone.conf
+      hostPath: ${var.config-path}/rclone/rclone.conf
       readOnly: true
     - name: fuse-conf
       containerPath: /etc/fuse.conf
-      sourcePath: /etc/fuse.conf
+      hostPath: /etc/fuse.conf
       readOnly: true
   devices:
     - name: fuse

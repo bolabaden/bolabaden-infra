@@ -25,14 +25,14 @@ spec:
   volumes:
     - name: docker-sock
       containerPath: /var/run/docker.sock
-      sourcePath: ${var.docker-socket}
+      hostPath: ${var.docker-socket}
       readOnly: false
     - name: config
       containerPath: /config
-      sourcePath: ${var.config-path}/code-server/dev/config
+      hostPath: ${var.config-path}/code-server/dev/config
     - name: workspace
       containerPath: ${var.CODESERVER_DEFAULT_WORKSPACE || "/workspace"}
-      sourcePath: ${var.root-path || "."}
+      hostPath: ${var.root-path || "."}
   resources:
     limits:
       cpu: 2000m

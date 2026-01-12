@@ -70,11 +70,11 @@ spec:
   volumes:
     - name: docker-sock
       containerPath: /var/run/docker.sock
-      sourcePath: ${var.docker-socket}
+      hostPath: ${var.docker-socket}
       readOnly: false
     - name: docker-config
       containerPath: /config.json
-      sourcePath: ${(var.HOME || "~") + "/.docker/config.json"}
+      hostPath: ${(var.HOME || "~") + "/.docker/config.json"}
       readOnly: true
   restartPolicy: always
 

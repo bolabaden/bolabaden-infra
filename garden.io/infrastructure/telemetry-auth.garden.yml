@@ -34,7 +34,7 @@ spec:
   volumes:
     - name: signing-secret
       containerPath: /run/secrets/signing_secret
-      sourcePath: ${(var.SECRETS_PATH || (var.config-path + "/../secrets")) + "/signing_secret.txt"}
+      hostPath: ${(var.SECRETS_PATH || (var.config-path + "/../secrets")) + "/signing_secret.txt"}
   healthCheck:
     exec:
       command: [sh, -c, "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1"]

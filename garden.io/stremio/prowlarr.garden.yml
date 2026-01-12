@@ -22,7 +22,7 @@ spec:
   volumes:
     - name: config
       containerPath: /config
-      sourcePath: ${var.config-path}/prowlarr/config
+      hostPath: ${var.config-path}/prowlarr/config
       readOnly: false
   resources:
     limits:

@@ -16,7 +16,7 @@ spec:
   volumes:
     - name: config
       containerPath: ${var.BLACKBOX_INTERNAL_CONFIG_PATH || "/etc/blackbox_exporter/config.yml"}
-      sourcePath: ${var.config-path}/blackbox-exporter/blackbox.yml
+      hostPath: ${var.config-path}/blackbox-exporter/blackbox.yml
       readOnly: true
   command:
     - '--config.file=${var.BLACKBOX_INTERNAL_CONFIG_PATH || "/etc/blackbox_exporter/config.yml"}'
