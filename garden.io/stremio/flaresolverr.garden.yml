@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: ghcr.io/flaresolverr/flaresolverr
+  hostname: flaresolverr
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -55,11 +56,8 @@ spec:
     kuma.flaresolverr.http.interval: "30"
   healthCheck:
     exec:
-      command:
-      - sh
-      - -c
-      - 'curl -f http://127.0.0.1:${var.FLARESOLVERR_PORT || "8191"}/health > /dev/null 2>&1 || exit 1'
-    initialDelaySeconds: 60
+      command: [sh, -c, "curl -f http://127.0.0.1:${var.FLARESOLVERR_PORT || \"8191\"}/health > /dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 0
     periodSeconds: 30
     timeoutSeconds: 15
     failureThreshold: 3
