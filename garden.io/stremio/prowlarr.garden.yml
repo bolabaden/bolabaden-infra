@@ -35,6 +35,13 @@ spec:
     - path: /
       port: http
       hostname: prowlarr.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.prowlarr.rule: Host(`prowlarr.${var.domain}`) || Host(`prowlarr.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.prowlarr.loadbalancer.server.port: "9696"
+    kuma.prowlarr.http.name: prowlarr.${var.ts-hostname}.${var.domain}
+    kuma.prowlarr.http.url: https://prowlarr.${var.domain}/api/v1/system/status
+    kuma.prowlarr.http.interval: "60"
   healthCheck:
     exec:
       command: [sh, -c, "curl -fs -H \"Authorization: Bearer ${var.PROWLARR_API_KEY}\" http://127.0.0.1:9696/api/v1/system/status || exit 1"]
@@ -42,5 +49,6 @@ spec:
     periodSeconds: 30
     timeoutSeconds: 10
     failureThreshold: 3
+    startPeriodSeconds: 120
   restartPolicy: always
 

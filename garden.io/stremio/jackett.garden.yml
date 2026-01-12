@@ -54,10 +54,18 @@ spec:
     - path: /
       port: http
       hostname: jackett.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.jackett.rule: Host(`jackett.${var.domain}`) || Host(`jackett.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.jackett.loadbalancer.server.port: "9117"
+    kuma.jackett.http.name: jackett.${var.ts-hostname}.${var.domain}
+    kuma.jackett.http.url: https://jackett.${var.domain}/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=${var.JACKETT_API_KEY}
+    kuma.jackett.http.interval: "30"
   healthCheck:
     exec:
       command: [sh, -c, "curl -fs http://127.0.0.1:9117/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=${var.JACKETT_API_KEY} > /dev/null 2>&1 || exit 1"]
     initialDelaySeconds: 60
     periodSeconds: 30
     timeoutSeconds: 10
+    startPeriodSeconds: 60
   restartPolicy: always
