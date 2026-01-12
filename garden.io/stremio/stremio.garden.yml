@@ -58,7 +58,7 @@ spec:
     traefik.http.routers.stremio.rule: Host(`stremio-web.${var.domain}`) || Host(`stremio-web.${var.ts-hostname}.${var.domain}`) || Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts-hostname}.${var.domain}`)
     traefik.http.routers.stremio.middlewares: stremio-web-redirect@docker,stremio-shell-redirect@docker,stremio-streaming-server-redirect@docker
     traefik.http.services.stremio.loadbalancer.server.scheme: https
-    traefik.http.services.stremio.loadbalancer.server.port: "8080"
+    traefik.http.services.stremio.loadbalancer.server.port: 8080
     traefik.http.routers.stremio-http11470.service: stremio-http11470
     traefik.http.services.stremio-http11470.loadbalancer.server.scheme: http
     traefik.http.services.stremio-http11470.loadbalancer.server.port: "11470"
