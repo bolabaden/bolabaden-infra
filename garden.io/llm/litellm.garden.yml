@@ -21,7 +21,7 @@ spec:
     LITELLM_MODE: ${var.LITELLM_MODE || "PRODUCTION"}
     UI_USERNAME: ${var.LITELLM_UI_USERNAME || "admin"}
     UI_PASSWORD_FILE: /run/secrets/litellm-master-key
-    DATABASE_URL: postgresql://${var.LITELLM_POSTGRES_USER || "litellm"}:${var.LITELLM_POSTGRES_PASSWORD || "litellm"}@${var.LITELLM_POSTGRES_HOSTNAME || "litellm-postgres"}:5432/${var.LITELLM_POSTGRES_DB || "litellm"}
+    DATABASE_URL: ${"postgresql://" + (var.LITELLM_POSTGRES_USER || "litellm") + ":" + (var.LITELLM_POSTGRES_PASSWORD || "litellm") + "@" + (var.LITELLM_POSTGRES_HOSTNAME || "litellm-postgres") + ":5432/" + (var.LITELLM_POSTGRES_DB || "litellm")}
     REDIS_HOST: ${var.REDIS_HOSTNAME || "redis"}
     REDIS_PORT: ${var.REDIS_PORT || "6379"}
     POSTGRES_USER: ${var.LITELLM_POSTGRES_USER || "litellm"}
