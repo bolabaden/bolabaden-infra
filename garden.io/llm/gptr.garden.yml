@@ -59,100 +59,100 @@ spec:
   volumes:
     - name: logs
       containerPath: /usr/src/app/logs
-      sourcePath: ${var.config-path}/gptr/logs
+      hostPath: ${var.config-path}/gptr/logs
     - name: outputs
       containerPath: /usr/src/app/outputs
-      sourcePath: ${var.config-path}/gptr/outputs
+      hostPath: ${var.config-path}/gptr/outputs
     - name: reports
       containerPath: /usr/src/app/reports
-      sourcePath: ${var.config-path}/gptr/reports
+      hostPath: ${var.config-path}/gptr/reports
     - name: anthropic-api-key
       containerPath: /run/secrets/anthropic-api-key
-      sourcePath: ${var.config-path}/secrets/anthropic-api-key.txt
+      hostPath: ${var.config-path}/secrets/anthropic-api-key.txt
       readOnly: true
     - name: brave-api-key
       containerPath: /run/secrets/brave-api-key
-      sourcePath: ${var.config-path}/secrets/brave-api-key.txt
+      hostPath: ${var.config-path}/secrets/brave-api-key.txt
       readOnly: true
     - name: deepseek-api-key
       containerPath: /run/secrets/deepseek-api-key
-      sourcePath: ${var.config-path}/secrets/deepseek-api-key.txt
+      hostPath: ${var.config-path}/secrets/deepseek-api-key.txt
       readOnly: true
     - name: exa-api-key
       containerPath: /run/secrets/exa-api-key
-      sourcePath: ${var.config-path}/secrets/exa-api-key.txt
+      hostPath: ${var.config-path}/secrets/exa-api-key.txt
       readOnly: true
     - name: firecrawl-api-key
       containerPath: /run/secrets/firecrawl-api-key
-      sourcePath: ${var.config-path}/secrets/firecrawl-api-key.txt
+      hostPath: ${var.config-path}/secrets/firecrawl-api-key.txt
       readOnly: true
     - name: gemini-api-key
       containerPath: /run/secrets/gemini-api-key
-      sourcePath: ${var.config-path}/secrets/gemini-api-key.txt
+      hostPath: ${var.config-path}/secrets/gemini-api-key.txt
       readOnly: true
     - name: glama-api-key
       containerPath: /run/secrets/glama-api-key
-      sourcePath: ${var.config-path}/secrets/glama-api-key.txt
+      hostPath: ${var.config-path}/secrets/glama-api-key.txt
       readOnly: true
     - name: groq-api-key
       containerPath: /run/secrets/groq-api-key
-      sourcePath: ${var.config-path}/secrets/groq-api-key.txt
+      hostPath: ${var.config-path}/secrets/groq-api-key.txt
       readOnly: true
     - name: hf-token
       containerPath: /run/secrets/hf-token
-      sourcePath: ${var.config-path}/secrets/hf-token.txt
+      hostPath: ${var.config-path}/secrets/hf-token.txt
       readOnly: true
     - name: langchain-api-key
       containerPath: /run/secrets/langchain-api-key
-      sourcePath: ${var.config-path}/secrets/langchain-api-key.txt
+      hostPath: ${var.config-path}/secrets/langchain-api-key.txt
       readOnly: true
     - name: mistral-api-key
       containerPath: /run/secrets/mistral-api-key
-      sourcePath: ${var.config-path}/secrets/mistral-api-key.txt
+      hostPath: ${var.config-path}/secrets/mistral-api-key.txt
       readOnly: true
     - name: openai-api-key
       containerPath: /run/secrets/openai-api-key
-      sourcePath: ${var.config-path}/secrets/openai-api-key.txt
+      hostPath: ${var.config-path}/secrets/openai-api-key.txt
       readOnly: true
     - name: openrouter-api-key
       containerPath: /run/secrets/openrouter-api-key
-      sourcePath: ${var.config-path}/secrets/openrouter-api-key.txt
+      hostPath: ${var.config-path}/secrets/openrouter-api-key.txt
       readOnly: true
     - name: perplexity-api-key
       containerPath: /run/secrets/perplexity-api-key
-      sourcePath: ${var.config-path}/secrets/perplexity-api-key.txt
+      hostPath: ${var.config-path}/secrets/perplexity-api-key.txt
       readOnly: true
     - name: replicate-api-key
       containerPath: /run/secrets/replicate-api-key
-      sourcePath: ${var.config-path}/secrets/replicate-api-key.txt
+      hostPath: ${var.config-path}/secrets/replicate-api-key.txt
       readOnly: true
     - name: revid-api-key
       containerPath: /run/secrets/revid-api-key
-      sourcePath: ${var.config-path}/secrets/revid-api-key.txt
+      hostPath: ${var.config-path}/secrets/revid-api-key.txt
       readOnly: true
     - name: sambanova-api-key
       containerPath: /run/secrets/sambanova-api-key
-      sourcePath: ${var.config-path}/secrets/sambanova-api-key.txt
+      hostPath: ${var.config-path}/secrets/sambanova-api-key.txt
       readOnly: true
     - name: search1api-key
       containerPath: /run/secrets/search1api-key
-      sourcePath: ${var.config-path}/secrets/search1api-key.txt
+      hostPath: ${var.config-path}/secrets/search1api-key.txt
       readOnly: true
     - name: serpapi-api-key
       containerPath: /run/secrets/serpapi-api-key
-      sourcePath: ${var.config-path}/secrets/serpapi-api-key.txt
+      hostPath: ${var.config-path}/secrets/serpapi-api-key.txt
       readOnly: true
     - name: tavily-api-key
       containerPath: /run/secrets/tavily-api-key
-      sourcePath: ${var.config-path}/secrets/tavily-api-key.txt
+      hostPath: ${var.config-path}/secrets/tavily-api-key.txt
       readOnly: true
     - name: togetherai-api-key
       containerPath: /run/secrets/togetherai-api-key
-      sourcePath: ${var.config-path}/secrets/togetherai-api-key.txt
+      hostPath: ${var.config-path}/secrets/togetherai-api-key.txt
       readOnly: true
     - name: upstage-api-key
       containerPath: /run/secrets/upstage-api-key
-      sourcePath: ${var.config-path}/secrets/upstage-api-key.txt
+      hostPath: ${var.config-path}/secrets/upstage-api-key.txt
       readOnly: true
   ingresses:
     - path: /

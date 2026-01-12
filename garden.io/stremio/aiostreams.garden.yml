@@ -149,54 +149,54 @@ spec:
   volumes:
     - name: data
       containerPath: /app/data
-      sourcePath: ${var.config-path}/stremio/addons/aiostreams/data
+      hostPath: ${var.config-path}/stremio/addons/aiostreams/data
     - name: aiostreams-secret-key
       containerPath: /run/secrets/aiostreams-secret-key
-      sourcePath: ${var.config-path}/secrets/aiostreams-secret-key.txt
+      hostPath: ${var.config-path}/secrets/aiostreams-secret-key.txt
       readOnly: true
     - name: aiostreams-addon-password
       containerPath: /run/secrets/aiostreams-addon-password
-      sourcePath: ${var.config-path}/secrets/aiostreams-addon-password.txt
+      hostPath: ${var.config-path}/secrets/aiostreams-addon-password.txt
       readOnly: true
     - name: tmdb-access-token
       containerPath: /run/secrets/tmdb-access-token
-      sourcePath: ${var.config-path}/secrets/tmdb-access-token.txt
+      hostPath: ${var.config-path}/secrets/tmdb-access-token.txt
       readOnly: true
     - name: tmdb-api-key
       containerPath: /run/secrets/tmdb-api-key
-      sourcePath: ${var.config-path}/secrets/tmdb-api-key.txt
+      hostPath: ${var.config-path}/secrets/tmdb-api-key.txt
       readOnly: true
     - name: realdebrid-api-key
       containerPath: /run/secrets/realdebrid-api-key
-      sourcePath: ${var.config-path}/secrets/realdebrid-api-key.txt
+      hostPath: ${var.config-path}/secrets/realdebrid-api-key.txt
       readOnly: true
     - name: alldebrid-api-key
       containerPath: /run/secrets/alldebrid-api-key
-      sourcePath: ${var.config-path}/secrets/alldebrid-api-key.txt
+      hostPath: ${var.config-path}/secrets/alldebrid-api-key.txt
       readOnly: true
     - name: premiumize-api-key
       containerPath: /run/secrets/premiumize-api-key
-      sourcePath: ${var.config-path}/secrets/premiumize-api-key.txt
+      hostPath: ${var.config-path}/secrets/premiumize-api-key.txt
       readOnly: true
     - name: debridlink-api-key
       containerPath: /run/secrets/debridlink-api-key
-      sourcePath: ${var.config-path}/secrets/debridlink-api-key.txt
+      hostPath: ${var.config-path}/secrets/debridlink-api-key.txt
       readOnly: true
     - name: torbox-api-key
       containerPath: /run/secrets/torbox-api-key
-      sourcePath: ${var.config-path}/secrets/torbox-api-key.txt
+      hostPath: ${var.config-path}/secrets/torbox-api-key.txt
       readOnly: true
     - name: offcloud-api-key
       containerPath: /run/secrets/offcloud-api-key
-      sourcePath: ${var.config-path}/secrets/offcloud-api-key.txt
+      hostPath: ${var.config-path}/secrets/offcloud-api-key.txt
       readOnly: true
     - name: offcloud-password
       containerPath: /run/secrets/offcloud-password
-      sourcePath: ${var.config-path}/secrets/offcloud-password.txt
+      hostPath: ${var.config-path}/secrets/offcloud-password.txt
       readOnly: true
     - name: sudo-password
       containerPath: /run/secrets/sudo-password
-      sourcePath: ${var.config-path}/secrets/sudo-password.txt
+      hostPath: ${var.config-path}/secrets/sudo-password.txt
       readOnly: true
   resources:
     limits:

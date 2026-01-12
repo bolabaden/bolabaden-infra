@@ -29,7 +29,7 @@ spec:
   volumes:
     - name: config
       containerPath: /root/.stremio-server
-      sourcePath: ${var.config-path}/stremio/root/.stremio-server
+      hostPath: ${var.config-path}/stremio/root/.stremio-server
   resources:
     limits:
       cpu: 2000m

@@ -43,9 +43,9 @@ spec:
   volumes:
     - name: config
       containerPath: /app/config
-      sourcePath: ${var.config-path}/litellm
+      hostPath: ${var.config-path}/litellm
       readOnly: false
     - name: cache
       containerPath: /app/cache
-      sourcePath: ${var.config-path}/model-updater/cache
+      hostPath: ${var.config-path}/model-updater/cache
   restartPolicy: never

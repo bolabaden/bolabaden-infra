@@ -27,11 +27,11 @@ spec:
   extraHosts:
     - host.docker.internal:host-gateway
   env:
-    REDIS_URL: ${var.FIRECRAWL_REDIS_URL || "redis://${var.REDIS_HOSTNAME || \"redis\"}:${var.REDIS_PORT || \"6379\"}"}
-    REDIS_RATE_LIMIT_URL: ${var.FIRECRAWL_REDIS_RATE_LIMIT_URL || "redis://${var.REDIS_HOSTNAME || \"redis\"}:${var.REDIS_PORT || \"6379\"}"}
+    REDIS_URL: ${var.FIRECRAWL_REDIS_URL || ("redis://" + (var.REDIS_HOSTNAME || "redis") + ":" + string(var.REDIS_PORT || "6379"))}
+    REDIS_RATE_LIMIT_URL: ${var.FIRECRAWL_REDIS_RATE_LIMIT_URL || ("redis://" + (var.REDIS_HOSTNAME || "redis") + ":" + string(var.REDIS_PORT || "6379"))}
     PLAYWRIGHT_MICROSERVICE_URL: ${var.PLAYWRIGHT_HOST || "http://playwright-service:3000/scrape"}
-    NUQ_DATABASE_URL: ${var.FIRECRAWL_NUQ_DATABASE_URL || "postgres://${var.FIRECRAWL_POSTGRES_USERNAME || \"postgres\"}:${var.FIRECRAWL_POSTGRES_PASSWORD || \"postgres\"}@${var.FIRECRAWL_POSTGRES_HOSTNAME || \"nuq-postgres\"}:${var.FIRECRAWL_POSTGRES_PORT || \"5432\"}/${var.FIRECRAWL_POSTGRES_DB || \"postgres\"}"}
-    NUQ_RABBITMQ_URL: ${var.FIRECRAWL_NUQ_RABBITMQ_URL || "amqp://${var.RABBITMQ_USERNAME || \"rabbitmq\"}:${var.RABBITMQ_PASSWORD || \"rabbitmq\"}@${var.RABBITMQ_HOSTNAME || \"rabbitmq\"}:${var.RABBITMQ_PORT || \"5672\"}"}
+    NUQ_DATABASE_URL: ${var.FIRECRAWL_NUQ_DATABASE_URL || ("postgres://" + (var.FIRECRAWL_POSTGRES_USERNAME || "postgres") + ":" + (var.FIRECRAWL_POSTGRES_PASSWORD || "postgres") + "@" + (var.FIRECRAWL_POSTGRES_HOSTNAME || "nuq-postgres") + ":" + string(var.FIRECRAWL_POSTGRES_PORT || "5432") + "/" + (var.FIRECRAWL_POSTGRES_DB || "postgres"))}
+    NUQ_RABBITMQ_URL: ${var.FIRECRAWL_NUQ_RABBITMQ_URL || ("amqp://" + (var.RABBITMQ_USERNAME || "rabbitmq") + ":" + (var.RABBITMQ_PASSWORD || "rabbitmq") + "@" + (var.RABBITMQ_HOSTNAME || "rabbitmq") + ":" + string(var.RABBITMQ_PORT || "5672"))}
     EXTRACT_WORKER_PORT: ${var.FIRECRAWL_EXTRACT_WORKER_PORT || "3004"}
     USE_DB_AUTHENTICATION: ${var.FIRECRAWL_USE_DB_AUTHENTICATION || ""}
     OPENAI_API_KEY_FILE: /run/secrets/openai-api-key
@@ -65,11 +65,11 @@ spec:
   volumes:
     - name: openai-api-key
       containerPath: /run/secrets/openai-api-key
-      sourcePath: ${var.config-path}/secrets/openai-api-key.txt
+      hostPath: ${var.config-path}/secrets/openai-api-key.txt
       readOnly: true
     - name: firecrawl-api-key
       containerPath: /run/secrets/firecrawl-api-key
-      sourcePath: ${var.config-path}/secrets/firecrawl-api-key.txt
+      hostPath: ${var.config-path}/secrets/firecrawl-api-key.txt
       readOnly: true
   resources:
     limits:

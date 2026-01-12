@@ -32,7 +32,7 @@ spec:
   volumes:
     - name: data
       containerPath: /var/lib/postgresql/data
-      sourcePath: ${var.config-path}/nuq-postgres/data
+      hostPath: ${var.config-path}/nuq-postgres/data
   annotations:
     deunhealth.restart.on.unhealthy: "true"
     kuma.nuq-postgres.http.name: nuq-postgres.${var.ts-hostname}.${var.domain}

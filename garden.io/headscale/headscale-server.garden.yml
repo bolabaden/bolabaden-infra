@@ -22,21 +22,21 @@ spec:
   volumes:
     - name: private-key
       containerPath: /var/lib/headscale/private.key
-      sourcePath: ${var.certs-path}/private/${var.domain}.key
+      hostPath: ${var.certs-path}/private/${var.domain}.key
       readOnly: true
     - name: config
       containerPath: /etc/headscale
-      sourcePath: ${var.config-path}/headscale/config
+      hostPath: ${var.config-path}/headscale/config
     - name: config-yaml
       containerPath: /etc/headscale/config.yaml
-      sourcePath: ${var.config-path}/headscale/config.yaml
+      hostPath: ${var.config-path}/headscale/config.yaml
       readOnly: true
     - name: lib
       containerPath: /var/lib/headscale
-      sourcePath: ${var.config-path}/headscale/lib
+      hostPath: ${var.config-path}/headscale/lib
     - name: run
       containerPath: /var/run/headscale
-      sourcePath: ${var.config-path}/headscale/run
+      hostPath: ${var.config-path}/headscale/run
   command: [serve, --config, /etc/headscale/config.yaml]
   ingresses:
     - path: /

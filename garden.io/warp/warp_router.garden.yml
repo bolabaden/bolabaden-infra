@@ -45,20 +45,20 @@ spec:
   volumes:
     - name: docker-sock
       containerPath: /var/run/docker.sock
-      sourcePath: ${var.docker-socket}
+      hostPath: ${var.docker-socket}
     - name: rt-tables
       containerPath: /etc/iproute2/rt_tables
-      sourcePath: /etc/iproute2/rt_tables
+      hostPath: /etc/iproute2/rt_tables
     - name: proc
       containerPath: /proc
-      sourcePath: /proc
+      hostPath: /proc
     - name: warp-nat-setup
       containerPath: /usr/local/bin/warp-nat-setup.sh
-      sourcePath: ${var.config-path}/warp/scripts/warp-nat-setup.sh
+      hostPath: ${var.config-path}/warp/scripts/warp-nat-setup.sh
       readOnly: true
     - name: warp-monitor
       containerPath: /usr/local/bin/warp-monitor.sh
-      sourcePath: ${var.config-path}/warp/scripts/warp-monitor.sh
+      hostPath: ${var.config-path}/warp/scripts/warp-monitor.sh
       readOnly: true
   healthCheck:
     exec:

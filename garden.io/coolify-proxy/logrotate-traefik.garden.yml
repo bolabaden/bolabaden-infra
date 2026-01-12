@@ -24,7 +24,7 @@ spec:
   volumes:
     - name: logs
       containerPath: /var/log/traefik
-      sourcePath: ${var.config-path}/traefik/logs
+      hostPath: ${var.config-path}/traefik/logs
   resources:
     limits:
       cpu: 100m

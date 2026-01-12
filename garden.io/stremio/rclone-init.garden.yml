@@ -19,10 +19,10 @@ spec:
   volumes:
     - name: remote-mounts
       containerPath: /mnt/remote
-      sourcePath: /mnt/remote
+      hostPath: /mnt/remote
     - name: mounts-config
       containerPath: /app/mounts.json
-      sourcePath: ${var.config-path}/rclone/mounts.json
+      hostPath: ${var.config-path}/rclone/mounts.json
       readOnly: true
   healthCheck:
     exec:

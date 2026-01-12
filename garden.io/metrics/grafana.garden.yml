@@ -53,38 +53,38 @@ spec:
   volumes:
     - name: data
       containerPath: /var/lib/grafana
-      sourcePath: ${var.config-path}/grafana/data
+      hostPath: ${var.config-path}/grafana/data
     - name: config
       containerPath: /etc/grafana/grafana.ini
-      sourcePath: ${var.config-path}/grafana/grafana.ini
+      hostPath: ${var.config-path}/grafana/grafana.ini
     - name: datasources
       containerPath: /etc/grafana/provisioning/datasources
-      sourcePath: ${var.config-path}/grafana/provisioning/datasources
+      hostPath: ${var.config-path}/grafana/provisioning/datasources
     - name: dashboards-config
       containerPath: /etc/grafana/provisioning/dashboards
-      sourcePath: ${var.config-path}/grafana/provisioning/dashboards
+      hostPath: ${var.config-path}/grafana/provisioning/dashboards
     - name: dashboards
       containerPath: /var/lib/grafana/dashboards
-      sourcePath: ${var.config-path}/grafana/dashboards
+      hostPath: ${var.config-path}/grafana/dashboards
     - name: alerting
       containerPath: /etc/grafana/provisioning/alerting
-      sourcePath: ${var.config-path}/grafana/provisioning/alerting
+      hostPath: ${var.config-path}/grafana/provisioning/alerting
     - name: notifiers
       containerPath: /etc/grafana/provisioning/notifiers
-      sourcePath: ${var.config-path}/grafana/provisioning/notifiers
+      hostPath: ${var.config-path}/grafana/provisioning/notifiers
     - name: plugins
       containerPath: /etc/grafana/provisioning/plugins
-      sourcePath: ${var.config-path}/grafana/provisioning/plugins
+      hostPath: ${var.config-path}/grafana/provisioning/plugins
     - name: logs
       containerPath: /data/log
-      sourcePath: ${var.config-path}/grafana/logs
+      hostPath: ${var.config-path}/grafana/logs
     - name: grafana-admin-password
       containerPath: /run/secrets/grafana-admin-password
-      sourcePath: ${var.config-path}/secrets/grafana-admin-password.txt
+      hostPath: ${var.config-path}/secrets/grafana-admin-password.txt
       readOnly: true
     - name: grafana-secret-key
       containerPath: /run/secrets/grafana-secret-key
-      sourcePath: ${var.config-path}/secrets/grafana-secret-key.txt
+      hostPath: ${var.config-path}/secrets/grafana-secret-key.txt
       readOnly: true
   ingresses:
     - path: /

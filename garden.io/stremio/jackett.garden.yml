@@ -26,21 +26,21 @@ spec:
   volumes:
     - name: config
       containerPath: /config
-      sourcePath: ${var.config-path}/jackett/config
+      hostPath: ${var.config-path}/jackett/config
     - name: blackhole
       containerPath: /blackhole
-      sourcePath: /mnt/remote/blackhole
+      hostPath: /mnt/remote/blackhole
     - name: serverconfig
       containerPath: /defaults/ServerConfig.json
-      sourcePath: ${var.config-path}/jackett/ServerConfig.json
+      hostPath: ${var.config-path}/jackett/ServerConfig.json
       readOnly: true
     - name: indexer-blacklist
       containerPath: /indexer-blacklist.txt
-      sourcePath: ${var.config-path}/jackett/indexer-blacklist.txt
+      hostPath: ${var.config-path}/jackett/indexer-blacklist.txt
       readOnly: true
     - name: init-script
       containerPath: /custom-cont-init.d/99-remove-slow-indexers
-      sourcePath: ${var.config-path}/jackett/99-remove-slow-indexers.sh
+      hostPath: ${var.config-path}/jackett/99-remove-slow-indexers.sh
       readOnly: true
   resources:
     limits:
@@ -60,7 +60,7 @@ spec:
     traefik.http.routers.jackett.rule: Host(`jackett.${var.domain}`) || Host(`jackett.${var.ts-hostname}.${var.domain}`)
     traefik.http.services.jackett.loadbalancer.server.port: 9117
     kuma.jackett.http.name: jackett.${var.ts-hostname}.${var.domain}
-    kuma.jackett.http.url: https://jackett.${var.domain}/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=$JACKETT_API_KEY
+    kuma.jackett.http.url: https://jackett.${var.domain}/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=${var.JACKETT_API_KEY}
     kuma.jackett.http.interval: 30
   healthCheck:
     exec:

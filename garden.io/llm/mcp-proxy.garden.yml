@@ -18,7 +18,7 @@ spec:
   volumes:
     - name: config
       containerPath: /config.json
-      sourcePath: ${var.config-path}/mcp-proxy/config.json
+      hostPath: ${var.config-path}/mcp-proxy/config.json
       readOnly: true
   command:
     - --config

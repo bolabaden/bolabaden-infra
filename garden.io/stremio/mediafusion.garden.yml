@@ -152,11 +152,11 @@ spec:
   volumes:
     - name: mediafusion-secret-key
       containerPath: /run/secrets/mediafusion-secret-key
-      sourcePath: ${var.config-path}/secrets/mediafusion-secret-key.txt
+      hostPath: ${var.config-path}/secrets/mediafusion-secret-key.txt
       readOnly: true
     - name: sudo-password
       containerPath: /run/secrets/sudo-password
-      sourcePath: ${var.config-path}/secrets/sudo-password.txt
+      hostPath: ${var.config-path}/secrets/sudo-password.txt
       readOnly: true
   resources:
     limits:

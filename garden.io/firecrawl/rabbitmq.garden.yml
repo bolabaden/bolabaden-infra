@@ -16,7 +16,7 @@ spec:
   volumes:
     - name: rabbitmq-init
       containerPath: /rabbitmq-init.sh
-      sourcePath: ${var.root-path || "."}/rabbitmq-init.sh
+      hostPath: ${var.root-path || "."}/rabbitmq-init.sh
       readOnly: true
   command:
     - /bin/bash

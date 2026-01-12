@@ -10,5 +10,5 @@ spec:
   volumes:
     - name: data
       containerPath: /prometheus
-      sourcePath: ${var.config-path}/prometheus/data
+      hostPath: ${var.config-path}/prometheus/data
   user: root

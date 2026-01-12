@@ -23,7 +23,7 @@ spec:
   volumes:
     - name: wordpress-files
       containerPath: /var/www/html
-      sourcePath: ${var.config-path}/wordpress/wordpress-files
+      hostPath: ${var.config-path}/wordpress/wordpress-files
   ingresses:
     - path: /
       port: http

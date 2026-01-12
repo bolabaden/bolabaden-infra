@@ -26,13 +26,13 @@ spec:
   volumes:
     - name: data
       containerPath: /prometheus
-      sourcePath: ${var.config-path}/prometheus/data
+      hostPath: ${var.config-path}/prometheus/data
     - name: config
       containerPath: /etc/prometheus/prometheus.yml
-      sourcePath: ${var.config-path}/prometheus/prometheus.yml
+      hostPath: ${var.config-path}/prometheus/prometheus.yml
     - name: rules
       containerPath: /etc/prometheus/alert.rules
-      sourcePath: ${var.config-path}/prometheus/alert.rules
+      hostPath: ${var.config-path}/prometheus/alert.rules
   command:
     - '--config.file=/etc/prometheus/prometheus.yml'
     - '--log.format=${var.PROMETHEUS_LOG_FORMAT || "logfmt"}'

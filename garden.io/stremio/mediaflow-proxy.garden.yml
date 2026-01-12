@@ -25,7 +25,7 @@ spec:
   volumes:
     - name: mediaflow-proxy-api-password
       containerPath: /run/secrets/mediaflow-proxy-api-password
-      sourcePath: ${var.config-path}/secrets/mediaflow-proxy-api-password.txt
+      hostPath: ${var.config-path}/secrets/mediaflow-proxy-api-password.txt
       readOnly: true
   ingresses:
     - path: /

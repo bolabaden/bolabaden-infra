@@ -23,7 +23,7 @@ spec:
   volumes:
     - name: storage
       containerPath: /storage
-      sourcePath: ${var.config-path}/victoriametrics
+      hostPath: ${var.config-path}/victoriametrics
   command:
     - "--bigMergeConcurrency=${var.VICTORIAMETRICS_BIG_MERGE_CONCURRENCY || \"0\"}"
     - "--dedup.minScrapeInterval=${var.VICTORIAMETRICS_DEDUP_MIN_SCRAPE_INTERVAL || \"0s\"}"

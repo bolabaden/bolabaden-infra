@@ -16,7 +16,7 @@ spec:
     DOCKER_API_VERSION: ${var.DOCKER_API_VERSION || "1.24"}
     DOCKER_TLS_VERIFY: ${var.DOCKER_TLS_VERIFY || "false"}
     REPO_USER: ${var.WATCHTOWER_REPO_USER || "bolabaden"}
-    REPO_PASS: ${var.WATCHTOWER_REPO_PASS || "${var.sudo-password}"}
+    REPO_PASS: ${var.WATCHTOWER_REPO_PASS || var.sudo-password}
     WATCHTOWER_INCLUDE_RESTARTING: ${var.WATCHTOWER_INCLUDE_RESTARTING || "true"}
     WATCHTOWER_INCLUDE_STOPPED: ${var.WATCHTOWER_INCLUDE_STOPPED || "true"}
     WATCHTOWER_REVIVE_STOPPED: ${var.WATCHTOWER_REVIVE_STOPPED || "false"}
@@ -70,11 +70,11 @@ spec:
   volumes:
     - name: docker-sock
       containerPath: /var/run/docker.sock
-      sourcePath: ${var.docker-socket}
+      hostPath: ${var.docker-socket}
       readOnly: false
     - name: docker-config
       containerPath: /config.json
-      sourcePath: ${var.HOME || "~"}/.docker/config.json
+      hostPath: ${(var.HOME || "~") + "/.docker/config.json"}
       readOnly: true
   restartPolicy: always
 

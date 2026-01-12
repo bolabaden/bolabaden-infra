@@ -21,23 +21,23 @@ spec:
   volumes:
     - name: docker-sock
       containerPath: /var/run/docker.sock
-      sourcePath: ${var.docker-socket}
+      hostPath: ${var.docker-socket}
       readOnly: false
     - name: extensions
       containerPath: ${var.config-path}/extensions
-      sourcePath: ${var.config-path}/extensions
+      hostPath: ${var.config-path}/extensions
       readOnly: false
     - name: session-manager-py
       containerPath: /session_manager.py
-      sourcePath: ${var.root-path}/projects/kotor/kotorscript-session-manager/session_manager.py
+      hostPath: ${var.root-path}/projects/kotor/kotorscript-session-manager/session_manager.py
       readOnly: true
     - name: index-html
       containerPath: /tmp/templates/index.html
-      sourcePath: ${var.root-path}/projects/kotor/kotorscript-session-manager/index.html
+      hostPath: ${var.root-path}/projects/kotor/kotorscript-session-manager/index.html
       readOnly: true
     - name: waiting-html
       containerPath: /tmp/templates/waiting.html
-      sourcePath: ${var.root-path}/projects/kotor/kotorscript-session-manager/waiting.html
+      hostPath: ${var.root-path}/projects/kotor/kotorscript-session-manager/waiting.html
       readOnly: true
   command:
     - sh

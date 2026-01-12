@@ -35,28 +35,28 @@ spec:
   volumes:
     - name: docker-sock
       containerPath: /var/run/docker.sock
-      sourcePath: ${var.docker-socket}
+      hostPath: ${var.docker-socket}
       readOnly: false
     - name: media
       containerPath: /media
-      sourcePath: ${var.config-path}/authentik/media
+      hostPath: ${var.config-path}/authentik/media
     - name: certs
       containerPath: /certs
-      sourcePath: ${var.config-path}/authentik/certs
+      hostPath: ${var.config-path}/authentik/certs
     - name: custom-templates
       containerPath: /templates
-      sourcePath: ${var.config-path}/authentik/custom-templates
+      hostPath: ${var.config-path}/authentik/custom-templates
     - name: authentik-secret-key
       containerPath: /run/secrets/authentik-secret-key
-      sourcePath: ${var.config-path}/secrets/authentik-secret-key.txt
+      hostPath: ${var.config-path}/secrets/authentik-secret-key.txt
       readOnly: true
     - name: gmail-app-password
       containerPath: /run/secrets/gmail-app-password
-      sourcePath: ${var.config-path}/secrets/gmail-app-password.txt
+      hostPath: ${var.config-path}/secrets/gmail-app-password.txt
       readOnly: true
     - name: sudo-password
       containerPath: /run/secrets/sudo-password
-      sourcePath: ${var.config-path}/secrets/sudo-password.txt
+      hostPath: ${var.config-path}/secrets/sudo-password.txt
       readOnly: true
   command: [worker]
   restartPolicy: always

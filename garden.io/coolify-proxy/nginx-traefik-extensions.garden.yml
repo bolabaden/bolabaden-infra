@@ -21,11 +21,11 @@ spec:
   volumes:
     - name: nginx-config
       containerPath: /etc/nginx/nginx.conf
-      sourcePath: ${var.config-path}/traefik/nginx-middlewares/nginx-traefik-extensions.conf
+      hostPath: ${var.config-path}/traefik/nginx-middlewares/nginx-traefik-extensions.conf
       readOnly: true
     - name: auth-config
       containerPath: /etc/nginx/auth
-      sourcePath: ${var.config-path}/traefik/nginx-middlewares/auth
+      hostPath: ${var.config-path}/traefik/nginx-middlewares/auth
       readOnly: true
   resources:
     limits:

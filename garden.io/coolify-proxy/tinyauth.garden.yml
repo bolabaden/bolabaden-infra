@@ -31,18 +31,18 @@ spec:
   volumes:
     - name: data
       containerPath: /data
-      sourcePath: ${var.config-path}/traefik/tinyauth
+      hostPath: ${var.config-path}/traefik/tinyauth
     - name: tinyauth-secret
       containerPath: /run/secrets/tinyauth-secret
-      sourcePath: ${var.config-path}/secrets/tinyauth-secret.txt
+      hostPath: ${var.config-path}/secrets/tinyauth-secret.txt
       readOnly: true
     - name: tinyauth-google-client-secret
       containerPath: /run/secrets/tinyauth-google-client-secret
-      sourcePath: ${var.config-path}/secrets/tinyauth-google-client-secret.txt
+      hostPath: ${var.config-path}/secrets/tinyauth-google-client-secret.txt
       readOnly: true
     - name: tinyauth-github-client-secret
       containerPath: /run/secrets/tinyauth-github-client-secret
-      sourcePath: ${var.config-path}/secrets/tinyauth-github-client-secret.txt
+      hostPath: ${var.config-path}/secrets/tinyauth-github-client-secret.txt
       readOnly: true
   ingresses:
     - path: /

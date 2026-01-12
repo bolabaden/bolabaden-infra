@@ -55,14 +55,14 @@ spec:
   volumes:
     - name: data
       containerPath: /app/data
-      sourcePath: ${var.config-path}/stremio/addons/stremthru/app/data
+      hostPath: ${var.config-path}/stremio/addons/stremthru/app/data
     - name: stremthru-proxy-auth
       containerPath: /run/secrets/stremthru-proxy-auth
-      sourcePath: ${var.config-path}/secrets/stremthru-proxy-auth.txt
+      hostPath: ${var.config-path}/secrets/stremthru-proxy-auth.txt
       readOnly: true
     - name: stremthru-store-auth
       containerPath: /run/secrets/stremthru-store-auth
-      sourcePath: ${var.config-path}/secrets/stremthru-store-auth.txt
+      hostPath: ${var.config-path}/secrets/stremthru-store-auth.txt
       readOnly: true
   ingresses:
     - path: /
