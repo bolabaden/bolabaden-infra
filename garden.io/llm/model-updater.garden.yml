@@ -1,0 +1,51 @@
+kind: Build
+apiVersion: garden.io/v0
+name: model-updater
+description: Model updater service for updating free_chat_models.json<-->litellm_config.yaml
+type: container
+source:
+  repository:
+    url: "git+https://github.com/th3w1zard1/llm_fallbacks.git"
+  dockerfile: |
+    FROM python:3.13-slim
+    WORKDIR /app
+    RUN apt-get update && apt-get install -y curl build-essential && rm -rf /var/lib/apt/lists/*
+    COPY . .
+    RUN pip install --no-cache-dir -r requirements.txt
+    RUN mkdir -p /app/cache
+    ENV PYTHONPATH=/app
+    ENV PYTHONUNBUFFERED=1
+    RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
+    USER app
+    CMD ["python", "src/llm_fallbacks/generate_configs.py"]
+
+---
+kind: Deploy
+apiVersion: garden.io/v0
+name: model-updater
+description: Model updater service
+type: container
+profiles:
+  - unfinished
+dependencies:
+  - build.model-updater
+
+spec:
+  replicas: 3
+  image: ${actions.build.model-updater.outputs.deploymentImageId}
+  hostname: model-updater
+  extraHosts:
+    - host.docker.internal:host-gateway
+  env:
+    OPENROUTER_API_KEY: ${var.OPENROUTER_API_KEY}
+    POSTGRES_PASSWORD: ${var.LITELLM_POSTGRES_PASSWORD || "postgres"}
+    TZ: ${var.tz}
+  volumes:
+    - name: config
+      containerPath: /app/config
+      sourcePath: ${var.config-path}/litellm
+      readOnly: false
+    - name: cache
+      containerPath: /app/cache
+      sourcePath: ${var.config-path}/model-updater/cache
+  restartPolicy: never

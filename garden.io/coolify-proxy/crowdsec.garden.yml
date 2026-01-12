@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: docker.io/crowdsecurity/crowdsec:latest
+  hostname: crowdsec
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -49,4 +50,5 @@ spec:
     periodSeconds: 30
     timeoutSeconds: 10
     failureThreshold: 3
+    startPeriodSeconds: 10
   restartPolicy: always

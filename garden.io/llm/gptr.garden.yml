@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: docker.io/bolabaden/ai-researchwizard-aio-fullstack:master
+  hostname: gptr
   extraHosts:
     - host.docker.internal:host-gateway
   stdinOpen: true
@@ -172,6 +173,25 @@ spec:
     - path: /
       port: mcp
       hostname: gptr-mcp.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.gptr-nextjs.service: gptr-nextjs@docker
+    traefik.http.routers.gptr-nextjs.rule: Host(`gptr-nextjs.${var.domain}`) || Host(`gptr-nextjs.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.gptr-nextjs.loadbalancer.server.port: "3000"
+    traefik.http.routers.gptr-legacy.service: gptr-legacy@docker
+    traefik.http.routers.gptr-legacy.rule: Host(`gptr.${var.domain}`) || Host(`gptr.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.gptr-legacy.loadbalancer.server.port: "8000"
+    traefik.http.routers.gptr-mcp.service: gptr-mcp@docker
+    traefik.http.routers.gptr-mcp.rule: Host(`gptr-mcp.${var.domain}`) || Host(`gptr-mcp.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.gptr-mcp.loadbalancer.server.port: "8080"
+    homepage.group: AI
+    homepage.name: AI Research Wizard
+    homepage.description: Full-stack AI research and scraping toolkit with Next.js UI is a web scraper and researcher that uses AI to help you find information quickly.
+    homepage.icon: gptr.png
+    homepage.href: https://gptr.${var.domain}/
+    kuma.gptr.http.name: gptr.${var.ts-hostname}.${var.domain}
+    kuma.gptr.http.url: https://gptr.${var.domain}
+    kuma.gptr.http.interval: "30"
   healthCheck:
     exec:
       command: [sh, -c, "(wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 && wget -qO- http://127.0.0.1:8000 > /dev/null 2>&1) || exit 1"]
@@ -179,4 +199,5 @@ spec:
     periodSeconds: 30
     timeoutSeconds: 10
     failureThreshold: 3
+    startPeriodSeconds: 120
   restartPolicy: always

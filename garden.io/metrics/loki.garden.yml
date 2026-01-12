@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: docker.io/grafana/loki
+  hostname: loki
   ports:
     - name: http
       containerPort: 3100

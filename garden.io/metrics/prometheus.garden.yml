@@ -4,12 +4,13 @@ name: prometheus
 description: Prometheus monitoring system
 type: container
 dependencies:
-  - run.prometheus-init
+  - run.init_prometheus
   - deploy.victoriametrics
 
 spec:
   replicas: 3
   image: docker.io/prom/prometheus
+  hostname: prometheus
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -54,6 +55,24 @@ spec:
     - path: /
       port: http
       hostname: prometheus.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.prometheus.middlewares: nginx-auth@file
+    traefik.http.routers.prometheus.rule: Host(`prometheus.${var.domain}`) || Host(`prometheus.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.prometheus.loadbalancer.server.port: "9090"
+    homepage.group: Infrastructure
+    homepage.name: Prometheus
+    homepage.icon: prometheus.png
+    homepage.href: https://prometheus.${var.domain}
+    homepage.description: Prometheus is an open-source monitoring system with a dimensional data model, flexible query language, efficient time series database, and modern alerting approach.
+    homepage.widget.type: prometheus
+    homepage.widget.url: http://prometheus:9090
+    kuma.prometheus.http.name: prometheus.${var.ts-hostname}.${var.domain}
+    kuma.prometheus.http.url: https://prometheus.${var.domain}
+    kuma.prometheus.http.interval: "60"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: /metrics
   healthCheck:
     exec:
       command: [sh, -c, "wget --no-verbose --tries=1 --spider http://127.0.0.1:9090/-/healthy || exit 1"]
@@ -61,4 +80,5 @@ spec:
     periodSeconds: 30
     timeoutSeconds: 10
     failureThreshold: 3
+    startPeriodSeconds: 40
   restartPolicy: always

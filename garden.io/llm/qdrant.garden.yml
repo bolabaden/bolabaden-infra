@@ -3,10 +3,13 @@ apiVersion: garden.io/v0
 name: qdrant
 description: Qdrant vector database
 type: container
+profiles:
+  - extras
 
 spec:
   replicas: 3
   image: qdrant/qdrant
+  hostname: qdrant
   env:
     QDRANT_STORAGE_PATH: /qdrant/storage
     QDRANT_STORAGE_TYPE: disk
@@ -23,5 +26,13 @@ spec:
     - path: /
       port: http
       hostname: qdrant.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.services.qdrant.loadbalancer.server.port: "6333"
+    homepage.group: AI
+    homepage.name: Qdrant
+    homepage.icon: qdrant.png
+    homepage.href: https://qdrant.${var.domain}
+    homepage.description: Qdrant is a vector database for storing and querying vectors.
   restartPolicy: always
 

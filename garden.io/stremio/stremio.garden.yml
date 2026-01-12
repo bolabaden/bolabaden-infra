@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: ghcr.io/tsaridas/stremio-docker:main
+  hostname: stremio
   env:
     IPADDRESS: 127.0.0.1
     AUTO_SERVER_URL: 1
@@ -20,9 +21,11 @@ spec:
     - name: streaming-http
       containerPort: 11470
       hostPort: 11470
+      protocol: TCP
     - name: streaming-https
       containerPort: 12470
       hostPort: 12470
+      protocol: TCP
   volumes:
     - name: config
       containerPath: /root/.stremio-server
@@ -40,11 +43,44 @@ spec:
     - path: /
       port: http
       hostname: stremio.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.middlewares.stremio-web-redirect.redirectRegex.regex: '^(http|https)://stremio(-web)\.(${var.domain}|${var.ts-hostname}\.${var.domain})(.*)$'
+    traefik.http.middlewares.stremio-web-redirect.redirectRegex.replacement: '$1://stremio.$3$4'
+    traefik.http.middlewares.stremio-web-redirect.redirectRegex.permanent: false
+    traefik.http.middlewares.stremio-shell-redirect.redirectRegex.regex: '^(http|https)://stremio\.(${var.domain}|${var.ts-hostname}\.${var.domain})(.*)$'
+    traefik.http.middlewares.stremio-shell-redirect.redirectRegex.replacement: '$1://stremio.$2$3'
+    traefik.http.middlewares.stremio-shell-redirect.redirectRegex.permanent: false
+    traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.regex: '^(http|https)://stremio\.(${var.domain}|${var.ts-hostname}\.${var.domain})(/shell[^#?]*)(\\?[^#]*?streamingServer=[^&#]*)?([^#]*)(#.*)?$'
+    traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.replacement: '$1://stremio.$2$3?streamingServer=https%3A%2F%2Fstremio.$2$5$6'
+    traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.permanent: false
+    traefik.http.routers.stremio.service: stremio
+    traefik.http.routers.stremio.rule: Host(`stremio-web.${var.domain}`) || Host(`stremio-web.${var.ts-hostname}.${var.domain}`) || Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts-hostname}.${var.domain}`)
+    traefik.http.routers.stremio.middlewares: stremio-web-redirect@docker,stremio-shell-redirect@docker,stremio-streaming-server-redirect@docker
+    traefik.http.services.stremio.loadbalancer.server.scheme: https
+    traefik.http.services.stremio.loadbalancer.server.port: 8080
+    traefik.http.routers.stremio-http11470.service: stremio-http11470
+    traefik.http.services.stremio-http11470.loadbalancer.server.scheme: http
+    traefik.http.services.stremio-http11470.loadbalancer.server.port: 11470
+    traefik.http.routers.stremio-http11470.rule: (Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts-hostname}.${var.domain}`)) && ( PathPrefix(`/hlsv2`) || PathPrefix(`/casting`) || PathPrefix(`/local-addon`) || PathPrefix(`/proxy`) || PathPrefix(`/rar`) || PathPrefix(`/zip`) || PathPrefix(`/settings`) || PathPrefix(`/create`) || PathPrefix(`/removeAll`) || PathPrefix(`/samples`) || PathPrefix(`/probe`) || PathPrefix(`/subtitlesTracks`) || PathPrefix(`/opensubHash`) || PathPrefix(`/subtitles`) || PathPrefix(`/network-info`) || PathPrefix(`/device-info`) || PathPrefix(`/get-https`) || PathPrefix(`/hwaccel-profiler`) || PathPrefix(`/status`) || PathPrefix(`/exec`) || PathPrefix(`/stream`) || PathRegexp(`^/[^/]+/(stats\\.json|create|remove|destroy)$`) || PathRegexp(`^/[^/]+/[^/]+/(stats\\.json|hls\\.m3u8|master\\.m3u8|stream\\.m3u8|dlna|thumb\\.jpg)$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+\\.m3u8|stream-[^/]+\\.m3u8|subs-[^/]+\\.m3u8)$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+|stream-[^/]+)/[^/]+\\.(ts|mp4)$`) || PathRegexp(`^/yt/[^/]+(\\.json)?$`) || Path(`/thumb.jpg`) || Path(`/stats.json`) )
+    traefik.http.routers.stremio-https12470.service: stremio-https12470
+    traefik.http.services.stremio-https12470.loadbalancer.server.scheme: https
+    traefik.http.services.stremio-https12470.loadbalancer.server.port: 12470
+    traefik.http.routers.stremio-https12470.rule: (Host(`stremio.${var.domain}`) || Host(`stremio.${var.ts-hostname}.${var.domain}`)) && ( PathPrefix(`/hlsv2`) || PathPrefix(`/casting`) || PathPrefix(`/local-addon`) || PathPrefix(`/proxy`) || PathPrefix(`/rar`) || PathPrefix(`/zip`) || PathPrefix(`/settings`) || PathPrefix(`/create`) || PathPrefix(`/removeAll`) || PathPrefix(`/samples`) || PathPrefix(`/probe`) || PathPrefix(`/subtitlesTracks`) || PathPrefix(`/opensubHash`) || PathPrefix(`/subtitles`) || PathPrefix(`/network-info`) || PathPrefix(`/device-info`) || PathPrefix(`/get-https`) || PathPrefix(`/hwaccel-profiler`) || PathPrefix(`/status`) || PathPrefix(`/exec`) || PathPrefix(`/stream`) || PathRegexp(`^/[^/]+/(stats\\.json|create|remove|destroy)$`) || PathRegexp(`^/[^/]+/[^/]+/(stats\\.json|hls\\.m3u8|master\\.m3u8|stream\\.m3u8|dlna|thumb\\.jpg)$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+\\.m3u8|stream-[^/]+\\.m3u8|subs-[^/]+\\.m3u8)$`) || PathRegexp(`^/[^/]+/[^/]+/(stream-q-[^/]+|stream-[^/]+)/[^/]+\\.(ts|mp4)$`) || PathRegexp(`^/yt/[^/]+(\\.json)?$`) || Path(`/thumb.jpg`) || Path(`/stats.json`) )
+    homepage.group: Media Streaming Platforms
+    homepage.name: Stremio
+    homepage.icon: stremio.png
+    homepage.href: https://stremio.${var.domain}/
+    homepage.description: A one-stop hub for video content aggregation, allowing you to stream movies, series, and more from various sources.
+    kuma.stremio.http.name: stremio.${var.ts-hostname}.${var.domain}
+    kuma.stremio.http.url: https://stremio.${var.domain}
+    kuma.stremio.http.interval: "60"
   healthCheck:
     exec:
       command: [sh, -c, "command -v curl >/dev/null || (apk add --no-cache curl >/dev/null 2>&1 || apt-get update >/dev/null 2>&1 && apt-get install -y curl >/dev/null 2>&1); (curl -fs http://127.0.0.1:11470/ >/dev/null 2>&1 || curl -fsk https://127.0.0.1:12470/ >/dev/null 2>&1) || exit 1"]
-    initialDelaySeconds: 90
+    initialDelaySeconds: 0
     periodSeconds: 30
     timeoutSeconds: 10
     failureThreshold: 3
+    startPeriodSeconds: 90
   restartPolicy: always

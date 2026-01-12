@@ -65,16 +65,19 @@ func defineServicesFromConfig(config *Config) []Service {
 		ContainerName: "mongodb",
 		Hostname:      getEnv("MONGODB_HOSTNAME", "mongodb"),
 		Networks:      []string{"backend", "publicnet"},
+		Expose: []ExposePort{
+			{Port: "27017", Protocol: "tcp"},
+		},
 		Volumes: []VolumeMount{
 			{Source: fmt.Sprintf("%s/mongodb/data", configPath), Target: "/data/db", Type: "bind"},
 		},
 		Environment: map[string]string{},
 		Labels: map[string]string{
 			"traefik.enable":                                        "true",
-			"traefik.tcp.routers.mongodb.rule":                      fmt.Sprintf("HostSNI(`mongodb.%s`) || HostSNI(`mongodb.${TS_HOSTNAME}.%s`)", domain, domain),
+			"traefik.tcp.routers.mongodb.rule":                      fmt.Sprintf("HostSNI(`mongodb.%s`) || HostSNI(`mongodb.%s.%s`)", domain, getEnv("TS_HOSTNAME", ""), domain),
 			"traefik.tcp.routers.mongodb.service":                   "mongodb@docker",
 			"traefik.tcp.routers.mongodb.tls.domains[0].main":       domain,
-			"traefik.tcp.routers.mongodb.tls.domains[0].sans":       fmt.Sprintf("*.%s,${TS_HOSTNAME}.%s", domain, domain),
+			"traefik.tcp.routers.mongodb.tls.domains[0].sans":       fmt.Sprintf("*.%s,%s.%s", domain, getEnv("TS_HOSTNAME", ""), domain),
 			"traefik.tcp.routers.mongodb.tls.passthrough":           "true",
 			"traefik.tcp.services.mongodb.loadbalancer.server.port": "27017",
 			"traefik.tcp.services.mongodb.loadbalancer.server.tls":  "true",
@@ -91,6 +94,7 @@ func defineServicesFromConfig(config *Config) []Service {
 	})
 
 	// SearXNG
+	searxngPort := getEnv("SEARXNG_PORT", "8080")
 	services = append(services, Service{
 		Name:          "searxng",
 		Image:         "docker.io/searxng/searxng",
@@ -102,24 +106,24 @@ func defineServicesFromConfig(config *Config) []Service {
 			{Source: fmt.Sprintf("%s/searxng/data", configPath), Target: "/var/cache/searxng", Type: "bind"},
 		},
 		Environment: map[string]string{
-			"SEARXNG_BASE_URL": fmt.Sprintf("http://searxng:%s", getEnv("SEARXNG_PORT", "8080")),
+			"SEARXNG_BASE_URL": getEnv("SEARXNG_INTERNAL_URL", fmt.Sprintf("http://searxng:%s", searxngPort)),
 			"SEARXNG_SECRET":   getEnv("SEARXNG_SECRET", ""),
 		},
 		Labels: map[string]string{
 			"deunhealth.restart.on.unhealthy":                        "true",
 			"traefik.enable":                                         "true",
-			"traefik.http.services.searxng.loadbalancer.server.port": getEnv("SEARXNG_PORT", "8080"),
+			"traefik.http.services.searxng.loadbalancer.server.port": searxngPort,
 			"homepage.group":                                         "Search",
 			"homepage.name":                                          "SearxNG",
 			"homepage.icon":                                          "searxng.png",
 			"homepage.href":                                          fmt.Sprintf("https://searxng.%s/", domain),
 			"homepage.description":                                   "Privacy-focused metasearch that aggregates results from many sources without tracking",
-			"kuma.searxng.http.name":                                 fmt.Sprintf("searxng.${TS_HOSTNAME}.%s", domain),
+			"kuma.searxng.http.name":                                 fmt.Sprintf("searxng.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
 			"kuma.searxng.http.url":                                  fmt.Sprintf("https://searxng.%s", domain),
 			"kuma.searxng.http.interval":                             "30",
 		},
 		Healthcheck: &Healthcheck{
-			Test:        []string{"CMD-SHELL", fmt.Sprintf("wget --no-verbose --tries=1 --spider http://127.0.0.1:%s/ || exit 1", getEnv("SEARXNG_PORT", "8080"))},
+			Test:        []string{"CMD-SHELL", fmt.Sprintf("wget --no-verbose --tries=1 --spider http://127.0.0.1:%s/ || exit 1", searxngPort)},
 			Interval:    "30s",
 			Timeout:     "10s",
 			Retries:     3,
@@ -136,6 +140,9 @@ func defineServicesFromConfig(config *Config) []Service {
 		ContainerName: "redis",
 		Hostname:      "redis",
 		Networks:      []string{"backend", "publicnet"},
+		Expose: []ExposePort{
+			{Port: getEnv("REDIS_PORT", "6379"), Protocol: "tcp"},
+		},
 		Ports: []PortMapping{
 			{HostPort: getEnv("REDIS_PORT", "6379"), ContainerPort: getEnv("REDIS_PORT", "6379"), Protocol: "tcp"},
 		},
@@ -152,14 +159,14 @@ func defineServicesFromConfig(config *Config) []Service {
 		},
 		Command: []string{
 			"sh", "-c",
-			fmt.Sprintf("sysctl vm.overcommit_memory=1 &> /dev/null && redis-server --appendonly yes --save 60 1 --bind 0.0.0.0 --port %s --requirepass ${REDIS_PASSWORD}", getEnv("REDIS_PORT", "6379")),
+			fmt.Sprintf("sysctl vm.overcommit_memory=1 &> /dev/null &&\nredis-server\n--appendonly yes\n--save 60 1\n--bind 0.0.0.0\n--port %s\n--requirepass ${REDIS_PASSWORD:?}", getEnv("REDIS_PORT", "6379")),
 		},
 		Labels: map[string]string{
 			"traefik.enable":                                      "true",
-			"traefik.tcp.routers.redis.rule":                      fmt.Sprintf("HostSNI(`redis.%s`) || HostSNI(`redis.${TS_HOSTNAME}.%s`)", domain, domain),
+			"traefik.tcp.routers.redis.rule":                      fmt.Sprintf("HostSNI(`redis.%s`) || HostSNI(`redis.%s.%s`)", domain, getEnv("TS_HOSTNAME", ""), domain),
 			"traefik.tcp.routers.redis.service":                   "redis@docker",
 			"traefik.tcp.routers.redis.tls.domains[0].main":       domain,
-			"traefik.tcp.routers.redis.tls.domains[0].sans":       fmt.Sprintf("*.%s,${TS_HOSTNAME}.%s", domain, domain),
+			"traefik.tcp.routers.redis.tls.domains[0].sans":       fmt.Sprintf("*.%s,%s.%s", domain, getEnv("TS_HOSTNAME", ""), domain),
 			"traefik.tcp.routers.redis.tls.passthrough":           "true",
 			"traefik.tcp.services.redis.loadbalancer.server.port": getEnv("REDIS_PORT", "6379"),
 			"traefik.tcp.services.redis.loadbalancer.server.tls":  "true",
@@ -213,7 +220,7 @@ func defineServicesFromConfig(config *Config) []Service {
 		Labels: map[string]string{
 			"traefik.enable":                                         "true",
 			"traefik.http.routers.traefik.service":                   "api@internal",
-			"traefik.http.routers.traefik.rule":                      fmt.Sprintf("Host(`traefik.%s`) || Host(`traefik.${TS_HOSTNAME}.%s`)", domain, domain),
+			"traefik.http.routers.traefik.rule":                      fmt.Sprintf("Host(`traefik.%s`) || Host(`traefik.%s.%s`)", domain, getEnv("TS_HOSTNAME", ""), domain),
 			"traefik.http.services.traefik.loadbalancer.server.port": "8080",
 			"homepage.group":                                         "Infrastructure",
 			"homepage.name":                                          "Traefik",
@@ -222,7 +229,7 @@ func defineServicesFromConfig(config *Config) []Service {
 			"homepage.widget.type":                                   "traefik",
 			"homepage.widget.url":                                    "http://traefik:8080",
 			"homepage.description":                                   "Reverse proxy entrypoint for all services with TLS, Cloudflare integration, and auth middleware",
-			"kuma.traefik.http.name":                                 fmt.Sprintf("traefik.${TS_HOSTNAME}.%s", domain),
+			"kuma.traefik.http.name":                                 fmt.Sprintf("traefik.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
 			"kuma.traefik.http.url":                                  fmt.Sprintf("https://traefik.%s/dashboard", domain),
 			"kuma.traefik.http.interval":                             "20",
 		},
@@ -236,7 +243,7 @@ func defineServicesFromConfig(config *Config) []Service {
 		CapAdd:     []string{"NET_ADMIN"},
 		Restart:    "always",
 		ExtraHosts: []string{"host.docker.internal:host-gateway"},
-		DependsOn:  []string{"dockerproxy-ro", "crowdsec"},
+		DependsOn:  []string{"dockerproxy-ro"}, // Note: crowdsec dependency removed if not in included compose files
 	})
 
 	// Docker Proxy RO
@@ -247,10 +254,15 @@ func defineServicesFromConfig(config *Config) []Service {
 		Hostname:      "dockerproxy-ro",
 		Networks:      []string{"default"},
 		Privileged:    true,
+		UserNSMode:    "host", // Required for userns-remap support
 		Volumes: []VolumeMount{
 			{Source: getEnv("DOCKER_SOCKET", "/var/run/docker.sock"), Target: "/var/run/docker.sock", Type: "bind"},
 		},
 		Environment: map[string]string{
+			"TZ":           getEnv("TZ", "America/Chicago"),
+			"PUID":         getEnv("PUID", "1001"),
+			"PGID":         getEnv("PGID", "999"),
+			"UMASK":        getEnv("UMASK", "002"),
 			"CONTAINERS":   "1",
 			"EVENTS":       "1",
 			"INFO":         "1",
@@ -276,39 +288,42 @@ func defineServicesFromConfig(config *Config) []Service {
 		ContainerName: "code-server",
 		Hostname:      "code-server",
 		Networks:      []string{"backend", "publicnet"},
+		Expose: []ExposePort{
+			{Port: "8443", Protocol: "tcp"},
+		},
 		Volumes: []VolumeMount{
 			{Source: getEnv("DOCKER_SOCKET", "/var/run/docker.sock"), Target: "/var/run/docker.sock", Type: "bind"},
 			{Source: fmt.Sprintf("%s/code-server/dev/config", configPath), Target: "/config", Type: "bind"},
 			{Source: getEnv("ROOT_PATH", "."), Target: getEnv("CODESERVER_DEFAULT_WORKSPACE", "/workspace"), Type: "bind"},
 		},
 		Environment: map[string]string{
-			"TZ":                  getEnv("TZ", "America/Chicago"),
-			"PUID":                getEnv("PUID", "1001"),
-			"PGID":                getEnv("PGID", "121"),
-			"UMASK":               getEnv("UMASK", "002"),
-			"HASHED_PASSWORD":     getEnv("CODESERVER_HASHED_PASSWORD", ""),
-			"SUDO_PASSWORD_HASH":  getEnv("CODESERVER_SUDO_PASSWORD_HASH", ""),
-			"PWA_APPNAME":         fmt.Sprintf("code-server.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
-			"DEFAULT_WORKSPACE":   getEnv("CODESERVER_DEFAULT_WORKSPACE", "/workspace"),
+			"TZ":                 getEnv("TZ", "America/Chicago"),
+			"PUID":               getEnv("PUID", "1001"),
+			"PGID":               getEnv("PGID", "121"),
+			"UMASK":              getEnv("UMASK", "002"),
+			"HASHED_PASSWORD":    getEnv("CODESERVER_HASHED_PASSWORD", ""),
+			"SUDO_PASSWORD_HASH": getEnv("CODESERVER_SUDO_PASSWORD_HASH", ""),
+			"PWA_APPNAME":        fmt.Sprintf("code-server.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
+			"DEFAULT_WORKSPACE":  getEnv("CODESERVER_DEFAULT_WORKSPACE", "/workspace"),
 		},
 		Labels: map[string]string{
-			"traefik.enable":                                         "true",
+			"traefik.enable": "true",
 			"traefik.http.middlewares.codeserver-redirect.redirectRegex.regex":       fmt.Sprintf("^https?://codeserver\\.((?:%s|%s\\.%s))(.*)$", domain, getEnv("TS_HOSTNAME", ""), domain),
 			"traefik.http.middlewares.codeserver-redirect.redirectRegex.replacement": "https://code-server.$1$2",
 			"traefik.http.middlewares.codeserver-redirect.redirectRegex.permanent":   "false",
-			"traefik.http.routers.code-server.middlewares":                          "nginx-auth@file",
-			"traefik.http.services.code-server.loadbalancer.server.port":            "8443",
+			"traefik.http.routers.code-server.middlewares":                           "nginx-auth@file",
+			"traefik.http.services.code-server.loadbalancer.server.port":             "8443",
 			"traefik.http.routers.codeserver-redirect.rule":                          fmt.Sprintf("Host(`codeserver.%s`) || Host(`codeserver.%s.%s`)", domain, getEnv("TS_HOSTNAME", ""), domain),
-			"traefik.http.routers.codeserver-redirect.middlewares":                  "codeserver-redirect@docker",
-			"traefik.http.routers.codeserver-redirect.service":                      "code-server@docker",
-			"homepage.group":                                                        "Infrastructure",
-			"homepage.name":                                                         "Code Dev",
-			"homepage.icon":                                                         "code-server.png",
-			"homepage.href":                                                         fmt.Sprintf("https://code-server.%s/", domain),
-			"homepage.description":                                                  "In-browser VS Code environment for editing and managing code on this server",
-			"kuma.code-server.http.name":                                            fmt.Sprintf("code-server.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
-			"kuma.code-server.http.url":                                             fmt.Sprintf("https://code-server.%s", domain),
-			"kuma.code-server.http.interval":                                        "60",
+			"traefik.http.routers.codeserver-redirect.middlewares":                   "codeserver-redirect@docker",
+			"traefik.http.routers.codeserver-redirect.service":                       "code-server@docker",
+			"homepage.group":                 "Infrastructure",
+			"homepage.name":                  "Code Dev",
+			"homepage.icon":                  "code-server.png",
+			"homepage.href":                  fmt.Sprintf("https://code-server.%s/", domain),
+			"homepage.description":           "In-browser VS Code environment for editing and managing code on this server",
+			"kuma.code-server.http.name":     fmt.Sprintf("code-server.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
+			"kuma.code-server.http.url":      fmt.Sprintf("https://code-server.%s", domain),
+			"kuma.code-server.http.interval": "60",
 		},
 		CPUs:           "2",
 		MemLimit:       "4G",
@@ -325,16 +340,16 @@ func defineServicesFromConfig(config *Config) []Service {
 		Hostname:      "session-manager",
 		Networks:      []string{"backend", "publicnet"},
 		Configs: []ConfigMount{
-			{Source: fmt.Sprintf("%s/session_manager_index.html", configPath), Target: "/tmp/templates/index.html", Mode: "0444"},
-			{Source: fmt.Sprintf("%s/session_manager_waiting.html", configPath), Target: "/tmp/templates/waiting.html", Mode: "0444"},
-			{Source: fmt.Sprintf("%s/session_manager.py", configPath), Target: "/session_manager.py", Mode: "0444"},
+			{Source: fmt.Sprintf("%s/projects/kotor/kotorscript-session-manager/index.html", getEnv("ROOT_PATH", ".")), Target: "/tmp/templates/index.html", Mode: "0444"},
+			{Source: fmt.Sprintf("%s/projects/kotor/kotorscript-session-manager/waiting.html", getEnv("ROOT_PATH", ".")), Target: "/tmp/templates/waiting.html", Mode: "0444"},
+			{Source: fmt.Sprintf("%s/projects/kotor/kotorscript-session-manager/session_manager.py", getEnv("ROOT_PATH", ".")), Target: "/session_manager.py", Mode: "0444"},
 		},
 		Volumes: []VolumeMount{
 			{Source: getEnv("DOCKER_SOCKET", "/var/run/docker.sock"), Target: "/var/run/docker.sock", Type: "bind"},
 			{Source: fmt.Sprintf("%s/extensions", configPath), Target: fmt.Sprintf("%s/extensions", configPath), Type: "bind"},
 		},
 		Environment: map[string]string{
-			"DOMAIN":              domain,
+			"DOMAIN":               domain,
 			"SESSION_MANAGER_PORT": getEnv("SESSION_MANAGER_PORT", "8080"),
 			"INACTIVITY_TIMEOUT":   "3600",
 			"DEFAULT_WORKSPACE":    "/workspace",
@@ -342,9 +357,9 @@ func defineServicesFromConfig(config *Config) []Service {
 		},
 		Labels: map[string]string{
 			"traefik.enable": "true",
-			"traefik.http.middlewares.holoscripter-redirect.redirectRegex.regex":       fmt.Sprintf("^https?://holoscripter\\.((?:%s|%s\\.%s))(.*)$", domain, getEnv("TS_HOSTNAME", ""), domain),
-			"traefik.http.middlewares.holoscripter-redirect.redirectRegex.replacement": "https://holoscript.$1$2",
-			"traefik.http.middlewares.holoscripter-redirect.redirectRegex.permanent":   "false",
+			"traefik.http.middlewares.holoscripter-redirect.redirectRegex.regex":        fmt.Sprintf("^https?://holoscripter\\.((?:%s|%s\\.%s))(.*)$", domain, getEnv("TS_HOSTNAME", ""), domain),
+			"traefik.http.middlewares.holoscripter-redirect.redirectRegex.replacement":  "https://holoscript.$1$2",
+			"traefik.http.middlewares.holoscripter-redirect.redirectRegex.permanent":    "false",
 			"traefik.http.middlewares.kotorscripter-redirect.redirectRegex.regex":       fmt.Sprintf("^https?://kotorscripter\\.((?:%s|%s\\.%s))(.*)$", domain, getEnv("TS_HOSTNAME", ""), domain),
 			"traefik.http.middlewares.kotorscripter-redirect.redirectRegex.replacement": "https://holoscript.$1$2",
 			"traefik.http.middlewares.kotorscripter-redirect.redirectRegex.permanent":   "false",
@@ -352,14 +367,14 @@ func defineServicesFromConfig(config *Config) []Service {
 			"traefik.http.middlewares.kotorscript-redirect.redirectRegex.replacement":   "https://holoscript.$1$2",
 			"traefik.http.middlewares.kotorscript-redirect.redirectRegex.permanent":     "false",
 			"traefik.http.middlewares.tslscript-redirect.redirectRegex.regex":           fmt.Sprintf("^https?://tslscript\\.((?:%s|%s\\.%s))(.*)$", domain, getEnv("TS_HOSTNAME", ""), domain),
-			"traefik.http.middlewares.tslscript-redirect.redirectRegex.replacement":      "https://holoscript.$1$2",
+			"traefik.http.middlewares.tslscript-redirect.redirectRegex.replacement":     "https://holoscript.$1$2",
 			"traefik.http.middlewares.tslscript-redirect.redirectRegex.permanent":       "false",
-			"traefik.http.middlewares.kscript-redirect.redirectRegex.regex":               fmt.Sprintf("^https?://kscript\\.((?:%s|%s\\.%s))(.*)$", domain, getEnv("TS_HOSTNAME", ""), domain),
-			"traefik.http.middlewares.kscript-redirect.redirectRegex.replacement":        "https://holoscript.$1$2",
-			"traefik.http.middlewares.kscript-redirect.redirectRegex.permanent":          "false",
-			"traefik.http.middlewares.hololsp-redirect.redirectRegex.regex":               fmt.Sprintf("^https?://hololsp\\.((?:%s|%s\\.%s))(.*)$", domain, getEnv("TS_HOSTNAME", ""), domain),
-			"traefik.http.middlewares.hololsp-redirect.redirectRegex.replacement":        "https://holoscript.$1$2",
-			"traefik.http.middlewares.hololsp-redirect.redirectRegex.permanent":           "false",
+			"traefik.http.middlewares.kscript-redirect.redirectRegex.regex":             fmt.Sprintf("^https?://kscript\\.((?:%s|%s\\.%s))(.*)$", domain, getEnv("TS_HOSTNAME", ""), domain),
+			"traefik.http.middlewares.kscript-redirect.redirectRegex.replacement":       "https://holoscript.$1$2",
+			"traefik.http.middlewares.kscript-redirect.redirectRegex.permanent":         "false",
+			"traefik.http.middlewares.hololsp-redirect.redirectRegex.regex":             fmt.Sprintf("^https?://hololsp\\.((?:%s|%s\\.%s))(.*)$", domain, getEnv("TS_HOSTNAME", ""), domain),
+			"traefik.http.middlewares.hololsp-redirect.redirectRegex.replacement":       "https://holoscript.$1$2",
+			"traefik.http.middlewares.hololsp-redirect.redirectRegex.permanent":         "false",
 			"traefik.http.routers.holoscript.rule":                                      fmt.Sprintf("Host(`holoscript.%s`) || Host(`holoscript.%s.%s`)", domain, getEnv("TS_HOSTNAME", ""), domain),
 			"traefik.http.services.holoscript.loadbalancer.server.port":                 getEnv("KOTORSCRIPT_SESSION_MANAGER_PORT", "8080"),
 			"traefik.http.routers.holoscripter-redirect.rule":                           fmt.Sprintf("Host(`holoscripter.%s`) || Host(`holoscripter.%s.%s`)", domain, getEnv("TS_HOSTNAME", ""), domain),
@@ -370,7 +385,7 @@ func defineServicesFromConfig(config *Config) []Service {
 			"traefik.http.routers.kotorscripter-redirect.service":                       "holoscript@docker",
 			"traefik.http.routers.kotorscript-redirect.rule":                            fmt.Sprintf("Host(`kotorscript.%s`) || Host(`kotorscript.%s.%s`)", domain, getEnv("TS_HOSTNAME", ""), domain),
 			"traefik.http.routers.kotorscript-redirect.middlewares":                     "kotorscript-redirect@docker",
-			"traefik.http.routers.kotorscript-redirect.service":                          "holoscript@docker",
+			"traefik.http.routers.kotorscript-redirect.service":                         "holoscript@docker",
 			"traefik.http.routers.tslscript-redirect.rule":                              fmt.Sprintf("Host(`tslscript.%s`) || Host(`tslscript.%s.%s`)", domain, getEnv("TS_HOSTNAME", ""), domain),
 			"traefik.http.routers.tslscript-redirect.middlewares":                       "tslscript-redirect@docker",
 			"traefik.http.routers.tslscript-redirect.service":                           "holoscript@docker",
@@ -401,25 +416,32 @@ func defineServicesFromConfig(config *Config) []Service {
 		ContainerName: "bolabaden-nextjs",
 		Hostname:      "bolabaden-nextjs",
 		Networks:      []string{"backend", "publicnet"},
+		Expose: []ExposePort{
+			{Port: "3000", Protocol: "tcp"},
+		},
 		Environment: map[string]string{
-			"NODE_ENV":      "production",
-			"PORT":          "3000",
-			"HOSTNAME":      "0.0.0.0",
-			"ALLOW_ORIGIN":  "*",
+			"TZ":           getEnv("TZ", "America/Chicago"),
+			"PUID":         getEnv("PUID", "1001"),
+			"PGID":         getEnv("PGID", "999"),
+			"UMASK":        getEnv("UMASK", "002"),
+			"NODE_ENV":     "production",
+			"PORT":         "3000",
+			"HOSTNAME":     "0.0.0.0",
+			"ALLOW_ORIGIN": "*",
 		},
 		Labels: map[string]string{
-			"traefik.enable":                                         "true",
-			"traefik.http.middlewares.bolabaden-error-pages.errors.status": "400-599",
-			"traefik.http.middlewares.bolabaden-error-pages.errors.service":  "bolabaden-nextjs@docker",
-			"traefik.http.middlewares.bolabaden-error-pages.errors.query":  "/api/error/{status}",
-			"traefik.http.routers.bolabaden-nextjs.rule":                    fmt.Sprintf("Host(`%s`) || Host(`%s.%s`)", domain, getEnv("TS_HOSTNAME", ""), domain),
+			"traefik.enable": "true",
+			"traefik.http.middlewares.bolabaden-error-pages.errors.status":    "400-599",
+			"traefik.http.middlewares.bolabaden-error-pages.errors.service":   "bolabaden-nextjs@docker",
+			"traefik.http.middlewares.bolabaden-error-pages.errors.query":     "/api/error/{status}",
+			"traefik.http.routers.bolabaden-nextjs.rule":                      fmt.Sprintf("Host(`%s`) || Host(`%s.%s`)", domain, getEnv("TS_HOSTNAME", ""), domain),
 			"traefik.http.services.bolabaden-nextjs.loadbalancer.server.port": "3000",
 			"kuma.bolabaden-nextjs.http.name":                                 fmt.Sprintf("%s.%s", getEnv("TS_HOSTNAME", ""), domain),
 			"kuma.bolabaden-nextjs.http.url":                                  fmt.Sprintf("https://%s", domain),
 			"kuma.bolabaden-nextjs.http.interval":                             "30",
 		},
 		Healthcheck: &Healthcheck{
-			Test:        []string{"CMD-SHELL", "wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1"},
+			Test:        []string{"CMD-SHELL", "wget -qO- http://127.0.0.1:${PORT:-3000} > /dev/null 2>&1 || exit 1"},
 			Timeout:     "10s",
 			StartPeriod: "30s",
 		},
@@ -434,10 +456,13 @@ func defineServicesFromConfig(config *Config) []Service {
 		ContainerName: "dozzle",
 		Hostname:      "dozzle",
 		Networks:      []string{"backend", "default", "publicnet"},
+		Expose: []ExposePort{
+			{Port: dozzlePort, Protocol: "tcp"},
+		},
 		Environment: map[string]string{
 			"DOZZLE_NO_ANALYTICS":      getEnv("DOZZLE_NO_ANALYTICS", "true"),
 			"DOZZLE_FILTER":            getEnv("DOZZLE_FILTER", ""),
-			"DOZZLE_ENABLE_ACTIONS":     getEnv("DOZZLE_ENABLE_ACTIONS", "false"),
+			"DOZZLE_ENABLE_ACTIONS":    getEnv("DOZZLE_ENABLE_ACTIONS", "false"),
 			"DOZZLE_AUTH_HEADER_NAME":  getEnv("DOZZLE_AUTH_HEADER_NAME", ""),
 			"DOZZLE_AUTH_HEADER_USER":  getEnv("DOZZLE_AUTH_USER", ""),
 			"DOZZLE_AUTH_HEADER_EMAIL": getEnv("DOZZLE_AUTH_EMAIL", ""),
@@ -449,17 +474,17 @@ func defineServicesFromConfig(config *Config) []Service {
 			"DOZZLE_REMOTE_HOST":       "tcp://dockerproxy-ro:2375",
 		},
 		Labels: map[string]string{
-			"traefik.enable":                                         "true",
-			"traefik.http.routers.dozzle.middlewares":              "nginx-auth@file",
+			"traefik.enable": "true",
+			"traefik.http.routers.dozzle.middlewares":               "nginx-auth@file",
 			"traefik.http.services.dozzle.loadbalancer.server.port": dozzlePort,
-			"homepage.group":                                        "System Monitoring",
-			"homepage.name":                                         "Dozzle",
-			"homepage.icon":                                         "dozzle.png",
-			"homepage.href":                                         fmt.Sprintf("https://dozzle.%s", domain),
-			"homepage.description":                                  "Real-time web UI for viewing Docker container logs across the host",
-			"kuma.dozzle.http.name":                                 fmt.Sprintf("dozzle.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
-			"kuma.dozzle.http.url":                                  fmt.Sprintf("https://dozzle.%s", domain),
-			"kuma.dozzle.http.interval":                            "60",
+			"homepage.group":            "System Monitoring",
+			"homepage.name":             "Dozzle",
+			"homepage.icon":             "dozzle.png",
+			"homepage.href":             fmt.Sprintf("https://dozzle.%s", domain),
+			"homepage.description":      "Real-time web UI for viewing Docker container logs across the host",
+			"kuma.dozzle.http.name":     fmt.Sprintf("dozzle.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
+			"kuma.dozzle.http.url":      fmt.Sprintf("https://dozzle.%s", domain),
+			"kuma.dozzle.http.interval": "60",
 		},
 		DependsOn:  []string{"dockerproxy-ro"},
 		Restart:    "always",
@@ -474,37 +499,37 @@ func defineServicesFromConfig(config *Config) []Service {
 		Hostname:      "homepage",
 		Networks:      []string{"backend", "default", "publicnet"},
 		Configs: []ConfigMount{
-			{Source: fmt.Sprintf("%s/homepage/custom.css", configPath), Target: "/app/config/custom.css", Mode: "0777"},
-			{Source: fmt.Sprintf("%s/homepage/custom.js", configPath), Target: "/app/config/custom.js", Mode: "0777"},
-			{Source: fmt.Sprintf("%s/homepage/docker.yaml", configPath), Target: "/app/config/docker.yaml", Mode: "0777"},
-			{Source: fmt.Sprintf("%s/homepage/widgets.yaml", configPath), Target: "/app/config/widgets.yaml", Mode: "0777"},
-			{Source: fmt.Sprintf("%s/homepage/settings.yaml", configPath), Target: "/app/config/settings.yaml", Mode: "0777"},
-			{Source: fmt.Sprintf("%s/homepage/bookmarks.yaml", configPath), Target: "/app/config/bookmarks.yaml", Mode: "0777"},
+			{Source: "gethomepage-custom.css", Target: "/app/config/custom.css", Mode: "0777"}, // Config from docker-compose configs section
+			{Source: "gethomepage-custom.js", Target: "/app/config/custom.js", Mode: "0777"},
+			{Source: "gethomepage-docker.yaml", Target: "/app/config/docker.yaml", Mode: "0777"},
+			{Source: "gethomepage-widgets.yaml", Target: "/app/config/widgets.yaml", Mode: "0777"},
+			{Source: "gethomepage-settings.yaml", Target: "/app/config/settings.yaml", Mode: "0777"},
+			{Source: "gethomepage-bookmarks.yaml", Target: "/app/config/bookmarks.yaml", Mode: "0777"},
 		},
 		Volumes: []VolumeMount{
 			{Source: fmt.Sprintf("%s/homepage", configPath), Target: "/app/config", Type: "bind"},
 		},
 		Environment: map[string]string{
-			"DOCKER_HOST":                "tcp://dockerproxy-ro:2375",
-			"HOMEPAGE_ALLOWED_HOSTS":     "*",
-			"HOMEPAGE_VAR_TITLE":         "Bolabaden",
+			"DOCKER_HOST":                  "tcp://dockerproxy-ro:2375",
+			"HOMEPAGE_ALLOWED_HOSTS":       "*",
+			"HOMEPAGE_VAR_TITLE":           "Bolabaden",
 			"HOMEPAGE_VAR_SEARCH_PROVIDER": "duckduckgo",
-			"HOMEPAGE_VAR_HEADER_STYLE": "glass",
-			"HOMEPAGE_VAR_THEME":        "dark",
-			"HOMEPAGE_CUSTOM_CSS":        "/app/config/custom.css",
-			"HOMEPAGE_CUSTOM_JS":         "/app/config/custom.js",
-			"HOMEPAGE_VAR_WEATHER_CITY":  "Iowa City",
-			"HOMEPAGE_VAR_WEATHER_LAT":  "41.661129",
-			"HOMEPAGE_VAR_WEATHER_LONG": "-91.5302",
-			"HOMEPAGE_VAR_WEATHER_UNIT": "fahrenheit",
+			"HOMEPAGE_VAR_HEADER_STYLE":    "glass",
+			"HOMEPAGE_VAR_THEME":           "dark",
+			"HOMEPAGE_CUSTOM_CSS":          "/app/config/custom.css",
+			"HOMEPAGE_CUSTOM_JS":           "/app/config/custom.js",
+			"HOMEPAGE_VAR_WEATHER_CITY":    "Iowa City",
+			"HOMEPAGE_VAR_WEATHER_LAT":     "41.661129",
+			"HOMEPAGE_VAR_WEATHER_LONG":    "-91.5302",
+			"HOMEPAGE_VAR_WEATHER_UNIT":    "fahrenheit",
 		},
 		Labels: map[string]string{
-			"deunhealth.restart.on.unhealthy": "true",
-			"traefik.enable":                    "true",
+			"deunhealth.restart.on.unhealthy":                         "true",
+			"traefik.enable":                                          "true",
 			"traefik.http.services.homepage.loadbalancer.server.port": "3000",
-			"kuma.homepage.http.name":                                   fmt.Sprintf("homepage.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
-			"kuma.homepage.http.url":                                    fmt.Sprintf("https://homepage.%s", domain),
-			"kuma.homepage.http.interval":                               "30",
+			"kuma.homepage.http.name":                                 fmt.Sprintf("homepage.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
+			"kuma.homepage.http.url":                                  fmt.Sprintf("https://homepage.%s", domain),
+			"kuma.homepage.http.interval":                             "30",
 		},
 		Healthcheck: &Healthcheck{
 			Test:        []string{"CMD-SHELL", "wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1"},
@@ -513,12 +538,13 @@ func defineServicesFromConfig(config *Config) []Service {
 			Retries:     3,
 			StartPeriod: "30s",
 		},
-		CPUs:           "0.25",
-		MemReservation: "128M",
-		MemLimit:       "1G",
-		DependsOn:      []string{"dockerproxy-ro"},
-		Restart:        "always",
-		ExtraHosts:     []string{"host.docker.internal:host-gateway"},
+		CPUs:                "0.25",
+		MemReservation:      "128M",
+		MemLimit:            "1G",
+		DependsOn:           []string{"dockerproxy-ro"},
+		DependsOnConditions: map[string]string{"dockerproxy-ro": "service_healthy"},
+		Restart:             "always",
+		ExtraHosts:          []string{"host.docker.internal:host-gateway"},
 	})
 
 	// Watchtower
@@ -529,7 +555,7 @@ func defineServicesFromConfig(config *Config) []Service {
 		Hostname:      "watchtower",
 		Networks:      []string{"backend"},
 		Configs: []ConfigMount{
-			{Source: fmt.Sprintf("%s/watchtower-config.json", configPath), Target: "/config.json", Mode: "0444"},
+			{Source: "watchtower-config.json", Target: "/config.json", Mode: "0444"}, // Config from docker-compose configs section (~/.docker/config.json)
 		},
 		Volumes: []VolumeMount{
 			{Source: getEnv("DOCKER_SOCKET", "/var/run/docker.sock"), Target: "/var/run/docker.sock", Type: "bind"},
@@ -556,7 +582,7 @@ func defineServicesFromConfig(config *Config) []Service {
 			"WATCHTOWER_CLEANUP":                 getEnv("WATCHTOWER_CLEANUP", "true"),
 			"WATCHTOWER_REMOVE_VOLUMES":          getEnv("WATCHTOWER_REMOVE_VOLUMES", "false"),
 			"WATCHTOWER_ROLLING_RESTART":         getEnv("WATCHTOWER_ROLLING_RESTART", "false"),
-			"WATCHTOWER_TIMEOUT":                  getEnv("WATCHTOWER_TIMEOUT", "10s"),
+			"WATCHTOWER_TIMEOUT":                 getEnv("WATCHTOWER_TIMEOUT", "10s"),
 			"WATCHTOWER_RUN_ONCE":                getEnv("WATCHTOWER_RUN_ONCE", "false"),
 			"WATCHTOWER_NO_STARTUP_MESSAGE":      getEnv("WATCHTOWER_NO_STARTUP_MESSAGE", "false"),
 			"WATCHTOWER_WARN_ON_HEAD_FAILURE":    getEnv("WATCHTOWER_WARN_ON_HEAD_FAILURE", "auto"),
@@ -572,6 +598,24 @@ func defineServicesFromConfig(config *Config) []Service {
 			"WATCHTOWER_PORCELAIN":               getEnv("WATCHTOWER_PORCELAIN", ""),
 			"WATCHTOWER_NOTIFICATION_URL":        getEnv("WATCHTOWER_NOTIFICATION_URL", ""),
 			"WATCHTOWER_NOTIFICATION_REPORT":     getEnv("WATCHTOWER_NOTIFICATION_REPORT", "true"),
+			"WATCHTOWER_NOTIFICATION_TEMPLATE": `{{- if .Report -}}
+  {{- with .Report -}}
+    {{- if ( or .Updated .Failed ) -}}
+{{len .Scanned}} Scanned, {{len .Updated}} Updated, {{len .Failed}} Failed
+      {{- range .Updated}}
+  - {{.Name}} ({{.ImageName}}): {{.CurrentImageID.ShortID}} updated to {{.LatestImageID.ShortID}}
+      {{- end -}}
+      {{- range .Skipped}}
+  - {{.Name}} ({{.ImageName}}): {{.State}}: {{.Error}}
+      {{- end -}}
+      {{- range .Failed}}
+  - {{.Name}} ({{.ImageName}}): {{.State}}: {{.Error}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- else -}}
+  {{range .Entries -}}{{.Message}}{{"\n"}}{{- end -}}
+{{- end -}}`,
 		},
 		Restart:    "always",
 		ExtraHosts: []string{"host.docker.internal:host-gateway"},
@@ -592,6 +636,10 @@ func defineServicesFromConfig(config *Config) []Service {
 			{Source: getEnv("DOCKER_SOCKET", "/var/run/docker.sock"), Target: "/var/run/docker.sock", Type: "bind"},
 		},
 		Environment: map[string]string{
+			"TZ":             getEnv("TZ", "America/Chicago"),
+			"PUID":           getEnv("PUID", "1001"),
+			"PGID":           getEnv("PGID", "999"),
+			"UMASK":          getEnv("UMASK", "002"),
 			"ALLOW_START":    "1",
 			"ALLOW_STOP":     "1",
 			"ALLOW_RESTARTS": "1",
@@ -631,6 +679,7 @@ func defineServicesFromConfig(config *Config) []Service {
 		Image:         "bolabaden/kotormodsync-telemetry-auth",
 		ContainerName: "telemetry-auth-test",
 		Hostname:      "telemetry-auth",
+		User:          "0:0", // Run as root to read secrets
 		Ports: []PortMapping{
 			{HostPort: "8080", ContainerPort: "8080", Protocol: "tcp"},
 		},
@@ -661,6 +710,11 @@ func defineServicesFromConfig(config *Config) []Service {
 		ContainerName: "portainer",
 		Hostname:      "portainer",
 		Networks:      []string{"backend", "publicnet"},
+		Expose: []ExposePort{
+			{Port: "8000", Protocol: "tcp"},
+			{Port: "9000", Protocol: "tcp"},
+			{Port: "9443", Protocol: "tcp"},
+		},
 		Ports: []PortMapping{
 			{HostIP: "127.0.0.1", HostPort: "9443", ContainerPort: "9443", Protocol: "tcp"},
 		},
@@ -669,13 +723,13 @@ func defineServicesFromConfig(config *Config) []Service {
 			{Source: fmt.Sprintf("%s/portainer/data", configPath), Target: "/data", Type: "bind"},
 		},
 		Labels: map[string]string{
-			"traefik.enable":                                         "true",
-			"traefik.http.routers.portainer.middlewares":             "nginx-auth@file",
-			"traefik.http.routers.portainer.service":                 "portainer@docker",
+			"traefik.enable": "true",
+			"traefik.http.routers.portainer.middlewares":               "nginx-auth@file",
+			"traefik.http.routers.portainer.service":                   "portainer@docker",
 			"traefik.http.services.portainer.loadbalancer.server.port": "9000",
-			"kuma.portainer.http.name":                               fmt.Sprintf("portainer.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
-			"kuma.portainer.http.url":                                fmt.Sprintf("https://portainer.%s", domain),
-			"kuma.portainer.http.interval":                           "60",
+			"kuma.portainer.http.name":                                 fmt.Sprintf("portainer.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
+			"kuma.portainer.http.url":                                  fmt.Sprintf("https://portainer.%s", domain),
+			"kuma.portainer.http.interval":                             "60",
 		},
 		Restart:    "always",
 		ExtraHosts: []string{"host.docker.internal:host-gateway"},
@@ -688,6 +742,17 @@ func defineServicesFromConfig(config *Config) []Service {
 		ContainerName: "dns-server",
 		Hostname:      fmt.Sprintf("dns-server.%s", domain),
 		Networks:      []string{"publicnet"},
+		Expose: []ExposePort{
+			{Port: "53", Protocol: "udp"},
+			{Port: "80", Protocol: "tcp"},
+			{Port: "443", Protocol: "tcp"},
+			{Port: "538", Protocol: "tcp"},
+			{Port: "853", Protocol: "tcp"},
+			{Port: "853", Protocol: "udp"},
+			{Port: "8053", Protocol: "tcp"},
+			{Port: "5380", Protocol: "tcp"},
+			{Port: "53443", Protocol: "tcp"},
+		},
 		Ports: []PortMapping{
 			{HostPort: "53", ContainerPort: "53", Protocol: "udp"},
 		},
@@ -695,16 +760,16 @@ func defineServicesFromConfig(config *Config) []Service {
 			{Source: fmt.Sprintf("%s/dns-server/config", configPath), Target: "/etc/dns", Type: "bind"},
 		},
 		Labels: map[string]string{
-			"traefik.enable":                                         "true",
+			"traefik.enable": "true",
 			"traefik.http.services.dns-server.loadbalancer.server.port": "5380",
-			"homepage.group":                                        "Infrastructure",
-			"homepage.name":                                         "Technitium DNS Server",
-			"homepage.icon":                                         "dns-server.png",
-			"homepage.href":                                         fmt.Sprintf("https://dns-server.%s", domain),
-			"homepage.description":                                 "DNS server used to resolve DNS queries",
-			"kuma.dns-server.http.name":                             fmt.Sprintf("dns-server.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
-			"kuma.dns-server.http.url":                              fmt.Sprintf("https://dns-server.%s/", domain),
-			"kuma.dns-server.http.interval":                         "60",
+			"homepage.group":                "Infrastructure",
+			"homepage.name":                 "Technitium DNS Server",
+			"homepage.icon":                 "dns-server.png",
+			"homepage.href":                 fmt.Sprintf("https://dns-server.%s", domain),
+			"homepage.description":          "DNS server used to resolve DNS queries",
+			"kuma.dns-server.http.name":     fmt.Sprintf("dns-server.%s.%s", getEnv("TS_HOSTNAME", ""), domain),
+			"kuma.dns-server.http.url":      fmt.Sprintf("https://dns-server.%s/", domain),
+			"kuma.dns-server.http.interval": "60",
 		},
 		Restart:    "always",
 		ExtraHosts: []string{"host.docker.internal:host-gateway"},
@@ -727,10 +792,10 @@ func buildTraefikCommand(config *Config) []string {
 			config.RootPath,
 		)
 	}
-	
+
 	// Get Tailscale hostname from environment
 	tsHostname := getEnv("TS_HOSTNAME", "")
-	
+
 	// Use the canonical BuildTraefikCommand function
 	return infraconfig.BuildTraefikCommand(cfg, tsHostname)
 }

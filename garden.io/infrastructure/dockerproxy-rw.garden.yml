@@ -15,7 +15,6 @@ spec:
     PUID: ${var.PUID || "1001"}
     PGID: ${var.PGID || "999"}
     UMASK: ${var.UMASK || "002"}
-    DOCKER_API_VERSION: ${var.DOCKER_API_VERSION_OVERRIDE || "1.52"}
     ALLOW_START: 1
     ALLOW_STOP: 1
     ALLOW_RESTARTS: 1

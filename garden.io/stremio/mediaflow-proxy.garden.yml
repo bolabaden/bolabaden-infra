@@ -34,12 +34,25 @@ spec:
     - path: /
       port: http
       hostname: mediaflow-proxy.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.mediaflow-proxy.rule: Host(`mediaflow-proxy.${var.domain}`) || Host(`mediaflow-proxy.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.mediaflow-proxy.loadbalancer.server.port: ${var.MEDIAFLOW_PROXY_PORT || "8888"}
+    homepage.name: MediaFlow Proxy
+    homepage.icon: mediaflow-proxy.png
+    homepage.description: M3U/HLS/HSTS proxy for Stremio/Kodi to normalize and proxy streaming playlists
+    homepage.group: Stremio Addons
+    homepage.href: https://mediaflow-proxy.${var.domain}/
+    kuma.mediaflow-proxy.http.name: mediaflow-proxy.${var.ts-hostname}.${var.domain}
+    kuma.mediaflow-proxy.http.url: https://mediaflow-proxy.${var.domain}
+    kuma.mediaflow-proxy.http.interval: "60"
   healthCheck:
     exec:
-      command: [python3, -c, "import socket; s=socket.socket(); s.connect(('127.0.0.1', ${var.MEDIAFLOW_PROXY_PORT || 8888})); print('Healthcheck passed')"]
+      command: [sh, -c, "python3 -c \"import socket; s=socket.socket(); s.connect(('127.0.0.1', ${var.MEDIAFLOW_PROXY_PORT || 8888})); print('Healthcheck passed')\""]
     initialDelaySeconds: 10
     periodSeconds: 60
     timeoutSeconds: 10
     failureThreshold: 5
+    startPeriodSeconds: 10
   restartPolicy: always
 

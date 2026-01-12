@@ -10,6 +10,7 @@ dependencies:
 spec:
   replicas: 3
   image: docker.io/grafana/promtail
+  hostname: promtail
   extraHosts:
     - host.docker.internal:host-gateway
   env:

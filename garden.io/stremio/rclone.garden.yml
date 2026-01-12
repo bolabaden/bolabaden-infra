@@ -6,7 +6,8 @@ type: container
 
 spec:
   replicas: 3
-  image: docker.io/rclone/rclone:1.71
+  image: docker.io/rclone/rclone
+  hostname: rclone
   extraHosts:
     - host.docker.internal:host-gateway
   capAdd:
@@ -77,12 +78,27 @@ spec:
     - path: /
       port: http
       hostname: rclone.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.rclone.middlewares: nginx-auth@file
+    traefik.http.routers.rclone.rule: Host(`rclone.${var.domain}`) || Host(`rclone.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.rclone.loadbalancer.server.port: ${var.RCLONE_PORT || "5572"}
+    homepage.group: Cloud
+    homepage.name: Rclone
+    homepage.icon: rclone.png
+    homepage.href: https://rclone.${var.domain}/
+    homepage.description: A web interface for Rclone.
+    homepage.weight: "0"
+    kuma.rclone.http.name: rclone.${var.ts-hostname}.${var.domain}
+    kuma.rclone.http.url: https://rclone.${var.domain}
+    kuma.rclone.http.interval: "60"
   healthCheck:
     exec:
-      command: [mountpoint, -q, /mnt/remote]
-    initialDelaySeconds: 15
+      command: [sh, -c, "mountpoint -q /mnt/remote"]
+    initialDelaySeconds: 0
     periodSeconds: 5
     timeoutSeconds: 3
     failureThreshold: 2
+    startPeriodSeconds: 15
   restartPolicy: always
 

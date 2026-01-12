@@ -10,6 +10,7 @@ dependencies:
 spec:
   replicas: 3
   image: docker.io/traefik:latest
+  hostname: traefik
   capAdd: [NET_ADMIN]
   extraHosts:
     - host.docker.internal:host-gateway
@@ -25,11 +26,14 @@ spec:
       containerPort: 8080
     - name: http
       containerPort: 80
+      hostPort: 80
     - name: https
       containerPort: 443
+      hostPort: 443
     - name: https-udp
       containerPort: 443
       protocol: UDP
+      hostPort: 443
   volumes:
     - name: docker-sock
       containerPath: /var/run/docker.sock
@@ -47,6 +51,7 @@ spec:
     - name: logs
       containerPath: /var/log/traefik
       sourcePath: ${var.config-path}/traefik/logs
+      readOnly: false
     - name: traefik-dynamic-core
       containerPath: /traefik/dynamic/core.yaml
       sourcePath: ${var.config-path}/traefik/traefik/dynamic/core.yaml
@@ -99,13 +104,13 @@ spec:
     - '--ping=true'
     - '--providers.docker=true'
     - '--providers.docker.endpoint=${var.TRAEFIK_DOCKER_HOST || "unix:///var/run/docker.sock"}'
-    - '--providers.docker.network=${var.stack-name}_publicnet'
+    - '--providers.docker.network=${var.stack-name || "my-media-stack"}_publicnet'
     - '--providers.docker.defaultRule=Host(`{{ normalize .ContainerName }}.${var.domain}`) || Host(`{{ normalize .Name }}.${var.domain}`) || Host(`{{ normalize .ContainerName }}.${var.ts-hostname}.${var.domain}`) || Host(`{{ normalize .Name }}.${var.ts-hostname}.${var.domain}`)'
     - '--providers.docker.exposedByDefault=false'
     - '--providers.file.directory=/traefik/dynamic/'
     - '--providers.file.watch=true'
     - '--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin'
-    - '--experimental.plugins.bouncer.version=v1.4.5'
+    - '--experimental.plugins.bouncer.version=v1.4.6'
     - '--experimental.plugins.traefikerrorreplace.modulename=github.com/PseudoResonance/traefikerrorreplace'
     - '--experimental.plugins.traefikerrorreplace.version=v1.0.1'
     - '--serversTransport.insecureSkipVerify=true'
@@ -113,6 +118,24 @@ spec:
     - path: /
       port: dashboard
       hostname: traefik.${var.domain}
+    - path: /
+      port: dashboard
+      hostname: traefik.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.traefik.service: api@internal
+    traefik.http.routers.traefik.rule: Host(`traefik.${var.domain}`) || Host(`traefik.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.traefik.loadbalancer.server.port: "8080"
+    homepage.group: Infrastructure
+    homepage.name: Traefik
+    homepage.icon: traefik.png
+    homepage.href: https://traefik.${var.domain}/dashboard
+    homepage.widget.type: traefik
+    homepage.widget.url: http://traefik:8080
+    homepage.description: Reverse proxy entrypoint for all services with TLS, Cloudflare integration, and auth middleware
+    kuma.traefik.http.name: traefik.${var.ts-hostname}.${var.domain}
+    kuma.traefik.http.url: https://traefik.${var.domain}/dashboard
+    kuma.traefik.http.interval: "20"
   healthCheck:
     exec:
       command: [traefik, healthcheck, --ping]
@@ -120,4 +143,5 @@ spec:
     periodSeconds: 10
     timeoutSeconds: 3
     failureThreshold: 3
+    startPeriodSeconds: 10
   restartPolicy: always

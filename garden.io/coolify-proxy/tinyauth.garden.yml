@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: ghcr.io/steveiliop56/tinyauth:latest
+  hostname: auth
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -47,4 +48,20 @@ spec:
     - path: /
       port: http
       hostname: auth.${var.domain}
+    - path: /
+      port: http
+      hostname: auth.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.services.tinyauth.loadbalancer.server.port: "3000"
+    traefik.http.routers.tinyauth.rule: Host(`auth.${var.domain}`) || Host(`auth.${var.ts-hostname}.${var.domain}`)
+    traefik.http.middlewares.tinyauth.forwardAuth.address: http://auth:3000/api/auth/traefik
+    homepage.group: Security
+    homepage.name: TinyAuth
+    homepage.icon: https://tinyauth.app/img/logo.png
+    homepage.href: https://auth.${var.domain}/
+    homepage.description: Centralized login service (email, Google, GitHub) used by Traefik auth middleware and apps
+    kuma.tinyauth.http.name: auth.${var.ts-hostname}.${var.domain}
+    kuma.tinyauth.http.url: https://auth.${var.domain}
+    kuma.tinyauth.http.interval: "60"
   restartPolicy: always

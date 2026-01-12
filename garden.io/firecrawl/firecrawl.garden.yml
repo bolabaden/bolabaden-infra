@@ -18,17 +18,20 @@ dependencies:
   - deploy.redis
   - deploy.playwright-service
   - deploy.nuq-postgres
+  - deploy.rabbitmq
 
 spec:
   replicas: 3
   image: ${actions.build.firecrawl.outputs.deploymentImageId}
+  hostname: api
   extraHosts:
     - host.docker.internal:host-gateway
   env:
-    REDIS_URL: redis://redis:6379
-    REDIS_RATE_LIMIT_URL: redis://redis:6379
+    REDIS_URL: ${var.FIRECRAWL_REDIS_URL || "redis://${var.REDIS_HOSTNAME || \"redis\"}:${var.REDIS_PORT || \"6379\"}"}
+    REDIS_RATE_LIMIT_URL: ${var.FIRECRAWL_REDIS_RATE_LIMIT_URL || "redis://${var.REDIS_HOSTNAME || \"redis\"}:${var.REDIS_PORT || \"6379\"}"}
     PLAYWRIGHT_MICROSERVICE_URL: ${var.PLAYWRIGHT_HOST || "http://playwright-service:3000/scrape"}
-    NUQ_DATABASE_URL: postgres://postgres:postgres@nuq-postgres:5432/postgres
+    NUQ_DATABASE_URL: ${var.FIRECRAWL_NUQ_DATABASE_URL || "postgres://${var.FIRECRAWL_POSTGRES_USERNAME || \"postgres\"}:${var.FIRECRAWL_POSTGRES_PASSWORD || \"postgres\"}@${var.FIRECRAWL_POSTGRES_HOSTNAME || \"nuq-postgres\"}:${var.FIRECRAWL_POSTGRES_PORT || \"5432\"}/${var.FIRECRAWL_POSTGRES_DB || \"postgres\"}"}
+    NUQ_RABBITMQ_URL: ${var.FIRECRAWL_NUQ_RABBITMQ_URL || "amqp://${var.RABBITMQ_USERNAME || \"rabbitmq\"}:${var.RABBITMQ_PASSWORD || \"rabbitmq\"}@${var.RABBITMQ_HOSTNAME || \"rabbitmq\"}:${var.RABBITMQ_PORT || \"5672\"}"}
     EXTRACT_WORKER_PORT: ${var.FIRECRAWL_EXTRACT_WORKER_PORT || "3004"}
     USE_DB_AUTHENTICATION: ${var.FIRECRAWL_USE_DB_AUTHENTICATION || ""}
     OPENAI_API_KEY_FILE: /run/secrets/openai-api-key
@@ -41,14 +44,14 @@ spec:
     TEST_API_KEY_FILE: /run/secrets/firecrawl-api-key
     POSTHOG_API_KEY: ${var.POSTHOG_API_KEY || ""}
     POSTHOG_HOST: ${var.POSTHOG_HOST || ""}
-    SUPABASE_ANON_TOKEN: ${var.SUPABASE_ANON_TOKEN || ""}
-    SUPABASE_URL: ${var.SUPABASE_URL || ""}
-    SUPABASE_SERVICE_TOKEN: ${var.FIRECRAWL_SUPABASE_SERVICE_TOKEN || ""}
+      SUPABASE_ANON_TOKEN: ${var.SUPABASE_ANON_TOKEN || ""}
+      SUPABASE_URL: ${var.SUPABASE_URL}
+      SUPABASE_SERVICE_TOKEN: ${var.FIRECRAWL_SUPABASE_SERVICE_TOKEN || ""}
     SELF_HOSTED_WEBHOOK_URL: ${var.FIRECRAWL_SELF_HOSTED_WEBHOOK_URL || ""}
     SERPER_API_KEY: ${var.SERPER_API_KEY || ""}
     SEARCHAPI_API_KEY: ${var.SEARCHAPI_API_KEY || ""}
     SEARXNG_ENDPOINT: ${var.SEARXNG_ENDPOINT || "https://searxng.${var.domain}"}
-    HOST: 0.0.0.0
+    HOST: ${var.FIRECRAWL_HOST || "0.0.0.0"}
     PORT: ${var.FIRECRAWL_INTERNAL_PORT || "3002"}
     WORKER_PORT: ${var.FIRECRAWL_WORKER_PORT || "3005"}
     ENV: ${var.FIRECRAWL_ENV || "local"}
@@ -73,6 +76,7 @@ spec:
       cpu: 4000m
       memory: 4Gi
     requests:
+      cpu: 4000m
       memory: 4Gi
   command:
     - node
@@ -85,4 +89,25 @@ spec:
     - path: /
       port: http
       hostname: firecrawl-api.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.firecrawl.rule: Host(`firecrawl-api.${var.domain}`) || Host(`firecrawl-api.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.firecrawl.loadbalancer.server.port: ${var.FIRECRAWL_INTERNAL_PORT || "3002"}
+    deunhealth.restart.on.unhealthy: "true"
+    homepage.group: AI
+    homepage.name: Firecrawl
+    homepage.icon: firecrawl.png
+    homepage.href: https://firecrawl.${var.domain}
+    homepage.description: Firecrawl is a tool for crawling and indexing web pages.
+    kuma.firecrawl.http.name: firecrawl.${var.ts-hostname}.${var.domain}
+    kuma.firecrawl.http.url: https://firecrawl.${var.domain}
+    kuma.firecrawl.http.interval: "60"
+  healthCheck:
+    exec:
+      command: [sh, -c, "node -e \"require('http').get('http://127.0.0.1:$${FIRECRAWL_INTERNAL_PORT:-3002}/v0/health/liveness', (r) => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>process.exit(r.statusCode===200?0:1)); }).on('error',()=>process.exit(1));\" >/dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+    startPeriodSeconds: 60
   restartPolicy: always

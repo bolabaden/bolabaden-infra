@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: docker.io/portainer/portainer-ce
+  hostname: portainer
   extraHosts:
     - host.docker.internal:host-gateway
   ports:
@@ -22,6 +23,7 @@ spec:
     - name: docker-sock
       containerPath: /var/run/docker.sock
       sourcePath: ${var.docker-socket}
+      readOnly: false
     - name: data
       containerPath: /data
       sourcePath: ${var.config-path}/portainer/data
@@ -29,5 +31,16 @@ spec:
     - path: /
       port: ui
       hostname: portainer.${var.domain}
+    - path: /
+      port: ui
+      hostname: portainer.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.portainer.middlewares: nginx-auth@file
+    traefik.http.routers.portainer.service: portainer@docker
+    traefik.http.services.portainer.loadbalancer.server.port: "9000"
+    kuma.portainer.http.name: portainer.${var.ts-hostname}.${var.domain}
+    kuma.portainer.http.url: https://portainer.${var.domain}
+    kuma.portainer.http.interval: "60"
   restartPolicy: always
 

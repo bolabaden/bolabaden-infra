@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: docker.io/prom/blackbox-exporter
+  hostname: blackbox-exporter
   extraHosts:
     - host.docker.internal:host-gateway
   ports:
@@ -28,4 +29,19 @@ spec:
     - path: /
       port: http
       hostname: blackbox.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.blackbox-exporter.rule: Host(`blackbox.${var.domain}`) || Host(`blackbox.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.blackbox-exporter.loadbalancer.server.port: "9115"
+    homepage.group: Monitoring
+    homepage.name: Blackbox Exporter
+    homepage.icon: prometheus.png
+    homepage.href: https://blackbox.${var.domain}/
+    homepage.description: Blackbox probing of endpoints over HTTP, HTTPS, DNS, TCP and ICMP
+    kuma.blackbox-exporter.http.name: blackbox.${var.ts-hostname}.${var.domain}
+    kuma.blackbox-exporter.http.url: https://blackbox.${var.domain}
+    kuma.blackbox-exporter.http.interval: "60"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9115"
+    prometheus.io/path: metrics
   restartPolicy: always

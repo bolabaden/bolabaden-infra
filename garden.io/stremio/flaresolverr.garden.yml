@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: ghcr.io/flaresolverr/flaresolverr
+  hostname: flaresolverr
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -40,14 +41,25 @@ spec:
     - path: /
       port: http
       hostname: flaresolverr.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.flaresolverr.middlewares: nginx-auth@file
+    traefik.http.routers.flaresolverr.rule: Host(`flaresolverr.${var.domain}`) || Host(`flaresolverr.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.flaresolverr.loadbalancer.server.port: ${var.FLARESOLVERR_PORT || "8191"}
+    homepage.group: Infrastructure
+    homepage.name: Flaresolverr
+    homepage.icon: flaresolverr.png
+    homepage.href: https://flaresolverr.${var.domain}/
+    homepage.description: Headless anti-bot proxy to bypass Cloudflare/JS challenges for indexers and scrapers
+    kuma.flaresolverr.http.name: flaresolverr.${var.ts-hostname}.${var.domain}
+    kuma.flaresolverr.http.url: https://flaresolverr.${var.domain}
+    kuma.flaresolverr.http.interval: "30"
   healthCheck:
     exec:
-      command:
-      - sh
-      - -c
-      - 'curl -f http://127.0.0.1:${var.FLARESOLVERR_PORT || "8191"}/health > /dev/null 2>&1 || exit 1'
-    initialDelaySeconds: 60
+      command: [sh, -c, "curl -f http://127.0.0.1:${var.FLARESOLVERR_PORT || \"8191\"}/health > /dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 0
     periodSeconds: 30
     timeoutSeconds: 15
     failureThreshold: 3
+    startPeriodSeconds: 60
   restartPolicy: always

@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: docker.io/technitium/dns-server
+  hostname: dns-server.${var.domain}
   extraHosts:
     - host.docker.internal:host-gateway
   ports:
@@ -39,5 +40,19 @@ spec:
     - path: /
       port: console-http
       hostname: dns-server.${var.domain}
+    - path: /
+      port: console-http
+      hostname: dns-server.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.services.dns-server.loadbalancer.server.port: "5380"
+    homepage.group: Infrastructure
+    homepage.name: Technitium DNS Server
+    homepage.icon: dns-server.png
+    homepage.href: https://dns-server.${var.domain}
+    homepage.description: DNS server used to resolve DNS queries
+    kuma.dns-server.http.name: dns-server.${var.ts-hostname}.${var.domain}
+    kuma.dns-server.http.url: https://dns-server.${var.domain}/
+    kuma.dns-server.http.interval: "60"
   restartPolicy: always
 

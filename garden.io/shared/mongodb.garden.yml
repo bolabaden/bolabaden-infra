@@ -7,6 +7,9 @@ type: container
 spec:
   replicas: 3
   image: docker.io/mongo
+  hostname: ${var.MONGODB_HOSTNAME || "mongodb"}
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
   ports:
@@ -16,6 +19,24 @@ spec:
     - name: data
       containerPath: /data/db
       sourcePath: ${var.config-path}/mongodb/data
+  ingresses:
+    - path: /
+      port: db
+      hostname: mongodb.${var.domain}
+      protocol: TCP
+    - path: /
+      port: db
+      hostname: mongodb.${var.ts-hostname}.${var.domain}
+      protocol: TCP
+  annotations:
+    traefik.enable: "true"
+    traefik.tcp.routers.mongodb.rule: HostSNI(`mongodb.${var.domain}`) || HostSNI(`mongodb.${var.ts-hostname}.${var.domain}`)
+    traefik.tcp.routers.mongodb.service: mongodb@docker
+    traefik.tcp.routers.mongodb.tls.domains[0].main: ${var.domain}
+    traefik.tcp.routers.mongodb.tls.domains[0].sans: "*.${var.domain},${var.ts-hostname}.${var.domain}"
+    traefik.tcp.routers.mongodb.tls.passthrough: "true"
+    traefik.tcp.services.mongodb.loadbalancer.server.port: "27017"
+    traefik.tcp.services.mongodb.loadbalancer.server.tls: "true"
   healthCheck:
     exec:
       command: [sh, -c, "mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand(\"ping\").ok' > /dev/null 2>&1 || exit 1"]
@@ -23,5 +44,6 @@ spec:
     periodSeconds: 10
     timeoutSeconds: 10
     failureThreshold: 5
+    startPeriodSeconds: 40
   restartPolicy: always
 

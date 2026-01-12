@@ -9,6 +9,7 @@ dependencies:
 spec:
   replicas: 3
   image: ghcr.io/gurucomputing/headscale-ui
+  hostname: headscale
   extraHosts:
     - host.docker.internal:host-gateway
   dns:
@@ -43,4 +44,29 @@ spec:
     - path: /web/settings.html
       port: http
       hostname: headscale.${var.domain}
+    - path: /web
+      port: http
+      hostname: headscale.${var.ts-hostname}.${var.domain}
+    - path: /web/users.html
+      port: http
+      hostname: headscale.${var.ts-hostname}.${var.domain}
+    - path: /web/groups.html
+      port: http
+      hostname: headscale.${var.ts-hostname}.${var.domain}
+    - path: /web/devices.html
+      port: http
+      hostname: headscale.${var.ts-hostname}.${var.domain}
+    - path: /web/settings.html
+      port: http
+      hostname: headscale.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.headscale.service: headscale
+    traefik.http.routers.headscale.rule: (Host(`headscale.${var.domain}`) || Host(`headscale.${var.ts-hostname}.${var.domain}`)) && (PathPrefix(`/web`) || PathPrefix(`/web/users.html`) || PathPrefix(`/web/groups.html`) || PathPrefix(`/web/devices.html`) || PathPrefix(`/web/settings.html`))
+    traefik.http.services.headscale.loadbalancer.server.port: "8080"
+    homepage.group: Networking
+    homepage.name: Headscale UI
+    homepage.icon: headscale.png
+    homepage.href: https://headscale.${var.domain}/
+    homepage.description: Headscale UI is a web interface for Headscale, an open source implementation of Tailscale's Admin control panel.
   restartPolicy: always

@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: docker.io/containrrr/watchtower
+  hostname: watchtower
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -70,6 +71,7 @@ spec:
     - name: docker-sock
       containerPath: /var/run/docker.sock
       sourcePath: ${var.docker-socket}
+      readOnly: false
     - name: docker-config
       containerPath: /config.json
       sourcePath: ${var.HOME || "~"}/.docker/config.json

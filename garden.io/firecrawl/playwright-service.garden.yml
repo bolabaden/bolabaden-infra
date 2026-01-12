@@ -11,14 +11,15 @@ source:
 kind: Deploy
 apiVersion: garden.io/v0
 name: playwright-service
-description: Playwright service container
+description: Playwright service container for Firecrawl
 type: container
 dependencies:
   - build.playwright-service
 
 spec:
   replicas: 3
-  image: ${actions.build.playwright-service.outputs.deploymentImageId}
+  image: ghcr.io/firecrawl/playwright-service
+  hostname: playwright-service
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -30,4 +31,15 @@ spec:
   ports:
     - name: http
       containerPort: ${var.FIRECRAWL_PLAYWRIGHT_SERVICE_PORT || "3000"}
+  annotations:
+    kuma.playwright-service.http.name: playwright-service.${var.ts-hostname}.${var.domain}
+    kuma.playwright-service.http.url: https://playwright-service.${var.domain}
+    kuma.playwright-service.http.interval: "60"
+  healthCheck:
+    exec:
+      command: [sh, -c, "apt update && apt install curl -y && apt autoremove -y && curl -f http://127.0.0.1:3000/health >/dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 0
+    periodSeconds: 2
+    timeoutSeconds: 10
+    failureThreshold: 10
   restartPolicy: always

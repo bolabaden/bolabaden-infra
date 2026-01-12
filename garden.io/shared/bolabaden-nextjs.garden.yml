@@ -4,7 +4,7 @@ name: bolabaden-nextjs
 description: Bolabaden NextJS main website build
 type: container
 source:
-  path: ${var.src-path || "./src"}/website/bolabaden-site
+  path: ${var.src-path || "./projects"}/website/bolabaden-site
 
 ---
 kind: Deploy
@@ -17,7 +17,8 @@ dependencies:
 
 spec:
   replicas: 3
-  image: ${actions.build.bolabaden-nextjs.outputs.deploymentImageId}
+  image: docker.io/bolabaden/bolabaden-nextjs
+  hostname: bolabaden-nextjs
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}
@@ -37,12 +38,23 @@ spec:
     - path: /
       port: http
       hostname: ${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.middlewares.bolabaden-error-pages.errors.status: "400-599"
+    traefik.http.middlewares.bolabaden-error-pages.errors.service: bolabaden-nextjs@docker
+    traefik.http.middlewares.bolabaden-error-pages.errors.query: /api/error/{status}
+    traefik.http.routers.bolabaden-nextjs.rule: Host(`${var.domain}`) || Host(`${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.bolabaden-nextjs.loadbalancer.server.port: "3000"
+    kuma.bolabaden-nextjs.http.name: ${var.ts-hostname}.${var.domain}
+    kuma.bolabaden-nextjs.http.url: https://${var.domain}
+    kuma.bolabaden-nextjs.http.interval: "30"
   healthCheck:
     exec:
       command:
       - sh
       - -c
-      - 'wget -qO- http://127.0.0.1:${var.PORT || "3000"} > /dev/null 2>&1 || exit 1'
+      - 'wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1'
     initialDelaySeconds: 30
     timeoutSeconds: 10
+    startPeriodSeconds: 30
   restartPolicy: always

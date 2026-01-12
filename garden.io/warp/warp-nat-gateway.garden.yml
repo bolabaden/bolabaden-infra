@@ -34,9 +34,8 @@ spec:
     - name: socks5
       containerPort: ${var.GOST_SOCKS5_PORT || "1080"}
   volumes:
-    - name: warp-config
+    - name: warp-config-data
       containerPath: /var/lib/cloudflare-warp
-      sourcePath: ${var.config-path}/warp/config
     - name: warp-license-key
       containerPath: /run/secrets/warp-license-key
       sourcePath: ${var.config-path}/secrets/warp-license-key.txt
@@ -48,4 +47,5 @@ spec:
     periodSeconds: 15
     timeoutSeconds: 10
     failureThreshold: 10
+    startPeriodSeconds: 60
   restartPolicy: always

@@ -7,7 +7,10 @@ type: container
 spec:
   replicas: 3
   image: docker.io/redis:alpine
+  hostname: redis
   privileged: true
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     REDIS_HOST: ${var.REDIS_HOSTNAME || "redis"}
     REDIS_PORT: ${var.REDIS_PORT || "6379"}
@@ -21,7 +24,7 @@ spec:
   volumes:
     - name: data
       containerPath: /data
-      sourcePath: ${var.config-path}/redis/data
+      sourcePath: ${var.config-path}/redis
   command:
     - sh
     - -c
@@ -32,13 +35,31 @@ spec:
       --save 60 1
       --bind 0.0.0.0
       --port ${var.REDIS_PORT || "6379"}
-      --requirepass ${var.REDIS_PASSWORD || "redis"}
+      --requirepass ${var.REDIS_PASSWORD}
   resources:
     limits:
       memory: 4Gi
     requests:
       memory: 200Mi
     cpu: 500m
+  ingresses:
+    - path: /
+      port: redis
+      hostname: redis.${var.domain}
+      protocol: TCP
+    - path: /
+      port: redis
+      hostname: redis.${var.ts-hostname}.${var.domain}
+      protocol: TCP
+  annotations:
+    traefik.enable: "true"
+    traefik.tcp.routers.redis.rule: HostSNI(`redis.${var.domain}`) || HostSNI(`redis.${var.ts-hostname}.${var.domain}`)
+    traefik.tcp.routers.redis.service: redis@docker
+    traefik.tcp.routers.redis.tls.domains[0].main: ${var.domain}
+    traefik.tcp.routers.redis.tls.domains[0].sans: "*.${var.domain},${var.ts-hostname}.${var.domain}"
+    traefik.tcp.routers.redis.tls.passthrough: "true"
+    traefik.tcp.services.redis.loadbalancer.server.port: ${var.REDIS_PORT || "6379"}
+    traefik.tcp.services.redis.loadbalancer.server.tls: "true"
   healthCheck:
     exec:
       command: [sh, -c, "redis-cli ping > /dev/null 2>&1 || exit 1"]
