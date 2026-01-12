@@ -3,8 +3,7 @@ apiVersion: garden.io/v0
 name: docker-gen-failover
 description: Docker-gen for Traefik failover configuration
 type: container
-profiles:
-  - extras
+disabled: true  # Disabled by default, enable when needed
 dependencies:
   - deploy.dockerproxy-rw
 

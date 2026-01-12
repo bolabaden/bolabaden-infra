@@ -4,7 +4,7 @@ name: victoriametrics
 description: VictoriaMetrics time series database
 type: container
 dependencies:
-  - run.victoriametrics-init
+  - run.init-victoriametrics
 
 spec:
   replicas: 3

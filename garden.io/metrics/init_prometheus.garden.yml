@@ -1,6 +1,6 @@
 kind: Run
-apiVersion: garden.io/v2
-name: init_prometheus
+apiVersion: garden.io/v0
+name: init-prometheus
 description: Prometheus storage initialization
 type: container
 

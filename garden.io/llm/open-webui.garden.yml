@@ -3,8 +3,6 @@ apiVersion: garden.io/v0
 name: open-webui
 description: Open WebUI for LLM chat interface
 type: container
-profiles:
-  - fixme
 dependencies:
   - deploy.mcpo
   - deploy.litellm

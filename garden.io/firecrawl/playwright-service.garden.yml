@@ -5,7 +5,8 @@ description: Playwright service for Firecrawl
 type: container
 source:
   repository:
-    url: "git+https://github.com/firecrawl/firecrawl.git#main:/apps/playwright-service-ts"
+    url: "https://github.com/firecrawl/firecrawl.git#main"
+  path: apps/playwright-service-ts
 
 ---
 kind: Deploy

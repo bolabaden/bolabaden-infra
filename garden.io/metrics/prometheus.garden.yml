@@ -4,7 +4,7 @@ name: prometheus
 description: Prometheus monitoring system
 type: container
 dependencies:
-  - run.init_prometheus
+  - run.init-prometheus
   - deploy.victoriametrics
 
 spec:
