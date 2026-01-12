@@ -60,4 +60,5 @@ spec:
         - 'curl -f http://127.0.0.1:${var.MCPO_PORT || "8000"}/openapi.json'
     initialDelaySeconds: 40
     timeoutSeconds: 10
+    startPeriodSeconds: 40
   restartPolicy: always
