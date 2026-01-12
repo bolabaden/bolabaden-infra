@@ -44,14 +44,14 @@ spec:
     TEST_API_KEY_FILE: /run/secrets/firecrawl-api-key
     POSTHOG_API_KEY: ${var.POSTHOG_API_KEY || ""}
     POSTHOG_HOST: ${var.POSTHOG_HOST || ""}
-    SUPABASE_ANON_TOKEN: ${var.SUPABASE_ANON_TOKEN || ""}
-    SUPABASE_URL: ${var.SUPABASE_URL || ""}
-    SUPABASE_SERVICE_TOKEN: ${var.FIRECRAWL_SUPABASE_SERVICE_TOKEN || ""}
+      SUPABASE_ANON_TOKEN: ${var.SUPABASE_ANON_TOKEN || ""}
+      SUPABASE_URL: ${var.SUPABASE_URL}
+      SUPABASE_SERVICE_TOKEN: ${var.FIRECRAWL_SUPABASE_SERVICE_TOKEN || ""}
     SELF_HOSTED_WEBHOOK_URL: ${var.FIRECRAWL_SELF_HOSTED_WEBHOOK_URL || ""}
     SERPER_API_KEY: ${var.SERPER_API_KEY || ""}
     SEARCHAPI_API_KEY: ${var.SEARCHAPI_API_KEY || ""}
     SEARXNG_ENDPOINT: ${var.SEARXNG_ENDPOINT || "https://searxng.${var.domain}"}
-    HOST: 0.0.0.0
+    HOST: ${var.FIRECRAWL_HOST || "0.0.0.0"}
     PORT: ${var.FIRECRAWL_INTERNAL_PORT || "3002"}
     WORKER_PORT: ${var.FIRECRAWL_WORKER_PORT || "3005"}
     ENV: ${var.FIRECRAWL_ENV || "local"}
@@ -76,6 +76,7 @@ spec:
       cpu: 4000m
       memory: 4Gi
     requests:
+      cpu: 4000m
       memory: 4Gi
   command:
     - node
@@ -103,9 +104,10 @@ spec:
     kuma.firecrawl.http.interval: "60"
   healthCheck:
     exec:
-      command: [sh, -c, "node -e \"require('http').get('http://127.0.0.1:${var.FIRECRAWL_INTERNAL_PORT || \"3002\"}/v0/health/liveness', (r) => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>process.exit(r.statusCode===200?0:1)); }).on('error',()=>process.exit(1));\" >/dev/null 2>&1 || exit 1"]
-    initialDelaySeconds: 60
+      command: [sh, -c, "node -e \"require('http').get('http://127.0.0.1:$${FIRECRAWL_INTERNAL_PORT:-3002}/v0/health/liveness', (r) => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>process.exit(r.statusCode===200?0:1)); }).on('error',()=>process.exit(1));\" >/dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 30
     periodSeconds: 30
     timeoutSeconds: 10
     failureThreshold: 3
+    startPeriodSeconds: 60
   restartPolicy: always
