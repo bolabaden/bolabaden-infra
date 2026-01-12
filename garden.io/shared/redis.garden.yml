@@ -56,10 +56,10 @@ spec:
     traefik.tcp.routers.redis.rule: HostSNI(`redis.${var.domain}`) || HostSNI(`redis.${var.ts-hostname}.${var.domain}`)
     traefik.tcp.routers.redis.service: redis@docker
     traefik.tcp.routers.redis.tls.domains[0].main: ${var.domain}
-    traefik.tcp.routers.redis.tls.domains[0].sans: "*.${var.domain},${var.ts-hostname}.${var.domain}"
-    traefik.tcp.routers.redis.tls.passthrough: "true"
+    traefik.tcp.routers.redis.tls.domains[0].sans: *.${var.domain},${var.ts-hostname}.${var.domain}
+    traefik.tcp.routers.redis.tls.passthrough: true
     traefik.tcp.services.redis.loadbalancer.server.port: ${var.REDIS_PORT || "6379"}
-    traefik.tcp.services.redis.loadbalancer.server.tls: "true"
+    traefik.tcp.services.redis.loadbalancer.server.tls: true
   healthCheck:
     exec:
       command: [sh, -c, "redis-cli ping > /dev/null 2>&1 || exit 1"]

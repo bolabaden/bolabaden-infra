@@ -33,14 +33,14 @@ spec:
     traefik.tcp.routers.mongodb.rule: HostSNI(`mongodb.${var.domain}`) || HostSNI(`mongodb.${var.ts-hostname}.${var.domain}`)
     traefik.tcp.routers.mongodb.service: mongodb@docker
     traefik.tcp.routers.mongodb.tls.domains[0].main: ${var.domain}
-    traefik.tcp.routers.mongodb.tls.domains[0].sans: "*.${var.domain},${var.ts-hostname}.${var.domain}"
-    traefik.tcp.routers.mongodb.tls.passthrough: "true"
+    traefik.tcp.routers.mongodb.tls.domains[0].sans: *.${var.domain},${var.ts-hostname}.${var.domain}
+    traefik.tcp.routers.mongodb.tls.passthrough: true
     traefik.tcp.services.mongodb.loadbalancer.server.port: 27017
-    traefik.tcp.services.mongodb.loadbalancer.server.tls: "true"
+    traefik.tcp.services.mongodb.loadbalancer.server.tls: true
   healthCheck:
     exec:
       command: [sh, -c, "mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand(\"ping\").ok' > /dev/null 2>&1 || exit 1"]
-    initialDelaySeconds: 40
+    initialDelaySeconds: 0
     periodSeconds: 10
     timeoutSeconds: 10
     failureThreshold: 5

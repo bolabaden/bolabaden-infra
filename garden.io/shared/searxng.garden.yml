@@ -44,11 +44,8 @@ spec:
     kuma.searxng.http.interval: "30"
   healthCheck:
     exec:
-      command:
-      - sh
-      - -c
-      - 'wget --no-verbose --tries=1 --spider http://127.0.0.1:${var.SEARXNG_PORT || "8080"}/ || exit 1'
-    initialDelaySeconds: 30
+      command: [sh, -c, "wget --no-verbose --tries=1 --spider http://127.0.0.1:${var.SEARXNG_PORT || \"8080\"}/ || exit 1"]
+    initialDelaySeconds: 0
     periodSeconds: 30
     timeoutSeconds: 10
     failureThreshold: 3
