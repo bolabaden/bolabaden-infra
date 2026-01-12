@@ -17,14 +17,16 @@ spec:
     EXT_PATH: ${var.config-path}/extensions/holo-lsp-1.0.0.vsix
   ports:
     - name: http
-      containerPort: ${var.KOTORSCRIPT_SESSION_MANAGER_PORT || "8080"}
+      containerPort: ${var.SESSION_MANAGER_PORT || "8080"}
   volumes:
     - name: docker-sock
       containerPath: /var/run/docker.sock
       sourcePath: ${var.docker-socket}
+      readOnly: false
     - name: extensions
       containerPath: ${var.config-path}/extensions
       sourcePath: ${var.config-path}/extensions
+      readOnly: false
     - name: session-manager-py
       containerPath: /session_manager.py
       sourcePath: ${var.root-path}/projects/kotor/kotorscript-session-manager/session_manager.py
@@ -57,7 +59,8 @@ spec:
       command:
         - sh
         - -c
-        - 'wget -qO- http://127.0.0.1:${var.KOTORSCRIPT_SESSION_MANAGER_PORT || "8080"}/health > /dev/null 2>&1 || exit 1'
+        - 'wget -qO- http://127.0.0.1:${var.SESSION_MANAGER_PORT || "8080"}/health > /dev/null 2>&1 || exit 1'
     initialDelaySeconds: 30
     timeoutSeconds: 10
+    startPeriodSeconds: 30
   restartPolicy: always

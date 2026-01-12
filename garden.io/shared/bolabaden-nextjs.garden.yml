@@ -4,7 +4,7 @@ name: bolabaden-nextjs
 description: Bolabaden NextJS main website build
 type: container
 source:
-  path: ${var.src-path || "./src"}/website/bolabaden-site
+  path: ${var.src-path || "./projects"}/website/bolabaden-site
 
 ---
 kind: Deploy
@@ -53,7 +53,8 @@ spec:
       command:
       - sh
       - -c
-      - 'wget -qO- http://127.0.0.1:${var.PORT || "3000"} > /dev/null 2>&1 || exit 1'
+      - 'wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1'
     initialDelaySeconds: 30
     timeoutSeconds: 10
+    startPeriodSeconds: 30
   restartPolicy: always

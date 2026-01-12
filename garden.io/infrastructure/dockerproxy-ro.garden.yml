@@ -18,12 +18,13 @@ spec:
     CONTAINERS: 1
     EVENTS: 1
     INFO: 1
-    DOCKER_API_VERSION: ${var.DOCKER_API_VERSION_OVERRIDE || "1.52"}
     DISABLE_IPV6: ${var.DISABLE_IPV6 || "0"}
   volumes:
     - name: docker-sock
       containerPath: /var/run/docker.sock
       sourcePath: ${var.docker-socket}
+  annotations:
+    deunhealth.restart.on.unhealthy: "true"
   healthCheck:
     exec:
       command: [sh, -c, "wget -qO- http://127.0.0.1:2375/_ping > /dev/null 2>&1 || exit 1"]
@@ -31,5 +32,6 @@ spec:
     periodSeconds: 30
     timeoutSeconds: 10
     failureThreshold: 3
+    startPeriodSeconds: 10
   restartPolicy: always
 
