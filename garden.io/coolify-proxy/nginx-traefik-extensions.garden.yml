@@ -44,4 +44,5 @@ spec:
     periodSeconds: 30
     timeoutSeconds: 10
     failureThreshold: 3
+    startPeriodSeconds: 20
   restartPolicy: always
