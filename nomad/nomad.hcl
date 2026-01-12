@@ -2669,7 +2669,7 @@ EOF
           "--log.level=INFO",
           "--ping=true",
           "--providers.consulCatalog=true",
-          "--providers.consulCatalog.endpoint.address=172.26.66.135:8500",
+          "--providers.consulCatalog.endpoint.address=127.0.0.1:8500",
           "--providers.consulCatalog.exposedByDefault=false",
           "--providers.consulCatalog.defaultRule=Host(`{{ normalize .Name }}.${var.domain}`)",
           "--providers.consulCatalog.watch=true",
