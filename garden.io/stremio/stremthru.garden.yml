@@ -70,6 +70,18 @@ spec:
     - path: /
       port: http
       hostname: stremthru.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.stremthru.rule: Host(`stremthru.${var.domain}`) || Host(`stremthru.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.stremthru.loadbalancer.server.port: "8080"
+    homepage.group: Stremio Addons
+    homepage.name: StremThru
+    homepage.icon: stremthru.png
+    homepage.href: https://stremthru.${var.domain}/
+    homepage.description: Tunnel/proxy bridge for Debrid services to unify access of streaming links through a single host.
+    kuma.stremthru.http.name: stremthru.${var.ts-hostname}.${var.domain}
+    kuma.stremthru.http.url: https://stremthru.${var.domain}
+    kuma.stremthru.http.interval: "60"
   healthCheck:
     exec:
       command: [sh, -c, "wget -qO- http://127.0.0.1:8080 > /dev/null 2>&1 || exit 1"]
@@ -77,5 +89,6 @@ spec:
     periodSeconds: 60
     timeoutSeconds: 5
     failureThreshold: 3
+    startPeriodSeconds: 15
   restartPolicy: always
 

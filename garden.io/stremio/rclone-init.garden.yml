@@ -30,5 +30,6 @@ spec:
     periodSeconds: 5
     timeoutSeconds: 3
     failureThreshold: 2
+    startPeriodSeconds: 15
   restartPolicy: always
 
