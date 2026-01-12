@@ -78,7 +78,7 @@ spec:
   healthCheck:
     exec:
       command: [sh, -c, "command -v curl >/dev/null || (apk add --no-cache curl >/dev/null 2>&1 || apt-get update >/dev/null 2>&1 && apt-get install -y curl >/dev/null 2>&1); (curl -fs http://127.0.0.1:11470/ >/dev/null 2>&1 || curl -fsk https://127.0.0.1:12470/ >/dev/null 2>&1) || exit 1"]
-    initialDelaySeconds: 90
+    initialDelaySeconds: 0
     periodSeconds: 30
     timeoutSeconds: 10
     failureThreshold: 3

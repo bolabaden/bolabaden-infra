@@ -8,6 +8,7 @@ dependencies:
 
 spec:
   image: ghcr.io/coanghel/rclone-docker-automount/rclone-init
+  hostname: rclone-init
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -25,8 +26,8 @@ spec:
       readOnly: true
   healthCheck:
     exec:
-      command: [mountpoint, -q, /mnt/remote]
-    initialDelaySeconds: 15
+      command: [sh, -c, "mountpoint -q /mnt/remote"]
+    initialDelaySeconds: 0
     periodSeconds: 5
     timeoutSeconds: 3
     failureThreshold: 2

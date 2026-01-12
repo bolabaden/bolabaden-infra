@@ -7,6 +7,7 @@ type: container
 spec:
   replicas: 3
   image: docker.io/rclone/rclone
+  hostname: rclone
   extraHosts:
     - host.docker.internal:host-gateway
   capAdd:
@@ -93,8 +94,8 @@ spec:
     kuma.rclone.http.interval: "60"
   healthCheck:
     exec:
-      command: [mountpoint, -q, /mnt/remote]
-    initialDelaySeconds: 15
+      command: [sh, -c, "mountpoint -q /mnt/remote"]
+    initialDelaySeconds: 0
     periodSeconds: 5
     timeoutSeconds: 3
     failureThreshold: 2

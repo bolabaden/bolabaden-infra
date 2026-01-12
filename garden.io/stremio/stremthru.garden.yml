@@ -9,6 +9,7 @@ dependencies:
 spec:
   replicas: 3
   image: docker.io/muniftanjim/stremthru
+  hostname: stremthru
   extraHosts:
     - host.docker.internal:host-gateway
   env:
@@ -85,7 +86,7 @@ spec:
   healthCheck:
     exec:
       command: [sh, -c, "wget -qO- http://127.0.0.1:8080 > /dev/null 2>&1 || exit 1"]
-    initialDelaySeconds: 15
+    initialDelaySeconds: 0
     periodSeconds: 60
     timeoutSeconds: 5
     failureThreshold: 3
