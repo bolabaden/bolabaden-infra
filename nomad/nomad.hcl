@@ -2669,7 +2669,7 @@ EOF
           "--log.level=INFO",
           "--ping=true",
           "--providers.consulcatalog=true",
-          "--providers.consulcatalog.endpoint.address=consul.service.consul:8500",
+          "--providers.consulcatalog.endpoint.address=172.26.66.135:8500",
           "--providers.consulcatalog.endpoint.scheme=http",
           "--providers.consulcatalog.endpoint.datacenter=dc1",
           "--providers.consulcatalog.exposedByDefault=false",
