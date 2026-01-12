@@ -1046,3 +1046,31 @@ services:
       kuma.dns-server.http.url: https://dns-server.$DOMAIN/
       kuma.dns-server.http.interval: 60
     restart: always
+
+  ghidra-server:
+    image: ghidra/ghidra:latest
+    container_name: ghidra-server
+    hostname: ghidra-server.$DOMAIN
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - publicnet
+    expose:
+      - 13100
+      - 13101
+      - 13102
+    ports:
+      - 13100:13100  # RMI registry
+      - 13101:13101  # RMI server
+      - 13102:13102  # Ghidra server protocol
+    entrypoint: ["/opt/ghidra/support/ghidraSvr"]
+    command: ["console"]
+    environment:
+      GHIDRA_SERVER_HOME: /ghidra/server
+      GHIDRA_REPOSITORY_DIR: /ghidra/repos
+      GHIDRA_USER: OldRepublicDevs
+      GHIDRA_PASSWORD: MuchaShakkaPakka
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/ghidra/server:/ghidra/server
+      - ${CONFIG_PATH:-./volumes}/ghidra/repos:/ghidra/repos
+    restart: always
