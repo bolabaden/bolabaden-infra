@@ -34,7 +34,7 @@ spec:
     requests:
       memory: 6Mi
   annotations:
-    traefik.http.middlewares.nginx-auth.forwardAuth.address: http://nginx-traefik-extensions:80/auth
+    traefik.http.middlewares.nginx-auth.forwardAuth.address: 'http://nginx-traefik-extensions:80/auth"'
     traefik.http.middlewares.nginx-auth.forwardAuth.trustForwardHeader: "true"
     traefik.http.middlewares.nginx-auth.forwardAuth.authResponseHeaders: '["X-Auth-Method", "X-Auth-Passed", "X-Middleware-Name"]'
   healthCheck:
