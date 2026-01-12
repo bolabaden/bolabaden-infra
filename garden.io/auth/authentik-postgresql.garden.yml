@@ -6,7 +6,10 @@ type: container
 
 spec:
   replicas: 3
-  image: docker.io/postgres:16.3-alpine
+  image: docker.io/postgres:16-alpine
+  hostname: authentik-postgresql
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     POSTGRES_PASSWORD: authentik
     POSTGRES_USER: authentik
@@ -20,11 +23,10 @@ spec:
       sourcePath: ${var.config-path}/authentik/postgresql
   healthCheck:
     exec:
-      command:
-        - pg_isready
-        - -d
-        - authentik
-        - -U
-        - authentik
+      command: [sh, -c, "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+    initialDelaySeconds: 2
+    periodSeconds: 2
+    timeoutSeconds: 10
+    failureThreshold: 15
   restartPolicy: always
 

@@ -9,27 +9,28 @@ dependencies:
 
 spec:
   replicas: 3
-  image: ghcr.io/goauthentik/server:${var.AUTHENTIK_TAG || "2025.6.4"}
+  image: ghcr.io/goauthentik/server:${var.AUTHENTIK_TAG || "2025.8.3"}
+  hostname: authentik
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     AUTHENTIK_REDIS__HOST: redis
     AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
     AUTHENTIK_POSTGRESQL__USER: authentik
     AUTHENTIK_POSTGRESQL__NAME: authentik
     AUTHENTIK_POSTGRESQL__PASSWORD: authentik
-    AUTHENTIK_SECRET_KEY: ${var.AUTHENTIK_SECRET_KEY || "fd14e752f651b2a0b31daf49247766e9856aa93b57a479b3f6f12ae477d78b3d"}
+    AUTHENTIK_SECRET_KEY: /run/secrets/authentik-secret-key
     AUTHENTIK_ERROR_REPORTING__ENABLED: true
     AUTHENTIK_EMAIL__HOST: smtp.gmail.com
     AUTHENTIK_EMAIL__PORT: 587
     AUTHENTIK_EMAIL__USERNAME: boden.crouch@gmail.com
-    AUTHENTIK_EMAIL__PASSWORD: ${var.GMAIL_APP_PASSWORD}
+    AUTHENTIK_EMAIL__PASSWORD: /run/secrets/gmail-app-password
     AUTHENTIK_EMAIL__USE_TLS: true
     AUTHENTIK_EMAIL__USE_SSL: false
     AUTHENTIK_EMAIL__TIMEOUT: 10
     AUTHENTIK_EMAIL__FROM: boden.crouch@gmail.com
     AUTHENTIK_BOOTSTRAP__EMAIL: boden.crouch@gmail.com
-    AUTHENTIK_BOOTSTRAP__PASSWORD: ${var.sudo-password}
-    AUTHENTIK_BOOTSTRAP_EMAIL: boden.crouch@gmail.com
-    AUTHENTIK_BOOTSTRAP_PASSWORD: ${var.sudo-password}
+    AUTHENTIK_BOOTSTRAP__PASSWORD: /run/secrets/sudo-password
   ports:
     - name: http
       containerPort: 9000
@@ -40,13 +41,54 @@ spec:
     - name: custom-templates
       containerPath: /templates
       sourcePath: ${var.config-path}/authentik/custom-templates
+    - name: authentik-secret-key
+      containerPath: /run/secrets/authentik-secret-key
+      sourcePath: ${var.config-path}/secrets/authentik-secret-key.txt
+      readOnly: true
+    - name: gmail-app-password
+      containerPath: /run/secrets/gmail-app-password
+      sourcePath: ${var.config-path}/secrets/gmail-app-password.txt
+      readOnly: true
+    - name: sudo-password
+      containerPath: /run/secrets/sudo-password
+      sourcePath: ${var.config-path}/secrets/sudo-password.txt
+      readOnly: true
   command: [server]
   ingresses:
     - path: /
       port: http
-      hostname: authentikserver.${var.domain}
+      hostname: authentik.${var.domain}
+    - path: /
+      port: http
+      hostname: authentik.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.middlewares.gzip.compress: "true"
+    traefik.http.middlewares.authentik-server-redirect.redirectRegex.regex: '^https?://authentik-server\.((?:${var.domain}|${var.ts-hostname}\.${var.domain}))(.*)$'
+    traefik.http.middlewares.authentik-server-redirect.redirectRegex.replacement: 'https://authentik.$1$2'
+    traefik.http.middlewares.authentik-server-redirect.redirectRegex.permanent: "false"
+    traefik.http.middlewares.authentikserver-redirect.redirectRegex.regex: '^https?://authentikserver\.((?:${var.domain}|${var.ts-hostname}\.${var.domain}))(.*)$'
+    traefik.http.middlewares.authentikserver-redirect.redirectRegex.replacement: 'https://authentik.$1$2'
+    traefik.http.middlewares.authentikserver-redirect.redirectRegex.permanent: "false"
+    traefik.http.routers.authentik-server-redirect.service: authentik@docker
+    traefik.http.routers.authentik-server-redirect.rule: Host(`authentik-server.${var.domain}`) || Host(`authentik-server.${var.ts-hostname}.${var.domain}`)
+    traefik.http.routers.authentik-server-redirect.middlewares: authentik-server-redirect@docker
+    traefik.http.routers.authentikserver-redirect.service: authentik@docker
+    traefik.http.routers.authentikserver-redirect.rule: Host(`authentikserver.${var.domain}`) || Host(`authentikserver.${var.ts-hostname}.${var.domain}`)
+    traefik.http.routers.authentikserver-redirect.middlewares: authentikserver-redirect@docker
+    traefik.http.routers.authentik.service: authentik
+    traefik.http.routers.authentik.rule: Host(`authentik.${var.domain}`) || Host(`authentik.${var.ts-hostname}.${var.domain}`)
+    traefik.http.routers.authentik.middlewares: gzip
+    traefik.http.services.authentik.loadbalancer.server.port: "9000"
+    kuma.authentik.http.name: ${var.AUTHENTIK_FQDN || "authentik.${var.ts-hostname}.${var.domain}"}
+    kuma.authentik.http.url: ${var.AUTHENTIK_URL || "https://authentik.${var.domain}"}
+    kuma.authentik.http.interval: "60"
   healthCheck:
     exec:
-      command: [python3, -c, "import socket; s=socket.socket(); s.settimeout(5); s.connect((\"127.0.0.1\", 9000)); s.close()"]
+      command: [sh, -c, "python3 -c 'import socket; s=socket.socket(); s.settimeout(5); s.connect((\"127.0.0.1\", 9000)); s.close()' || exit 1"]
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 10
   restartPolicy: always
 
