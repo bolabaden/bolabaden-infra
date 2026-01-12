@@ -2674,7 +2674,6 @@ EOF
           "--providers.consulcatalog.endpoint.datacenter=dc1",
           "--providers.consulcatalog.exposedByDefault=false",
           "--providers.consulcatalog.prefix=traefik",
-          "--providers.consulcatalog.exposedByDefault=true",
           "--providers.consulcatalog.defaultRule=Host(`{{ normalize .Name }}.${var.domain}`)",
           "--providers.consulcatalog.watch=true",
           "--providers.file.directory=/local/dynamic/",
