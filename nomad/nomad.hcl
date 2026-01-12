@@ -476,14 +476,6 @@ job "docker-compose-stack" {
           interval = "10s"
           timeout  = "10s"
         }
-
-        check {
-          type     = "script"
-          command  = "/bin/sh"
-          args     = ["-c", "mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand(\"ping\").ok' > /dev/null 2>&1 || exit 1"]
-          interval = "10s"
-          timeout  = "10s"
-        }
       }
     }
   }
