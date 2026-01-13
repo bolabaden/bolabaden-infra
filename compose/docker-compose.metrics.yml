@@ -5018,7 +5018,6 @@ configs:
         webex_room_id: ${ALERTMANAGER_WEBEX_ROOM_ID:-}
         discord_api_url: ${ALERTMANAGER_DISCORD_API_URL:-}
         discord_webhook_url: ${ALERTMANAGER_DISCORD_WEBHOOK_URL:-}
-        # webhook_url is not a global config key - it's used in receiver configs
 
       # The directory from which notification templates are read.
       templates:
