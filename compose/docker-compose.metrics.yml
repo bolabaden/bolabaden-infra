@@ -8441,3 +8441,1435 @@ configs:
         "uid": "ip_checker_warp_monitoring",
         "version": 1
       }
+  headscale-server-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"headscale-server\"}", "refId": "A"}],
+            "title": "Headscale Server Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{name=\"headscale-server\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{name=\"headscale-server\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "probe_success{instance=~\"https://headscale-server.$DOMAIN\"}", "legendFormat": "Health Check", "refId": "A"}],
+            "title": "Health Check",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["headscale", "vpn", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Headscale Server Monitoring",
+        "uid": "headscale_server_monitoring",
+        "version": 1
+      }
+  docker-gen-failover-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"cadvisor\",container=\"docker-gen-failover\"}", "refId": "A"}],
+            "title": "Docker Gen Failover Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{container=\"docker-gen-failover\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{container=\"docker-gen-failover\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "probe_success{instance=~\"https://docker-gen-failover.$DOMAIN\"}", "legendFormat": "Health Check", "refId": "A"}],
+            "title": "Health Check",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["docker", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Docker Gen Failover Monitoring",
+        "uid": "docker_gen_failover_monitoring",
+        "version": 1
+      }
+  litellm-postgres-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"cadvisor\",container=\"litellm-postgres\"}", "refId": "A"}],
+            "title": "LiteLLM Postgres Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{container=\"litellm-postgres\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{container=\"litellm-postgres\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_network_receive_bytes_total{container=\"litellm-postgres\"}[5m])", "legendFormat": "RX", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_network_transmit_bytes_total{container=\"litellm-postgres\"}[5m])", "legendFormat": "TX", "refId": "B"}],
+            "title": "Network I/O",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["postgres", "database", "litellm"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "LiteLLM Postgres Monitoring",
+        "uid": "litellm_postgres_monitoring",
+        "version": 1
+      }
+  nuq-postgres-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"cadvisor\",container=\"nuq-postgres\"}", "refId": "A"}],
+            "title": "NUQ Postgres Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{container=\"nuq-postgres\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{container=\"nuq-postgres\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_network_receive_bytes_total{container=\"nuq-postgres\"}[5m])", "legendFormat": "RX", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_network_transmit_bytes_total{container=\"nuq-postgres\"}[5m])", "legendFormat": "TX", "refId": "B"}],
+            "title": "Network I/O",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["postgres", "database", "firecrawl"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "NUQ Postgres Monitoring",
+        "uid": "nuq_postgres_monitoring",
+        "version": 1
+      }
+  warp-net-init-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"cadvisor\",container=\"warp-net-init\"}", "refId": "A"}],
+            "title": "WARP Net Init Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{container=\"warp-net-init\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{container=\"warp-net-init\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_network_receive_bytes_total{container=\"warp-net-init\"}[5m])", "legendFormat": "RX", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_network_transmit_bytes_total{container=\"warp-net-init\"}[5m])", "legendFormat": "TX", "refId": "B"}],
+            "title": "Network I/O",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["warp", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "WARP Net Init Monitoring",
+        "uid": "warp_net_init_monitoring",
+        "version": 1
+      }
+  loki.yaml:
+    content: |
+      # This is a complete configuration to deploy Loki backed by the filesystem.
+      # The index will be shipped to the storage via tsdb-shipper.
+      auth_enabled: false
+
+      server:
+        http_listen_port: ${LOKI_HTTP_LISTEN_PORT:-3100}
+
+      common:
+        ring:
+          instance_addr: 127.0.0.1
+          kvstore:
+            store: inmemory
+        replication_factor: 1
+        path_prefix: /tmp/loki
+
+      schema_config:
+        configs:
+        - from: 2020-05-15
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+
+      storage_config:
+        filesystem:
+          directory: /tmp/loki/chunks
+      limits_config:
+        volume_enabled: true
+  promtail.yaml:
+    content: |
+      server:
+        http_listen_port: ${PROMTAIL_HTTP_LISTEN_PORT:-9080}
+        grpc_listen_port: ${PROMTAIL_GRPC_LISTEN_PORT:-0}
+
+      positions:
+        filename: /tmp/positions.yaml
+
+      clients:
+        - url: http://loki:${LOKI_PORT:-3100}/loki/api/v1/push
+          tenant_id: ${PROMTAIL_TENANT_ID:-}
+          timeout: ${PROMTAIL_TIMEOUT:-10s}
+
+      scrape_configs:
+        # 🔑 Scrape Docker container logs
+        - job_name: docker
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+              refresh_interval: ${PROMTAIL_DOCKER_REFRESH_INTERVAL:-5s}
+              filters:
+                - name: status
+                  values: ["running"]
+          relabel_configs:
+            # Drop containers without compose service label
+            - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
+              regex: ".+"
+              action: keep
+            # Drop paused containers
+            - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
+              regex: ".+"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+              regex: "/(.*)"
+              replacement: "$1"
+            - source_labels: ["__meta_docker_container_log_stream"]
+              target_label: "stream"
+            - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
+              target_label: "service"
+            - source_labels: ["__meta_docker_container_label_com_docker_compose_project"]
+              target_label: "project"
+            - source_labels: ["__meta_docker_container_id"]
+              target_label: "container_id"
+            # Parse JSON logs
+            - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
+              regex: "(watchtower|rabbitmq|stremio|telemetry-auth|jackett|prowlarr|aiostreams|stremthru|firecrawl|playwright-service|litellm|mcpo|gptr|open-webui|headscale|headscale-server|grafana|prometheus|victoriametrics|loki|promtail|traefik|crowdsec|flaresolverr|redis|mongodb|homepage|portainer|searxng|code-server|dozzle|bolabaden-nextjs|dockerproxy-ro|dockerproxy-rw|dns-server|biodecompwarehouse|rclone|rclone-init|autokuma|tinyauth|whoami|cloudflare-ddns|logrotate-traefik|nginx-traefik-extensions|warp-nat-gateway|warp_router|ip-checker-warp|docker-gen-failover|litellm-postgres|nuq-postgres|warp-net-init)"
+              target_label: "service_type"
+              replacement: "$1"
+          pipeline_stages:
+            - json:
+                expressions:
+                  output: log
+                  stream: stream
+                  attrs: attrs
+            - json:
+                expressions:
+                  tag: attrs.tag
+                source: attrs
+            - labels:
+                tag:
+            - output:
+                source: output
+
+        # 🔑 Scrape host syslog and other files
+        - job_name: system-logs
+          static_configs:
+            - targets:
+                - localhost
+              labels:
+                job: varlogs
+                __path__: /var/log/*.log
+          pipeline_stages:
+            - regex:
+                expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[\d:+-]+)\s+(?P<level>\w+)\s+(?P<message>.*)$'
+            - labels:
+                level:
+
+        # 🔑 Scrape custom mounted logs
+        - job_name: extra-logs
+          static_configs:
+            - targets:
+                - localhost
+              labels:
+                job: extralogs
+                __path__: /mnt/extra-logs/*.log
+
+        # 🔑 Scrape service-specific logs with parsing
+        - job_name: watchtower-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "watchtower"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'time="(?P<timestamp>[^"]+)"\s+level=(?P<level>\w+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: rabbitmq-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "rabbitmq"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: '^\[(?P<timestamp>[^\]]+)\]\s+\[(?P<level>\w+)\]\s+(?P<message>.*)$'
+            - labels:
+                level:
+
+        - job_name: stremio-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "stremio"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - json:
+                expressions:
+                  timestamp: time
+                  level: level
+                  message: msg
+            - labels:
+                level:
+
+        - job_name: telemetry-auth-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "telemetry-auth"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - json:
+                expressions:
+                  timestamp: timestamp
+                  level: level
+                  message: message
+            - labels:
+                level:
+
+        - job_name: traefik-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "traefik"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'time="(?P<timestamp>[^"]+)"\s+level=(?P<level>\w+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: grafana-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "grafana"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 't=(?P<timestamp>[^\s]+)\s+lvl=(?P<level>\w+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: prometheus-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "prometheus"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'ts=(?P<timestamp>[^\s]+)\s+level=(?P<level>\w+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: loki-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "loki"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'level=(?P<level>\w+)\s+ts=(?P<timestamp>[^\s]+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: searxng-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "searxng"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - json:
+                expressions:
+                  timestamp: time
+                  level: levelname
+                  message: message
+            - labels:
+                level:
+
+        - job_name: portainer-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "portainer"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'time="(?P<timestamp>[^"]+)"\s+level=(?P<level>\w+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: homepage-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "homepage"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - json:
+                expressions:
+                  timestamp: time
+                  level: level
+                  message: msg
+            - labels:
+                level:
+
+        - job_name: victoriametrics-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "victoriametrics"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'time="(?P<timestamp>[^"]+)"\s+level=(?P<level>\w+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: promtail-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "promtail"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'level=(?P<level>\w+)\s+ts=(?P<timestamp>[^\s]+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: mongodb-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "mongodb"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: '{\s*"t":\s*\{[^}]*"\\$date":\s*"(?P<timestamp>[^"]+)"\s*\}[^}]*"s":\s*"(?P<level>\w+)"[^}]*"c":\s*"(?P<component>[^"]+)"[^}]*"msg":\s*"(?P<message>[^"]+)"'
+            - labels:
+                level:
+                component:
+
+        - job_name: redis-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "redis"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: '^\d+:\w+\s+\d{2}\s+\d{2}:\d{2}:\d{2}\s+\*\s+(?P<message>.*)$'
+            - labels:
+                level: info
+
+        - job_name: dozzle-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "dozzle"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - json:
+                expressions:
+                  timestamp: time
+                  level: level
+                  message: msg
+            - labels:
+                level:
+
+        - job_name: code-server-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "code-server"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: '\[(?P<timestamp>[^\]]+)\]\s+\[(?P<level>\w+)\]\s+(?P<message>.*)$'
+            - labels:
+                level:
+
+services:
+  # VictoriaMetrics initialization container
+  init_victoriametrics:
+    image: docker.io/victoriametrics/victoria-metrics:latest
+    container_name: init_victoriametrics
+    hostname: init_victoriametrics
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    user: root
+    entrypoint: /bin/sh -c "chown -R 65534:65534 /storage && chmod -R 755 /storage"
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/victoriametrics:/storage
+    restart: no
+
+  victoriametrics:
+    depends_on:
+      init_victoriametrics:
+        condition: service_completed_successfully
+    image: docker.io/victoriametrics/victoria-metrics:latest
+    container_name: victoriametrics
+    hostname: victoriametrics
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+    expose:
+      - ${VICTORIAMETRICS_PORT:-8428}  # VM UI
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/victoriametrics:/storage
+    environment:
+      # VictoriaMetrics specific environment variables
+      VM_RETENTION_PERIOD: ${VICTORIAMETRICS_RETENTION_PERIOD:-1y}
+      VM_MEMORY_ALLOWED_PERCENT: ${VICTORIAMETRICS_MEMORY_ALLOWED_PERCENT:-60}
+      VM_SEARCH_MAX_CONCURRENT_REQUESTS: ${VICTORIAMETRICS_SEARCH_MAX_CONCURRENT_REQUESTS:-8}
+      VM_INSERT_MAX_CONCURRENT_REQUESTS: ${VICTORIAMETRICS_INSERT_MAX_CONCURRENT_REQUESTS:-32}
+    command:
+      - "--bigMergeConcurrency=${VICTORIAMETRICS_BIG_MERGE_CONCURRENCY:-0}"
+      - "--dedup.minScrapeInterval=${VICTORIAMETRICS_DEDUP_MIN_SCRAPE_INTERVAL:-0s}"
+      - "--enableTCP6=${VICTORIAMETRICS_ENABLE_TCP6:-false}"
+      - "--finalMergeDelay=${VICTORIAMETRICS_FINAL_MERGE_DELAY:-0s}"
+      - "--http.maxGracefulShutdownDuration=${VICTORIAMETRICS_MAX_GRACEFUL_SHUTDOWN_DURATION:-7s}"
+      - "--http.shutdownDelay=${VICTORIAMETRICS_SHUTDOWN_DELAY:-0s}"
+      - "--httpListenAddr=:${VICTORIAMETRICS_PORT:-8428}"
+      - "--influx.maxLineSize=${VICTORIAMETRICS_INFLUX_MAX_LINE_SIZE:-262144}"
+      - "--loggerFormat=${VICTORIAMETRICS_LOG_FORMAT:-default}"
+      - "--loggerLevel=${VICTORIAMETRICS_LOG_LEVEL:-INFO}"
+      - "--memory.allowedPercent=${VICTORIAMETRICS_MEMORY_ALLOWED_PERCENT:-60}"
+      - "--promscrape.maxScrapeSize=${VICTORIAMETRICS_PROMSCRAPE_MAX_SCRAPE_SIZE:-16777216}"
+      - "--retentionPeriod=${VICTORIAMETRICS_RETENTION_PERIOD:-1y}"
+      - "--search.maxConcurrentRequests=${VICTORIAMETRICS_SEARCH_MAX_CONCURRENT_REQUESTS:-8}"
+      - "--search.maxMemoryPerQuery=${VICTORIAMETRICS_SEARCH_MAX_MEMORY_PER_QUERY:-1GB}"
+      - "--search.maxPointsPerTimeseries=${VICTORIAMETRICS_SEARCH_MAX_POINTS_PER_TIMESERIES:-30000}"
+      - "--search.maxQueryDuration=${VICTORIAMETRICS_SEARCH_MAX_QUERY_DURATION:-30s}"
+      - "--search.maxSeries=${VICTORIAMETRICS_SEARCH_MAX_SERIES:-30000}"
+      - "--search.maxTagKeys=${VICTORIAMETRICS_SEARCH_MAX_TAG_KEYS:-100000}"
+      - "--search.maxTagValues=${VICTORIAMETRICS_SEARCH_MAX_TAG_VALUES:-100000}"
+      - "--search.maxUniqueTimeseries=${VICTORIAMETRICS_SEARCH_MAX_UNIQUE_TIMESERIES:-300000}"
+      - "--smallMergeConcurrency=${VICTORIAMETRICS_SMALL_MERGE_CONCURRENCY:-0}"
+      - "--storageDataPath=/storage"
+    labels:
+      # Prometheus metrics
+      prometheus.io/scrape: true
+      prometheus.io/port: ${VICTORIAMETRICS_PORT:-8428}
+      prometheus.io/path: /metrics
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${VICTORIAMETRICS_PORT:-8428}/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: always
+  init_prometheus:
+    image: docker.io/prom/prometheus
+    container_name: init_prometheus
+    hostname: init_prometheus
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    user: root
+    entrypoint: /bin/sh -c "chown -R 65534:65534 /prometheus"
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/prometheus/data:/prometheus
+    restart: no
+
+  prometheus:
+    depends_on:
+      init_prometheus:
+        condition: service_completed_successfully
+      victoriametrics:
+        condition: service_healthy
+    image: docker.io/prom/prometheus
+    container_name: prometheus
+    hostname: prometheus
+    networks:
+      - backend
+      - publicnet
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    expose:
+      - 9090
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/prometheus/data:/prometheus
+    environment:
+      # Prometheus specific environment variables
+      PROMETHEUS_RETENTION_TIME: ${PROMETHEUS_RETENTION_TIME:-15d}
+      PROMETHEUS_RETENTION_SIZE: ${PROMETHEUS_RETENTION_SIZE:-0}
+      PROMETHEUS_QUERY_MAX_CONCURRENCY: ${PROMETHEUS_QUERY_MAX_CONCURRENCY:-20}
+      PROMETHEUS_QUERY_TIMEOUT: ${PROMETHEUS_QUERY_TIMEOUT:-2m}
+      PROMETHEUS_QUERY_MAX_SAMPLES: ${PROMETHEUS_QUERY_MAX_SAMPLES:-50000000}
+      PROMETHEUS_WEB_MAX_CONNECTIONS: ${PROMETHEUS_WEB_MAX_CONNECTIONS:-512}
+    configs:
+      - source: prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+        mode: 0444
+      - source: alert.rules
+        target: /etc/prometheus/alert.rules
+        mode: 0444
+      - source: recording.rules
+        target: /etc/prometheus/recording.rules
+        mode: 0444
+        target: /etc/prometheus/alert.rules
+        mode: 0444
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--log.format=${PROMETHEUS_LOG_FORMAT:-logfmt}'
+      - '--log.level=${PROMETHEUS_LOG_LEVEL:-info}'
+      - '--query.max-concurrency=${PROMETHEUS_QUERY_MAX_CONCURRENCY:-20}'
+      - '--query.max-samples=${PROMETHEUS_QUERY_MAX_SAMPLES:-50000000}'
+      - '--query.timeout=${PROMETHEUS_QUERY_TIMEOUT:-2m}'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.size=${PROMETHEUS_RETENTION_SIZE:-0}'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME:-15d}'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-admin-api'
+      - '--web.enable-lifecycle'
+      - '--web.max-connections=${PROMETHEUS_WEB_MAX_CONNECTIONS:-512}'
+    labels:
+      traefik.enable: true
+      traefik.http.routers.prometheus.middlewares: nginx-auth@file  # TODO: specify backend ipv4 cidr and whitelist in nginx-traefik-extensions conf.
+      traefik.http.routers.prometheus.rule: Host(`prometheus.$DOMAIN`) || Host(`prometheus.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.prometheus.loadbalancer.server.port: 9090
+      homepage.group: Infrastructure
+      homepage.name: Prometheus
+      homepage.icon: prometheus.png
+      homepage.href: https://prometheus.$DOMAIN
+      homepage.description: Prometheus is an open-source monitoring system with a dimensional data model, flexible query language, efficient time series database, and modern alerting approach.
+      homepage.widget.type: prometheus
+      homepage.widget.url: http://prometheus:9090
+      kuma.prometheus.http.name: prometheus.$TS_HOSTNAME.$DOMAIN
+      kuma.prometheus.http.url: https://prometheus.$DOMAIN
+      kuma.prometheus.http.interval: 60
+      # Prometheus metrics
+      prometheus.io/scrape: true
+      prometheus.io/port: 9090
+      prometheus.io/path: /metrics
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:9090/-/healthy || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: always
+  grafana:  # Dashboards
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    image: docker.io/grafana/grafana
+    container_name: grafana
+    hostname: grafana
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - 3000
+    secrets:
+      - grafana-admin-password
+      - grafana-secret-key
+    environment:
+      # Enhanced plugin list including VictoriaMetrics datasource and monitoring plugins
+      GF_LOG_LEVEL: ${GF_LOG_LEVEL:-info}  # For detailed logs
+      # VictoriaMetrics specific settings
+      GF_FEATURE_TOGGLES_ENABLE: ${GF_FEATURE_TOGGLES_ENABLE:-}
+      # Disabling custom encryption provider - using default (override .env values)
+      GF_SECURITY_ENCRYPTION_PROVIDER: ""
+      GF_SECURITY_AVAILABLE_ENCRYPTION_PROVIDERS: ""
+      # Core required settings
+      GF_SERVER_DOMAIN: ${GF_FQDN:-grafana.$DOMAIN}
+      GF_SERVER_ROOT_URL: ${GF_URL:-https://${GF_FQDN:-grafana.$DOMAIN}}
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER:-admin}
+      # Security settings using Docker secrets
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana-admin-password
+      GF_SECURITY_SECRET_KEY__FILE: /run/secrets/grafana-secret-key
+      GF_SECRETS_MANAGER_SECRET_KEY__FILE: /run/secrets/grafana-secret-key
+      # Paths configuration
+      GF_PATHS_PROVISIONING: ${GF_PATHS_PROVISIONING:-/etc/grafana/provisioning}
+      # Server configuration
+      GF_SERVER_SERVE_FROM_SUB_PATH: ${GF_SERVE_FROM_SUB_PATH:-false}  # Explicitly disable if no subpath
+      # VictoriaMetrics plugin support
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ${GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS:-victoriametrics-datasource}
+      GF_PLUGINS_PREINSTALL: grafana-piechart-panel,grafana-worldmap-panel,natel-discrete-panel,flant-statusmap-panel,vonage-status-panel,michaeldmoore-multistat-panel,grafana-polystat-panel,marcusolsson-dynamictext-panel,yesoreyeram-boomtable-panel,grafana-clock-panel,grafana-simple-json-datasource,btplc-status-dot-panel,camptocamp-prometheus-alertmanager-datasource
+      # Security settings - all required
+      GF_SECURITY_COOKIE_SECURE: ${GF_SECURITY_COOKIE_SECURE:-true}
+      GF_SECURITY_COOKIE_SAMESITE: ${GF_SECURITY_COOKIE_SAMESITE:-lax}
+      GF_SECURITY_CONTENT_TYPE_PROTECTION: ${GF_SECURITY_CONTENT_TYPE_PROTECTION:-true}
+      GF_SECURITY_X_CONTENT_TYPE_OPTIONS: ${GF_SECURITY_X_CONTENT_TYPE_OPTIONS:-nosniff}
+      GF_SECURITY_X_XSS_PROTECTION: ${GF_SECURITY_X_XSS_PROTECTION:-true}
+      GF_SECURITY_STRICT_TRANSPORT_SECURITY: ${GF_SECURITY_STRICT_TRANSPORT_SECURITY:-true}
+      # User management - strict settings
+      GF_USERS_ALLOW_SIGN_UP: ${GF_USERS_ALLOW_SIGN_UP:-false}
+      GF_USERS_ALLOW_ORG_CREATE: ${GF_USERS_ALLOW_ORG_CREATE:-false}
+      GF_USERS_AUTO_ASSIGN_ORG: ${GF_USERS_AUTO_ASSIGN_ORG:-true}
+      GF_USERS_AUTO_ASSIGN_ORG_ROLE: ${GF_USERS_AUTO_ASSIGN_ORG_ROLE:-Viewer}
+      # Database performance settings
+      GF_DATABASE_MAX_IDLE_CONN: ${GF_DATABASE_MAX_IDLE_CONN:-2}
+      GF_DATABASE_MAX_OPEN_CONN: ${GF_DATABASE_MAX_OPEN_CONN:-0}
+      GF_DATABASE_CONN_MAX_LIFETIME: ${GF_DATABASE_CONN_MAX_LIFETIME:-14400}
+      # Email settings (using your contact email)
+      GF_SMTP_USER: ${GF_SMTP_USER:-}
+      GF_SMTP_PASSWORD: ${GF_SMTP_PASSWORD:-}
+      # SMTP settings
+      GF_SMTP_ENABLED: ${GF_SMTP_ENABLED:-false}
+      GF_SMTP_HOST: ${GF_SMTP_HOST:-localhost:587}
+      GF_SMTP_FROM_ADDRESS: ${GF_SMTP_FROM_ADDRESS:-contact@bolabaden.org}
+      GF_SMTP_FROM_NAME: ${GF_SMTP_FROM_NAME:-Grafana}
+    configs:
+      - source: grafana.ini
+        target: /etc/grafana/grafana.ini
+        mode: 0777
+      - source: grafana-datasource.yaml
+        target: /etc/grafana/provisioning/datasources/grafana-datasource.yaml
+        mode: 0777
+      - source: grafana-dashboard.yaml
+        target: /etc/grafana/provisioning/dashboards/grafana-dashboard.yaml
+        mode: 0777
+      - source: grafana-alerting.yaml
+        target: /etc/grafana/provisioning/alerting/grafana-alerting.yaml
+        mode: 0777
+      - source: grafana-notifications.yaml
+        target: /etc/grafana/provisioning/notifiers/grafana-notifications.yaml
+        mode: 0777
+      - source: alertmanager.yml
+        target: /etc/alertmanager/alertmanager.yml
+        mode: 0644
+      - source: grafana-plugins.yaml
+        target: /etc/grafana/provisioning/plugins/grafana-plugins.yaml
+        mode: 0777
+      - source: node-exporter-dashboard.json
+        target: /var/lib/grafana/dashboards/system/node-exporter-dashboard.json
+        mode: 0777
+      - source: cadvisor-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/cadvisor-dashboard.json
+        mode: 0777
+      - source: blackbox-dashboard.json
+        target: /var/lib/grafana/dashboards/network/blackbox-dashboard.json
+        mode: 0777
+      - source: traefik-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/traefik-dashboard.json
+        mode: 0777
+      - source: crowdsec-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/crowdsec-dashboard.json
+        mode: 0777
+      - source: flaresolverr-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/flaresolverr-dashboard.json
+        mode: 0777
+      - source: victoriametrics-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/victoriametrics-dashboard.json
+        mode: 0777
+      - source: watchtower-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/watchtower-dashboard.json
+        mode: 0777
+      - source: rabbitmq-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/rabbitmq-dashboard.json
+        mode: 0777
+      - source: mongodb-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/mongodb-dashboard.json
+        mode: 0777
+      - source: redis-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/redis-dashboard.json
+        mode: 0777
+      - source: process-exporter-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/process-exporter-dashboard.json
+        mode: 0777
+      - source: stremio-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/stremio-dashboard.json
+        mode: 0777
+      - source: telemetry-auth-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/telemetry-auth-dashboard.json
+        mode: 0777
+      - source: portainer-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/portainer-dashboard.json
+        mode: 0777
+      - source: searxng-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/searxng-dashboard.json
+        mode: 0777
+      - source: jackett-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/jackett-dashboard.json
+        mode: 0777
+      - source: prowlarr-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/prowlarr-dashboard.json
+        mode: 0777
+      - source: aiostreams-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/aiostreams-dashboard.json
+        mode: 0777
+      - source: stremthru-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/stremthru-dashboard.json
+        mode: 0777
+      - source: firecrawl-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/firecrawl-dashboard.json
+        mode: 0777
+      - source: litellm-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/litellm-dashboard.json
+        mode: 0777
+      - source: mcpo-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/mcpo-dashboard.json
+        mode: 0777
+      - source: gptr-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/gptr-dashboard.json
+        mode: 0777
+      - source: open-webui-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/open-webui-dashboard.json
+        mode: 0777
+      - source: headscale-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/headscale-dashboard.json
+        mode: 0777
+      - source: loki-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/loki-dashboard.json
+        mode: 0777
+      - source: promtail-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/promtail-dashboard.json
+        mode: 0777
+      - source: mongodb-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/mongodb-dashboard.json
+        mode: 0777
+      - source: redis-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/redis-dashboard.json
+        mode: 0777
+      - source: process-exporter-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/process-exporter-dashboard.json
+        mode: 0777
+      - source: grafana-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/grafana-dashboard.json
+        mode: 0777
+      - source: prometheus-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/prometheus-dashboard.json
+        mode: 0777
+      - source: alertmanager-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/alertmanager-dashboard.json
+        mode: 0777
+      - source: dockerproxy-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/dockerproxy-dashboard.json
+        mode: 0777
+      - source: dns-server-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/dns-server-dashboard.json
+        mode: 0777
+      - source: biodecompwarehouse-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/biodecompwarehouse-dashboard.json
+        mode: 0777
+      - source: rclone-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/rclone-dashboard.json
+        mode: 0777
+      - source: autokuma-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/autokuma-dashboard.json
+        mode: 0777
+      - source: tinyauth-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/tinyauth-dashboard.json
+        mode: 0777
+      - source: whoami-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/whoami-dashboard.json
+        mode: 0777
+      - source: cloudflare-ddns-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/cloudflare-ddns-dashboard.json
+        mode: 0777
+      - source: logrotate-traefik-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/logrotate-traefik-dashboard.json
+        mode: 0777
+      - source: nginx-traefik-extensions-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/nginx-traefik-extensions-dashboard.json
+        mode: 0777
+      - source: warp-nat-gateway-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/warp-nat-gateway-dashboard.json
+        mode: 0777
+      - source: warp-router-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/warp-router-dashboard.json
+        mode: 0777
+      - source: ip-checker-warp-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/ip-checker-warp-dashboard.json
+        mode: 0777
+      - source: headscale-server-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/headscale-server-dashboard.json
+        mode: 0777
+      - source: docker-gen-failover-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/docker-gen-failover-dashboard.json
+        mode: 0777
+      - source: litellm-postgres-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/litellm-postgres-dashboard.json
+        mode: 0777
+      - source: nuq-postgres-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/nuq-postgres-dashboard.json
+        mode: 0777
+      - source: warp-net-init-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/warp-net-init-dashboard.json
+        mode: 0777
+      - source: homepage-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/homepage-dashboard.json
+        mode: 0777
+      - source: dozzle-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/dozzle-dashboard.json
+        mode: 0777
+      - source: code-server-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/code-server-dashboard.json
+        mode: 0777
+      - source: bolabaden-nextjs-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/bolabaden-nextjs-dashboard.json
+        mode: 0777
+      - source: session-manager-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/session-manager-dashboard.json
+        mode: 0777
+      - source: crowdsec-profiles.yaml
+        target: /etc/grafana/provisioning/crowdsec-profiles.yaml
+        mode: 0777
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/grafana/dashboards:/var/lib/grafana/dashboards
+      - ${CONFIG_PATH:-./volumes}/grafana/provisioning/alerting:/etc/grafana/provisioning/alerting
+      - ${CONFIG_PATH:-./volumes}/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ${CONFIG_PATH:-./volumes}/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ${CONFIG_PATH:-./volumes}/grafana/provisioning/plugins:/etc/grafana/provisioning/plugins
+      - ${CONFIG_PATH:-./volumes}/grafana/provisioning/notifiers:/etc/grafana/provisioning/notifiers
+      - ${CONFIG_PATH:-./volumes}/grafana/logs:/data/log
+    labels:
+      traefik.enable: true
+      traefik.http.routers.grafana.rule: Host(`grafana.$DOMAIN`) || Host(`grafana.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.grafana.loadbalancer.server.port: 3000
+      homepage.group: Infrastructure
+      homepage.name: Grafana
+      homepage.icon: grafana.png
+      homepage.href: https://grafana.$DOMAIN
+      homepage.description: Grafana is an open-source platform for monitoring and observability.
+      kuma.grafana.http.name: grafana.$TS_HOSTNAME.$DOMAIN
+      kuma.grafana.http.url: https://grafana.$DOMAIN
+      kuma.grafana.http.interval: 60
+      # Prometheus metrics
+      prometheus.io/scrape: true
+      prometheus.io/port: 3000
+      prometheus.io/path: metrics
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: always
+
+  # Node Exporter for system metrics
+  node_exporter:
+    image: docker.io/prom/node-exporter
+    container_name: node_exporter
+    hostname: node_exporter
+    networks:
+      - backend
+    expose:
+      - 9100
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      # Add /run/udev/data to avoid "Failed to open directory, disabling udev device properties" warning
+      - /run/udev/data:/run/udev/data:ro
+    environment:
+      - DBUS_SESSION_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.cpu.info'
+      # Use the new --collector.diskstats.device-exclude flag instead of deprecated --collector.diskstats.ignored-devices
+      - '--collector.diskstats.device-exclude=^(ram|loop|fd|(h|s|v)d[a-z]|nvme\d+n\d+p)\d+$'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)'
+      - '--collector.interrupts'
+      - '--collector.processes'
+      - '--collector.systemd'
+      # Add recommended systemd collector flags to avoid noisy logs and improve compatibility
+      - '--collector.systemd.unit-include=.*'
+      - '--collector.systemd.unit-exclude=.+\.(automount|device|mount|scope|slice)'
+      # Add recommended filesystem fs-types-exclude to match node_exporter best practices
+      - '--collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$'
+    labels:
+      prometheus.io/scrape: true
+      prometheus.io/port: 9100
+      prometheus.io/path: metrics
+    restart: always
+
+  # cAdvisor for container metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    container_name: cadvisor
+    hostname: cadvisor
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - 8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    privileged: true
+    command:
+      - '--housekeeping_interval=${CADVISOR_HOUSEKEEPING_INTERVAL:-30s}'
+      - '--docker_only=${CADVISOR_DOCKER_ONLY:-true}'
+      - '--disable_metrics=${CADVISOR_DISABLE_METRICS:-cpu_topology,disk,memory_numa,tcp,udp,percpu,sched,process,hugetlb,referenced_memory,resctrl,cpuset,advtcp}'
+      - '--store_container_labels=${CADVISOR_STORE_CONTAINER_LABELS:-false}'
+    labels:
+      traefik.enable: true
+      traefik.http.routers.cadvisor.middlewares: nginx-auth@file
+      traefik.http.routers.cadvisor.rule: Host(`cadvisor.$DOMAIN`) || Host(`cadvisor.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.cadvisor.loadbalancer.server.port: 8080
+      homepage.group: Monitoring
+      homepage.name: cAdvisor
+      homepage.icon: https://raw.githubusercontent.com/google/cadvisor/master/logo.png
+      homepage.href: https://cadvisor.$DOMAIN/
+      homepage.description: Container resource usage and performance characteristics
+      kuma.cadvisor.http.name: cadvisor.$TS_HOSTNAME.$DOMAIN
+      kuma.cadvisor.http.url: https://cadvisor.$DOMAIN
+      kuma.cadvisor.http.interval: 60
+      # Prometheus metrics
+      prometheus.io/scrape: true
+      prometheus.io/port: 8080
+      prometheus.io/path: metrics
+      deunhealth.restart.on.unhealthy: "true"
+    healthcheck:
+      # Comprehensive healthcheck - install wget and validate cAdvisor metrics endpoint
+      test: ["CMD-SHELL", "command -v wget >/dev/null || (apt-get update >/dev/null 2>&1 && apt-get install -y wget >/dev/null 2>&1); wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/metrics || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: always
+  loki:  # Logs
+    image: docker.io/grafana/loki
+    container_name: loki
+    hostname: loki
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - 3100  # Loki API endpoint
+    configs:
+      - source: loki.yaml
+        target: /etc/loki/config.yaml
+        mode: 0777
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/loki/data:/loki
+    command: -config.file=/etc/loki/config.yaml
+    restart: always
+
+  promtail:
+    depends_on:
+      - loki
+      - dockerproxy-ro
+    image: docker.io/grafana/promtail
+    container_name: promtail
+    hostname: promtail
+    networks:
+      - backend
+      - publicnet
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    configs:
+      - source: promtail.yaml
+        target: /etc/promtail/config.yaml
+        mode: 0777
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/var/log:ro
+    environment:
+      - DOCKER_HOST=tcp://dockerproxy-ro:9323
+    command: -config.file=/etc/promtail/config.yaml
+    restart: always
+
+  # Blackbox Exporter for endpoint monitoring
+  blackbox-exporter:
+    image: docker.io/prom/blackbox-exporter
+    container_name: blackbox-exporter
+    hostname: blackbox-exporter
+    networks:
+      - backend
+      - publicnet
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    expose:
+      - 9115
+    configs:
+      - source: blackbox.yml
+        target: ${BLACKBOX_INTERNAL_CONFIG_PATH:-/etc/blackbox_exporter/config.yml}
+        mode: 0777
+    command:
+      - '--config.file=${BLACKBOX_INTERNAL_CONFIG_PATH:-/etc/blackbox_exporter/config.yml}'
+      - '--log.level=${BLACKBOX_LOG_LEVEL:-info}'
+      - '--log.format=${BLACKBOX_LOG_FORMAT:-logfmt}'
+    labels:
+      traefik.enable: true
+      traefik.http.routers.blackbox-exporter.rule: Host(`blackbox.$DOMAIN`) || Host(`blackbox.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.services.blackbox-exporter.loadbalancer.server.port: 9115
+      homepage.group: Monitoring
+      homepage.name: Blackbox Exporter
+      homepage.icon: prometheus.png
+      homepage.href: https://blackbox.$DOMAIN/
+      homepage.description: Blackbox probing of endpoints over HTTP, HTTPS, DNS, TCP and ICMP
+      kuma.blackbox-exporter.http.name: blackbox.$TS_HOSTNAME.$DOMAIN
+      kuma.blackbox-exporter.http.url: https://blackbox.$DOMAIN
+      kuma.blackbox-exporter.http.interval: 60
+      # Prometheus metrics
+      prometheus.io/scrape: true
+      prometheus.io/port: 9115
+      prometheus.io/path: metrics
+    restart: always
+
+  # MongoDB Exporter for comprehensive MongoDB monitoring
+  mongodb-exporter:
+    image: docker.io/percona/mongodb_exporter:0.40
+    container_name: mongodb-exporter
+    hostname: mongodb-exporter
+    networks:
+      - backend
+    expose:
+      - 9216
+    environment:
+      - MONGODB_URI=${MONGODB_EXPORTER_URI:-mongodb://mongodb:27017}
+    labels:
+      prometheus.io/scrape: true
+      prometheus.io/port: 9216
+      prometheus.io/path: /metrics
+      homepage.group: Monitoring
+      homepage.name: MongoDB Exporter
+      homepage.icon: mongodb.png
+      homepage.href: http://mongodb-exporter:9216/metrics
+    restart: always
+
+  # Redis Exporter for comprehensive Redis monitoring
+  redis-exporter:
+    image: docker.io/oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    hostname: redis-exporter
+    networks:
+      - backend
+    expose:
+      - 9121
+    environment:
+      - REDIS_ADDR=${REDIS_EXPORTER_ADDR:-redis:${REDIS_PORT:-6379}}
+      - REDIS_USER=${REDIS_EXPORTER_USER:-${REDIS_USERNAME:-default}}
+      - REDIS_PASSWORD=${REDIS_EXPORTER_PASSWORD:-${REDIS_PASSWORD:-redis}}
+      - REDIS_EXPORTER_INCLUDE_SYSTEM_METRICS=${REDIS_EXPORTER_INCLUDE_SYSTEM_METRICS:-true}
+      - REDIS_EXPORTER_CHECK_KEYS=${REDIS_EXPORTER_CHECK_KEYS:-}
+      - REDIS_EXPORTER_SCRIPT=${REDIS_EXPORTER_SCRIPT:-}
+    labels:
+      prometheus.io/scrape: true
+      prometheus.io/port: 9121
+      prometheus.io/path: /metrics
+      homepage.group: Monitoring
+      homepage.name: Redis Exporter
+      homepage.icon: redis.png
+      homepage.href: http://redis-exporter:9121/metrics
+    restart: always
+
+  # Process Exporter for process-level metrics
+  process-exporter:
+    image: docker.io/ncabatoff/process-exporter:latest
+    container_name: process-exporter
+    hostname: process-exporter
+    networks:
+      - backend
+    expose:
+      - 9256
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    command:
+      - '--procfs=/host/proc'
+      - '--config.path=/etc/process-exporter/config.yml'
+    configs:
+      - source: process-exporter.yml
+        target: /etc/process-exporter/config.yml
+        mode: 0777
+    labels:
+      prometheus.io/scrape: true
+      prometheus.io/port: 9256
+      prometheus.io/path: /metrics
+      homepage.group: Monitoring
+      homepage.name: Process Exporter
+      homepage.icon: prometheus.png
+      homepage.href: http://process-exporter:9256/metrics
+    restart: always
+
+  # Alertmanager for alert routing and notification management
+  alertmanager:
+    image: docker.io/prom/alertmanager:latest
+    container_name: alertmanager
+    hostname: alertmanager
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - ${ALERTMANAGER_PORT:-9093}
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/alertmanager:/etc/alertmanager
+      - ${CONFIG_PATH:-./volumes}/alertmanager/data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=${ALERTMANAGER_EXTERNAL_URL:-http://alertmanager:${ALERTMANAGER_PORT:-9093}}'
+      - '--cluster.listen-address=0.0.0.0:${ALERTMANAGER_CLUSTER_PORT:-9094}'
+      - '--log.level=${ALERTMANAGER_LOG_LEVEL:-info}'
+    configs:
+      - source: alertmanager.yml
+        target: /etc/alertmanager/alertmanager.yml
+        mode: 0644
+    labels:
+      traefik.enable: true
+      traefik.http.routers.alertmanager.rule: Host(`alertmanager.$DOMAIN`) || Host(`alertmanager.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.alertmanager.middlewares: nginx-auth@file
+      traefik.http.services.alertmanager.loadbalancer.server.port: ${ALERTMANAGER_PORT:-9093}
+      homepage.group: Infrastructure
+      homepage.name: Alertmanager
+      homepage.icon: alertmanager.png
+      homepage.href: https://alertmanager.$DOMAIN
+      homepage.description: Alertmanager handles alerts sent by Prometheus and routes them to notification channels
+      prometheus.io/scrape: true
+      prometheus.io/port: ${ALERTMANAGER_PORT:-9093}
+      prometheus.io/path: /metrics
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${ALERTMANAGER_PORT:-9093}/-/healthy || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: always
