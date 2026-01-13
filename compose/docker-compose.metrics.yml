@@ -5447,13 +5447,7 @@ configs:
       clients:
         - url: http://loki:${LOKI_PORT:-3100}/loki/api/v1/push
           tenant_id: ${PROMTAIL_TENANT_ID:-}
-          batch_wait: ${PROMTAIL_BATCH_WAIT:-1s}
-          batch_size: ${PROMTAIL_BATCH_SIZE:-1048576}
           timeout: ${PROMTAIL_TIMEOUT:-10s}
-          backoff_config:
-            min_period: ${PROMTAIL_BACKOFF_MIN:-500ms}
-            max_period: ${PROMTAIL_BACKOFF_MAX:-5m}
-            max_retries: ${PROMTAIL_BACKOFF_MAX_RETRIES:-10}
 
       scrape_configs:
         # 🔑 Scrape Docker container logs
