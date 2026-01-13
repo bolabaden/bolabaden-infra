@@ -2862,26 +2862,12 @@ configs:
             max_shards: ${PROMETHEUS_REMOTE_WRITE_MAX_SHARDS:-30}
             # Minimum shards (ensures minimum parallelism)
             min_shards: ${PROMETHEUS_REMOTE_WRITE_MIN_SHARDS:-1}
-            # Maximum retries for failed writes
-            max_retries: ${PROMETHEUS_REMOTE_WRITE_MAX_RETRIES:-3}
             # Batch send deadline (timeout for sending batches)
             batch_send_deadline: ${PROMETHEUS_REMOTE_WRITE_BATCH_SEND_DEADLINE:-5s}
             # Minimum backoff between retries
             min_backoff: ${PROMETHEUS_REMOTE_WRITE_MIN_BACKOFF:-30ms}
             # Maximum backoff between retries
             max_backoff: ${PROMETHEUS_REMOTE_WRITE_MAX_BACKOFF:-100ms}
-          # HTTP client configuration
-          http_client_config:
-            # Follow redirects
-            follow_redirects: ${PROMETHEUS_REMOTE_WRITE_FOLLOW_REDIRECTS:-true}
-            # Enable HTTP/2
-            enable_http2: ${PROMETHEUS_REMOTE_WRITE_ENABLE_HTTP2:-true}
-          # Metadata configuration for exemplars and tracing
-          metadata_config:
-            # Send metadata (exemplars, etc.)
-            send: ${PROMETHEUS_REMOTE_WRITE_SEND_METADATA:-true}
-            # Interval for sending metadata
-            send_interval: ${PROMETHEUS_REMOTE_WRITE_METADATA_SEND_INTERVAL:-1m}
           # Write relabel configs to filter metrics
           write_relabel_configs:
             # Drop Go runtime metrics (high cardinality, low value)
@@ -2892,8 +2878,6 @@ configs:
             - source_labels: [__name__]
               regex: 'prometheus_.*'
               action: ${PROMETHEUS_REMOTE_WRITE_DROP_PROMETHEUS_METRICS:-keep}
-          # Enable exemplars for tracing integration
-          write_exemplars: ${PROMETHEUS_REMOTE_WRITE_EXEMPLARS:-true}
 
       # File-based service discovery configuration
       # This allows dynamic target discovery via JSON/YAML files
