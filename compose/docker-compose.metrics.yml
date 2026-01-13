@@ -4244,13 +4244,21 @@ configs:
             continue: true
 
       # Inhibition rules allow to mute a set of alerts given that another alert is
-      # firing.
+      # firing. This reduces alert noise by suppressing lower-severity alerts when
+      # higher-severity alerts are firing for the same resource.
       inhibit_rules:
+        # Inhibit warning alerts when critical alerts are firing for the same resource
         - source_match:
             severity: 'critical'
           target_match:
             severity: 'warning'
-          equal: ['alertname', 'cluster', 'service']
+          equal: ${ALERTMANAGER_INHIBIT_EQUAL:-['alertname', 'cluster', 'service']}
+        # Inhibit instance down alerts when service is down
+        - source_match:
+            alertname: 'ServiceDown'
+          target_match:
+            alertname: 'InstanceDown'
+          equal: ${ALERTMANAGER_INHIBIT_INSTANCE_EQUAL:-['service', 'cluster']}
 
       # A list of notification receivers.
       receivers:
@@ -9259,8 +9267,6 @@ services:
         mode: 0444
       - source: recording.rules
         target: /etc/prometheus/recording.rules
-        mode: 0444
-        target: /etc/prometheus/alert.rules
         mode: 0444
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
