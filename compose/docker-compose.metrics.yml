@@ -2873,8 +2873,31 @@ configs:
           # Enable exemplars for tracing integration
           write_exemplars: ${PROMETHEUS_REMOTE_WRITE_EXEMPLARS:-true}
 
+      # File-based service discovery configuration
+      # This allows dynamic target discovery via JSON/YAML files
+      # Files should be placed in /etc/prometheus/file_sd/ directory
+      # Example file format:
+      # [
+      #   {
+      #     "targets": ["host1:9090", "host2:9090"],
+      #     "labels": {
+      #       "job": "custom-job",
+      #       "env": "production"
+      #     }
+      #   }
+      # ]
+      # Prometheus will automatically reload when files change
+
       # A scrape configuration containing exactly one endpoint to scrape:
       scrape_configs:
+        # File-based service discovery (optional, can be enabled via environment variable)
+        # Uncomment and configure if you want to use file-based service discovery
+        # - job_name: 'file-sd'
+        #   file_sd_configs:
+        #     - files:
+        #         - '${PROMETHEUS_FILE_SD_PATH:-/etc/prometheus/file_sd/*.json}'
+        #           - '${PROMETHEUS_FILE_SD_PATH:-/etc/prometheus/file_sd/*.yaml}'
+        #       refresh_interval: ${PROMETHEUS_FILE_SD_REFRESH_INTERVAL:-5m}
         # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
         - job_name: 'prometheus'
           static_configs:
@@ -4072,60 +4095,173 @@ configs:
   recording.rules:
     content: |
       groups:
-      - name: homelab.recording
+      # Node/Infrastructure Recording Rules
+      - name: node.recording
         interval: ${RECORDING_RULES_INTERVAL:-30s}
         rules:
-        # CPU usage rate
+        # CPU utilization (percentage)
+        - record: instance:node_cpu_utilisation:rate5m
+          expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+          labels:
+            aggregation: rate
+            metric_type: utilization
+
+        # CPU usage rate (container)
         - record: instance:node_cpu_usage:rate5m
           expr: rate(container_cpu_usage_seconds_total[5m])
           labels:
             aggregation: rate
 
-        # Memory usage percentage
+        # Memory utilization (percentage)
+        - record: instance:node_memory_utilisation:ratio
+          expr: 1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)
+          labels:
+            aggregation: ratio
+            metric_type: utilization
+
+        # Memory usage percentage (container)
         - record: instance:node_memory_usage:percentage
           expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100
           labels:
             aggregation: percentage
 
-        # Network I/O rates
+        # Network receive rate
+        - record: instance:node_network_receive_bytes_per_second:rate5m
+          expr: sum by (instance) (rate(node_network_receive_bytes_total[5m]))
+          labels:
+            aggregation: rate
+
+        # Network transmit rate
+        - record: instance:node_network_transmit_bytes_per_second:rate5m
+          expr: sum by (instance) (rate(node_network_transmit_bytes_total[5m]))
+          labels:
+            aggregation: rate
+
+        # Container network receive rate
         - record: instance:node_network_receive_bytes:rate5m
           expr: rate(container_network_receive_bytes_total[5m])
           labels:
             aggregation: rate
 
+        # Container network transmit rate
         - record: instance:node_network_transmit_bytes:rate5m
           expr: rate(container_network_transmit_bytes_total[5m])
           labels:
             aggregation: rate
 
-        # Disk I/O rates
+        # Disk read rate
+        - record: instance:node_disk_read_bytes_per_second:rate5m
+          expr: sum by (instance) (rate(node_disk_read_bytes_total[5m]))
+          labels:
+            aggregation: rate
+
+        # Disk write rate
+        - record: instance:node_disk_written_bytes_per_second:rate5m
+          expr: sum by (instance) (rate(node_disk_written_bytes_total[5m]))
+          labels:
+            aggregation: rate
+
+        # Container disk read rate
         - record: instance:node_disk_read_bytes:rate5m
           expr: rate(container_fs_reads_bytes_total[5m])
           labels:
             aggregation: rate
 
+        # Container disk write rate
         - record: instance:node_disk_write_bytes:rate5m
           expr: rate(container_fs_writes_bytes_total[5m])
           labels:
             aggregation: rate
 
-        # HTTP request rates
-        - record: instance:http_requests:rate5m
-          expr: rate(http_requests_total[5m])
+        # Disk I/O utilization
+        - record: instance:node_disk_io_utilisation:rate5m
+          expr: rate(node_disk_io_time_seconds_total[5m])
+          labels:
+            aggregation: rate
+            metric_type: utilization
+
+      # Application/Service Recording Rules
+      - name: application.recording
+        interval: ${RECORDING_RULES_INTERVAL:-30s}
+        rules:
+        # HTTP request rate
+        - record: service:http_requests_total:rate5m
+          expr: sum by (job, service) (rate(http_requests_total[5m]))
           labels:
             aggregation: rate
 
-        # Error rates
-        - record: instance:http_errors:rate5m
-          expr: rate(http_requests_total{status=~"5.."}[5m])
+        # HTTP request duration (p99)
+        - record: service:http_request_duration_seconds:p99
+          expr: histogram_quantile(0.99, sum by (le, job, service) (rate(http_request_duration_seconds_bucket[5m])))
+          labels:
+            aggregation: quantile
+            quantile: "0.99"
+
+        # HTTP request duration (p95)
+        - record: service:http_request_duration_seconds:p95
+          expr: histogram_quantile(0.95, sum by (le, job, service) (rate(http_request_duration_seconds_bucket[5m])))
+          labels:
+            aggregation: quantile
+            quantile: "0.95"
+
+        # HTTP request duration (p50)
+        - record: service:http_request_duration_seconds:p50
+          expr: histogram_quantile(0.50, sum by (le, job, service) (rate(http_request_duration_seconds_bucket[5m])))
+          labels:
+            aggregation: quantile
+            quantile: "0.50"
+
+        # HTTP error rate
+        - record: service:errors_total:rate5m
+          expr: sum by (job, service) (rate(errors_total[5m]))
           labels:
             aggregation: rate
 
-        # Service availability
+        # HTTP 5xx error rate
+        - record: service:http_errors:rate5m
+          expr: sum by (job, service) (rate(http_requests_total{status=~"5.."}[5m]))
+          labels:
+            aggregation: rate
+
+        # Service availability ratio
+        - record: service:up:ratio
+          expr: sum by (job, service) (up) / count by (job, service) (up)
+          labels:
+            aggregation: ratio
+
+        # Service availability average
         - record: instance:service_up:avg5m
           expr: avg_over_time(up[5m])
           labels:
             aggregation: avg
+
+      # Monitoring Stack Recording Rules
+      - name: monitoring.recording
+        interval: ${RECORDING_RULES_INTERVAL:-30s}
+        rules:
+        # Prometheus target scrape duration
+        - record: prometheus:target_scrape_duration_seconds:rate5m
+          expr: rate(prometheus_target_interval_length_seconds[5m])
+          labels:
+            aggregation: rate
+
+        # Prometheus samples ingested rate
+        - record: prometheus:samples_appended_total:rate5m
+          expr: rate(prometheus_tsdb_appended_samples_total[5m])
+          labels:
+            aggregation: rate
+
+        # VictoriaMetrics ingestion rate
+        - record: victoriametrics:rows_inserted_total:rate5m
+          expr: rate(vm_rows_inserted_total[5m])
+          labels:
+            aggregation: rate
+
+        # Loki ingestion rate
+        - record: loki:distributor_lines_received_total:rate5m
+          expr: rate(loki_distributor_lines_received_total[5m])
+          labels:
+            aggregation: rate
 
   grafana-alerting.yaml:
     content: |
