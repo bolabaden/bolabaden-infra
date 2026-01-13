@@ -4224,10 +4224,11 @@ configs:
       # The root route on which each incoming alert enters.
       route:
         receiver: ${ALERTMANAGER_DEFAULT_RECEIVER:-default}
-        group_by: ['alertname', 'cluster', 'service']
+        group_by: ${ALERTMANAGER_GROUP_BY:-['alertname', 'cluster', 'service', 'severity']}
         group_wait: ${ALERTMANAGER_GROUP_WAIT:-10s}
-        group_interval: ${ALERTMANAGER_GROUP_INTERVAL:-10s}
+        group_interval: ${ALERTMANAGER_GROUP_INTERVAL:-5m}
         repeat_interval: ${ALERTMANAGER_REPEAT_INTERVAL:-12h}
+        continue: ${ALERTMANAGER_CONTINUE:-false}
         routes:
           - match:
               severity: critical
@@ -8755,13 +8756,13 @@ configs:
 
       schema_config:
         configs:
-        - from: 2020-05-15
-          store: tsdb
-          object_store: filesystem
-          schema: v13
+        - from: ${LOKI_SCHEMA_FROM:-2020-05-15}
+          store: ${LOKI_SCHEMA_STORE:-tsdb}
+          object_store: ${LOKI_OBJECT_STORE:-filesystem}
+          schema: ${LOKI_SCHEMA_VERSION:-v13}
           index:
-            prefix: index_
-            period: 24h
+            prefix: ${LOKI_INDEX_PREFIX:-index_}
+            period: ${LOKI_INDEX_PERIOD:-24h}
 
       storage_config:
         filesystem:
@@ -8818,17 +8819,30 @@ configs:
               target_label: "service_type"
               replacement: "$1"
           pipeline_stages:
+            # Parse Docker JSON log format
             - json:
                 expressions:
                   output: log
                   stream: stream
                   attrs: attrs
+                  time: time
+            # Extract nested attributes
             - json:
                 expressions:
                   tag: attrs.tag
+                  level: attrs.level
+                  service: attrs.service
                 source: attrs
+            # Extract timestamp if available
+            - timestamp:
+                source: time
+                format: RFC3339Nano
+            # Add labels for filtering
             - labels:
                 tag:
+                level:
+                stream:
+            # Output the log message
             - output:
                 source: output
 
@@ -9164,7 +9178,7 @@ services:
       VM_INSERT_MAX_CONCURRENT_REQUESTS: ${VICTORIAMETRICS_INSERT_MAX_CONCURRENT_REQUESTS:-32}
     command:
       - "--bigMergeConcurrency=${VICTORIAMETRICS_BIG_MERGE_CONCURRENCY:-0}"
-      - "--dedup.minScrapeInterval=${VICTORIAMETRICS_DEDUP_MIN_SCRAPE_INTERVAL:-0s}"
+      - "--dedup.minScrapeInterval=${VICTORIAMETRICS_DEDUP_MIN_SCRAPE_INTERVAL:-15s}"
       - "--enableTCP6=${VICTORIAMETRICS_ENABLE_TCP6:-false}"
       - "--finalMergeDelay=${VICTORIAMETRICS_FINAL_MERGE_DELAY:-0s}"
       - "--http.maxGracefulShutdownDuration=${VICTORIAMETRICS_MAX_GRACEFUL_SHUTDOWN_DURATION:-7s}"
