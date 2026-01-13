@@ -4133,6 +4133,59 @@ configs:
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/node_exporter_down.md"
             dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
+        # SLO/Error Budget Alerts
+        # Based on Google SRE Workbook: Alerting on SLOs
+        # These alerts fire when error budgets are being consumed too quickly
+        # Multi-window, multi-burn-rate approach for optimal precision and recall
+        - alert: ErrorBudgetBurnRateHigh
+          expr: |
+            (
+              slo:service:http_requests:error_budget:burn_rate > ${SLO_ERROR_BUDGET_BURN_RATE_THRESHOLD:-14.4}
+            ) and (
+              slo:service:http_requests:error_budget:remaining < ${SLO_ERROR_BUDGET_REMAINING_THRESHOLD:-0}
+            )
+          for: ${SLO_ERROR_BUDGET_BURN_RATE_FOR:-5m}
+          labels:
+            severity: page
+            component: application
+            team: platform
+            slo_type: availability
+          annotations:
+            summary: "Error budget burn rate is high for {{ $$labels.service }}"
+            description: "Service {{ $$labels.service }} is consuming error budget at {{ $value | humanize }}x the normal rate. Current availability: {{ $labels.availability | humanizePercentage }}%, SLO target: {{ $labels.slo_target | humanizePercentage }}%."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://sre.google/workbook/alerting-on-slos/}"
+            dashboard_url: "/grafana/d/slo/slo-overview"
+
+        - alert: ErrorBudgetExhausted
+          expr: |
+            slo:service:http_requests:error_budget:remaining < ${SLO_ERROR_BUDGET_EXHAUSTED_THRESHOLD:-0}
+          for: ${SLO_ERROR_BUDGET_EXHAUSTED_FOR:-1m}
+          labels:
+            severity: page
+            component: application
+            team: platform
+            slo_type: availability
+          annotations:
+            summary: "Error budget exhausted for {{ $$labels.service }}"
+            description: "Service {{ $$labels.service }} has exhausted its error budget. Current availability: {{ $labels.availability | humanizePercentage }}%, SLO target: {{ $labels.slo_target | humanizePercentage }}%. Immediate action required."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://sre.google/workbook/alerting-on-slos/}"
+            dashboard_url: "/grafana/d/slo/slo-overview"
+
+        - alert: SLOTargetBreach
+          expr: |
+            slo:service:http_requests:availability:ratio < ${SLO_AVAILABILITY_TARGET:-0.999}
+          for: ${SLO_TARGET_BREACH_FOR:-5m}
+          labels:
+            severity: warning
+            component: application
+            team: platform
+            slo_type: availability
+          annotations:
+            summary: "SLO target breached for {{ $$labels.service }}"
+            description: "Service {{ $$labels.service }} availability ({{ $value | humanizePercentage }}%) is below SLO target ({{ $labels.slo_target | humanizePercentage }}%)."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://sre.google/workbook/alerting-on-slos/}"
+            dashboard_url: "/grafana/d/slo/slo-overview"
+
   recording.rules:
     content: |
       groups:
