@@ -4805,7 +4805,47 @@ configs:
   grafana-plugins.yaml:
     content: |
       apiVersion: 1
+      # Grafana Plugin Provisioning Configuration
+      # This file provisions plugin applications (apps) in Grafana
+      # Plugins can be configured with jsonData (non-sensitive) and secureJsonData (encrypted)
+      # 
+      # Example plugin configurations:
+      # - type: <plugin-id>
+      #   org_id: 1
+      #   disabled: false
+      #   jsonData:
+      #     key: value
+      #   secureJsonData:
+      #     secret_key: secret_value
+      #
+      # Common useful plugins that can be provisioned:
+      # - grafana-piechart-panel: Pie chart visualization
+      # - grafana-worldmap-panel: World map visualization
+      # - natel-discrete-panel: Discrete status panel
+      # - flant-statusmap-panel: Status map panel
+      # - vonage-status-panel: Status panel
+      # - michaeldmoore-multistat-panel: Multi-stat panel
+      # - grafana-polystat-panel: PolyStat panel
+      # - marcusolsson-dynamictext-panel: Dynamic text panel
+      # - yesoreyeram-boomtable-panel: Advanced table panel
+      # - grafana-clock-panel: Clock panel
+      # - grafana-simple-json-datasource: Simple JSON datasource
+      # - btplc-status-dot-panel: Status dot panel
+      # - camptocamp-prometheus-alertmanager-datasource: Alertmanager datasource
+      #
+      # Note: Plugins listed in GF_PLUGINS_PREINSTALL are installed automatically
+      # This file is for configuring plugin-specific settings after installation
       apps:
+        # Example: Configure a plugin (uncomment and customize as needed)
+        # - type: grafana-piechart-panel
+        #   org_id: ${GRAFANA_ORG_ID:-1}
+        #   disabled: false
+        #   jsonData:
+        #     # Plugin-specific configuration
+        #     example_setting: value
+        #   secureJsonData:
+        #     # Encrypted plugin-specific secrets
+        #     # example_secret: secret_value
   node-exporter-dashboard.json:
     content: |
       {
@@ -10421,6 +10461,35 @@ services:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
       - '--web.external-url=${ALERTMANAGER_EXTERNAL_URL:-http://alertmanager:${ALERTMANAGER_PORT:-9093}}'
+      # High Availability (HA) Cluster Configuration
+      # Alertmanager supports clustering for high availability using a gossip protocol
+      # For HA setup, configure multiple Alertmanager instances with peer addresses
+      # 
+      # Single instance (default): Only listen-address is needed
+      # HA cluster: Add --cluster.peer flags for each peer instance
+      #
+      # Example HA configuration (uncomment and configure for multi-instance setup):
+      # - '--cluster.peer=${ALERTMANAGER_PEER_1:-alertmanager-1:9094}'
+      # - '--cluster.peer=${ALERTMANAGER_PEER_2:-alertmanager-2:9094}'
+      # - '--cluster.peer=${ALERTMANAGER_PEER_3:-alertmanager-3:9094}'
+      # - '--cluster.advertise-address=${ALERTMANAGER_ADVERTISE_ADDRESS:-alertmanager:9094}'
+      # - '--cluster.peer-timeout=${ALERTMANAGER_PEER_TIMEOUT:-15s}'
+      # - '--cluster.gossip-interval=${ALERTMANAGER_GOSSIP_INTERVAL:-200ms}'
+      # - '--cluster.pushpull-interval=${ALERTMANAGER_PUSHPULL_INTERVAL:-60s}'
+      # - '--cluster.probe-interval=${ALERTMANAGER_PROBE_INTERVAL:-1s}'
+      # - '--cluster.settle-timeout=${ALERTMANAGER_SETTLE_TIMEOUT:-1m}'
+      #
+      # Important: For HA, configure Prometheus to send alerts to ALL Alertmanager instances:
+      # alerting:
+      #   alertmanagers:
+      #     - static_configs:
+      #         - targets:
+      #           - alertmanager-1:9093
+      #           - alertmanager-2:9093
+      #           - alertmanager-3:9093
+      #
+      # Security: For production HA across networks, enable TLS:
+      # - '--cluster.tls-config=/etc/alertmanager/cluster-tls.yml'
       - '--cluster.listen-address=0.0.0.0:${ALERTMANAGER_CLUSTER_PORT:-9094}'
       - '--log.level=${ALERTMANAGER_LOG_LEVEL:-info}'
     configs:
