@@ -4974,6 +4974,186 @@ configs:
               headers:
                 Subject: ${ALERTMANAGER_EMAIL_SUBJECT_PAGE:-'[PAGE] {{ .GroupLabels.alertname }}'}
               send_resolved: ${ALERTMANAGER_SEND_RESOLVED:-true}
+
+        # Slack Receiver (uncomment and configure if using Slack)
+        # - name: 'slack'
+        #   slack_configs:
+        #     - api_url: ${ALERTMANAGER_SLACK_API_URL:-}
+        #       channel: ${ALERTMANAGER_SLACK_CHANNEL:-#alerts}
+        #       title: ${ALERTMANAGER_SLACK_TITLE:-'[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.alertname }}'}
+        #       text: ${ALERTMANAGER_SLACK_TEXT:-'{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'}
+        #       send_resolved: ${ALERTMANAGER_SLACK_SEND_RESOLVED:-true}
+        #       http_config:
+        #         follow_redirects: true
+
+        # PagerDuty Receiver (uncomment and configure if using PagerDuty)
+        # - name: 'pagerduty'
+        #   pagerduty_configs:
+        #     - routing_key: ${ALERTMANAGER_PAGERDUTY_ROUTING_KEY:-}
+        #       description: ${ALERTMANAGER_PAGERDUTY_DESCRIPTION:-'{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'}
+        #       severity: ${ALERTMANAGER_PAGERDUTY_SEVERITY:-error}
+        #       client: ${ALERTMANAGER_PAGERDUTY_CLIENT:-Alertmanager}
+        #       client_url: ${ALERTMANAGER_PAGERDUTY_CLIENT_URL:-http://alertmanager:9093}
+        #       send_resolved: ${ALERTMANAGER_PAGERDUTY_SEND_RESOLVED:-true}
+        #       details:
+        #         firing: '{{ .Alerts.Firing | len }}'
+        #         resolved: '{{ .Alerts.Resolved | len }}'
+        #         group: '{{ .GroupLabels.alertname }}'
+
+        # Discord Receiver (uncomment and configure if using Discord)
+        # - name: 'discord'
+        #   discord_configs:
+        #     - webhook_url: ${ALERTMANAGER_DISCORD_WEBHOOK_URL:-}
+        #       title: ${ALERTMANAGER_DISCORD_TITLE:-'[{{ .Status | toUpper }}] {{ .GroupLabels.alertname }}'}
+        #       message: ${ALERTMANAGER_DISCORD_MESSAGE:-'{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'}
+        #       send_resolved: ${ALERTMANAGER_DISCORD_SEND_RESOLVED:-true}
+
+        # Telegram Receiver (uncomment and configure if using Telegram)
+        # - name: 'telegram'
+        #   telegram_configs:
+        #     - bot_token: ${ALERTMANAGER_TELEGRAM_BOT_TOKEN:-}
+        #       chat_id: ${ALERTMANAGER_TELEGRAM_CHAT_ID:-}
+        #       message: ${ALERTMANAGER_TELEGRAM_MESSAGE:-'[{{ .Status | toUpper }}] {{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'}
+        #       send_resolved: ${ALERTMANAGER_TELEGRAM_SEND_RESOLVED:-true}
+        #       parse_mode: ${ALERTMANAGER_TELEGRAM_PARSE_MODE:-HTML}
+
+        # OpsGenie Receiver (uncomment and configure if using OpsGenie)
+        # - name: 'opsgenie'
+        #   opsgenie_configs:
+        #     - api_key: ${ALERTMANAGER_OPSGENIE_API_KEY:-}
+        #       message: ${ALERTMANAGER_OPSGENIE_MESSAGE:-'{{ .GroupLabels.alertname }}'}
+        #       description: ${ALERTMANAGER_OPSGENIE_DESCRIPTION:-'{{ .CommonAnnotations.description }}'}
+        #       priority: ${ALERTMANAGER_OPSGENIE_PRIORITY:-P3}
+        #       send_resolved: ${ALERTMANAGER_OPSGENIE_SEND_RESOLVED:-true}
+
+  # Grafana Annotations Provisioning
+  # Annotations allow you to mark events on dashboards (deployments, incidents, etc.)
+  # This configuration provisions annotation sources that can be queried in dashboards
+  grafana-annotations.yaml:
+    content: |
+      apiVersion: 1
+
+      # Annotation sources can be from Prometheus, Loki, or other datasources
+      # These annotations appear on dashboards when querying with the annotation query
+      list:
+        # Prometheus-based annotations (e.g., for deployment markers)
+        - name: Prometheus Annotations
+          datasource: ${GRAFANA_PROMETHEUS_DATASOURCE_UID:-prometheus_uid}
+          enable: ${GRAFANA_ANNOTATIONS_PROMETHEUS_ENABLE:-true}
+          iconColor: ${GRAFANA_ANNOTATIONS_PROMETHEUS_COLOR:-rgba(0, 211, 255, 1)}
+          # Query Prometheus for annotation events
+          # Example: query for specific metric that indicates deployments
+          # target:
+          #   expr: 'changes(up{job="deployment-marker"}[1m]) > 0'
+          #   legendFormat: 'Deployment'
+
+        # Loki-based annotations (e.g., for log-based events)
+        - name: Loki Annotations
+          datasource: ${GRAFANA_LOKI_DATASOURCE_UID:-loki_uid}
+          enable: ${GRAFANA_ANNOTATIONS_LOKI_ENABLE:-true}
+          iconColor: ${GRAFANA_ANNOTATIONS_LOKI_COLOR:-rgba(0, 211, 255, 1)}
+          # Query Loki for annotation events
+          # Example: query for specific log patterns that indicate events
+          # target:
+          #   expr: '{job="application"} |= "deployment"'
+
+        # Alert-based annotations (show when alerts fire/resolve)
+        - name: Alert Annotations
+          datasource: ${GRAFANA_ALERTMANAGER_DATASOURCE_UID:-alertmanager_uid}
+          enable: ${GRAFANA_ANNOTATIONS_ALERTS_ENABLE:-true}
+          iconColor: ${GRAFANA_ANNOTATIONS_ALERTS_COLOR:-rgba(255, 96, 96, 1)}
+          # Show annotations when alerts fire or resolve
+          # This helps visualize alert history on dashboards
+
+      # Annotation tags for filtering
+      # Tags can be used to filter annotations in dashboards
+      # Common tags: deployment, incident, maintenance, release
+      tags:
+        - deployment
+        - incident
+        - maintenance
+        - release
+        - rollback
+
+  # Security Hardening Documentation
+  # This section documents security best practices for the monitoring stack
+  # For production deployments, implement the following security measures:
+  #
+  # 1. TLS/HTTPS Configuration:
+  #    - Enable TLS for all external-facing services (Prometheus, Grafana, Alertmanager)
+  #    - Use valid SSL certificates (Let's Encrypt, internal CA, or commercial)
+  #    - Configure TLS minimum version (TLS 1.2 or higher)
+  #    - Disable insecure TLS ciphers
+  #
+  # 2. Authentication and Authorization:
+  #    - Enable authentication for Grafana (OAuth, LDAP, or basic auth)
+  #    - Configure RBAC in Grafana for fine-grained access control
+  #    - Use API keys with limited permissions for service accounts
+  #    - Enable authentication for Prometheus (via reverse proxy or built-in auth)
+  #    - Configure Alertmanager authentication
+  #
+  # 3. Network Security:
+  #    - Use internal networks for service-to-service communication
+  #    - Expose services only through reverse proxy (Traefik) with authentication
+  #    - Implement network policies to restrict access
+  #    - Use firewall rules to limit access to monitoring endpoints
+  #
+  # 4. Secrets Management:
+  #    - Store sensitive credentials in environment variables or secret management systems
+  #    - Use Docker secrets or Kubernetes secrets for sensitive data
+  #    - Rotate credentials regularly
+  #    - Never commit secrets to version control
+  #
+  # 5. Access Control:
+  #    - Limit admin access to monitoring systems
+  #    - Use read-only access for dashboards where possible
+  #    - Implement audit logging for administrative actions
+  #    - Regularly review and revoke unused API keys
+  #
+  # 6. Data Protection:
+  #    - Encrypt data at rest for time series databases
+  #    - Use encrypted connections for remote write endpoints
+  #    - Implement data retention policies
+  #    - Regularly backup monitoring data
+  #
+  # 7. Monitoring Security:
+  #    - Monitor authentication failures
+  #    - Alert on suspicious access patterns
+  #    - Review access logs regularly
+  #    - Implement rate limiting for API endpoints
+  #
+  # Example TLS configuration for Prometheus (add to command):
+  # - '--web.config.file=/etc/prometheus/web-config.yml'
+  #
+  # Example web-config.yml for Prometheus:
+  # tls_server_config:
+  #   cert_file: /etc/prometheus/certs/prometheus.crt
+  #   key_file: /etc/prometheus/certs/prometheus.key
+  #   min_version: "TLS12"
+  # basic_auth_users:
+  #   admin: $2y$10$... # bcrypt hash of password
+  #
+  # Example Grafana security settings (add to grafana.ini):
+  # [security]
+  # admin_user = ${GF_SECURITY_ADMIN_USER:-admin}
+  # admin_password = ${GF_SECURITY_ADMIN_PASSWORD:-}
+  # secret_key = ${GF_SECURITY_SECRET_KEY:-} # Required for session encryption
+  # disable_gravatar = ${GF_SECURITY_DISABLE_GRAVATAR:-true}
+  # cookie_secure = ${GF_SECURITY_COOKIE_SECURE:-true}
+  # cookie_samesite = ${GF_SECURITY_COOKIE_SAMESITE:-strict}
+  # strict_transport_security = ${GF_SECURITY_STRICT_TRANSPORT_SECURITY:-true}
+  # strict_transport_security_max_age_seconds = ${GF_SECURITY_HSTS_MAX_AGE:-31536000}
+  # x_content_type_options = ${GF_SECURITY_X_CONTENT_TYPE_OPTIONS:-true}
+  # x_xss_protection = ${GF_SECURITY_X_XSS_PROTECTION:-true}
+  #
+  # Example Alertmanager TLS configuration (add to command):
+  # - '--web.config.file=/etc/alertmanager/web-config.yml'
+  #
+  # For more information, see:
+  # - Prometheus Security: https://prometheus.io/docs/operating/security/
+  # - Grafana Security: https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/
+  # - Alertmanager Security: https://prometheus.io/docs/alerting/latest/configuration/#tls_config
+
   grafana-plugins.yaml:
     content: |
       apiVersion: 1
