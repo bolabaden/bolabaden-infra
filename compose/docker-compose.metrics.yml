@@ -7939,6 +7939,9 @@ services:
       - source: prometheus-dashboard.json
         target: /var/lib/grafana/dashboards/infrastructure/prometheus-dashboard.json
         mode: 0777
+      - source: alertmanager-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/alertmanager-dashboard.json
+        mode: 0777
       - source: homepage-dashboard.json
         target: /var/lib/grafana/dashboards/infrastructure/homepage-dashboard.json
         mode: 0777
