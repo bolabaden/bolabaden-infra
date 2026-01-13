@@ -4317,6 +4317,33 @@ configs:
           labels:
             aggregation: rate
 
+        # Apdex Score (Application Performance Index)
+        # Apdex approximates user satisfaction with application performance
+        # Formula: (satisfied + tolerable/2) / total
+        # Satisfied: requests within target duration (default 0.3s)
+        # Tolerable: requests within 4x target duration (default 1.2s)
+        # Based on Prometheus histogram best practices
+        - record: service:http_request_duration:apdex_score
+          expr: |
+            (
+              sum by (job, service) (rate(http_request_duration_seconds_bucket{le="${APDEX_TARGET_DURATION:-0.3}"}[5m]))
+              +
+              sum by (job, service) (rate(http_request_duration_seconds_bucket{le="${APDEX_TOLERABLE_DURATION:-1.2}"}[5m]))
+            ) / 2 / sum by (job, service) (rate(http_request_duration_seconds_count[5m]))
+          labels:
+            aggregation: apdex
+            target_duration: ${APDEX_TARGET_DURATION:-0.3}
+            tolerable_duration: ${APDEX_TOLERABLE_DURATION:-1.2}
+
+        # Average request duration (from histogram sum/count)
+        - record: service:http_request_duration_seconds:avg
+          expr: |
+            sum by (job, service) (rate(http_request_duration_seconds_sum[5m]))
+            /
+            sum by (job, service) (rate(http_request_duration_seconds_count[5m]))
+          labels:
+            aggregation: average
+
         # Service availability ratio
         - record: service:up:ratio
           expr: sum by (job, service) (up) / count by (job, service) (up)
@@ -5074,6 +5101,180 @@ configs:
         - maintenance
         - release
         - rollback
+
+  # Grafana Playlists Provisioning
+  # Playlists allow you to cycle through multiple dashboards automatically
+  # Useful for monitoring screens, NOCs, or rotating dashboards
+  grafana-playlists.yaml:
+    content: |
+      apiVersion: 1
+
+      # Playlists configuration
+      # Each playlist cycles through a list of dashboards with a specified interval
+      playlists:
+        # Example: Infrastructure Monitoring Playlist
+        # Cycles through infrastructure dashboards every 30 seconds
+        # - name: ${GRAFANA_PLAYLIST_INFRASTRUCTURE_NAME:-Infrastructure Monitoring}
+        #   interval: ${GRAFANA_PLAYLIST_INFRASTRUCTURE_INTERVAL:-30s}
+        #   org_id: ${GRAFANA_ORG_ID:-1}
+        #   items:
+        #     - title: Node Exporter
+        #       type: dashboard_by_uid
+        #       value: ${GRAFANA_DASHBOARD_NODE_EXPORTER_UID:-node-exporter-full}
+        #     - title: Prometheus
+        #       type: dashboard_by_uid
+        #       value: ${GRAFANA_DASHBOARD_PROMETHEUS_UID:-prometheus-overview}
+        #     - title: VictoriaMetrics
+        #       type: dashboard_by_uid
+        #       value: ${GRAFANA_DASHBOARD_VICTORIAMETRICS_UID:-victoriametrics-overview}
+
+        # Example: Application Monitoring Playlist
+        # Cycles through application dashboards every 1 minute
+        # - name: ${GRAFANA_PLAYLIST_APPLICATION_NAME:-Application Monitoring}
+        #   interval: ${GRAFANA_PLAYLIST_APPLICATION_INTERVAL:-1m}
+        #   org_id: ${GRAFANA_ORG_ID:-1}
+        #   items:
+        #     - title: Service Overview
+        #       type: dashboard_by_uid
+        #       value: ${GRAFANA_DASHBOARD_SERVICE_OVERVIEW_UID:-service-overview}
+        #     - title: SLO Dashboard
+        #       type: dashboard_by_uid
+        #       value: ${GRAFANA_DASHBOARD_SLO_UID:-slo-overview}
+
+        # Example: Full Stack Monitoring Playlist
+        # Cycles through all monitoring dashboards every 2 minutes
+        # - name: ${GRAFANA_PLAYLIST_FULL_STACK_NAME:-Full Stack Monitoring}
+        #   interval: ${GRAFANA_PLAYLIST_FULL_STACK_INTERVAL:-2m}
+        #   org_id: ${GRAFANA_ORG_ID:-1}
+        #   items:
+        #     - title: Infrastructure
+        #       type: dashboard_by_uid
+        #       value: ${GRAFANA_DASHBOARD_INFRASTRUCTURE_UID:-infrastructure-overview}
+        #     - title: Applications
+        #       type: dashboard_by_uid
+        #       value: ${GRAFANA_DASHBOARD_APPLICATIONS_UID:-applications-overview}
+        #     - title: Logs
+        #       type: dashboard_by_uid
+        #       value: ${GRAFANA_DASHBOARD_LOGS_UID:-logs-overview}
+        #     - title: Alerts
+        #       type: dashboard_by_uid
+        #       value: ${GRAFANA_DASHBOARD_ALERTS_UID:-alerts-overview}
+
+      # Note: Playlists can reference dashboards by:
+      # - dashboard_by_uid: Reference by dashboard UID (recommended)
+      # - dashboard_by_id: Reference by dashboard ID (legacy)
+      # - dashboard_by_tag: Reference by dashboard tag
+      # All playlist settings are configurable via environment variables
+
+  # Performance Tuning Documentation
+  # This section documents performance optimization strategies for large-scale deployments
+  # 
+  # 1. Prometheus Performance Tuning:
+  #    - Query Performance:
+  #      * Use recording rules to pre-compute expensive queries
+  #      * Limit query time ranges to reduce data processing
+  #      * Use appropriate scrape intervals (15s default, adjust based on needs)
+  #      * Configure query.max-concurrency and query.max-samples
+  #    - Storage Performance:
+  #      * Adjust TSDB retention based on available disk space
+  #      * Use remote write for long-term storage (VictoriaMetrics)
+  #      * Configure storage.tsdb.max-block-duration for optimal compaction
+  #      * Monitor TSDB head series and cardinality
+  #    - Scraping Performance:
+  #      * Use service discovery to reduce manual configuration
+  #      * Configure scrape_timeout appropriately (default 10s)
+  #      * Use honor_labels and honor_timestamps wisely
+  #      * Monitor scrape_duration_seconds for slow targets
+  #
+  # 2. VictoriaMetrics Performance Tuning:
+  #    - Memory Configuration:
+  #      * Set memory.allowedPercent based on available RAM (default 60%)
+  #      * Monitor memory usage and adjust if needed
+  #      * Use --search.maxMemoryPerQuery to limit query memory
+  #    - Query Performance:
+  #      * Configure --search.maxConcurrentRequests (default 8)
+  #      * Set --search.maxQueryDuration for query timeouts
+  #      * Use --search.maxPointsPerTimeseries to limit data points
+  #      * Configure --search.maxSeries for query limits
+  #    - Ingestion Performance:
+  #      * Set --insert.maxConcurrentRequests (default 32)
+  #      * Monitor ingestion rate and adjust concurrency
+  #      * Use --dedup.minScrapeInterval to reduce duplicate data
+  #
+  # 3. Grafana Performance Tuning:
+  #    - Query Performance:
+  #      * Enable query caching (Redis/Memcached)
+  #      * Use incremental querying for long time ranges
+      #      * Configure concurrent_query_limit appropriately
+  #      * Optimize dashboard queries (use recording rules)
+  #    - Dashboard Performance:
+  #      * Limit number of panels per dashboard
+  #      * Use appropriate refresh intervals
+  #      * Configure maxDataPoints to limit query results
+  #      * Use template variables to reduce query complexity
+  #    - Caching:
+  #      * Enable query result caching
+  #      * Configure cache TTL based on data freshness needs
+  #      * Use Redis or Memcached for distributed caching
+  #
+  # 4. Loki Performance Tuning:
+  #    - Ingestion Performance:
+  #      * Configure ingestion_rate_mb and ingestion_burst_size_mb
+  #      * Use appropriate chunk_idle_period and chunk_target_size
+  #      * Monitor distributor performance
+  #    - Query Performance:
+  #      * Configure max_query_parallelism
+  #      * Set appropriate query_timeout
+  #      * Use query splitting for large time ranges
+  #      * Optimize LogQL queries (use filters early)
+  #    - Storage Performance:
+  #      * Configure retention_period appropriately
+  #      * Use compaction to reduce storage overhead
+  #      * Monitor storage usage and adjust limits
+  #
+  # 5. Cardinality Management:
+  #    - Monitor high cardinality metrics:
+  #      * Use prometheus_tsdb_head_series to track series count
+  #      * Alert on high cardinality (e.g., > 1M series)
+  #      * Identify high cardinality sources using cardinality_exporter
+  #    - Reduce Cardinality:
+  #      * Avoid high cardinality labels (user IDs, IPs, etc.)
+      #      * Use recording rules to aggregate high cardinality metrics
+  #      * Drop unnecessary labels in relabel_configs
+  #      * Use metric_relabel_configs to filter metrics
+  #
+  # 6. Recording Rules Best Practices:
+  #    - Pre-compute expensive queries (quantiles, aggregations)
+  #    - Aggregate high cardinality metrics
+  #    - Use appropriate evaluation intervals (30s default)
+  #    - Organize rules by domain (infrastructure, application, etc.)
+  #    - Monitor recording rule evaluation time
+  #
+  # 7. Alerting Performance:
+  #    - Use appropriate evaluation intervals
+  #    - Configure group_wait and group_interval appropriately
+  #    - Limit number of alerts per group
+  #    - Use inhibition rules to reduce alert noise
+  #    - Monitor alertmanager performance
+  #
+  # Example Prometheus performance tuning (add to command):
+  # - '--storage.tsdb.max-block-duration=2h'
+  # - '--storage.tsdb.min-block-duration=2h'
+  # - '--query.max-concurrency=20'
+  # - '--query.max-samples=50000000'
+  # - '--query.timeout=2m'
+  #
+  # Example VictoriaMetrics performance tuning (add to command):
+  # - '--search.maxConcurrentRequests=16'
+  # - '--search.maxMemoryPerQuery=2GB'
+  # - '--insert.maxConcurrentRequests=64'
+  # - '--memory.allowedPercent=70'
+  #
+  # For more information, see:
+  # - Prometheus Performance: https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+  # - VictoriaMetrics Performance: https://docs.victoriametrics.com/victoriametrics/bestpractices/
+  # - Grafana Performance: https://grafana.com/docs/grafana/latest/setup-grafana/optimize-grafana/
+  # - Loki Performance: https://grafana.com/docs/loki/latest/operations/performance/
 
   # Security Hardening Documentation
   # This section documents security best practices for the monitoring stack
