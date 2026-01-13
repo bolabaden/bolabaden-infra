@@ -7149,6 +7149,12 @@ services:
       - source: process-exporter-dashboard.json
         target: /var/lib/grafana/dashboards/infrastructure/process-exporter-dashboard.json
         mode: 0777
+      - source: grafana-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/grafana-dashboard.json
+        mode: 0777
+      - source: prometheus-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/prometheus-dashboard.json
+        mode: 0777
       - source: crowdsec-profiles.yaml
         target: /etc/grafana/provisioning/crowdsec-profiles.yaml
         mode: 0777
