@@ -3108,70 +3108,208 @@ configs:
   alert.rules:
     content: |
       groups:
+      # Prometheus Self-Monitoring Alerts
+      - name: prometheus.rules
+        interval: ${PROMETHEUS_ALERT_INTERVAL:-30s}
+        rules:
+        - alert: PrometheusConfigReloadFailure
+          expr: prometheus_config_last_reload_successful != 1
+          for: ${PROMETHEUS_CONFIG_RELOAD_FAILURE_FOR:-5m}
+          labels:
+            severity: critical
+            component: prometheus
+            team: platform
+          annotations:
+            summary: "Prometheus configuration reload failure"
+            description: "Prometheus configuration reload has failed. Configuration may be invalid."
+            runbook_url: "https://prometheus.io/docs/prometheus/latest/configuration/configuration/"
+            dashboard_url: "/grafana/d/prometheus/prometheus-overview"
+
+        - alert: PrometheusTSDBCompactionsFailed
+          expr: increase(prometheus_tsdb_compactions_failed_total[1h]) > 0
+          for: ${PROMETHEUS_TSDB_COMPACTION_FAILURE_FOR:-5m}
+          labels:
+            severity: critical
+            component: prometheus
+            team: platform
+          annotations:
+            summary: "Prometheus TSDB compactions failed"
+            description: "Prometheus TSDB has failed {{ $value }} compaction(s) in the last hour."
+            runbook_url: "https://prometheus.io/docs/prometheus/latest/storage/"
+            dashboard_url: "/grafana/d/prometheus/prometheus-overview"
+
+        - alert: PrometheusTSDBWalCorruptions
+          expr: increase(prometheus_tsdb_wal_corruptions_total[1h]) > 0
+          for: ${PROMETHEUS_TSDB_WAL_CORRUPTION_FOR:-5m}
+          labels:
+            severity: critical
+            component: prometheus
+            team: platform
+          annotations:
+            summary: "Prometheus TSDB WAL corruptions detected"
+            description: "Prometheus TSDB has detected {{ $value }} WAL corruption(s) in the last hour."
+            runbook_url: "https://prometheus.io/docs/prometheus/latest/storage/"
+            dashboard_url: "/grafana/d/prometheus/prometheus-overview"
+
+        - alert: PrometheusTargetScrapesExceeded
+          expr: rate(prometheus_target_scrapes_exceeded_sample_limit_total[5m]) > 0
+          for: ${PROMETHEUS_TARGET_SCRAPES_EXCEEDED_FOR:-10m}
+          labels:
+            severity: warning
+            component: prometheus
+            team: platform
+          annotations:
+            summary: "Prometheus target scrapes exceeded sample limit"
+            description: "Prometheus target {{ $labels.instance }} is exceeding the sample limit. Consider increasing scrape_interval or reducing metric cardinality."
+            runbook_url: "https://prometheus.io/docs/prometheus/latest/configuration/configuration/"
+            dashboard_url: "/grafana/d/prometheus/prometheus-overview"
+
+        - alert: PrometheusRuleEvaluationFailures
+          expr: increase(prometheus_rule_evaluation_failures_total[5m]) > 0
+          for: ${PROMETHEUS_RULE_EVALUATION_FAILURE_FOR:-5m}
+          labels:
+            severity: warning
+            component: prometheus
+            team: platform
+          annotations:
+            summary: "Prometheus rule evaluation failures"
+            description: "Prometheus has failed to evaluate {{ $value }} rule(s) in the last 5 minutes."
+            runbook_url: "https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/"
+            dashboard_url: "/grafana/d/prometheus/prometheus-overview"
+
+        - alert: PrometheusNotIngestingSamples
+          expr: rate(prometheus_target_scrapes_sample_duration_seconds_count[5m]) == 0 and up == 1
+          for: ${PROMETHEUS_NOT_INGESTING_FOR:-10m}
+          labels:
+            severity: critical
+            component: prometheus
+            team: platform
+          annotations:
+            summary: "Prometheus not ingesting samples"
+            description: "Prometheus has not ingested any samples in the last 10 minutes despite being up."
+            runbook_url: "https://prometheus.io/docs/prometheus/latest/configuration/configuration/"
+            dashboard_url: "/grafana/d/prometheus/prometheus-overview"
+
+        - alert: PrometheusTooManyRestarts
+          expr: changes(process_start_time_seconds{job=~"prometheus|alertmanager"}[15m]) > 2
+          for: ${PROMETHEUS_TOO_MANY_RESTARTS_FOR:-5m}
+          labels:
+            severity: warning
+            component: prometheus
+            team: platform
+          annotations:
+            summary: "Prometheus/Alertmanager has restarted too frequently"
+            description: "{{ $labels.job }} has restarted {{ $value }} times in the last 15 minutes."
+            runbook_url: "https://prometheus.io/docs/prometheus/latest/configuration/configuration/"
+            dashboard_url: "/grafana/d/prometheus/prometheus-overview"
+
+      # Infrastructure Alerts
       - name: homelab.rules
+        interval: ${HOMELAB_ALERT_INTERVAL:-30s}
         rules:
         - alert: InstanceDown
           expr: up == 0
-          for: 10m
+          for: ${INSTANCE_DOWN_FOR:-10m}
           labels:
             severity: page
+            component: infrastructure
+            team: platform
           annotations:
             summary: "Instance {{ $$labels.instance }} down"
-            description: "{{ $$labels.instance }} of job {{ $$labels.job }} has been down for more than 10 minutes."
+            description: "{{ $$labels.instance }} of job {{ $$labels.job }} has been down for more than {{ $for }}. This may indicate a service failure or network issue."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/instance_down.md"
+            dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
         - alert: HighCPUUsage
-          expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
-          for: 5m
+          expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > ${HIGH_CPU_THRESHOLD:-80}
+          for: ${HIGH_CPU_FOR:-5m}
           labels:
             severity: warning
+            component: infrastructure
+            team: platform
           annotations:
             summary: "High CPU usage on {{ $$labels.instance }}"
-            description: "CPU usage is above 80% on {{ $$labels.instance }} for more than 5 minutes."
+            description: "CPU usage is above {{ $value | humanize }}% on {{ $$labels.instance }} for more than {{ $for }}. This may impact service performance."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_cpu.md"
+            dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
         - alert: HighMemoryUsage
-          expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 90
-          for: 5m
+          expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > ${HIGH_MEMORY_THRESHOLD:-90}
+          for: ${HIGH_MEMORY_FOR:-5m}
           labels:
             severity: warning
+            component: infrastructure
+            team: platform
           annotations:
             summary: "High memory usage on {{ $$labels.instance }}"
-            description: "Memory usage is above 90% on {{ $$labels.instance }} for more than 5 minutes."
+            description: "Memory usage is above {{ $value | humanize }}% on {{ $$labels.instance }} for more than {{ $for }}. This may cause OOM kills."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_memory.md"
+            dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
         - alert: DiskSpaceLow
-          expr: (node_filesystem_size_bytes{fstype!="tmpfs"} - node_filesystem_free_bytes{fstype!="tmpfs"}) / node_filesystem_size_bytes{fstype!="tmpfs"} * 100 > 90
-          for: 5m
+          expr: (node_filesystem_size_bytes{fstype!="tmpfs"} - node_filesystem_free_bytes{fstype!="tmpfs"}) / node_filesystem_size_bytes{fstype!="tmpfs"} * 100 > ${DISK_SPACE_LOW_THRESHOLD:-90}
+          for: ${DISK_SPACE_LOW_FOR:-5m}
           labels:
             severity: critical
+            component: infrastructure
+            team: platform
           annotations:
             summary: "Low disk space on {{ $$labels.instance }}"
-            description: "Disk usage is above 90% on {{ $$labels.instance }} {{ $$labels.mountpoint }} for more than 5 minutes."
+            description: "Disk usage is above {{ $value | humanize }}% on {{ $$labels.instance }} {{ $$labels.mountpoint }} for more than {{ $for }}. Immediate action required to prevent data loss."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/disk_space_low.md"
+            dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
+
+        - alert: DiskSpaceCritical
+          expr: (node_filesystem_size_bytes{fstype!="tmpfs"} - node_filesystem_free_bytes{fstype!="tmpfs"}) / node_filesystem_size_bytes{fstype!="tmpfs"} * 100 > ${DISK_SPACE_CRITICAL_THRESHOLD:-95}
+          for: ${DISK_SPACE_CRITICAL_FOR:-2m}
+          labels:
+            severity: page
+            component: infrastructure
+            team: platform
+          annotations:
+            summary: "Critical disk space on {{ $$labels.instance }}"
+            description: "Disk usage is above {{ $value | humanize }}% on {{ $$labels.instance }} {{ $$labels.mountpoint }} for more than {{ $for }}. CRITICAL: Immediate action required!"
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/disk_space_critical.md"
+            dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
         - alert: VictoriaMetricsDown
           expr: up{job="victoriametrics"} == 0
-          for: 5m
+          for: ${VICTORIAMETRICS_DOWN_FOR:-5m}
           labels:
             severity: critical
+            component: monitoring
+            team: platform
           annotations:
             summary: "VictoriaMetrics is down"
-            description: "VictoriaMetrics has been down for more than 5 minutes."
+            description: "VictoriaMetrics has been down for more than {{ $for }}. Metrics ingestion may be affected."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/victoriametrics_down.md"
+            dashboard_url: "/grafana/d/victoriametrics/victoriametrics-overview"
 
         - alert: PrometheusDown
           expr: up{job="prometheus"} == 0
-          for: 5m
+          for: ${PROMETHEUS_DOWN_FOR:-5m}
           labels:
             severity: critical
+            component: monitoring
+            team: platform
           annotations:
             summary: "Prometheus is down"
-            description: "Prometheus has been down for more than 5 minutes."
+            description: "Prometheus has been down for more than {{ $for }}. Alerting and metrics collection may be affected."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/prometheus_down.md"
+            dashboard_url: "/grafana/d/prometheus/prometheus-overview"
 
         - alert: GrafanaDown
           expr: up{job="grafana"} == 0
-          for: 5m
+          for: ${GRAFANA_DOWN_FOR:-5m}
           labels:
             severity: critical
+            component: monitoring
+            team: platform
           annotations:
             summary: "Grafana is down"
-            description: "Grafana has been down for more than 5 minutes."
+            description: "Grafana has been down for more than {{ $for }}. Dashboard access and visualization may be affected."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/grafana_down.md"
+            dashboard_url: "/grafana/d/grafana/grafana-overview"
 
         - alert: CrowdSecDown
           expr: up{job="crowdsec"} == 0
@@ -3192,22 +3330,30 @@ configs:
             description: "Traefik has been down for more than 5 minutes."
 
         - alert: HighRequestLatency
-          expr: histogram_quantile(0.95, rate(traefik_service_request_duration_seconds_bucket[5m])) > 0.5
-          for: 5m
+          expr: histogram_quantile(0.95, rate(traefik_service_request_duration_seconds_bucket[5m])) > ${HIGH_LATENCY_THRESHOLD_SECONDS:-0.5}
+          for: ${HIGH_LATENCY_FOR:-5m}
           labels:
             severity: warning
+            component: traefik
+            team: platform
           annotations:
-            summary: "High request latency"
-            description: "95th percentile latency is above 500ms for more than 5 minutes."
+            summary: "High request latency detected"
+            description: "95th percentile latency is above {{ $value | humanize }}s for more than {{ $for }}. Service {{ $$labels.service }} may be experiencing performance issues."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_latency.md"
+            dashboard_url: "/grafana/d/traefik/traefik-overview"
 
         - alert: HighErrorRate
-          expr: rate(traefik_service_requests_total{code=~"5.."}[5m]) / rate(traefik_service_requests_total[5m]) > 0.1
-          for: 5m
+          expr: rate(traefik_service_requests_total{code=~"5.."}[5m]) / rate(traefik_service_requests_total[5m]) > ${HIGH_ERROR_RATE_THRESHOLD:-0.1}
+          for: ${HIGH_ERROR_RATE_FOR:-5m}
           labels:
             severity: critical
+            component: traefik
+            team: platform
           annotations:
-            summary: "High error rate"
-            description: "Error rate is above 10% for more than 5 minutes."
+            summary: "High error rate detected"
+            description: "Error rate is above {{ $value | humanizePercentage }}% for more than {{ $for }}. Service {{ $$labels.service }} is experiencing failures."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_error_rate.md"
+            dashboard_url: "/grafana/d/traefik/traefik-overview"
 
         - alert: FlaresolverrDown
           expr: up{job="flaresolverr"} == 0
@@ -3337,12 +3483,42 @@ configs:
 
         - alert: AlertmanagerDown
           expr: up{job="alertmanager"} == 0
-          for: 5m
+          for: ${ALERTMANAGER_DOWN_FOR:-5m}
           labels:
             severity: critical
+            component: monitoring
+            team: platform
           annotations:
             summary: "Alertmanager is down"
-            description: "Alertmanager has been down for more than 5 minutes. Alert routing may be affected."
+            description: "Alertmanager has been down for more than {{ $for }}. Alert routing and notifications may be affected."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/alertmanager_down.md"
+            dashboard_url: "/grafana/d/alertmanager/alertmanager-overview"
+
+        - alert: AlertmanagerClusterReplicationFailing
+          expr: alertmanager_cluster_replication_failed_total > 0
+          for: ${ALERTMANAGER_CLUSTER_REPLICATION_FAILING_FOR:-5m}
+          labels:
+            severity: warning
+            component: monitoring
+            team: platform
+          annotations:
+            summary: "Alertmanager cluster replication failing"
+            description: "Alertmanager cluster replication has failed {{ $value }} time(s). Alert state may be inconsistent across cluster members."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/alertmanager_cluster.md"
+            dashboard_url: "/grafana/d/alertmanager/alertmanager-overview"
+
+        - alert: AlertmanagerNotificationFailures
+          expr: rate(alertmanager_notifications_failed_total[5m]) > ${ALERTMANAGER_NOTIFICATION_FAILURE_RATE:-0.1}
+          for: ${ALERTMANAGER_NOTIFICATION_FAILURE_FOR:-5m}
+          labels:
+            severity: warning
+            component: monitoring
+            team: platform
+          annotations:
+            summary: "Alertmanager notification failures"
+            description: "Alertmanager is failing to send {{ $value | humanize }} notifications per second. Check notification channel configuration."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/alertmanager_notifications.md"
+            dashboard_url: "/grafana/d/alertmanager/alertmanager-overview"
 
         - alert: BolabadeneNextjsDown
           expr: up{job="bolabaden-nextjs"} == 0
@@ -3490,21 +3666,68 @@ configs:
 
         - alert: LokiDown
           expr: up{job="loki"} == 0
-          for: 5m
+          for: ${LOKI_DOWN_FOR:-5m}
           labels:
             severity: critical
+            component: monitoring
+            team: platform
           annotations:
             summary: "Loki is down"
-            description: "Loki has been down for more than 5 minutes."
+            description: "Loki has been down for more than {{ $for }}. Log aggregation and querying may be affected."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/loki_down.md"
+            dashboard_url: "/grafana/d/loki/loki-overview"
+
+        - alert: LokiIngestionErrors
+          expr: rate(loki_distributor_lines_received_total{status="error"}[5m]) > 0
+          for: ${LOKI_INGESTION_ERRORS_FOR:-5m}
+          labels:
+            severity: warning
+            component: monitoring
+            team: platform
+          annotations:
+            summary: "Loki ingestion errors detected"
+            description: "Loki is experiencing {{ $value | humanize }} ingestion errors per second. Check log format and pipeline configuration."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/loki_ingestion.md"
+            dashboard_url: "/grafana/d/loki/loki-overview"
+
+        - alert: LokiHighIngestionRate
+          expr: rate(loki_distributor_lines_received_total[5m]) > ${LOKI_HIGH_INGESTION_RATE:-100000}
+          for: ${LOKI_HIGH_INGESTION_RATE_FOR:-10m}
+          labels:
+            severity: info
+            component: monitoring
+            team: platform
+          annotations:
+            summary: "Loki high ingestion rate"
+            description: "Loki is ingesting {{ $value | humanize }} log lines per second. Consider optimizing log volume or scaling Loki."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/loki_scaling.md"
+            dashboard_url: "/grafana/d/loki/loki-overview"
 
         - alert: PromtailDown
           expr: up{job="promtail"} == 0
-          for: 5m
+          for: ${PROMTAIL_DOWN_FOR:-5m}
           labels:
             severity: critical
+            component: monitoring
+            team: platform
           annotations:
             summary: "Promtail is down"
-            description: "Promtail has been down for more than 5 minutes."
+            description: "Promtail has been down for more than {{ $for }}. Log shipping to Loki may be affected."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/promtail_down.md"
+            dashboard_url: "/grafana/d/promtail/promtail-overview"
+
+        - alert: PromtailReadErrors
+          expr: rate(promtail_read_lines_total{status="error"}[5m]) > 0
+          for: ${PROMTAIL_READ_ERRORS_FOR:-5m}
+          labels:
+            severity: warning
+            component: monitoring
+            team: platform
+          annotations:
+            summary: "Promtail read errors detected"
+            description: "Promtail is experiencing {{ $value | humanize }} read errors per second. Check log file permissions and format."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/promtail_errors.md"
+            dashboard_url: "/grafana/d/promtail/promtail-overview"
 
         - alert: BlackboxProbeFailure
           expr: probe_success == 0
@@ -3703,6 +3926,85 @@ configs:
           annotations:
             summary: "WARP Net Init is down"
             description: "WARP Net Init has been down for more than 5 minutes."
+
+        # Network and I/O Alerts
+        - alert: HighNetworkReceiveRate
+          expr: rate(node_network_receive_bytes_total[5m]) > ${HIGH_NETWORK_RECEIVE_RATE:-1000000000}
+          for: ${HIGH_NETWORK_RECEIVE_FOR:-10m}
+          labels:
+            severity: info
+            component: infrastructure
+            team: platform
+          annotations:
+            summary: "High network receive rate"
+            description: "Network receive rate is {{ $value | humanizeBytes }}/s on {{ $$labels.instance }} interface {{ $$labels.device }} for more than {{ $for }}."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_network.md"
+            dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
+
+        - alert: HighNetworkTransmitRate
+          expr: rate(node_network_transmit_bytes_total[5m]) > ${HIGH_NETWORK_TRANSMIT_RATE:-1000000000}
+          for: ${HIGH_NETWORK_TRANSMIT_FOR:-10m}
+          labels:
+            severity: info
+            component: infrastructure
+            team: platform
+          annotations:
+            summary: "High network transmit rate"
+            description: "Network transmit rate is {{ $value | humanizeBytes }}/s on {{ $$labels.instance }} interface {{ $$labels.device }} for more than {{ $for }}."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_network.md"
+            dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
+
+        - alert: HighDiskIOWait
+          expr: rate(node_disk_io_time_seconds_total[5m]) > ${HIGH_DISK_IO_WAIT:-0.8}
+          for: ${HIGH_DISK_IO_WAIT_FOR:-5m}
+          labels:
+            severity: warning
+            component: infrastructure
+            team: platform
+          annotations:
+            summary: "High disk I/O wait time"
+            description: "Disk I/O wait time is above {{ $value | humanizePercentage }}% on {{ $$labels.instance }} device {{ $$labels.device }} for more than {{ $for }}."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_disk_io.md"
+            dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
+
+        - alert: HighLoadAverage
+          expr: node_load1 > ${HIGH_LOAD_AVERAGE_THRESHOLD:-10} * on(instance) count(node_cpu_seconds_total{mode="idle"}) by (instance)
+          for: ${HIGH_LOAD_AVERAGE_FOR:-5m}
+          labels:
+            severity: warning
+            component: infrastructure
+            team: platform
+          annotations:
+            summary: "High load average"
+            description: "Load average (1m) is {{ $value | humanize }} on {{ $$labels.instance }}, which is above the number of CPU cores."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_load.md"
+            dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
+
+        - alert: SystemdServiceFailed
+          expr: node_systemd_unit_state{state="failed"} == 1
+          for: ${SYSTEMD_SERVICE_FAILED_FOR:-5m}
+          labels:
+            severity: warning
+            component: infrastructure
+            team: platform
+          annotations:
+            summary: "Systemd service failed"
+            description: "Systemd service {{ $$labels.name }} has failed on {{ $$labels.instance }} for more than {{ $for }}."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/systemd_service_failed.md"
+            dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
+
+        - alert: NodeExporterDown
+          expr: up{job="node-exporter"} == 0
+          for: ${NODE_EXPORTER_DOWN_FOR:-5m}
+          labels:
+            severity: critical
+            component: monitoring
+            team: platform
+          annotations:
+            summary: "Node Exporter is down"
+            description: "Node Exporter has been down for more than {{ $for }}. System metrics collection may be affected."
+            runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/node_exporter_down.md"
+            dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
   recording.rules:
     content: |
