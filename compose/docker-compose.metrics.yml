@@ -6061,6 +6061,151 @@ configs:
             - labels:
                 level:
 
+        - job_name: searxng-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "searxng"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - json:
+                expressions:
+                  timestamp: time
+                  level: levelname
+                  message: message
+            - labels:
+                level:
+
+        - job_name: portainer-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "portainer"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'time="(?P<timestamp>[^"]+)"\s+level=(?P<level>\w+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: homepage-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "homepage"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - json:
+                expressions:
+                  timestamp: time
+                  level: level
+                  message: msg
+            - labels:
+                level:
+
+        - job_name: victoriametrics-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "victoriametrics"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'time="(?P<timestamp>[^"]+)"\s+level=(?P<level>\w+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: promtail-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "promtail"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'level=(?P<level>\w+)\s+ts=(?P<timestamp>[^\s]+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: mongodb-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "mongodb"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: '{\s*"t":\s*\{[^}]*"\\$date":\s*"(?P<timestamp>[^"]+)"\s*\}[^}]*"s":\s*"(?P<level>\w+)"[^}]*"c":\s*"(?P<component>[^"]+)"[^}]*"msg":\s*"(?P<message>[^"]+)"'
+            - labels:
+                level:
+                component:
+
+        - job_name: redis-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "redis"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: '^\d+:\w+\s+\d{2}\s+\d{2}:\d{2}:\d{2}\s+\*\s+(?P<message>.*)$'
+            - labels:
+                level: info
+
+        - job_name: dozzle-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "dozzle"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - json:
+                expressions:
+                  timestamp: time
+                  level: level
+                  message: msg
+            - labels:
+                level:
+
+        - job_name: code-server-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "code-server"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: '\[(?P<timestamp>[^\]]+)\]\s+\[(?P<level>\w+)\]\s+(?P<message>.*)$'
+            - labels:
+                level:
+
 services:
   # VictoriaMetrics initialization container
   init_victoriametrics:
