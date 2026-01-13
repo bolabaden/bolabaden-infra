@@ -2570,6 +2570,105 @@ configs:
             queryTimeout: "60s"
             httpMethod: "GET"
             prometheusType: "Prometheus"
+        - name: Autokuma
+          type: prometheus
+          access: proxy
+          uid: autokuma_uid
+          url: ${VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "POST"
+            prometheusType: "Prometheus"
+        - name: TinyAuth
+          type: prometheus
+          access: proxy
+          uid: tinyauth_uid
+          url: ${VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "POST"
+            prometheusType: "Prometheus"
+        - name: Whoami
+          type: prometheus
+          access: proxy
+          uid: whoami_uid
+          url: ${VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "POST"
+            prometheusType: "Prometheus"
+        - name: Cloudflare-DDNS
+          type: prometheus
+          access: proxy
+          uid: cloudflare_ddns_uid
+          url: ${VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "POST"
+            prometheusType: "Prometheus"
+        - name: Logrotate-Traefik
+          type: prometheus
+          access: proxy
+          uid: logrotate_traefik_uid
+          url: ${VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "POST"
+            prometheusType: "Prometheus"
+        - name: Nginx-Traefik-Extensions
+          type: prometheus
+          access: proxy
+          uid: nginx_traefik_extensions_uid
+          url: ${VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "POST"
+            prometheusType: "Prometheus"
+        - name: Warp-NAT-Gateway
+          type: prometheus
+          access: proxy
+          uid: warp_nat_gateway_uid
+          url: ${VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "POST"
+            prometheusType: "Prometheus"
+        - name: Warp-Router
+          type: prometheus
+          access: proxy
+          uid: warp_router_uid
+          url: ${VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "POST"
+            prometheusType: "Prometheus"
+        - name: IP-Checker-Warp
+          type: prometheus
+          access: proxy
+          uid: ip_checker_warp_uid
+          url: ${VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "POST"
+            prometheusType: "Prometheus"
   grafana-dashboard.yaml:
     content: |
       apiVersion: 1
@@ -3399,6 +3498,87 @@ configs:
           annotations:
             summary: "Container restart loop"
             description: "Container $$labels.name has restarted more than 5 times in the last hour."
+
+        - alert: AutokumaDown
+          expr: up{job="blackbox",instance=~".*autokuma.*"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Autokuma is down"
+            description: "Autokuma has been down for more than 5 minutes."
+
+        - alert: TinyAuthDown
+          expr: up{job="blackbox",instance=~".*tinyauth.*"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "TinyAuth is down"
+            description: "TinyAuth has been down for more than 5 minutes."
+
+        - alert: WhoamiDown
+          expr: up{job="blackbox",instance=~".*whoami.*"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Whoami is down"
+            description: "Whoami has been down for more than 5 minutes."
+
+        - alert: CloudflareDDNSDown
+          expr: up{job="cadvisor",container="cloudflare-ddns"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Cloudflare DDNS is down"
+            description: "Cloudflare DDNS has been down for more than 5 minutes."
+
+        - alert: LogrotateTraefikDown
+          expr: up{job="cadvisor",container="logrotate-traefik"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Logrotate Traefik is down"
+            description: "Logrotate Traefik has been down for more than 5 minutes."
+
+        - alert: NginxTraefikExtensionsDown
+          expr: up{job="blackbox",instance=~".*nginx-traefik-extensions.*"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Nginx Traefik Extensions is down"
+            description: "Nginx Traefik Extensions has been down for more than 5 minutes."
+
+        - alert: WarpNatGatewayDown
+          expr: up{job="blackbox",instance=~".*warp-nat-gateway.*"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "WARP NAT Gateway is down"
+            description: "WARP NAT Gateway has been down for more than 5 minutes."
+
+        - alert: WarpRouterDown
+          expr: up{job="blackbox",instance=~".*warp_router.*"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "WARP Router is down"
+            description: "WARP Router has been down for more than 5 minutes."
+
+        - alert: IPCheckerWarpDown
+          expr: up{job="blackbox",instance=~".*ip-checker-warp.*"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "IP Checker WARP is down"
+            description: "IP Checker WARP has been down for more than 5 minutes."
 
   grafana-alerting.yaml:
     content: |
@@ -7548,6 +7728,537 @@ configs:
         "uid": "rclone_monitoring",
         "version": 1
       }
+  autokuma-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"blackbox\",instance=~\".*autokuma.*\"}", "refId": "A"}],
+            "title": "Autokuma Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{name=\"autokuma\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{name=\"autokuma\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "probe_success{instance=~\"https://autokuma.$DOMAIN\"}", "legendFormat": "Health Check", "refId": "A"}],
+            "title": "Health Check",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["autokuma", "monitoring", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Autokuma Monitoring",
+        "uid": "autokuma_monitoring",
+        "version": 1
+      }
+  tinyauth-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"blackbox\",instance=~\".*tinyauth.*\"}", "refId": "A"}],
+            "title": "TinyAuth Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{name=\"tinyauth\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{name=\"tinyauth\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "probe_success{instance=~\"https://tinyauth.$DOMAIN\"}", "legendFormat": "Health Check", "refId": "A"}],
+            "title": "Health Check",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["tinyauth", "auth", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "TinyAuth Monitoring",
+        "uid": "tinyauth_monitoring",
+        "version": 1
+      }
+  whoami-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"blackbox\",instance=~\".*whoami.*\"}", "refId": "A"}],
+            "title": "Whoami Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{name=\"whoami\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{name=\"whoami\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "probe_success{instance=~\"https://whoami.$DOMAIN\"}", "legendFormat": "Health Check", "refId": "A"}],
+            "title": "Health Check",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["whoami", "debug", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Whoami Monitoring",
+        "uid": "whoami_monitoring",
+        "version": 1
+      }
+  cloudflare-ddns-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"cadvisor\",container=\"cloudflare-ddns\"}", "refId": "A"}],
+            "title": "Cloudflare DDNS Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{container=\"cloudflare-ddns\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{container=\"cloudflare-ddns\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "probe_success{instance=~\"https://cloudflare-ddns.$DOMAIN\"}", "legendFormat": "Health Check", "refId": "A"}],
+            "title": "Health Check",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["cloudflare", "ddns", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Cloudflare DDNS Monitoring",
+        "uid": "cloudflare_ddns_monitoring",
+        "version": 1
+      }
+  logrotate-traefik-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"cadvisor\",container=\"logrotate-traefik\"}", "refId": "A"}],
+            "title": "Logrotate Traefik Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{container=\"logrotate-traefik\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{container=\"logrotate-traefik\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "probe_success{instance=~\"https://logrotate-traefik.$DOMAIN\"}", "legendFormat": "Health Check", "refId": "A"}],
+            "title": "Health Check",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["logrotate", "traefik", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Logrotate Traefik Monitoring",
+        "uid": "logrotate_traefik_monitoring",
+        "version": 1
+      }
+  nginx-traefik-extensions-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"blackbox\",instance=~\".*nginx-traefik-extensions.*\"}", "refId": "A"}],
+            "title": "Nginx Traefik Extensions Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{name=\"nginx-traefik-extensions\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{name=\"nginx-traefik-extensions\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "probe_success{instance=~\"https://nginx-traefik-extensions.$DOMAIN\"}", "legendFormat": "Health Check", "refId": "A"}],
+            "title": "Health Check",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["nginx", "traefik", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Nginx Traefik Extensions Monitoring",
+        "uid": "nginx_traefik_extensions_monitoring",
+        "version": 1
+      }
+  warp-nat-gateway-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"blackbox\",instance=~\".*warp-nat-gateway.*\"}", "refId": "A"}],
+            "title": "WARP NAT Gateway Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{name=\"warp-nat-gateway\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{name=\"warp-nat-gateway\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "probe_success{instance=~\"https://warp-nat-gateway.$DOMAIN\"}", "legendFormat": "Health Check", "refId": "A"}],
+            "title": "Health Check",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["warp", "cloudflare", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "WARP NAT Gateway Monitoring",
+        "uid": "warp_nat_gateway_monitoring",
+        "version": 1
+      }
+  warp-router-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"blackbox\",instance=~\".*warp_router.*\"}", "refId": "A"}],
+            "title": "WARP Router Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{name=\"warp_router\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{name=\"warp_router\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "probe_success{instance=~\"https://warp_router.$DOMAIN\"}", "legendFormat": "Health Check", "refId": "A"}],
+            "title": "Health Check",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["warp", "cloudflare", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "WARP Router Monitoring",
+        "uid": "warp_router_monitoring",
+        "version": 1
+      }
+  ip-checker-warp-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"blackbox\",instance=~\".*ip-checker-warp.*\"}", "refId": "A"}],
+            "title": "IP Checker WARP Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{name=\"ip-checker-warp\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{name=\"ip-checker-warp\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "probe_success{instance=~\"https://ip-checker-warp.$DOMAIN\"}", "legendFormat": "Health Check", "refId": "A"}],
+            "title": "Health Check",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["warp", "cloudflare", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "IP Checker WARP Monitoring",
+        "uid": "ip_checker_warp_monitoring",
+        "version": 1
+      }
   loki.yaml:
     content: |
       # This is a complete configuration to deploy Loki backed by the filesystem.
@@ -8284,6 +8995,33 @@ services:
         mode: 0777
       - source: rclone-dashboard.json
         target: /var/lib/grafana/dashboards/infrastructure/rclone-dashboard.json
+        mode: 0777
+      - source: autokuma-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/autokuma-dashboard.json
+        mode: 0777
+      - source: tinyauth-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/tinyauth-dashboard.json
+        mode: 0777
+      - source: whoami-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/whoami-dashboard.json
+        mode: 0777
+      - source: cloudflare-ddns-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/cloudflare-ddns-dashboard.json
+        mode: 0777
+      - source: logrotate-traefik-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/logrotate-traefik-dashboard.json
+        mode: 0777
+      - source: nginx-traefik-extensions-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/nginx-traefik-extensions-dashboard.json
+        mode: 0777
+      - source: warp-nat-gateway-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/warp-nat-gateway-dashboard.json
+        mode: 0777
+      - source: warp-router-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/warp-router-dashboard.json
+        mode: 0777
+      - source: ip-checker-warp-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/ip-checker-warp-dashboard.json
         mode: 0777
       - source: homepage-dashboard.json
         target: /var/lib/grafana/dashboards/infrastructure/homepage-dashboard.json
