@@ -6010,6 +6010,46 @@ configs:
             "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"headscale\"}", "refId": "A"}],
             "title": "Headscale Status",
             "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "reqps"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(http_requests_total{job=\"headscale\"}[5m])", "legendFormat": "Request Rate", "refId": "A"}],
+            "title": "Request Rate",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "s"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"headscale\"}[5m]))", "legendFormat": "95th percentile", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job=\"headscale\"}[5m]))", "legendFormat": "99th percentile", "refId": "B"}],
+            "title": "Request Duration (p95/p99)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "sum by (code) (rate(http_requests_total{job=\"headscale\"}[5m]))", "legendFormat": "{{code}}", "refId": "A"}],
+            "title": "HTTP Status Codes",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+            "id": 5,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(http_request_bytes_total{job=\"headscale\"}[5m])", "legendFormat": "Bytes/sec", "refId": "A"}],
+            "title": "Request/Response Bytes",
+            "type": "timeseries"
           }
         ],
         "refresh": "30s",
