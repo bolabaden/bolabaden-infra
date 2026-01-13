@@ -2482,6 +2482,39 @@ configs:
             queryTimeout: "60s"
             httpMethod: "GET"
             prometheusType: "Prometheus"
+        - name: MongoDB-Exporter
+          type: prometheus
+          access: proxy
+          uid: mongodb_exporter_uid
+          url: ${MONGODB_EXPORTER_URL:-http://mongodb-exporter:${MONGODB_EXPORTER_PORT:-9216}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "15s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Redis-Exporter
+          type: prometheus
+          access: proxy
+          uid: redis_exporter_uid
+          url: ${REDIS_EXPORTER_URL:-http://redis-exporter:${REDIS_EXPORTER_PORT:-9121}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "15s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Process-Exporter
+          type: prometheus
+          access: proxy
+          uid: process_exporter_uid
+          url: ${PROCESS_EXPORTER_URL:-http://process-exporter:${PROCESS_EXPORTER_PORT:-9256}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "15s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
   grafana-dashboard.yaml:
     content: |
       apiVersion: 1
@@ -2616,10 +2649,28 @@ configs:
             - targets: ['redis:${REDIS_PORT:-6379}']
           scrape_interval: 15s
 
+        - job_name: 'redis-exporter'
+          static_configs:
+            - targets: ['redis-exporter:${REDIS_EXPORTER_PORT:-9121}']
+          scrape_interval: ${REDIS_EXPORTER_SCRAPE_INTERVAL:-15s}
+          metrics_path: /metrics
+
         - job_name: 'mongodb'
           static_configs:
             - targets: ['mongodb:${MONGODB_PORT:-27017}']
           scrape_interval: 30s
+
+        - job_name: 'mongodb-exporter'
+          static_configs:
+            - targets: ['mongodb-exporter:${MONGODB_EXPORTER_PORT:-9216}']
+          scrape_interval: ${MONGODB_EXPORTER_SCRAPE_INTERVAL:-15s}
+          metrics_path: /metrics
+
+        - job_name: 'process-exporter'
+          static_configs:
+            - targets: ['process-exporter:${PROCESS_EXPORTER_PORT:-9256}']
+          scrape_interval: ${PROCESS_EXPORTER_SCRAPE_INTERVAL:-15s}
+          metrics_path: /metrics
 
         - job_name: 'homepage'
           static_configs:
@@ -2924,6 +2975,33 @@ configs:
           annotations:
             summary: "MongoDB is down"
             description: "MongoDB has been down for more than 5 minutes."
+
+        - alert: MongoDBExporterDown
+          expr: up{job="mongodb-exporter"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "MongoDB Exporter is down"
+            description: "MongoDB Exporter has been down for more than 5 minutes."
+
+        - alert: RedisExporterDown
+          expr: up{job="redis-exporter"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Redis Exporter is down"
+            description: "Redis Exporter has been down for more than 5 minutes."
+
+        - alert: ProcessExporterDown
+          expr: up{job="process-exporter"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Process Exporter is down"
+            description: "Process Exporter has been down for more than 5 minutes."
 
         - alert: HomepageDown
           expr: up{job="homepage"} == 0
@@ -3564,6 +3642,14 @@ configs:
             preferred_ip_protocol: "ip4" # defaults to "ip6"
             query_name: "prometheus.io"
             query_type: "A"
+  process-exporter.yml:
+    content: |
+      process_names:
+        - name: "{{.Comm}}"
+          cmdline:
+          - '.+'
+      # Monitor all processes
+      # You can customize this to filter specific processes
   grafana-notifications.yaml:
     content: |
       apiVersion: 1
@@ -5403,6 +5489,114 @@ configs:
         "uid": "promtail_monitoring",
         "version": 1
       }
+  mongodb-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"mongodb-exporter\"}", "refId": "A"}],
+            "title": "MongoDB Exporter Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "mongodb_opcounters{state=\"insert\"}", "legendFormat": "Inserts", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "mongodb_opcounters{state=\"query\"}", "legendFormat": "Queries", "refId": "B"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "mongodb_opcounters{state=\"update\"}", "legendFormat": "Updates", "refId": "C"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "mongodb_opcounters{state=\"delete\"}", "legendFormat": "Deletes", "refId": "D"}],
+            "title": "MongoDB Operations",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "mongodb_memory{type=\"resident\"}", "legendFormat": "Resident Memory", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "mongodb_memory{type=\"virtual\"}", "legendFormat": "Virtual Memory", "refId": "B"}],
+            "title": "MongoDB Memory Usage",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["mongodb", "database", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "MongoDB Monitoring",
+        "uid": "mongodb_monitoring",
+        "version": 1
+      }
+  redis-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"redis-exporter\"}", "refId": "A"}],
+            "title": "Redis Exporter Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "ops"},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(redis_commands_processed_total[5m])", "legendFormat": "Commands/sec", "refId": "A"}],
+            "title": "Redis Commands Rate",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "redis_memory_used_bytes", "legendFormat": "Used Memory", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "redis_memory_max_bytes", "legendFormat": "Max Memory", "refId": "B"}],
+            "title": "Redis Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "redis_connected_clients", "legendFormat": "Connected Clients", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "redis_connected_slaves", "legendFormat": "Connected Slaves", "refId": "B"}],
+            "title": "Redis Connections",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["redis", "database", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Redis Monitoring",
+        "uid": "redis_monitoring",
+        "version": 1
+      }
   loki.yaml:
     content: |
       # This is a complete configuration to deploy Loki backed by the filesystem.
@@ -5953,6 +6147,12 @@ services:
       - source: promtail-dashboard.json
         target: /var/lib/grafana/dashboards/infrastructure/promtail-dashboard.json
         mode: 0777
+      - source: mongodb-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/mongodb-dashboard.json
+        mode: 0777
+      - source: redis-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/redis-dashboard.json
+        mode: 0777
       - source: crowdsec-profiles.yaml
         target: /etc/grafana/provisioning/crowdsec-profiles.yaml
         mode: 0777
@@ -6157,4 +6357,89 @@ services:
       prometheus.io/scrape: true
       prometheus.io/port: 9115
       prometheus.io/path: metrics
+    restart: always
+
+  # MongoDB Exporter for comprehensive MongoDB monitoring
+  mongodb-exporter:
+    image: docker.io/percona/mongodb_exporter:0.40
+    container_name: mongodb-exporter
+    hostname: mongodb-exporter
+    networks:
+      - backend
+    expose:
+      - 9216
+    environment:
+      - MONGODB_URI=${MONGODB_EXPORTER_URI:-mongodb://mongodb:27017}
+      - MONGODB_USERNAME=${MONGODB_EXPORTER_USERNAME:-}
+      - MONGODB_PASSWORD=${MONGODB_EXPORTER_PASSWORD:-}
+      - COLLECT_COLLSTATS=${MONGODB_EXPORTER_COLLECT_COLLSTATS:-true}
+      - COLLECT_DBSTATS=${MONGODB_EXPORTER_COLLECT_DBSTATS:-true}
+      - COLLECT_INDEXSTATS=${MONGODB_EXPORTER_COLLECT_INDEXSTATS:-true}
+      - COLLECT_TOPSTATS=${MONGODB_EXPORTER_COLLECT_TOPSTATS:-true}
+      - COLLECT_REPLSETSTATS=${MONGODB_EXPORTER_COLLECT_REPLSETSTATS:-true}
+    command:
+      - '--mongodb.uri=mongodb://mongodb:27017'
+    labels:
+      prometheus.io/scrape: true
+      prometheus.io/port: 9216
+      prometheus.io/path: /metrics
+      homepage.group: Monitoring
+      homepage.name: MongoDB Exporter
+      homepage.icon: mongodb.png
+      homepage.href: http://mongodb-exporter:9216/metrics
+    restart: always
+
+  # Redis Exporter for comprehensive Redis monitoring
+  redis-exporter:
+    image: docker.io/oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    hostname: redis-exporter
+    networks:
+      - backend
+    expose:
+      - 9121
+    environment:
+      - REDIS_ADDR=${REDIS_EXPORTER_ADDR:-redis:${REDIS_PORT:-6379}}
+      - REDIS_USER=${REDIS_EXPORTER_USER:-${REDIS_USERNAME:-default}}
+      - REDIS_PASSWORD=${REDIS_EXPORTER_PASSWORD:-${REDIS_PASSWORD:-redis}}
+      - REDIS_EXPORTER_INCLUDE_SYSTEM_METRICS=${REDIS_EXPORTER_INCLUDE_SYSTEM_METRICS:-true}
+      - REDIS_EXPORTER_CHECK_KEYS=${REDIS_EXPORTER_CHECK_KEYS:-}
+      - REDIS_EXPORTER_SCRIPT=${REDIS_EXPORTER_SCRIPT:-}
+    labels:
+      prometheus.io/scrape: true
+      prometheus.io/port: 9121
+      prometheus.io/path: /metrics
+      homepage.group: Monitoring
+      homepage.name: Redis Exporter
+      homepage.icon: redis.png
+      homepage.href: http://redis-exporter:9121/metrics
+    restart: always
+
+  # Process Exporter for process-level metrics
+  process-exporter:
+    image: docker.io/ncabatoff/process-exporter:latest
+    container_name: process-exporter
+    hostname: process-exporter
+    networks:
+      - backend
+    expose:
+      - 9256
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    command:
+      - '--procfs=/host/proc'
+      - '--config.path=/etc/process-exporter/config.yml'
+    configs:
+      - source: process-exporter.yml
+        target: /etc/process-exporter/config.yml
+        mode: 0777
+    labels:
+      prometheus.io/scrape: true
+      prometheus.io/port: 9256
+      prometheus.io/path: /metrics
+      homepage.group: Monitoring
+      homepage.name: Process Exporter
+      homepage.icon: prometheus.png
+      homepage.href: http://process-exporter:9256/metrics
     restart: always
