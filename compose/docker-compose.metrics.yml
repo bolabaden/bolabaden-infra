@@ -1680,7 +1680,23 @@ configs:
       #################################### Query #############################
       [query]
       # Set the number of data source queries that can be executed concurrently in mixed queries. Default is the number of CPUs.
+      # Higher values improve dashboard load times but increase resource usage
       concurrent_query_limit = ${GF_QUERY_CONCURRENT_QUERY_LIMIT:-}
+      
+      #################################### Query Caching #############################
+      # Query caching improves performance by storing query results
+      # This is especially useful for frequently accessed dashboards
+      [query_cache]
+      # Enable query caching (requires Redis or Memcached)
+      enabled = ${GF_QUERY_CACHE_ENABLED:-false}
+      # Cache backend: redis or memcached
+      backend = ${GF_QUERY_CACHE_BACKEND:-redis}
+      # Redis connection string (if using Redis)
+      redis_addr = ${GF_QUERY_CACHE_REDIS_ADDR:-redis:6379}
+      # Cache TTL in seconds
+      ttl = ${GF_QUERY_CACHE_TTL:-300}
+      # Maximum number of cached queries
+      max_size = ${GF_QUERY_CACHE_MAX_SIZE:-1000}
 
       #################################### Query History #############################
       [query_history]
@@ -2214,18 +2230,24 @@ configs:
           isDefault: true
           editable: false
           jsonData:
-            timeInterval: "5s"
-            queryTimeout: "60s"
-            httpMethod: "POST"
-            customQueryParameters: ""
-            manageAlerts: true
-            alertmanagerUid: "alertmanager_uid"
-            prometheusType: "Prometheus"
-            prometheusVersion: "2.40.0"
-            cacheLevel: "High"
-            disableMetricsLookup: false
-            incrementalQuerying: true
-            incrementalQueryOverlapWindow: "10m"
+            timeInterval: ${GRAFANA_VICTORIAMETRICS_TIME_INTERVAL:-5s}
+            queryTimeout: ${GRAFANA_VICTORIAMETRICS_QUERY_TIMEOUT:-60s}
+            httpMethod: ${GRAFANA_VICTORIAMETRICS_HTTP_METHOD:-POST}
+            customQueryParameters: ${GRAFANA_VICTORIAMETRICS_CUSTOM_QUERY_PARAMS:-}
+            manageAlerts: ${GRAFANA_VICTORIAMETRICS_MANAGE_ALERTS:-true}
+            alertmanagerUid: ${GRAFANA_ALERTMANAGER_UID:-alertmanager_uid}
+            prometheusType: ${GRAFANA_VICTORIAMETRICS_PROMETHEUS_TYPE:-Prometheus}
+            prometheusVersion: ${GRAFANA_VICTORIAMETRICS_PROMETHEUS_VERSION:-2.40.0}
+            # Query caching configuration for performance optimization
+            # High cache level caches query results to improve dashboard load times
+            cacheLevel: ${GRAFANA_VICTORIAMETRICS_CACHE_LEVEL:-High}
+            # Disable metrics lookup if not needed (improves query performance)
+            disableMetricsLookup: ${GRAFANA_VICTORIAMETRICS_DISABLE_METRICS_LOOKUP:-false}
+            # Incremental querying splits large time ranges into smaller chunks
+            # This improves performance for long-range queries
+            incrementalQuerying: ${GRAFANA_VICTORIAMETRICS_INCREMENTAL_QUERYING:-true}
+            # Overlap window ensures no gaps between incremental query chunks
+            incrementalQueryOverlapWindow: ${GRAFANA_VICTORIAMETRICS_INCREMENTAL_QUERY_OVERLAP_WINDOW:-10m}
           secureJsonData:
             # Add basic auth if needed for VictoriaMetrics
             # basicAuthPassword: "$${VICTORIAMETRICS_PASSWORD:-}"
@@ -9814,6 +9836,67 @@ services:
       retries: 3
       start_period: 40s
     restart: always
+
+  # VictoriaMetrics Backup Service (Optional - enable for automated backups)
+  # This service can be scheduled via cron or run manually to create backups
+  # For production deployments, consider using vmbackupmanager for automated smart backups
+  # 
+  # Usage examples:
+  # 1. Full backup: docker exec victoriametrics-backup vmbackup -storageDataPath=/storage -snapshot.createURL=http://victoriametrics:8428/snapshot/create -dst=fs:///backups/full-$(date +%Y%m%d)
+  # 2. Incremental backup: docker exec victoriametrics-backup vmbackup -storageDataPath=/storage -snapshot.createURL=http://victoriametrics:8428/snapshot/create -dst=fs:///backups/latest
+  # 3. Smart backup (hourly incremental, daily full): Use vmbackupmanager or schedule via cron
+  #
+  # Supported backup destinations:
+  # - Local filesystem: fs:///path/to/backup
+  # - AWS S3: s3://bucket/path/to/backup
+  # - Google Cloud Storage: gs://bucket/path/to/backup
+  # - Azure Blob Storage: azblob://container/path/to/backup
+  # - S3-compatible storage (MinIO, Ceph): s3://bucket/path with -customS3Endpoint
+  #
+  # For cloud storage, configure credentials via environment variables:
+  # - AWS: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+  # - GCP: GOOGLE_APPLICATION_CREDENTIALS (path to service account JSON)
+  # - Azure: AZURE_STORAGE_ACCOUNT_NAME, AZURE_STORAGE_ACCOUNT_KEY
+  #
+  # Uncomment and configure the service below to enable automated backups:
+  # victoriametrics-backup:
+  #   image: docker.io/victoriametrics/vmutils:latest
+  #   container_name: victoriametrics-backup
+  #   hostname: victoriametrics-backup
+  #   networks:
+  #     - backend
+  #   depends_on:
+  #     victoriametrics:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ${CONFIG_PATH:-./volumes}/victoriametrics:/storage:ro
+  #     - ${CONFIG_PATH:-./volumes}/victoriametrics-backups:/backups
+  #   environment:
+  #     # AWS S3 credentials (if using S3)
+  #     AWS_ACCESS_KEY_ID: ${VICTORIAMETRICS_BACKUP_AWS_ACCESS_KEY_ID:-}
+  #     AWS_SECRET_ACCESS_KEY: ${VICTORIAMETRICS_BACKUP_AWS_SECRET_ACCESS_KEY:-}
+  #     # GCP credentials (if using GCS)
+  #     GOOGLE_APPLICATION_CREDENTIALS: ${VICTORIAMETRICS_BACKUP_GCP_CREDENTIALS_PATH:-}
+  #     # Azure credentials (if using Azure Blob)
+  #     AZURE_STORAGE_ACCOUNT_NAME: ${VICTORIAMETRICS_BACKUP_AZURE_ACCOUNT_NAME:-}
+  #     AZURE_STORAGE_ACCOUNT_KEY: ${VICTORIAMETRICS_BACKUP_AZURE_ACCOUNT_KEY:-}
+  #   command:
+  #     - /bin/sh
+  #     - -c
+  #     - |
+  #       # Example backup script - customize as needed
+  #       # This creates an incremental backup to the 'latest' directory
+  #       # For smart backups, use vmbackupmanager or schedule full backups separately
+  #       vmbackup \
+  #         -storageDataPath=/storage \
+  #         -snapshot.createURL=http://victoriametrics:${VICTORIAMETRICS_PORT:-8428}/snapshot/create \
+  #         -dst=${VICTORIAMETRICS_BACKUP_DST:-fs:///backups/latest} \
+  #         -concurrency=${VICTORIAMETRICS_BACKUP_CONCURRENCY:-10} \
+  #         -maxBytesPerSecond=${VICTORIAMETRICS_BACKUP_MAX_BYTES_PER_SECOND:-0}
+  #   restart: "no"  # Run once or schedule via external cron
+  #   profiles:
+  #     - backup  # Use docker compose --profile backup to enable this service
+
   init_prometheus:
     image: docker.io/prom/prometheus
     container_name: init_prometheus
