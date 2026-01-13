@@ -2669,6 +2669,61 @@ configs:
             queryTimeout: "60s"
             httpMethod: "POST"
             prometheusType: "Prometheus"
+        - name: Headscale-Server
+          type: prometheus
+          access: proxy
+          uid: headscale_server_uid
+          url: ${HEADSCALE_SERVER_METRICS_URL:-http://headscale-server:${HEADSCALE_SERVER_METRICS_PORT:-8080}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Docker-Gen-Failover
+          type: prometheus
+          access: proxy
+          uid: docker_gen_failover_uid
+          url: ${VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "POST"
+            prometheusType: "Prometheus"
+        - name: LiteLLM-Postgres
+          type: prometheus
+          access: proxy
+          uid: litellm_postgres_uid
+          url: ${VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "POST"
+            prometheusType: "Prometheus"
+        - name: NUQ-Postgres
+          type: prometheus
+          access: proxy
+          uid: nuq_postgres_uid
+          url: ${VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "POST"
+            prometheusType: "Prometheus"
+        - name: Warp-Net-Init
+          type: prometheus
+          access: proxy
+          uid: warp_net_init_uid
+          url: ${VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "POST"
+            prometheusType: "Prometheus"
   grafana-dashboard.yaml:
     content: |
       apiVersion: 1
@@ -2955,6 +3010,22 @@ configs:
           scrape_interval: ${HEADSCALE_SCRAPE_INTERVAL:-30s}
           metrics_path: /metrics
 
+        - job_name: 'headscale-server'
+          static_configs:
+            - targets: ['headscale-server:${HEADSCALE_SERVER_METRICS_PORT:-8080}']
+          scrape_interval: ${HEADSCALE_SERVER_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'litellm-postgres'
+          static_configs:
+            - targets: ['litellm-postgres:${LITELLM_POSTGRES_PORT:-5432}']
+          scrape_interval: ${LITELLM_POSTGRES_SCRAPE_INTERVAL:-30s}
+
+        - job_name: 'nuq-postgres'
+          static_configs:
+            - targets: ['nuq-postgres:${NUQ_POSTGRES_PORT:-5432}']
+          scrape_interval: ${NUQ_POSTGRES_SCRAPE_INTERVAL:-30s}
+
         - job_name: 'loki'
           static_configs:
             - targets: ['loki:${LOKI_HTTP_LISTEN_PORT:-3100}']
@@ -3018,6 +3089,8 @@ configs:
               - https://warp-nat-gateway.$DOMAIN
               - https://warp_router.$DOMAIN
               - https://ip-checker-warp.$DOMAIN
+              - https://headscale-server.$DOMAIN
+              - https://docker-gen-failover.$DOMAIN
           relabel_configs:
             - source_labels: [__address__]
               target_label: __param_target
@@ -3579,6 +3652,51 @@ configs:
           annotations:
             summary: "IP Checker WARP is down"
             description: "IP Checker WARP has been down for more than 5 minutes."
+
+        - alert: HeadscaleServerDown
+          expr: up{job="headscale-server"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Headscale Server is down"
+            description: "Headscale Server has been down for more than 5 minutes."
+
+        - alert: DockerGenFailoverDown
+          expr: up{job="cadvisor",container="docker-gen-failover"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Docker Gen Failover is down"
+            description: "Docker Gen Failover has been down for more than 5 minutes."
+
+        - alert: LiteLLMPostgresDown
+          expr: up{job="cadvisor",container="litellm-postgres"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "LiteLLM Postgres is down"
+            description: "LiteLLM Postgres has been down for more than 5 minutes."
+
+        - alert: NUQPostgresDown
+          expr: up{job="cadvisor",container="nuq-postgres"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "NUQ Postgres is down"
+            description: "NUQ Postgres has been down for more than 5 minutes."
+
+        - alert: WarpNetInitDown
+          expr: up{job="cadvisor",container="warp-net-init"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "WARP Net Init is down"
+            description: "WARP Net Init has been down for more than 5 minutes."
 
   grafana-alerting.yaml:
     content: |
@@ -8259,6 +8377,301 @@ configs:
         "uid": "ip_checker_warp_monitoring",
         "version": 1
       }
+  headscale-server-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"headscale-server\"}", "refId": "A"}],
+            "title": "Headscale Server Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{name=\"headscale-server\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{name=\"headscale-server\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "probe_success{instance=~\"https://headscale-server.$DOMAIN\"}", "legendFormat": "Health Check", "refId": "A"}],
+            "title": "Health Check",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["headscale", "vpn", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Headscale Server Monitoring",
+        "uid": "headscale_server_monitoring",
+        "version": 1
+      }
+  docker-gen-failover-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"cadvisor\",container=\"docker-gen-failover\"}", "refId": "A"}],
+            "title": "Docker Gen Failover Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{container=\"docker-gen-failover\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{container=\"docker-gen-failover\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "probe_success{instance=~\"https://docker-gen-failover.$DOMAIN\"}", "legendFormat": "Health Check", "refId": "A"}],
+            "title": "Health Check",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["docker", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Docker Gen Failover Monitoring",
+        "uid": "docker_gen_failover_monitoring",
+        "version": 1
+      }
+  litellm-postgres-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"cadvisor\",container=\"litellm-postgres\"}", "refId": "A"}],
+            "title": "LiteLLM Postgres Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{container=\"litellm-postgres\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{container=\"litellm-postgres\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_network_receive_bytes_total{container=\"litellm-postgres\"}[5m])", "legendFormat": "RX", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_network_transmit_bytes_total{container=\"litellm-postgres\"}[5m])", "legendFormat": "TX", "refId": "B"}],
+            "title": "Network I/O",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["postgres", "database", "litellm"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "LiteLLM Postgres Monitoring",
+        "uid": "litellm_postgres_monitoring",
+        "version": 1
+      }
+  nuq-postgres-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"cadvisor\",container=\"nuq-postgres\"}", "refId": "A"}],
+            "title": "NUQ Postgres Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{container=\"nuq-postgres\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{container=\"nuq-postgres\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_network_receive_bytes_total{container=\"nuq-postgres\"}[5m])", "legendFormat": "RX", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_network_transmit_bytes_total{container=\"nuq-postgres\"}[5m])", "legendFormat": "TX", "refId": "B"}],
+            "title": "Network I/O",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["postgres", "database", "firecrawl"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "NUQ Postgres Monitoring",
+        "uid": "nuq_postgres_monitoring",
+        "version": 1
+      }
+  warp-net-init-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"cadvisor\",container=\"warp-net-init\"}", "refId": "A"}],
+            "title": "WARP Net Init Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "percentunit"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_cpu_usage_seconds_total{container=\"warp-net-init\"}[5m])", "legendFormat": "CPU Usage", "refId": "A"}],
+            "title": "CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "container_memory_usage_bytes{container=\"warp-net-init\"}", "legendFormat": "Memory Usage", "refId": "A"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_network_receive_bytes_total{container=\"warp-net-init\"}[5m])", "legendFormat": "RX", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(container_network_transmit_bytes_total{container=\"warp-net-init\"}[5m])", "legendFormat": "TX", "refId": "B"}],
+            "title": "Network I/O",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["warp", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "WARP Net Init Monitoring",
+        "uid": "warp_net_init_monitoring",
+        "version": 1
+      }
   loki.yaml:
     content: |
       # This is a complete configuration to deploy Loki backed by the filesystem.
@@ -8326,7 +8739,7 @@ configs:
               target_label: "container_id"
             # Parse JSON logs
             - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
-              regex: "(watchtower|rabbitmq|stremio|telemetry-auth|jackett|prowlarr|aiostreams|stremthru|firecrawl|playwright-service|litellm|mcpo|gptr|open-webui|headscale|grafana|prometheus|victoriametrics|loki|promtail|traefik|crowdsec|flaresolverr|redis|mongodb|homepage|portainer|searxng|code-server|dozzle|bolabaden-nextjs|dockerproxy-ro|dockerproxy-rw|dns-server|biodecompwarehouse|rclone|rclone-init|autokuma|tinyauth|whoami|cloudflare-ddns|logrotate-traefik|nginx-traefik-extensions|warp-nat-gateway|warp_router|ip-checker-warp)"
+              regex: "(watchtower|rabbitmq|stremio|telemetry-auth|jackett|prowlarr|aiostreams|stremthru|firecrawl|playwright-service|litellm|mcpo|gptr|open-webui|headscale|headscale-server|grafana|prometheus|victoriametrics|loki|promtail|traefik|crowdsec|flaresolverr|redis|mongodb|homepage|portainer|searxng|code-server|dozzle|bolabaden-nextjs|dockerproxy-ro|dockerproxy-rw|dns-server|biodecompwarehouse|rclone|rclone-init|autokuma|tinyauth|whoami|cloudflare-ddns|logrotate-traefik|nginx-traefik-extensions|warp-nat-gateway|warp_router|ip-checker-warp|docker-gen-failover|litellm-postgres|nuq-postgres|warp-net-init)"
               target_label: "service_type"
               replacement: "$1"
           pipeline_stages:
@@ -9022,6 +9435,21 @@ services:
         mode: 0777
       - source: ip-checker-warp-dashboard.json
         target: /var/lib/grafana/dashboards/infrastructure/ip-checker-warp-dashboard.json
+        mode: 0777
+      - source: headscale-server-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/headscale-server-dashboard.json
+        mode: 0777
+      - source: docker-gen-failover-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/docker-gen-failover-dashboard.json
+        mode: 0777
+      - source: litellm-postgres-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/litellm-postgres-dashboard.json
+        mode: 0777
+      - source: nuq-postgres-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/nuq-postgres-dashboard.json
+        mode: 0777
+      - source: warp-net-init-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/warp-net-init-dashboard.json
         mode: 0777
       - source: homepage-dashboard.json
         target: /var/lib/grafana/dashboards/infrastructure/homepage-dashboard.json
