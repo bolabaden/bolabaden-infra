@@ -11098,6 +11098,35 @@ services:
       prometheus.io/path: metrics
     restart: always
 
+  # SNMP Exporter for Network Device Monitoring (Optional - enable for SNMP monitoring)
+  # SNMP exporter allows monitoring of network devices, servers, and other SNMP-enabled equipment
+  # This uses the multi-target exporter pattern similar to blackbox exporter
+  # 
+  # Uncomment and configure if you need SNMP monitoring:
+  # snmp-exporter:
+  #   image: docker.io/prom/snmp-exporter:latest
+  #   container_name: snmp-exporter
+  #   hostname: snmp-exporter
+  #   networks:
+  #     - backend
+  #   expose:
+  #     - ${SNMP_EXPORTER_PORT:-9116}
+  #   volumes:
+  #     - ${CONFIG_PATH:-./volumes}/snmp-exporter:/etc/snmp_exporter
+  #   command:
+  #     - '--config.file=/etc/snmp_exporter/snmp.yml'
+  #   labels:
+  #     prometheus.io/scrape: true
+  #     prometheus.io/port: ${SNMP_EXPORTER_PORT:-9116}
+  #     prometheus.io/path: /metrics
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${SNMP_EXPORTER_PORT:-9116}/metrics || exit 1"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 10s
+  #   restart: always
+
   # MongoDB Exporter for comprehensive MongoDB monitoring
   mongodb-exporter:
     image: docker.io/percona/mongodb_exporter:0.40
