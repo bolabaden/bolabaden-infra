@@ -5018,7 +5018,7 @@ configs:
         webex_room_id: ${ALERTMANAGER_WEBEX_ROOM_ID:-}
         discord_api_url: ${ALERTMANAGER_DISCORD_API_URL:-}
         discord_webhook_url: ${ALERTMANAGER_DISCORD_WEBHOOK_URL:-}
-        webhook_url: ${ALERTMANAGER_WEBHOOK_URL:-}
+        # webhook_url is not a global config key - it's used in receiver configs
 
       # The directory from which notification templates are read.
       templates:
@@ -11326,7 +11326,7 @@ services:
       - ${ALERTMANAGER_PORT:-9093}
     volumes:
       - ${CONFIG_PATH:-./volumes}/alertmanager:/etc/alertmanager
-      - ${CONFIG_PATH:-./volumes}/alertmanager/data:/alertmanager
+      - alertmanager-data:/alertmanager
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
