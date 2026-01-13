@@ -5527,6 +5527,36 @@ configs:
             "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "mongodb_memory{type=\"resident\"}", "legendFormat": "Resident Memory", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "mongodb_memory{type=\"virtual\"}", "legendFormat": "Virtual Memory", "refId": "B"}],
             "title": "MongoDB Memory Usage",
             "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "mongodb_connections{state=\"current\"}", "legendFormat": "Current Connections", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "mongodb_connections{state=\"available\"}", "legendFormat": "Available Connections", "refId": "B"}],
+            "title": "MongoDB Connections",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+            "id": 5,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(mongodb_network_bytesIn[5m])", "legendFormat": "Bytes In", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(mongodb_network_bytesOut[5m])", "legendFormat": "Bytes Out", "refId": "B"}],
+            "title": "MongoDB Network I/O",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+            "id": 6,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "mongodb_global Lock_currentQueue_total{type=\"readers\"}", "legendFormat": "Read Queue", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "mongodb_global Lock_currentQueue_total{type=\"writers\"}", "legendFormat": "Write Queue", "refId": "B"}],
+            "title": "MongoDB Lock Queue",
+            "type": "timeseries"
           }
         ],
         "refresh": "30s",
@@ -5586,6 +5616,36 @@ configs:
             "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "redis_connected_clients", "legendFormat": "Connected Clients", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "redis_connected_slaves", "legendFormat": "Connected Slaves", "refId": "B"}],
             "title": "Redis Connections",
             "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+            "id": 5,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "redis_keyspace_keys", "legendFormat": "Keys", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "redis_keyspace_expires", "legendFormat": "Expiring Keys", "refId": "B"}],
+            "title": "Redis Keyspace",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "ops"},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+            "id": 6,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(redis_keyspace_hits_total[5m])", "legendFormat": "Hits", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(redis_keyspace_misses_total[5m])", "legendFormat": "Misses", "refId": "B"}],
+            "title": "Redis Cache Hit/Miss Rate",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+            "id": 7,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "redis_evicted_keys_total", "legendFormat": "Evicted Keys", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "redis_expired_keys_total", "legendFormat": "Expired Keys", "refId": "B"}],
+            "title": "Redis Key Eviction/Expiration",
+            "type": "timeseries"
           }
         ],
         "refresh": "30s",
@@ -5595,6 +5655,65 @@ configs:
         "timezone": "",
         "title": "Redis Monitoring",
         "uid": "redis_monitoring",
+        "version": 1
+      }
+  process-exporter-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"process-exporter\"}", "refId": "A"}],
+            "title": "Process Exporter Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "namedprocess_namegroup_num_procs", "legendFormat": "{{groupname}}", "refId": "A"}],
+            "title": "Process Count by Name",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "namedprocess_namegroup_memory_bytes{memtype=\"resident\"}", "legendFormat": "{{groupname}} - Resident", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "namedprocess_namegroup_memory_bytes{memtype=\"virtual\"}", "legendFormat": "{{groupname}} - Virtual", "refId": "B"}],
+            "title": "Process Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(namedprocess_namegroup_cpu_seconds_total[5m])", "legendFormat": "{{groupname}}", "refId": "A"}],
+            "title": "Process CPU Usage",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["process", "system", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Process Monitoring",
+        "uid": "process_monitoring",
         "version": 1
       }
   loki.yaml:
@@ -6099,6 +6218,15 @@ services:
       - source: rabbitmq-dashboard.json
         target: /var/lib/grafana/dashboards/infrastructure/rabbitmq-dashboard.json
         mode: 0777
+      - source: mongodb-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/mongodb-dashboard.json
+        mode: 0777
+      - source: redis-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/redis-dashboard.json
+        mode: 0777
+      - source: process-exporter-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/process-exporter-dashboard.json
+        mode: 0777
       - source: stremio-dashboard.json
         target: /var/lib/grafana/dashboards/apps/stremio-dashboard.json
         mode: 0777
@@ -6152,6 +6280,9 @@ services:
         mode: 0777
       - source: redis-dashboard.json
         target: /var/lib/grafana/dashboards/infrastructure/redis-dashboard.json
+        mode: 0777
+      - source: process-exporter-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/process-exporter-dashboard.json
         mode: 0777
       - source: crowdsec-profiles.yaml
         target: /etc/grafana/provisioning/crowdsec-profiles.yaml
