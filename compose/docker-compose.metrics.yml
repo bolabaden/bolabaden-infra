@@ -3136,6 +3136,15 @@ configs:
             summary: "Session Manager is down"
             description: "Session Manager has been down for more than 5 minutes."
 
+        - alert: AlertmanagerDown
+          expr: up{job="alertmanager"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Alertmanager is down"
+            description: "Alertmanager has been down for more than 5 minutes. Alert routing may be affected."
+
         - alert: BolabadeneNextjsDown
           expr: up{job="bolabaden-nextjs"} == 0
           for: 5m
@@ -7635,6 +7644,9 @@ services:
       - source: grafana-notifications.yaml
         target: /etc/grafana/provisioning/notifiers/grafana-notifications.yaml
         mode: 0777
+      - source: alertmanager.yml
+        target: /etc/alertmanager/alertmanager.yml
+        mode: 0644
       - source: grafana-plugins.yaml
         target: /etc/grafana/provisioning/plugins/grafana-plugins.yaml
         mode: 0777
@@ -8032,4 +8044,46 @@ services:
       homepage.name: Process Exporter
       homepage.icon: prometheus.png
       homepage.href: http://process-exporter:9256/metrics
+    restart: always
+
+  # Alertmanager for alert routing and notification management
+  alertmanager:
+    image: docker.io/prom/alertmanager:latest
+    container_name: alertmanager
+    hostname: alertmanager
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    expose:
+      - ${ALERTMANAGER_PORT:-9093}
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/alertmanager:/etc/alertmanager
+      - ${CONFIG_PATH:-./volumes}/alertmanager/data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=${ALERTMANAGER_EXTERNAL_URL:-http://alertmanager:${ALERTMANAGER_PORT:-9093}}'
+      - '--cluster.listen-address=0.0.0.0:${ALERTMANAGER_CLUSTER_PORT:-9094}'
+      - '--log.level=${ALERTMANAGER_LOG_LEVEL:-info}'
+    labels:
+      traefik.enable: true
+      traefik.http.routers.alertmanager.rule: Host(`alertmanager.$DOMAIN`) || Host(`alertmanager.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.alertmanager.middlewares: nginx-auth@file
+      traefik.http.services.alertmanager.loadbalancer.server.port: ${ALERTMANAGER_PORT:-9093}
+      homepage.group: Infrastructure
+      homepage.name: Alertmanager
+      homepage.icon: alertmanager.png
+      homepage.href: https://alertmanager.$DOMAIN
+      homepage.description: Alertmanager handles alerts sent by Prometheus and routes them to notification channels
+      prometheus.io/scrape: true
+      prometheus.io/port: ${ALERTMANAGER_PORT:-9093}
+      prometheus.io/path: /metrics
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${ALERTMANAGER_PORT:-9093}/-/healthy || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     restart: always
