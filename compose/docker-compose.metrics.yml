@@ -2731,50 +2731,78 @@ configs:
     content: |
       apiVersion: 1
       providers:
+        # Monitoring Stack Self-Monitoring Dashboards
+        - name: 'Monitoring Stack'
+          orgId: ${GRAFANA_ORG_ID:-1}
+          folder: 'Monitoring Stack'
+          folderUid: 'monitoring_stack'
+          type: file
+          disableDeletion: ${GRAFANA_DASHBOARD_DISABLE_DELETION:-false}
+          updateIntervalSeconds: ${GRAFANA_DASHBOARD_UPDATE_INTERVAL:-30}
+          allowUiUpdates: ${GRAFANA_DASHBOARD_ALLOW_UI_UPDATES:-false}
+          options:
+            path: /var/lib/grafana/dashboards/monitoring
+            foldersFromFilesStructure: ${GRAFANA_DASHBOARD_FOLDERS_FROM_FS:-false}
+        # System-Level Monitoring Dashboards
         - name: 'System Monitoring'
-          orgId: 1
+          orgId: ${GRAFANA_ORG_ID:-1}
           folder: 'System Monitoring'
           folderUid: 'system_monitoring'
           type: file
-          disableDeletion: false
-          updateIntervalSeconds: 10
-          allowUiUpdates: true
+          disableDeletion: ${GRAFANA_DASHBOARD_DISABLE_DELETION:-false}
+          updateIntervalSeconds: ${GRAFANA_DASHBOARD_UPDATE_INTERVAL:-30}
+          allowUiUpdates: ${GRAFANA_DASHBOARD_ALLOW_UI_UPDATES:-false}
           options:
             path: /var/lib/grafana/dashboards/system
-            foldersFromFilesStructure: false
+            foldersFromFilesStructure: ${GRAFANA_DASHBOARD_FOLDERS_FROM_FS:-false}
+        # Infrastructure Monitoring Dashboards
         - name: 'Infrastructure'
-          orgId: 1
+          orgId: ${GRAFANA_ORG_ID:-1}
           folder: 'Infrastructure'
           folderUid: 'infrastructure'
           type: file
-          disableDeletion: false
-          updateIntervalSeconds: 10
-          allowUiUpdates: true
+          disableDeletion: ${GRAFANA_DASHBOARD_DISABLE_DELETION:-false}
+          updateIntervalSeconds: ${GRAFANA_DASHBOARD_UPDATE_INTERVAL:-30}
+          allowUiUpdates: ${GRAFANA_DASHBOARD_ALLOW_UI_UPDATES:-false}
           options:
             path: /var/lib/grafana/dashboards/infrastructure
-            foldersFromFilesStructure: false
+            foldersFromFilesStructure: ${GRAFANA_DASHBOARD_FOLDERS_FROM_FS:-false}
+        # Application Monitoring Dashboards
         - name: 'Application Monitoring'
-          orgId: 1
+          orgId: ${GRAFANA_ORG_ID:-1}
           folder: 'Application Monitoring'
           folderUid: 'app_monitoring'
           type: file
-          disableDeletion: false
-          updateIntervalSeconds: 10
-          allowUiUpdates: true
+          disableDeletion: ${GRAFANA_DASHBOARD_DISABLE_DELETION:-false}
+          updateIntervalSeconds: ${GRAFANA_DASHBOARD_UPDATE_INTERVAL:-30}
+          allowUiUpdates: ${GRAFANA_DASHBOARD_ALLOW_UI_UPDATES:-false}
           options:
             path: /var/lib/grafana/dashboards/apps
-            foldersFromFilesStructure: false
+            foldersFromFilesStructure: ${GRAFANA_DASHBOARD_FOLDERS_FROM_FS:-false}
+        # Network Monitoring Dashboards
         - name: 'Network Monitoring'
-          orgId: 1
+          orgId: ${GRAFANA_ORG_ID:-1}
           folder: 'Network Monitoring'
           folderUid: 'network_monitoring'
           type: file
-          disableDeletion: false
-          updateIntervalSeconds: 10
-          allowUiUpdates: true
+          disableDeletion: ${GRAFANA_DASHBOARD_DISABLE_DELETION:-false}
+          updateIntervalSeconds: ${GRAFANA_DASHBOARD_UPDATE_INTERVAL:-30}
+          allowUiUpdates: ${GRAFANA_DASHBOARD_ALLOW_UI_UPDATES:-false}
           options:
             path: /var/lib/grafana/dashboards/network
-            foldersFromFilesStructure: false
+            foldersFromFilesStructure: ${GRAFANA_DASHBOARD_FOLDERS_FROM_FS:-false}
+        # Alerting Dashboards
+        - name: 'Alerting'
+          orgId: ${GRAFANA_ORG_ID:-1}
+          folder: 'Alerting'
+          folderUid: 'alerting'
+          type: file
+          disableDeletion: ${GRAFANA_DASHBOARD_DISABLE_DELETION:-false}
+          updateIntervalSeconds: ${GRAFANA_DASHBOARD_UPDATE_INTERVAL:-30}
+          allowUiUpdates: ${GRAFANA_DASHBOARD_ALLOW_UI_UPDATES:-false}
+          options:
+            path: /var/lib/grafana/dashboards/alerting
+            foldersFromFilesStructure: ${GRAFANA_DASHBOARD_FOLDERS_FROM_FS:-false}
   prometheus.yml:
     content: |
       global:
