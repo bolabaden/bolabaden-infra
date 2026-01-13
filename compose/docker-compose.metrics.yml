@@ -4955,6 +4955,36 @@ configs:
             "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(watchtower_containers_updated_total[5m])", "legendFormat": "Containers Updated", "refId": "A"}],
             "title": "Containers Updated Rate",
             "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "watchtower_containers_scanned_total", "legendFormat": "Containers Scanned", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "watchtower_containers_failed_total", "legendFormat": "Containers Failed", "refId": "B"}],
+            "title": "Containers Scanned vs Failed",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "s"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "watchtower_scans_total", "legendFormat": "Total Scans", "refId": "A"}],
+            "title": "Total Scans",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+            "id": 5,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(watchtower_http_api_requests_total[5m])", "legendFormat": "API Requests/sec", "refId": "A"}],
+            "title": "HTTP API Request Rate",
+            "type": "timeseries"
           }
         ],
         "refresh": "30s",
@@ -4994,6 +5024,56 @@ configs:
             "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rabbitmq_queue_messages_ready", "legendFormat": "Messages Ready", "refId": "A"}],
             "title": "Queue Messages",
             "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rabbitmq_queue_messages_unacked", "legendFormat": "Messages Unacked", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rabbitmq_queue_messages", "legendFormat": "Total Messages", "refId": "B"}],
+            "title": "Queue Message States",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rabbitmq_connections", "legendFormat": "Connections", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rabbitmq_channels", "legendFormat": "Channels", "refId": "B"}],
+            "title": "Connections and Channels",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "ops"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+            "id": 5,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(rabbitmq_queue_messages_published_total[5m])", "legendFormat": "Published/sec", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(rabbitmq_queue_messages_delivered_total[5m])", "legendFormat": "Delivered/sec", "refId": "B"}],
+            "title": "Message Publish/Deliver Rate",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+            "id": 6,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rabbitmq_node_mem_used", "legendFormat": "Memory Used", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rabbitmq_node_mem_limit", "legendFormat": "Memory Limit", "refId": "B"}],
+            "title": "Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+            "id": 7,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rabbitmq_queues", "legendFormat": "Queues", "refId": "A"}, {"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rabbitmq_exchanges", "legendFormat": "Exchanges", "refId": "B"}],
+            "title": "Queues and Exchanges",
+            "type": "timeseries"
           }
         ],
         "refresh": "30s",
@@ -5032,6 +5112,36 @@ configs:
             "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
             "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(http_requests_total{job=\"stremio\"}[5m])", "legendFormat": "Request Rate", "refId": "A"}],
             "title": "Request Rate",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+            "id": 3,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(http_request_duration_seconds_sum{job=\"stremio\"}[5m])", "legendFormat": "Request Duration", "refId": "A"}],
+            "title": "Request Duration",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+            "id": 4,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "sum by (code) (rate(http_requests_total{job=\"stremio\"}[5m]))", "legendFormat": "{{code}}", "refId": "A"}],
+            "title": "HTTP Status Codes",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "bytes"}},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+            "id": 5,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(http_request_bytes_total{job=\"stremio\"}[5m])", "legendFormat": "Bytes/sec", "refId": "A"}],
+            "title": "Request/Response Bytes",
             "type": "timeseries"
           }
         ],
