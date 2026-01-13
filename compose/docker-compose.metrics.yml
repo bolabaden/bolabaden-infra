@@ -6368,17 +6368,8 @@ services:
       - backend
     expose:
       - 9216
-    environment:
-      - MONGODB_URI=${MONGODB_EXPORTER_URI:-mongodb://mongodb:27017}
-      - MONGODB_USERNAME=${MONGODB_EXPORTER_USERNAME:-}
-      - MONGODB_PASSWORD=${MONGODB_EXPORTER_PASSWORD:-}
-      - COLLECT_COLLSTATS=${MONGODB_EXPORTER_COLLECT_COLLSTATS:-true}
-      - COLLECT_DBSTATS=${MONGODB_EXPORTER_COLLECT_DBSTATS:-true}
-      - COLLECT_INDEXSTATS=${MONGODB_EXPORTER_COLLECT_INDEXSTATS:-true}
-      - COLLECT_TOPSTATS=${MONGODB_EXPORTER_COLLECT_TOPSTATS:-true}
-      - COLLECT_REPLSETSTATS=${MONGODB_EXPORTER_COLLECT_REPLSETSTATS:-true}
     command:
-      - '--mongodb.uri=mongodb://mongodb:27017'
+      - '--mongodb.uri=${MONGODB_EXPORTER_URI:-mongodb://mongodb:27017}'
     labels:
       prometheus.io/scrape: true
       prometheus.io/port: 9216
