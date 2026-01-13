@@ -2515,6 +2515,61 @@ configs:
             queryTimeout: "60s"
             httpMethod: "GET"
             prometheusType: "Prometheus"
+        - name: Homepage
+          type: prometheus
+          access: proxy
+          uid: homepage_uid
+          url: ${HOMEPAGE_METRICS_URL:-http://homepage:${HOMEPAGE_PORT:-3000}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Dozzle
+          type: prometheus
+          access: proxy
+          uid: dozzle_uid
+          url: ${DOZZLE_METRICS_URL:-http://dozzle:${DOZZLE_PORT:-8080}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Code-Server
+          type: prometheus
+          access: proxy
+          uid: code_server_uid
+          url: ${CODE_SERVER_METRICS_URL:-http://code-server:${CODE_SERVER_PORT:-8443}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Bolabaden-NextJS
+          type: prometheus
+          access: proxy
+          uid: bolabaden_nextjs_uid
+          url: ${BOLABADEN_NEXTJS_METRICS_URL:-http://bolabaden-nextjs:${BOLABADEN_NEXTJS_PORT:-3000}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Session-Manager
+          type: prometheus
+          access: proxy
+          uid: session_manager_uid
+          url: ${SESSION_MANAGER_METRICS_URL:-http://session-manager:${SESSION_MANAGER_PORT:-8080}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
   grafana-dashboard.yaml:
     content: |
       apiVersion: 1
@@ -2701,6 +2756,12 @@ configs:
           static_configs:
             - targets: ['bolabaden-nextjs:${BOLABADEN_NEXTJS_PORT:-3000}']
           scrape_interval: 30s
+
+        - job_name: 'session-manager'
+          static_configs:
+            - targets: ['session-manager:${SESSION_MANAGER_PORT:-8080}']
+          scrape_interval: ${SESSION_MANAGER_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
 
         - job_name: 'watchtower'
           static_configs:
@@ -3056,6 +3117,24 @@ configs:
           annotations:
             summary: "Dozzle is down"
             description: "Dozzle has been down for more than 5 minutes."
+
+        - alert: BolabadenNextJSDown
+          expr: up{job="bolabaden-nextjs"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Bolabaden NextJS is down"
+            description: "Bolabaden NextJS has been down for more than 5 minutes."
+
+        - alert: SessionManagerDown
+          expr: up{job="session-manager"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Session Manager is down"
+            description: "Session Manager has been down for more than 5 minutes."
 
         - alert: BolabadeneNextjsDown
           expr: up{job="bolabaden-nextjs"} == 0
@@ -7312,6 +7391,21 @@ services:
         mode: 0777
       - source: prometheus-dashboard.json
         target: /var/lib/grafana/dashboards/infrastructure/prometheus-dashboard.json
+        mode: 0777
+      - source: homepage-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/homepage-dashboard.json
+        mode: 0777
+      - source: dozzle-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/dozzle-dashboard.json
+        mode: 0777
+      - source: code-server-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/code-server-dashboard.json
+        mode: 0777
+      - source: bolabaden-nextjs-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/bolabaden-nextjs-dashboard.json
+        mode: 0777
+      - source: session-manager-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/session-manager-dashboard.json
         mode: 0777
       - source: crowdsec-profiles.yaml
         target: /etc/grafana/provisioning/crowdsec-profiles.yaml
