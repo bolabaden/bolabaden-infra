@@ -3232,6 +3232,124 @@ configs:
             - target_label: __address__
               replacement: blackbox-exporter:9115
 
+        # SNMP Exporter Configuration (Optional - enable for network device monitoring)
+        # SNMP exporter allows monitoring of network devices, servers, and other SNMP-enabled equipment
+        # This uses the multi-target exporter pattern similar to blackbox exporter
+        # 
+        # Uncomment and configure if you need SNMP monitoring:
+        # - job_name: 'snmp'
+        #   metrics_path: /snmp
+        #   params:
+        #     module: [${SNMP_MODULE:-if_mib}]
+        #   static_configs:
+        #     - targets:
+        #         - ${SNMP_TARGET_1:-192.168.1.1}  # Router/Switch IP
+        #         - ${SNMP_TARGET_2:-192.168.1.2}  # Another device IP
+        #   relabel_configs:
+        #     - source_labels: [__address__]
+        #       target_label: __param_target
+        #     - source_labels: [__param_target]
+        #       target_label: instance
+        #     - target_label: __address__
+        #       replacement: snmp-exporter:${SNMP_EXPORTER_PORT:-9116}
+        #     # Optional: Add community string for SNMP v2c
+        #     - source_labels: []
+        #       target_label: __param_auth
+        #       replacement: ${SNMP_COMMUNITY:-public}
+        #
+        # SNMP Exporter Service (uncomment to enable):
+        # snmp-exporter:
+        #   image: docker.io/prom/snmp-exporter:latest
+        #   container_name: snmp-exporter
+        #   hostname: snmp-exporter
+        #   networks:
+        #     - backend
+        #   expose:
+        #     - ${SNMP_EXPORTER_PORT:-9116}
+        #   volumes:
+        #     - ${CONFIG_PATH:-./volumes}/snmp-exporter:/etc/snmp_exporter
+        #   command:
+        #     - '--config.file=/etc/snmp_exporter/snmp.yml'
+        #   labels:
+        #     prometheus.io/scrape: true
+        #     prometheus.io/port: ${SNMP_EXPORTER_PORT:-9116}
+        #     prometheus.io/path: /metrics
+        #   healthcheck:
+        #     test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${SNMP_EXPORTER_PORT:-9116}/metrics || exit 1"]
+        #     interval: 30s
+        #     timeout: 10s
+        #     retries: 3
+        #     start_period: 10s
+        #   restart: always
+
+  # Advanced Relabeling Best Practices Documentation
+  # This section documents relabeling patterns for common use cases
+  #
+  # 1. Label Management:
+  #    - Use relabel_configs to add, modify, or drop labels
+  #    - Use metric_relabel_configs to filter or modify metrics after scraping
+  #    - Keep label cardinality low (avoid high cardinality labels like user IDs, IPs)
+  #    - Use consistent label naming across services
+  #
+  # 2. Common Relabeling Patterns:
+  #    - Add environment label:
+  #      - source_labels: []
+  #        target_label: environment
+  #        replacement: ${ENVIRONMENT:-production}
+  #
+  #    - Extract service name from job:
+  #      - source_labels: [job]
+  #        regex: '(.+)-exporter'
+  #        target_label: service
+  #        replacement: '${1}'
+  #
+  #    - Drop high cardinality labels:
+  #      - source_labels: [__name__]
+  #        regex: '.*_total'
+  #        action: keep
+  #      - source_labels: [user_id]
+  #        regex: '.+'
+  #        action: drop
+  #
+  #    - Rename labels for consistency:
+  #      - source_labels: [instance]
+  #        target_label: hostname
+  #      - source_labels: [job]
+  #        target_label: service
+  #
+  # 3. Service Discovery Relabeling:
+  #    - Use __meta_* labels from service discovery
+  #    - Filter targets based on metadata
+  #    - Extract useful information from service discovery labels
+  #
+  # 4. Metric Relabeling:
+  #    - Filter unwanted metrics to reduce cardinality
+  #    - Rename metrics for consistency
+  #    - Drop high cardinality metrics
+  #    - Add labels to metrics for better organization
+  #
+  # Example: Drop high cardinality metrics
+  # metric_relabel_configs:
+  #   - source_labels: [__name__]
+  #     regex: 'http_request_duration_seconds_bucket'
+  #     action: keep
+  #   - source_labels: [user_id]
+  #     regex: '.+'
+  #     action: drop
+  #
+  # Example: Add common labels
+  # relabel_configs:
+  #   - source_labels: []
+  #     target_label: cluster
+  #     replacement: ${CLUSTER_NAME:-homelab}
+  #   - source_labels: []
+  #     target_label: environment
+  #     replacement: ${ENVIRONMENT:-production}
+  #
+  # For more information, see:
+  # - Prometheus Relabeling: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
+  # - Metric Relabeling: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs
+
   alert.rules:
     content: |
       groups:
