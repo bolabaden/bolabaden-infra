@@ -6368,8 +6368,8 @@ services:
       - backend
     expose:
       - 9216
-    command:
-      - '--mongodb.uri=${MONGODB_EXPORTER_URI:-mongodb://mongodb:27017}'
+    environment:
+      - MONGODB_URI=${MONGODB_EXPORTER_URI:-mongodb://mongodb:27017}
     labels:
       prometheus.io/scrape: true
       prometheus.io/port: 9216
