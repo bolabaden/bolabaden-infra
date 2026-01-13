@@ -3444,8 +3444,8 @@ configs:
             component: infrastructure
             team: platform
           annotations:
-            summary: "Instance {{ $$labels.instance }} down"
-            description: "{{ $$labels.instance }} of job {{ $$labels.job }} has been down for more than {{ $for }}. This may indicate a service failure or network issue."
+            summary: "Instance {{ $labels.instance }} down"
+            description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than {{ $for }}. This may indicate a service failure or network issue."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/instance_down.md"
             dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
@@ -3457,8 +3457,8 @@ configs:
             component: infrastructure
             team: platform
           annotations:
-            summary: "High CPU usage on {{ $$labels.instance }}"
-            description: "CPU usage is above {{ $value | humanize }}% on {{ $$labels.instance }} for more than {{ $for }}. This may impact service performance."
+            summary: "High CPU usage on {{ $labels.instance }}"
+            description: "CPU usage is above {{ $value }}% on {{ $labels.instance }} for more than {{ $for }}. This may impact service performance."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_cpu.md"
             dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
@@ -3470,8 +3470,8 @@ configs:
             component: infrastructure
             team: platform
           annotations:
-            summary: "High memory usage on {{ $$labels.instance }}"
-            description: "Memory usage is above {{ $value | humanize }}% on {{ $$labels.instance }} for more than {{ $for }}. This may cause OOM kills."
+            summary: "High memory usage on {{ $labels.instance }}"
+            description: "Memory usage is above {{ $value }}% on {{ $labels.instance }} for more than {{ $for }}. This may cause OOM kills."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_memory.md"
             dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
@@ -3483,8 +3483,8 @@ configs:
             component: infrastructure
             team: platform
           annotations:
-            summary: "Low disk space on {{ $$labels.instance }}"
-            description: "Disk usage is above {{ $value | humanize }}% on {{ $$labels.instance }} {{ $$labels.mountpoint }} for more than {{ $for }}. Immediate action required to prevent data loss."
+            summary: "Low disk space on {{ $labels.instance }}"
+            description: "Disk usage is above {{ $value }}% on {{ $labels.instance }} {{ $labels.mountpoint }} for more than {{ $for }}. Immediate action required to prevent data loss."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/disk_space_low.md"
             dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
@@ -3496,8 +3496,8 @@ configs:
             component: infrastructure
             team: platform
           annotations:
-            summary: "Critical disk space on {{ $$labels.instance }}"
-            description: "Disk usage is above {{ $value | humanize }}% on {{ $$labels.instance }} {{ $$labels.mountpoint }} for more than {{ $for }}. CRITICAL: Immediate action required!"
+            summary: "Critical disk space on {{ $labels.instance }}"
+            description: "Disk usage is above {{ $value }}% on {{ $labels.instance }} {{ $labels.mountpoint }} for more than {{ $for }}. CRITICAL: Immediate action required!"
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/disk_space_critical.md"
             dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
@@ -3567,7 +3567,7 @@ configs:
             team: platform
           annotations:
             summary: "High request latency detected"
-            description: "95th percentile latency is above {{ $value | humanize }}s for more than {{ $for }}. Service {{ $$labels.service }} may be experiencing performance issues."
+            description: "95th percentile latency is above {{ $value }}s for more than {{ $for }}. Service {{ $labels.service }} may be experiencing performance issues."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_latency.md"
             dashboard_url: "/grafana/d/traefik/traefik-overview"
 
@@ -3580,7 +3580,7 @@ configs:
             team: platform
           annotations:
             summary: "High error rate detected"
-            description: "Error rate is above {{ $value | humanizePercentage }}% for more than {{ $for }}. Service {{ $$labels.service }} is experiencing failures."
+            description: "Error rate is above {{ $value }}% for more than {{ $for }}. Service {{ $labels.service }} is experiencing failures."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_error_rate.md"
             dashboard_url: "/grafana/d/traefik/traefik-overview"
 
@@ -3745,7 +3745,7 @@ configs:
             team: platform
           annotations:
             summary: "Alertmanager notification failures"
-            description: "Alertmanager is failing to send {{ $value | humanize }} notifications per second. Check notification channel configuration."
+            description: "Alertmanager is failing to send {{ $value }} notifications per second. Check notification channel configuration."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/alertmanager_notifications.md"
             dashboard_url: "/grafana/d/alertmanager/alertmanager-overview"
 
@@ -3915,7 +3915,7 @@ configs:
             team: platform
           annotations:
             summary: "Loki ingestion errors detected"
-            description: "Loki is experiencing {{ $value | humanize }} ingestion errors per second. Check log format and pipeline configuration."
+            description: "Loki is experiencing {{ $value }} ingestion errors per second. Check log format and pipeline configuration."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/loki_ingestion.md"
             dashboard_url: "/grafana/d/loki/loki-overview"
 
@@ -3928,7 +3928,7 @@ configs:
             team: platform
           annotations:
             summary: "Loki high ingestion rate"
-            description: "Loki is ingesting {{ $value | humanize }} log lines per second. Consider optimizing log volume or scaling Loki."
+            description: "Loki is ingesting {{ $value }} log lines per second. Consider optimizing log volume or scaling Loki."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/loki_scaling.md"
             dashboard_url: "/grafana/d/loki/loki-overview"
 
@@ -3954,7 +3954,7 @@ configs:
             team: platform
           annotations:
             summary: "Promtail read errors detected"
-            description: "Promtail is experiencing {{ $value | humanize }} read errors per second. Check log file permissions and format."
+            description: "Promtail is experiencing {{ $value }} read errors per second. Check log file permissions and format."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/promtail_errors.md"
             dashboard_url: "/grafana/d/promtail/promtail-overview"
 
@@ -3965,7 +3965,7 @@ configs:
             severity: critical
           annotations:
             summary: "Blackbox probe failure"
-            description: "Probe of $$labels.instance has been failing for more than 5 minutes."
+            description: "Probe of $labels.instance has been failing for more than 5 minutes."
 
         - alert: HighTraefikLatency
           expr: histogram_quantile(0.99, rate(traefik_service_request_duration_seconds_bucket[5m])) > 2
@@ -4010,7 +4010,7 @@ configs:
             severity: warning
           annotations:
             summary: "Container high CPU usage"
-            description: "Container $$labels.name has high CPU usage (>80%) for more than 5 minutes."
+            description: "Container $labels.name has high CPU usage (>80%) for more than 5 minutes."
 
         - alert: ContainerHighMemoryUsage
           expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100 > 90
@@ -4019,7 +4019,7 @@ configs:
             severity: warning
           annotations:
             summary: "Container high memory usage"
-            description: "Container $$labels.name has high memory usage (>90%) for more than 5 minutes."
+            description: "Container $labels.name has high memory usage (>90%) for more than 5 minutes."
 
         - alert: ContainerRestartLoop
           expr: increase(container_last_seen[1h]) > 5
@@ -4028,7 +4028,7 @@ configs:
             severity: warning
           annotations:
             summary: "Container restart loop"
-            description: "Container $$labels.name has restarted more than 5 times in the last hour."
+            description: "Container $labels.name has restarted more than 5 times in the last hour."
 
         - alert: AutokumaDown
           expr: up{job="blackbox",instance=~".*autokuma.*"} == 0
@@ -4166,7 +4166,7 @@ configs:
             team: platform
           annotations:
             summary: "High network receive rate"
-            description: "Network receive rate is {{ $value | humanizeBytes }}/s on {{ $$labels.instance }} interface {{ $$labels.device }} for more than {{ $for }}."
+            description: "Network receive rate is {{ $value }}/s on {{ $labels.instance }} interface {{ $labels.device }} for more than {{ $for }}."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_network.md"
             dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
@@ -4179,7 +4179,7 @@ configs:
             team: platform
           annotations:
             summary: "High network transmit rate"
-            description: "Network transmit rate is {{ $value | humanizeBytes }}/s on {{ $$labels.instance }} interface {{ $$labels.device }} for more than {{ $for }}."
+            description: "Network transmit rate is {{ $value }}/s on {{ $labels.instance }} interface {{ $labels.device }} for more than {{ $for }}."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_network.md"
             dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
@@ -4192,12 +4192,12 @@ configs:
             team: platform
           annotations:
             summary: "High disk I/O wait time"
-            description: "Disk I/O wait time is above {{ $value | humanizePercentage }}% on {{ $$labels.instance }} device {{ $$labels.device }} for more than {{ $for }}."
+            description: "Disk I/O wait time is above {{ $value }}% on {{ $labels.instance }} device {{ $labels.device }} for more than {{ $for }}."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_disk_io.md"
             dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
         - alert: HighLoadAverage
-          expr: node_load1 > ${HIGH_LOAD_AVERAGE_THRESHOLD:-10} * on(instance) count(node_cpu_seconds_total{mode="idle"}) by (instance)
+          expr: node_load1 > ${HIGH_LOAD_AVERAGE_THRESHOLD:-10} * count by (instance) (node_cpu_seconds_total{mode="idle"})
           for: ${HIGH_LOAD_AVERAGE_FOR:-5m}
           labels:
             severity: warning
@@ -4205,7 +4205,7 @@ configs:
             team: platform
           annotations:
             summary: "High load average"
-            description: "Load average (1m) is {{ $value | humanize }} on {{ $$labels.instance }}, which is above the number of CPU cores."
+            description: "Load average (1m) is {{ $value }} on {{ $labels.instance }}, which is above the number of CPU cores."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/high_load.md"
             dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
@@ -4218,7 +4218,7 @@ configs:
             team: platform
           annotations:
             summary: "Systemd service failed"
-            description: "Systemd service {{ $$labels.name }} has failed on {{ $$labels.instance }} for more than {{ $for }}."
+            description: "Systemd service {{ $labels.name }} has failed on {{ $labels.instance }} for more than {{ $for }}."
             runbook_url: "${RUNBOOK_BASE_URL:-https://github.com/prometheus/docs}/runbooks/systemd_service_failed.md"
             dashboard_url: "/grafana/d/node-exporter/node-exporter-full"
 
@@ -4253,8 +4253,8 @@ configs:
             team: platform
             slo_type: availability
           annotations:
-            summary: "Error budget burn rate is high for {{ $$labels.service }}"
-            description: "Service {{ $$labels.service }} is consuming error budget at {{ $value | humanize }}x the normal rate. Current availability: {{ $labels.availability | humanizePercentage }}%, SLO target: {{ $labels.slo_target | humanizePercentage }}%."
+            summary: "Error budget burn rate is high for {{ $labels.service }}"
+            description: "Service {{ $labels.service }} is consuming error budget at {{ $value }}x the normal rate. Current availability: {{ $labels.availability }}%, SLO target: {{ $labels.slo_target }}%."
             runbook_url: "${RUNBOOK_BASE_URL:-https://sre.google/workbook/alerting-on-slos/}"
             dashboard_url: "/grafana/d/slo/slo-overview"
 
@@ -4268,8 +4268,8 @@ configs:
             team: platform
             slo_type: availability
           annotations:
-            summary: "Error budget exhausted for {{ $$labels.service }}"
-            description: "Service {{ $$labels.service }} has exhausted its error budget. Current availability: {{ $labels.availability | humanizePercentage }}%, SLO target: {{ $labels.slo_target | humanizePercentage }}%. Immediate action required."
+            summary: "Error budget exhausted for {{ $labels.service }}"
+            description: "Service {{ $labels.service }} has exhausted its error budget. Current availability: {{ $labels.availability }}%, SLO target: {{ $labels.slo_target }}%. Immediate action required."
             runbook_url: "${RUNBOOK_BASE_URL:-https://sre.google/workbook/alerting-on-slos/}"
             dashboard_url: "/grafana/d/slo/slo-overview"
 
@@ -4283,8 +4283,8 @@ configs:
             team: platform
             slo_type: availability
           annotations:
-            summary: "SLO target breached for {{ $$labels.service }}"
-            description: "Service {{ $$labels.service }} availability ({{ $value | humanizePercentage }}%) is below SLO target ({{ $labels.slo_target | humanizePercentage }}%)."
+            summary: "SLO target breached for {{ $labels.service }}"
+            description: "Service {{ $labels.service }} availability ({{ $value }}%) is below SLO target ({{ $labels.slo_target }}%)."
             runbook_url: "${RUNBOOK_BASE_URL:-https://sre.google/workbook/alerting-on-slos/}"
             dashboard_url: "/grafana/d/slo/slo-overview"
 
