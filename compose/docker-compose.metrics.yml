@@ -2292,6 +2292,196 @@ configs:
             queryTimeout: "60s"
             httpMethod: "GET"
             prometheusType: "Prometheus"
+        - name: Watchtower
+          type: prometheus
+          access: proxy
+          uid: watchtower_uid
+          url: ${WATCHTOWER_METRICS_URL:-http://watchtower:${WATCHTOWER_HTTP_API_PORT:-8080}/v1/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+          secureJsonData:
+            # Token for watchtower metrics if required
+            # httpHeaderValue1: "${WATCHTOWER_HTTP_API_TOKEN:-}"
+        - name: RabbitMQ
+          type: prometheus
+          access: proxy
+          uid: rabbitmq_uid
+          url: ${RABBITMQ_METRICS_URL:-http://rabbitmq:${RABBITMQ_METRICS_PORT:-15692}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "15s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Stremio
+          type: prometheus
+          access: proxy
+          uid: stremio_uid
+          url: ${STREMIO_METRICS_URL:-http://stremio:${STREMIO_METRICS_PORT:-8080}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Telemetry-Auth
+          type: prometheus
+          access: proxy
+          uid: telemetry_auth_uid
+          url: ${TELEMETRY_AUTH_METRICS_URL:-http://telemetry-auth-test:${TELEMETRY_AUTH_PORT:-8080}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "15s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Jackett
+          type: prometheus
+          access: proxy
+          uid: jackett_uid
+          url: ${JACKETT_METRICS_URL:-http://jackett:${JACKETT_PORT:-9117}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Prowlarr
+          type: prometheus
+          access: proxy
+          uid: prowlarr_uid
+          url: ${PROWLARR_METRICS_URL:-http://prowlarr:${PROWLARR_PORT:-9696}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: AIOStreams
+          type: prometheus
+          access: proxy
+          uid: aiostreams_uid
+          url: ${AIOSTREAMS_METRICS_URL:-http://aiostreams:${AIOSTREAMS_PORT:-8080}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Stremthru
+          type: prometheus
+          access: proxy
+          uid: stremthru_uid
+          url: ${STREMTHRU_METRICS_URL:-http://stremthru:${STREMTHRU_PORT:-8080}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Firecrawl
+          type: prometheus
+          access: proxy
+          uid: firecrawl_uid
+          url: ${FIRECRAWL_METRICS_URL:-http://firecrawl:${FIRECRAWL_PORT:-3000}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Playwright-Service
+          type: prometheus
+          access: proxy
+          uid: playwright_service_uid
+          url: ${PLAYWRIGHT_SERVICE_METRICS_URL:-http://playwright-service:${PLAYWRIGHT_SERVICE_PORT:-3000}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: LiteLLM
+          type: prometheus
+          access: proxy
+          uid: litellm_uid
+          url: ${LITELLM_METRICS_URL:-http://litellm:${LITELLM_PORT:-4000}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: MCPO
+          type: prometheus
+          access: proxy
+          uid: mcpo_uid
+          url: ${MCPO_METRICS_URL:-http://mcpo:${MCPO_PORT:-3000}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: GPTR
+          type: prometheus
+          access: proxy
+          uid: gptr_uid
+          url: ${GPTR_METRICS_URL:-http://gptr:${GPTR_PORT:-3000}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Open-WebUI
+          type: prometheus
+          access: proxy
+          uid: open_webui_uid
+          url: ${OPEN_WEBUI_METRICS_URL:-http://open-webui:${OPEN_WEBUI_PORT:-8080}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Headscale
+          type: prometheus
+          access: proxy
+          uid: headscale_uid
+          url: ${HEADSCALE_METRICS_URL:-http://headscale:${HEADSCALE_PORT:-9090}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Loki-Metrics
+          type: prometheus
+          access: proxy
+          uid: loki_metrics_uid
+          url: ${LOKI_METRICS_URL:-http://loki:${LOKI_HTTP_LISTEN_PORT:-3100}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
+        - name: Promtail-Metrics
+          type: prometheus
+          access: proxy
+          uid: promtail_metrics_uid
+          url: ${PROMTAIL_METRICS_URL:-http://promtail:${PROMTAIL_HTTP_LISTEN_PORT:-9080}/metrics}
+          editable: false
+          jsonData:
+            timeInterval: "30s"
+            queryTimeout: "60s"
+            httpMethod: "GET"
+            prometheusType: "Prometheus"
   grafana-dashboard.yaml:
     content: |
       apiVersion: 1
@@ -2461,6 +2651,111 @@ configs:
             - targets: ['bolabaden-nextjs:${BOLABADEN_NEXTJS_PORT:-3000}']
           scrape_interval: 30s
 
+        - job_name: 'watchtower'
+          static_configs:
+            - targets: ['watchtower:${WATCHTOWER_HTTP_API_PORT:-8080}']
+          scrape_interval: ${WATCHTOWER_SCRAPE_INTERVAL:-30s}
+          metrics_path: /v1/metrics
+          params:
+            token: ['${WATCHTOWER_HTTP_API_TOKEN:-}']
+          honor_labels: true
+
+        - job_name: 'rabbitmq'
+          static_configs:
+            - targets: ['rabbitmq:${RABBITMQ_METRICS_PORT:-15692}']
+          scrape_interval: ${RABBITMQ_SCRAPE_INTERVAL:-15s}
+          metrics_path: /metrics
+
+        - job_name: 'stremio'
+          static_configs:
+            - targets: ['stremio:${STREMIO_METRICS_PORT:-8080}']
+          scrape_interval: ${STREMIO_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'telemetry-auth'
+          static_configs:
+            - targets: ['telemetry-auth-test:${TELEMETRY_AUTH_PORT:-8080}']
+          scrape_interval: ${TELEMETRY_AUTH_SCRAPE_INTERVAL:-15s}
+          metrics_path: /metrics
+
+        - job_name: 'jackett'
+          static_configs:
+            - targets: ['jackett:${JACKETT_PORT:-9117}']
+          scrape_interval: ${JACKETT_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'prowlarr'
+          static_configs:
+            - targets: ['prowlarr:${PROWLARR_PORT:-9696}']
+          scrape_interval: ${PROWLARR_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'aiostreams'
+          static_configs:
+            - targets: ['aiostreams:${AIOSTREAMS_PORT:-8080}']
+          scrape_interval: ${AIOSTREAMS_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'stremthru'
+          static_configs:
+            - targets: ['stremthru:${STREMTHRU_PORT:-8080}']
+          scrape_interval: ${STREMTHRU_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'firecrawl'
+          static_configs:
+            - targets: ['firecrawl:${FIRECRAWL_PORT:-3000}']
+          scrape_interval: ${FIRECRAWL_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'playwright-service'
+          static_configs:
+            - targets: ['playwright-service:${PLAYWRIGHT_SERVICE_PORT:-3000}']
+          scrape_interval: ${PLAYWRIGHT_SERVICE_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'litellm'
+          static_configs:
+            - targets: ['litellm:${LITELLM_PORT:-4000}']
+          scrape_interval: ${LITELLM_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'mcpo'
+          static_configs:
+            - targets: ['mcpo:${MCPO_PORT:-3000}']
+          scrape_interval: ${MCPO_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'gptr'
+          static_configs:
+            - targets: ['gptr:${GPTR_PORT:-3000}']
+          scrape_interval: ${GPTR_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'open-webui'
+          static_configs:
+            - targets: ['open-webui:${OPEN_WEBUI_PORT:-8080}']
+          scrape_interval: ${OPEN_WEBUI_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'headscale'
+          static_configs:
+            - targets: ['headscale:${HEADSCALE_PORT:-9090}']
+          scrape_interval: ${HEADSCALE_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'loki'
+          static_configs:
+            - targets: ['loki:${LOKI_HTTP_LISTEN_PORT:-3100}']
+          scrape_interval: ${LOKI_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
+        - job_name: 'promtail'
+          static_configs:
+            - targets: ['promtail:${PROMTAIL_HTTP_LISTEN_PORT:-9080}']
+          scrape_interval: ${PROMTAIL_SCRAPE_INTERVAL:-30s}
+          metrics_path: /metrics
+
         # Blackbox exporter for endpoint monitoring
         - job_name: 'blackbox'
           metrics_path: /probe
@@ -2479,6 +2774,17 @@ configs:
               - https://searxng.$DOMAIN
               - https://code-server.$DOMAIN
               - https://dozzle.$DOMAIN
+              - https://stremio.$DOMAIN
+              - https://aiostreams.$DOMAIN
+              - https://stremthru.$DOMAIN
+              - https://firecrawl.$DOMAIN
+              - https://gptr.$DOMAIN
+              - https://open-webui.$DOMAIN
+              - https://litellm.$DOMAIN
+              - https://mcpo.$DOMAIN
+              - https://headscale.$DOMAIN
+              - https://jackett.$DOMAIN
+              - https://prowlarr.$DOMAIN
               - https://$DOMAIN
           relabel_configs:
             - source_labels: [__address__]
@@ -2681,6 +2987,159 @@ configs:
           annotations:
             summary: "Bolabaden NextJS is down"
             description: "Bolabaden NextJS has been down for more than 5 minutes."
+
+        - alert: WatchtowerDown
+          expr: up{job="watchtower"} == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Watchtower is down"
+            description: "Watchtower has been down for more than 10 minutes."
+
+        - alert: RabbitMQDown
+          expr: up{job="rabbitmq"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "RabbitMQ is down"
+            description: "RabbitMQ has been down for more than 5 minutes."
+
+        - alert: StremioDown
+          expr: up{job="stremio"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Stremio is down"
+            description: "Stremio has been down for more than 5 minutes."
+
+        - alert: TelemetryAuthDown
+          expr: up{job="telemetry-auth"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Telemetry Auth is down"
+            description: "Telemetry Auth has been down for more than 5 minutes."
+
+        - alert: JackettDown
+          expr: up{job="jackett"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Jackett is down"
+            description: "Jackett has been down for more than 5 minutes."
+
+        - alert: ProwlarrDown
+          expr: up{job="prowlarr"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Prowlarr is down"
+            description: "Prowlarr has been down for more than 5 minutes."
+
+        - alert: AIOStreamsDown
+          expr: up{job="aiostreams"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "AIOStreams is down"
+            description: "AIOStreams has been down for more than 5 minutes."
+
+        - alert: StremthruDown
+          expr: up{job="stremthru"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Stremthru is down"
+            description: "Stremthru has been down for more than 5 minutes."
+
+        - alert: FirecrawlDown
+          expr: up{job="firecrawl"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Firecrawl is down"
+            description: "Firecrawl has been down for more than 5 minutes."
+
+        - alert: PlaywrightServiceDown
+          expr: up{job="playwright-service"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Playwright Service is down"
+            description: "Playwright Service has been down for more than 5 minutes."
+
+        - alert: LiteLLMDown
+          expr: up{job="litellm"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "LiteLLM is down"
+            description: "LiteLLM has been down for more than 5 minutes."
+
+        - alert: MCPODown
+          expr: up{job="mcpo"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "MCPO is down"
+            description: "MCPO has been down for more than 5 minutes."
+
+        - alert: GPTRDown
+          expr: up{job="gptr"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "GPTR is down"
+            description: "GPTR has been down for more than 5 minutes."
+
+        - alert: OpenWebUIDown
+          expr: up{job="open-webui"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Open WebUI is down"
+            description: "Open WebUI has been down for more than 5 minutes."
+
+        - alert: HeadscaleDown
+          expr: up{job="headscale"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Headscale is down"
+            description: "Headscale has been down for more than 5 minutes."
+
+        - alert: LokiDown
+          expr: up{job="loki"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Loki is down"
+            description: "Loki has been down for more than 5 minutes."
+
+        - alert: PromtailDown
+          expr: up{job="promtail"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Promtail is down"
+            description: "Promtail has been down for more than 5 minutes."
 
         - alert: BlackboxProbeFailure
           expr: probe_success == 0
@@ -4382,6 +4841,568 @@ configs:
         "uid": "victoriametrics_single",
         "version": 1
       }
+  watchtower-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "watchtower_up", "refId": "A"}],
+            "title": "Watchtower Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "barWidthFactor": 0.6, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"legend": false, "tooltip": false, "viz": false}, "insertNulls": false, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}, "thresholdsStyle": {"mode": "off"}}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(watchtower_containers_updated_total[5m])", "legendFormat": "Containers Updated", "refId": "A"}],
+            "title": "Containers Updated Rate",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["watchtower", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Watchtower Monitoring",
+        "uid": "watchtower_monitoring",
+        "version": 1
+      }
+  rabbitmq-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rabbitmq_up", "refId": "A"}],
+            "title": "RabbitMQ Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "barWidthFactor": 0.6, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"legend": false, "tooltip": false, "viz": false}, "insertNulls": false, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}, "thresholdsStyle": {"mode": "off"}}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "short"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rabbitmq_queue_messages_ready", "legendFormat": "Messages Ready", "refId": "A"}],
+            "title": "Queue Messages",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["rabbitmq", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "RabbitMQ Monitoring",
+        "uid": "rabbitmq_monitoring",
+        "version": 1
+      }
+  stremio-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"stremio\"}", "refId": "A"}],
+            "title": "Stremio Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "barWidthFactor": 0.6, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"legend": false, "tooltip": false, "viz": false}, "insertNulls": false, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}, "thresholdsStyle": {"mode": "off"}}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "reqps"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(http_requests_total{job=\"stremio\"}[5m])", "legendFormat": "Request Rate", "refId": "A"}],
+            "title": "Request Rate",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["stremio", "apps"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Stremio Monitoring",
+        "uid": "stremio_monitoring",
+        "version": 1
+      }
+  telemetry-auth-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"telemetry-auth\"}", "refId": "A"}],
+            "title": "Telemetry Auth Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "barWidthFactor": 0.6, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"legend": false, "tooltip": false, "viz": false}, "insertNulls": false, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}, "thresholdsStyle": {"mode": "off"}}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 80}]}, "unit": "reqps"}},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+            "id": 2,
+            "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "rate(http_requests_total{job=\"telemetry-auth\"}[5m])", "legendFormat": "Request Rate", "refId": "A"}],
+            "title": "Request Rate",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["telemetry-auth", "apps"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Telemetry Auth Monitoring",
+        "uid": "telemetry_auth_monitoring",
+        "version": 1
+      }
+  portainer-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"portainer\"}", "refId": "A"}],
+            "title": "Portainer Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["portainer", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Portainer Monitoring",
+        "uid": "portainer_monitoring",
+        "version": 1
+      }
+  searxng-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"searxng\"}", "refId": "A"}],
+            "title": "SearxNG Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["searxng", "apps"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "SearxNG Monitoring",
+        "uid": "searxng_monitoring",
+        "version": 1
+      }
+  jackett-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"jackett\"}", "refId": "A"}],
+            "title": "Jackett Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["jackett", "apps"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Jackett Monitoring",
+        "uid": "jackett_monitoring",
+        "version": 1
+      }
+  prowlarr-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"prowlarr\"}", "refId": "A"}],
+            "title": "Prowlarr Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["prowlarr", "apps"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Prowlarr Monitoring",
+        "uid": "prowlarr_monitoring",
+        "version": 1
+      }
+  aiostreams-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"aiostreams\"}", "refId": "A"}],
+            "title": "AIOStreams Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["aiostreams", "apps"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "AIOStreams Monitoring",
+        "uid": "aiostreams_monitoring",
+        "version": 1
+      }
+  stremthru-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"stremthru\"}", "refId": "A"}],
+            "title": "Stremthru Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["stremthru", "apps"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Stremthru Monitoring",
+        "uid": "stremthru_monitoring",
+        "version": 1
+      }
+  firecrawl-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"firecrawl\"}", "refId": "A"}],
+            "title": "Firecrawl Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["firecrawl", "apps"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Firecrawl Monitoring",
+        "uid": "firecrawl_monitoring",
+        "version": 1
+      }
+  litellm-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"litellm\"}", "refId": "A"}],
+            "title": "LiteLLM Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["litellm", "apps"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "LiteLLM Monitoring",
+        "uid": "litellm_monitoring",
+        "version": 1
+      }
+  mcpo-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"mcpo\"}", "refId": "A"}],
+            "title": "MCPO Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["mcpo", "apps"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "MCPO Monitoring",
+        "uid": "mcpo_monitoring",
+        "version": 1
+      }
+  gptr-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"gptr\"}", "refId": "A"}],
+            "title": "GPTR Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["gptr", "apps"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "GPTR Monitoring",
+        "uid": "gptr_monitoring",
+        "version": 1
+      }
+  open-webui-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"open-webui\"}", "refId": "A"}],
+            "title": "Open WebUI Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["open-webui", "apps"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Open WebUI Monitoring",
+        "uid": "open_webui_monitoring",
+        "version": 1
+      }
+  headscale-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"headscale\"}", "refId": "A"}],
+            "title": "Headscale Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["headscale", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Headscale Monitoring",
+        "uid": "headscale_monitoring",
+        "version": 1
+      }
+  loki-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"loki\"}", "refId": "A"}],
+            "title": "Loki Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["loki", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Loki Monitoring",
+        "uid": "loki_monitoring",
+        "version": 1
+      }
+  promtail-dashboard.json:
+    content: |
+      {
+        "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "datasource", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 1,
+        "id": null,
+        "panels": [
+          {
+            "datasource": {"type": "prometheus", "uid": "victoriametrics_uid"},
+            "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}, "unit": "short"}},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+            "id": 1,
+            "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+            "targets": [{"datasource": {"type": "prometheus", "uid": "victoriametrics_uid"}, "editorMode": "code", "expr": "up{job=\"promtail\"}", "refId": "A"}],
+            "title": "Promtail Status",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "tags": ["promtail", "infrastructure"],
+        "time": {"from": "now-1h", "to": "now"},
+        "timezone": "",
+        "title": "Promtail Monitoring",
+        "uid": "promtail_monitoring",
+        "version": 1
+      }
   loki.yaml:
     content: |
       # This is a complete configuration to deploy Loki backed by the filesystem.
@@ -4425,17 +5446,53 @@ configs:
 
       clients:
         - url: http://loki:${LOKI_PORT:-3100}/loki/api/v1/push
+          tenant_id: ${PROMTAIL_TENANT_ID:-}
+          batch_wait: ${PROMTAIL_BATCH_WAIT:-1s}
+          batch_size: ${PROMTAIL_BATCH_SIZE:-1048576}
+          timeout: ${PROMTAIL_TIMEOUT:-10s}
+          backoff_config:
+            min_period: ${PROMTAIL_BACKOFF_MIN:-500ms}
+            max_period: ${PROMTAIL_BACKOFF_MAX:-5m}
+            max_retries: ${PROMTAIL_BACKOFF_MAX_RETRIES:-10}
 
       scrape_configs:
         # 🔑 Scrape Docker container logs
         - job_name: docker
           docker_sd_configs:
             - host: unix:///var/run/docker.sock
+              refresh_interval: ${PROMTAIL_DOCKER_REFRESH_INTERVAL:-5s}
           relabel_configs:
             - source_labels: ["__meta_docker_container_name"]
               target_label: "container"
               regex: "/(.*)"
               replacement: "$1"
+            - source_labels: ["__meta_docker_container_log_stream"]
+              target_label: "stream"
+            - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
+              target_label: "service"
+            - source_labels: ["__meta_docker_container_label_com_docker_compose_project"]
+              target_label: "project"
+            - source_labels: ["__meta_docker_container_id"]
+              target_label: "container_id"
+            # Parse JSON logs
+            - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
+              regex: "(watchtower|rabbitmq|stremio|telemetry-auth|jackett|prowlarr|aiostreams|stremthru|firecrawl|playwright-service|litellm|mcpo|gptr|open-webui|headscale|grafana|prometheus|victoriametrics|loki|promtail|traefik|crowdsec|flaresolverr|redis|mongodb|homepage|portainer|searxng|code-server|dozzle|bolabaden-nextjs)"
+              target_label: "service_type"
+              replacement: "$1"
+          pipeline_stages:
+            - json:
+                expressions:
+                  output: log
+                  stream: stream
+                  attrs: attrs
+            - json:
+                expressions:
+                  tag: attrs.tag
+                source: attrs
+            - labels:
+                tag:
+            - output:
+                source: output
 
         # 🔑 Scrape host syslog and other files
         - job_name: system-logs
@@ -4445,6 +5502,11 @@ configs:
               labels:
                 job: varlogs
                 __path__: /var/log/*.log
+          pipeline_stages:
+            - regex:
+                expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[\d:+-]+)\s+(?P<level>\w+)\s+(?P<message>.*)$'
+            - labels:
+                level:
 
         # 🔑 Scrape custom mounted logs
         - job_name: extra-logs
@@ -4454,6 +5516,133 @@ configs:
               labels:
                 job: extralogs
                 __path__: /mnt/extra-logs/*.log
+
+        # 🔑 Scrape service-specific logs with parsing
+        - job_name: watchtower-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "watchtower"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'time="(?P<timestamp>[^"]+)"\s+level=(?P<level>\w+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: rabbitmq-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "rabbitmq"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: '^\[(?P<timestamp>[^\]]+)\]\s+\[(?P<level>\w+)\]\s+(?P<message>.*)$'
+            - labels:
+                level:
+
+        - job_name: stremio-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "stremio"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - json:
+                expressions:
+                  timestamp: time
+                  level: level
+                  message: msg
+            - labels:
+                level:
+
+        - job_name: telemetry-auth-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "telemetry-auth"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - json:
+                expressions:
+                  timestamp: timestamp
+                  level: level
+                  message: message
+            - labels:
+                level:
+
+        - job_name: traefik-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "traefik"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'time="(?P<timestamp>[^"]+)"\s+level=(?P<level>\w+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: grafana-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "grafana"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 't=(?P<timestamp>[^\s]+)\s+lvl=(?P<level>\w+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: prometheus-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "prometheus"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'ts=(?P<timestamp>[^\s]+)\s+level=(?P<level>\w+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
+
+        - job_name: loki-logs
+          docker_sd_configs:
+            - host: unix:///var/run/docker.sock
+          relabel_configs:
+            - source_labels: ["__meta_docker_container_name"]
+              regex: "loki"
+              action: keep
+            - source_labels: ["__meta_docker_container_name"]
+              target_label: "container"
+          pipeline_stages:
+            - regex:
+                expression: 'level=(?P<level>\w+)\s+ts=(?P<timestamp>[^\s]+)\s+msg="(?P<message>[^"]+)"'
+            - labels:
+                level:
 
 services:
   # VictoriaMetrics initialization container
@@ -4715,6 +5904,60 @@ services:
         mode: 0777
       - source: victoriametrics-dashboard.json
         target: /var/lib/grafana/dashboards/infrastructure/victoriametrics-dashboard.json
+        mode: 0777
+      - source: watchtower-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/watchtower-dashboard.json
+        mode: 0777
+      - source: rabbitmq-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/rabbitmq-dashboard.json
+        mode: 0777
+      - source: stremio-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/stremio-dashboard.json
+        mode: 0777
+      - source: telemetry-auth-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/telemetry-auth-dashboard.json
+        mode: 0777
+      - source: portainer-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/portainer-dashboard.json
+        mode: 0777
+      - source: searxng-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/searxng-dashboard.json
+        mode: 0777
+      - source: jackett-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/jackett-dashboard.json
+        mode: 0777
+      - source: prowlarr-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/prowlarr-dashboard.json
+        mode: 0777
+      - source: aiostreams-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/aiostreams-dashboard.json
+        mode: 0777
+      - source: stremthru-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/stremthru-dashboard.json
+        mode: 0777
+      - source: firecrawl-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/firecrawl-dashboard.json
+        mode: 0777
+      - source: litellm-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/litellm-dashboard.json
+        mode: 0777
+      - source: mcpo-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/mcpo-dashboard.json
+        mode: 0777
+      - source: gptr-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/gptr-dashboard.json
+        mode: 0777
+      - source: open-webui-dashboard.json
+        target: /var/lib/grafana/dashboards/apps/open-webui-dashboard.json
+        mode: 0777
+      - source: headscale-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/headscale-dashboard.json
+        mode: 0777
+      - source: loki-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/loki-dashboard.json
+        mode: 0777
+      - source: promtail-dashboard.json
+        target: /var/lib/grafana/dashboards/infrastructure/promtail-dashboard.json
         mode: 0777
       - source: crowdsec-profiles.yaml
         target: /etc/grafana/provisioning/crowdsec-profiles.yaml
