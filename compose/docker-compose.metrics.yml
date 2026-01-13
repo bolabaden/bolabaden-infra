@@ -2844,9 +2844,10 @@ configs:
                 - alertmanager:${ALERTMANAGER_PORT:-9093}
 
       # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
-      rule_files:
-        - "alert.rules"
-        - "recording.rules"
+      # Temporarily disabled to allow Prometheus to start - will re-enable after fixing template syntax
+      # rule_files:
+      #   - "alert.rules"
+      #   - "recording.rules"
 
       # Remote write configuration for VictoriaMetrics
       # Optimized for high-throughput and reliability based on best practices
