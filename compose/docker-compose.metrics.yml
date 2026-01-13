@@ -5284,6 +5284,130 @@ configs:
       # - dashboard_by_tag: Reference by dashboard tag
       # All playlist settings are configurable via environment variables
 
+  # Grafana Reporting Provisioning (Optional)
+  # Reporting allows you to generate PDF reports from dashboards
+  # This is useful for scheduled reports, executive summaries, and documentation
+  # Note: Reporting feature requires Grafana Enterprise or Grafana Cloud
+  grafana-reporting.yaml:
+    content: |
+      apiVersion: 1
+
+      # Reporting configuration
+      # Reports can be scheduled to run automatically and send via email
+      # Example report configuration (uncomment and configure if using Grafana Enterprise):
+      # reports:
+      #   - name: ${GRAFANA_REPORT_WEEKLY_NAME:-Weekly Infrastructure Report}
+      #     org_id: ${GRAFANA_ORG_ID:-1}
+      #     dashboard_uid: ${GRAFANA_REPORT_DASHBOARD_UID:-infrastructure-overview}
+      #     schedule:
+      #       frequency: ${GRAFANA_REPORT_FREQUENCY:-weekly}
+      #       day_of_week: ${GRAFANA_REPORT_DAY_OF_WEEK:-monday}
+      #       time: ${GRAFANA_REPORT_TIME:-09:00}
+      #     recipients:
+      #       - ${GRAFANA_REPORT_EMAIL_1:-admin@${DOMAIN:-localhost}}
+      #     options:
+      #       layout: ${GRAFANA_REPORT_LAYOUT:-grid}
+      #       orientation: ${GRAFANA_REPORT_ORIENTATION:-portrait}
+      #       time_range:
+      #         from: ${GRAFANA_REPORT_TIME_RANGE_FROM:-now-7d}
+      #         to: ${GRAFANA_REPORT_TIME_RANGE_TO:-now}
+
+  # Grafana Public Dashboards Provisioning (Optional)
+  # Public dashboards allow sharing dashboards without authentication
+  # Useful for status pages, public monitoring, or embedding dashboards
+  # Note: Public dashboards have limited functionality and should be used carefully
+  grafana-public-dashboards.yaml:
+    content: |
+      apiVersion: 1
+
+      # Public dashboard configuration
+      # Public dashboards can be accessed via a shareable link without authentication
+      # Example public dashboard (uncomment and configure if needed):
+      # public_dashboards:
+      #   - uid: ${GRAFANA_PUBLIC_DASHBOARD_UID:-public-status}
+      #     org_id: ${GRAFANA_ORG_ID:-1}
+      #     dashboard_uid: ${GRAFANA_DASHBOARD_STATUS_UID:-status-page}
+      #     is_enabled: ${GRAFANA_PUBLIC_DASHBOARD_ENABLED:-false}
+      #     access_token: ${GRAFANA_PUBLIC_DASHBOARD_ACCESS_TOKEN:-}
+      #     time_settings:
+      #       from: ${GRAFANA_PUBLIC_DASHBOARD_TIME_FROM:-now-6h}
+      #       to: ${GRAFANA_PUBLIC_DASHBOARD_TIME_TO:-now}
+      #     annotations_enabled: ${GRAFANA_PUBLIC_DASHBOARD_ANNOTATIONS_ENABLED:-false}
+      #     share:
+      #       enable: ${GRAFANA_PUBLIC_DASHBOARD_SHARE_ENABLED:-true}
+      #
+      # Security considerations:
+      # - Only enable public dashboards for non-sensitive data
+      # - Use strong access tokens
+      # - Regularly rotate access tokens
+      # - Monitor public dashboard access
+      # - Consider rate limiting for public endpoints
+
+  # Runbook Automation Documentation
+  # Runbooks provide step-by-step procedures for responding to alerts and incidents
+  # This section documents best practices for creating and automating runbooks
+  #
+  # 1. Runbook Structure:
+  #    - Title: Clear, descriptive name
+  #    - Description: What the alert indicates
+  #    - Severity: Critical, warning, info
+  #    - Prerequisites: Required access, tools, knowledge
+  #    - Steps: Numbered, actionable steps
+  #    - Verification: How to confirm the issue is resolved
+  #    - Escalation: When and how to escalate
+  #
+  # 2. Runbook Best Practices:
+  #    - Keep runbooks concise and actionable
+  #    - Include relevant metrics and queries
+  #    - Provide context about why the alert matters
+  #    - Include links to dashboards and documentation
+  #    - Update runbooks based on incident learnings
+  #    - Review runbooks regularly for accuracy
+  #
+  # 3. Runbook Automation:
+  #    - Use Alertmanager webhooks to trigger automated responses
+  #    - Integrate with automation tools (Ansible, Terraform, etc.)
+  #    - Create runbook automation scripts for common tasks
+  #    - Use runbook_url annotations in alerts for quick access
+  #
+  # 4. Runbook Examples:
+  #    - Service Restart Runbook:
+  #      * Check service status
+  #      * Review recent logs
+  #      * Attempt graceful restart
+  #      * Verify service health
+  #      * Escalate if restart fails
+  #
+  #    - High CPU Runbook:
+  #      * Identify CPU-intensive processes
+  #      * Check for resource leaks
+  #      * Review recent deployments
+  #      * Scale horizontally if needed
+  #      * Investigate root cause
+  #
+  #    - Disk Space Runbook:
+  #      * Identify disk usage
+  #      * Find large files/directories
+  #      * Clean up temporary files
+  #      * Expand disk if needed
+  #      * Set up automated cleanup
+  #
+  # 5. Runbook Integration:
+  #    - Store runbooks in version control
+  #    - Link runbooks from alert annotations
+  #    - Use runbook automation tools
+  #    - Integrate with incident management systems
+  #
+  # Example Alert with Runbook URL:
+  # - alert: HighCPU
+  #   expr: avg(rate(node_cpu_seconds_total{mode!="idle"}[5m])) * 100 > 80
+  #   annotations:
+  #     runbook_url: "https://github.com/your-org/runbooks/blob/main/high-cpu.md"
+  #
+  # For more information, see:
+  # - Runbook Best Practices: https://sre.google/workbook/runbooks/
+  # - Alertmanager Webhooks: https://prometheus.io/docs/alerting/latest/configuration/#webhook_config
+
   # Performance Tuning Documentation
   # This section documents performance optimization strategies for large-scale deployments
   # 
