@@ -8067,6 +8067,10 @@ services:
       - '--web.external-url=${ALERTMANAGER_EXTERNAL_URL:-http://alertmanager:${ALERTMANAGER_PORT:-9093}}'
       - '--cluster.listen-address=0.0.0.0:${ALERTMANAGER_CLUSTER_PORT:-9094}'
       - '--log.level=${ALERTMANAGER_LOG_LEVEL:-info}'
+    configs:
+      - source: alertmanager.yml
+        target: /etc/alertmanager/alertmanager.yml
+        mode: 0644
     labels:
       traefik.enable: true
       traefik.http.routers.alertmanager.rule: Host(`alertmanager.$DOMAIN`) || Host(`alertmanager.$TS_HOSTNAME.$DOMAIN`)
