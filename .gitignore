@@ -99,6 +99,7 @@ vendor/docker/openvpn/client.conf
 static/
 reference/
 .github/
+.github/copilot-instructions.md
 
 # Vendored code lock files (causes false security warnings)
 src/**/package-lock.json
