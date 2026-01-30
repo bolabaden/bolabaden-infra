@@ -39,7 +39,7 @@ secrets:
 # Single dollar sign specifies that we're expecting docker to resolve the variable itself at deploy time (e.g. when `docker compose up` is ran).
 # Double dollar sign specifies a literal dollar sign in the configuration content.
 configs:
-      # Log bind mounts into crowdsec
+  # Log bind mounts into crowdsec
   crowdsec-auth.log:
     file: ${CONFIG_PATH:-./volumes}/traefik/crowdsec/var/log/auth.log
   crowdsec-syslog:
