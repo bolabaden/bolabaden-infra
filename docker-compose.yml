@@ -1346,7 +1346,7 @@ services:
       - source: biodecompwarehouse-sshd_config
         target: /etc/ssh/sshd_config
         mode: 600
-    secrets:
+    #secrets:
       #- source: ssh_public_key
       #  target: /run/secrets/ssh_public_key
       #  mode: 644
