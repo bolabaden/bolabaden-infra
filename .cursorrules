@@ -26,6 +26,61 @@ Example: `git commit -m "fix: add healthcheck and self-healing to critical infra
 
 ---
 
+## ⚠️ CRITICAL: Docker Compose Configuration Preferences ⚠️
+
+**MANDATORY**: When working with Docker Compose files, ALWAYS prefer inlining configurations over external file references.
+
+**PREFERRED APPROACH - Inline Configs:**
+```yaml
+configs:
+  config-name:
+    content: |
+      multi
+      line
+      content
+      here
+```
+
+**AVOID - External File References:**
+```yaml
+configs:
+  config-name:
+    file: ./path/to/external/file.conf
+```
+
+especially:
+```yaml
+services:
+  service-name:
+    volumes:
+      - ./path/to/external/file.conf:/container/path/file.conf:ro  # DONT DO THIS
+```
+
+**WHY:**
+- ✅ Single source of truth - all config in one place
+- ✅ Easier to version control and review changes
+- ✅ No file path resolution issues
+- ✅ Simpler deployment - no need to sync multiple files
+- ✅ Better for GitOps workflows
+
+**IMPORTANT NOTES:**
+- In docker-compose.yml `configs:` sections, escape dollar signs ($) with another dollar sign ($$)
+- Single `$` = Docker resolves variable at deploy time (when `docker compose up` runs)
+- Double `$$` = Literal dollar sign in the configuration content
+
+**EXAMPLE:**
+```yaml
+configs:
+  grafana.ini:
+    content: |
+      # This $$HOSTNAME will appear as literal $HOSTNAME in the file
+      instance_name = $$HOSTNAME
+      # This ${VARIABLE} will be resolved by Docker Compose
+      port = ${GRAFANA_PORT:-3000}
+```
+
+---
+
 ## ⚠️ CRITICAL: Healthcheck Requirements ⚠️
 
 **MANDATORY**: ALL Docker services MUST have comprehensive, exhaustive healthchecks. 

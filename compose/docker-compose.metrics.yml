@@ -10065,6 +10065,5805 @@ configs:
         "uid": "warp_net_init_monitoring",
         "version": 1
       }
+  alert-overview.json:
+    content: |
+      {
+        "annotations": {
+          "list": []
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 5
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "count(ALERTS{alertstate=\"firing\"})",
+                "refId": "A"
+              }
+            ],
+            "title": "Firing Alerts",
+            "type": "stat"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 0
+            },
+            "id": 2,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "ALERTS{alertstate=\"firing\"}",
+                "legendFormat": "{{alertname}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Alert History",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "alerts",
+          "monitoring"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Alert Overview",
+        "uid": "alert-overview",
+        "version": 1,
+        "weekStart": ""
+  alertmanager-monitoring.json:
+    content: |
+      {
+        "annotations": {
+          "list": []
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 0
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 6,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "up{job=\"alertmanager\"}",
+                "refId": "A"
+              }
+            ],
+            "title": "Alertmanager Status",
+            "type": "stat"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 6,
+              "y": 0
+            },
+            "id": 2,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "alertmanager_alerts",
+                "legendFormat": "{{state}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Alertmanager Alerts by State",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 8
+            },
+            "id": 3,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "rate(alertmanager_notifications_total[5m])",
+                "legendFormat": "{{integration}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Alertmanager Notification Rate",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 8
+            },
+            "id": 4,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "rate(alertmanager_notifications_failed_total[5m])",
+                "legendFormat": "{{integration}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Alertmanager Failed Notifications",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "alertmanager",
+          "alerts",
+          "monitoring"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Alertmanager Monitoring",
+        "uid": "alertmanager-monitoring",
+        "version": 1,
+        "weekStart": ""
+  application-performance.json:
+    content: |
+      {
+        "annotations": {
+          "list": []
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "reqps"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "sum(rate(traefik_service_requests_total[5m])) by (service)",
+                "legendFormat": "{{service}}",
+                "refId": "A"
+              }
+            ],
+            "title": "HTTP Request Rate",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "s"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 0
+            },
+            "id": 2,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "histogram_quantile(0.95, sum(rate(traefik_service_request_duration_seconds_bucket[5m])) by (le, service))",
+                "legendFormat": "p95 - {{service}}",
+                "refId": "A"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "histogram_quantile(0.99, sum(rate(traefik_service_request_duration_seconds_bucket[5m])) by (le, service))",
+                "legendFormat": "p99 - {{service}}",
+                "refId": "B"
+              }
+            ],
+            "title": "HTTP Request Latency (p95, p99)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "normal"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 8
+            },
+            "id": 3,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "sum(rate(traefik_service_requests_total{code=~\"5..\"}[5m])) by (service) / sum(rate(traefik_service_requests_total[5m])) by (service) * 100",
+                "legendFormat": "{{service}}",
+                "refId": "A"
+              }
+            ],
+            "title": "HTTP Error Rate (5xx)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 8
+            },
+            "id": 4,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "sum(rate(traefik_service_requests_total{code=~\"2..\"}[5m])) by (service) / sum(rate(traefik_service_requests_total[5m])) by (service) * 100",
+                "legendFormat": "{{service}}",
+                "refId": "A"
+              }
+            ],
+            "title": "HTTP Success Rate (2xx)",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "application",
+          "performance",
+          "http"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Application Performance",
+        "uid": "application-performance",
+        "version": 1,
+        "weekStart": ""
+  container-monitoring.json:
+    content: |
+      {
+        "annotations": {
+          "list": []
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "normal"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "sum(rate(container_cpu_usage_seconds_total{name!=\"\"}[5m])) by (name) * 100",
+                "legendFormat": "{{name}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Container CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "normal"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "bytes"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 0
+            },
+            "id": 2,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "sum(container_memory_usage_bytes{name!=\"\"}) by (name)",
+                "legendFormat": "{{name}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Container Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "Bps"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 8
+            },
+            "id": 3,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "sum(rate(container_network_receive_bytes_total{name!=\"\"}[5m])) by (name)",
+                "legendFormat": "Receive - {{name}}",
+                "refId": "A"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "sum(rate(container_network_transmit_bytes_total{name!=\"\"}[5m])) by (name)",
+                "legendFormat": "Transmit - {{name}}",
+                "refId": "B"
+              }
+            ],
+            "title": "Container Network I/O",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 0
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 8
+            },
+            "id": 4,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "count(container_memory_usage_bytes{name!=\"\"}) by (name)",
+                "legendFormat": "{{name}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Container Count",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "containers",
+          "docker",
+          "monitoring"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Container Monitoring",
+        "uid": "container-monitoring",
+        "version": 1,
+        "weekStart": ""
+  database-monitoring.json:
+    content: |
+      {
+        "annotations": {
+          "list": []
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "bytes"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "redis_memory_used_bytes",
+                "legendFormat": "{{instance}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Redis Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 0
+            },
+            "id": 2,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "redis_connected_clients",
+                "legendFormat": "{{instance}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Redis Connected Clients",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "ops"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 8
+            },
+            "id": 3,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "rate(redis_commands_processed_total[5m])",
+                "legendFormat": "{{instance}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Redis Commands Processed",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 8
+            },
+            "id": 4,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "redis_keyspace_keys",
+                "legendFormat": "{{instance}} - {{db}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Redis Keyspace",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 16
+            },
+            "id": 5,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "mongodb_connections{state=\"current\"}",
+                "legendFormat": "{{instance}}",
+                "refId": "A"
+              }
+            ],
+            "title": "MongoDB Connections",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "ops"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 16
+            },
+            "id": 6,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "rate(mongodb_opcounters_total[5m])",
+                "legendFormat": "{{instance}} - {{type}}",
+                "refId": "A"
+              }
+            ],
+            "title": "MongoDB Operations",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "database",
+          "redis",
+          "mongodb"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Database Monitoring",
+        "uid": "database-monitoring",
+        "version": 1,
+        "weekStart": ""
+  infrastructure-overview.json:
+    content: |
+      {
+        "annotations": {
+          "list": [
+            {
+              "builtIn": 1,
+              "datasource": {
+                "type": "grafana",
+                "uid": "-- Grafana --"
+              },
+              "enable": true,
+              "hide": true,
+              "iconColor": "rgba(0, 211, 255, 1)",
+              "name": "Annotations & Alerts",
+              "type": "dashboard"
+            }
+          ]
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 70
+                    },
+                    {
+                      "color": "red",
+                      "value": 90
+                    }
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 6,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "showThresholdLabels": false,
+              "showThresholdMarkers": true,
+              "text": {}
+            },
+            "pluginVersion": "10.0.0",
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+                "refId": "A"
+              }
+            ],
+            "title": "CPU Usage",
+            "type": "gauge"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "max": 100,
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 70
+                    },
+                    {
+                      "color": "red",
+                      "value": 90
+                    }
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 6,
+              "x": 6,
+              "y": 0
+            },
+            "id": 2,
+            "options": {
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "showThresholdLabels": false,
+              "showThresholdMarkers": true,
+              "text": {}
+            },
+            "pluginVersion": "10.0.0",
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+                "refId": "A"
+              }
+            ],
+            "title": "Memory Usage",
+            "type": "gauge"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "max": 100,
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 80
+                    },
+                    {
+                      "color": "red",
+                      "value": 90
+                    }
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 6,
+              "x": 12,
+              "y": 0
+            },
+            "id": 3,
+            "options": {
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "showThresholdLabels": false,
+              "showThresholdMarkers": true,
+              "text": {}
+            },
+            "pluginVersion": "10.0.0",
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "(1 - (node_filesystem_avail_bytes{mountpoint=\"/\",fstype!=\"rootfs\"} / node_filesystem_size_bytes{mountpoint=\"/\",fstype!=\"rootfs\"})) * 100",
+                "refId": "A"
+              }
+            ],
+            "title": "Disk Usage",
+            "type": "gauge"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 8
+            },
+            "id": 4,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+                "legendFormat": "{{instance}}",
+                "refId": "A"
+              }
+            ],
+            "title": "CPU Usage Over Time",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "bytes"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 8
+            },
+            "id": 5,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes",
+                "legendFormat": "Used - {{instance}}",
+                "refId": "A"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "node_memory_MemTotal_bytes",
+                "legendFormat": "Total - {{instance}}",
+                "refId": "B"
+              }
+            ],
+            "title": "Memory Usage Over Time",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "Bps"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 16
+            },
+            "id": 6,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "rate(node_network_receive_bytes_total{device!=\"lo\"}[5m])",
+                "legendFormat": "Receive - {{device}}",
+                "refId": "A"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "rate(node_network_transmit_bytes_total{device!=\"lo\"}[5m])",
+                "legendFormat": "Transmit - {{device}}",
+                "refId": "B"
+              }
+            ],
+            "title": "Network I/O",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "Bps"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 16
+            },
+            "id": 7,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "rate(node_disk_read_bytes_total[5m])",
+                "legendFormat": "Read - {{device}}",
+                "refId": "A"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "rate(node_disk_written_bytes_total[5m])",
+                "legendFormat": "Write - {{device}}",
+                "refId": "B"
+              }
+            ],
+            "title": "Disk I/O",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 5
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 4,
+              "w": 6,
+              "x": 0,
+              "y": 24
+            },
+            "id": 8,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "10.0.0",
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "node_load1",
+                "refId": "A"
+              }
+            ],
+            "title": "Load Average (1m)",
+            "type": "stat"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 5
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 4,
+              "w": 6,
+              "x": 6,
+              "y": 24
+            },
+            "id": 9,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "10.0.0",
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "node_load5",
+                "refId": "A"
+              }
+            ],
+            "title": "Load Average (5m)",
+            "type": "stat"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 5
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 4,
+              "w": 6,
+              "x": 12,
+              "y": 24
+            },
+            "id": 10,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "10.0.0",
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "node_load15",
+                "refId": "A"
+              }
+            ],
+            "title": "Load Average (15m)",
+            "type": "stat"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 70
+                    },
+                    {
+                      "color": "red",
+                      "value": 90
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 4,
+              "w": 6,
+              "x": 18,
+              "y": 24
+            },
+            "id": 11,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "10.0.0",
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "count(node_cpu_seconds_total) by (instance)",
+                "refId": "A"
+              }
+            ],
+            "title": "CPU Cores",
+            "type": "stat"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "infrastructure",
+          "system",
+          "overview"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Infrastructure Overview",
+        "uid": "infrastructure-overview",
+        "version": 1,
+        "weekStart": ""
+      }
+  log-analysis.json:
+    content: |
+      {
+        "annotations": {
+          "list": []
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "loki",
+              "uid": "loki_uid"
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 24,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "dedupStrategy": "none",
+              "enableLogDetails": true,
+              "prettifyLogMessage": false,
+              "showCommonLabels": false,
+              "showLabels": false,
+              "showTime": true,
+              "sortOrder": "Descending",
+              "wrapLogMessage": false
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "loki",
+                  "uid": "loki_uid"
+                },
+                "expr": "{job=~\".+\"}",
+                "refId": "A"
+              }
+            ],
+            "title": "Recent Logs",
+            "type": "logs"
+          },
+          {
+            "datasource": {
+              "type": "loki",
+              "uid": "loki_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "normal"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 8
+            },
+            "id": 2,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "loki",
+                  "uid": "loki_uid"
+                },
+                "expr": "sum(count_over_time({job=~\".+\"}[1m])) by (level)",
+                "legendFormat": "{{level}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Log Volume by Level",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "loki",
+              "uid": "loki_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "normal"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 8
+            },
+            "id": 3,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "loki",
+                  "uid": "loki_uid"
+                },
+                "expr": "sum(count_over_time({job=~\".+\"}[1m])) by (job)",
+                "legendFormat": "{{job}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Log Volume by Job",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "logs",
+          "loki",
+          "analysis"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Log Analysis",
+        "uid": "log-analysis",
+        "version": 1,
+        "weekStart": ""
+  loki-monitoring.json:
+    content: |
+      {
+        "annotations": {
+          "list": []
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "rate(loki_distributor_lines_received_total[5m])",
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "title": "Loki Ingest Rate",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "s"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 0
+            },
+            "id": 2,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "loki_request_duration_seconds",
+                "legendFormat": "{{path}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Loki Query Duration",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 8
+            },
+            "id": 3,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "loki_ingester_chunks_created_total",
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "title": "Loki Chunks",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "bytes"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 8
+            },
+            "id": 4,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "loki_ingester_chunk_stored_bytes_total",
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "title": "Loki Storage Size",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "loki",
+          "logs",
+          "monitoring"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Loki Monitoring",
+        "uid": "loki-monitoring",
+        "version": 1,
+        "weekStart": ""
+  network-monitoring.json:
+    content: |
+      {
+        "annotations": {
+          "list": []
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "probe_http_status_code",
+                "legendFormat": "{{instance}}",
+                "refId": "A"
+              }
+            ],
+            "title": "HTTP Probe Success Rate",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "s"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 0
+            },
+            "id": 2,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "probe_http_duration_seconds",
+                "legendFormat": "{{instance}}",
+                "refId": "A"
+              }
+            ],
+            "title": "HTTP Probe Duration",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "s"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 8
+            },
+            "id": 3,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "probe_tcp_duration_seconds",
+                "legendFormat": "{{instance}}",
+                "refId": "A"
+              }
+            ],
+            "title": "TCP Connect Time",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "s"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 8
+            },
+            "id": 4,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "probe_dns_lookup_time_seconds",
+                "legendFormat": "{{instance}}",
+                "refId": "A"
+              }
+            ],
+            "title": "DNS Lookup Time",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "network",
+          "blackbox",
+          "probes"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Network Monitoring",
+        "uid": "network-monitoring",
+        "version": 1,
+        "weekStart": ""
+  process-monitoring.json:
+    content: |
+      {
+        "annotations": {
+          "list": []
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "rate(namedprocess_namegroup_cpu_seconds_total[5m]) * 100",
+                "legendFormat": "{{groupname}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Process CPU Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "bytes"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 0
+            },
+            "id": 2,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "namedprocess_namegroup_memory_bytes",
+                "legendFormat": "{{groupname}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Process Memory Usage",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 8
+            },
+            "id": 3,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "namedprocess_namegroup_num_procs",
+                "legendFormat": "{{groupname}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Process Count",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 8
+            },
+            "id": 4,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "namedprocess_namegroup_num_threads",
+                "legendFormat": "{{groupname}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Process Threads",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "process",
+          "monitoring"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Process Monitoring",
+        "uid": "process-monitoring",
+        "version": 1,
+        "weekStart": ""
+  prometheus-self-monitoring.json:
+    content: |
+      {
+        "annotations": {
+          "list": []
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "up",
+                "legendFormat": "{{job}} - {{instance}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Prometheus Target Scrapes",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "s"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 0
+            },
+            "id": 2,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "prometheus_target_interval_length_seconds",
+                "legendFormat": "{{job}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Prometheus Scrape Duration",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 8
+            },
+            "id": 3,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "rate(prometheus_target_scrapes_exceeded_sample_limit_total[5m])",
+                "legendFormat": "{{job}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Prometheus Samples Scraped",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 8
+            },
+            "id": 4,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "prometheus_tsdb_head_series",
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "title": "Prometheus TSDB Head Series",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 16
+            },
+            "id": 5,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "prometheus_remote_storage_queue_length",
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "title": "Prometheus Remote Write Queue",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "s"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 16
+            },
+            "id": 6,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "prometheus_rule_evaluation_duration_seconds",
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "title": "Prometheus Rule Evaluation Duration",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "prometheus",
+          "monitoring"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Prometheus Self-Monitoring",
+        "uid": "prometheus-self-monitoring",
+        "version": 1,
+        "weekStart": ""
+  security-monitoring.json:
+    content: |
+      {
+        "annotations": {
+          "list": []
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 10
+                    },
+                    {
+                      "color": "red",
+                      "value": 50
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 6,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "sum(rate(crowdsec_local_api_http_requests_total{route=~\".*ban.*\"}[5m]))",
+                "refId": "A"
+              }
+            ],
+            "title": "IP Bans (CrowdSec)",
+            "type": "stat"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 6,
+              "y": 0
+            },
+            "id": 2,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "rate(crowdsec_local_api_http_requests_total{route=~\".*ban.*\"}[5m])",
+                "legendFormat": "{{route}}",
+                "refId": "A"
+              }
+            ],
+            "title": "Security Events (CrowdSec)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 8
+            },
+            "id": 3,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "sum(rate(traefik_entrypoint_requests_total{code=~\"4..\"}[5m])) by (entrypoint)",
+                "legendFormat": "{{entrypoint}}",
+                "refId": "A"
+              }
+            ],
+            "title": "HTTP 4xx Errors (Potential Attacks)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 8
+            },
+            "id": 4,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "sum(rate(traefik_entrypoint_requests_total{code=~\"5..\"}[5m])) by (entrypoint)",
+                "legendFormat": "{{entrypoint}}",
+                "refId": "A"
+              }
+            ],
+            "title": "HTTP 5xx Errors",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "security",
+          "crowdsec",
+          "monitoring"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Security Monitoring",
+        "uid": "security-monitoring",
+        "version": 1,
+        "weekStart": ""
+  slo-error-budget.json:
+    content: |
+      {
+        "annotations": {
+          "list": []
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "max": 100,
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 99.0
+                    },
+                    {
+                      "color": "green",
+                      "value": 99.9
+                    }
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 8,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "showThresholdLabels": false,
+              "showThresholdMarkers": true,
+              "text": {}
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "sum(rate(traefik_service_requests_total{code=~\"2..\"}[5m])) / sum(rate(traefik_service_requests_total[5m])) * 100",
+                "refId": "A"
+              }
+            ],
+            "title": "Availability SLO (99.9% target)",
+            "type": "gauge"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 50
+                    },
+                    {
+                      "color": "red",
+                      "value": 0
+                    }
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 8,
+              "x": 8,
+              "y": 0
+            },
+            "id": 2,
+            "options": {
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "showThresholdLabels": false,
+              "showThresholdMarkers": true,
+              "text": {}
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "(1 - (sum(rate(traefik_service_requests_total{code=~\"5..\"}[5m])) / sum(rate(traefik_service_requests_total[5m])))) * 100",
+                "refId": "A"
+              }
+            ],
+            "title": "Error Budget Remaining",
+            "type": "gauge"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "line"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 99.9
+                    }
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 8,
+              "x": 16,
+              "y": 0
+            },
+            "id": 3,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "min"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "sum(rate(traefik_service_requests_total{code=~\"2..\"}[5m])) / sum(rate(traefik_service_requests_total[5m])) * 100",
+                "legendFormat": "Availability",
+                "refId": "A"
+              }
+            ],
+            "title": "Availability Over Time",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "slo",
+          "error-budget",
+          "availability"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "SLO / Error Budget",
+        "uid": "slo-error-budget",
+        "version": 1,
+        "weekStart": ""
+  victoriametrics-monitoring.json:
+    content: |
+      {
+        "annotations": {
+          "list": []
+        },
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 0
+            },
+            "id": 1,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "rate(vm_ingest_rows_inserted_total[5m])",
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "title": "VM Ingested Samples",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "s"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 0
+            },
+            "id": 2,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "vm_request_duration_seconds",
+                "legendFormat": "{{path}}",
+                "refId": "A"
+              }
+            ],
+            "title": "VM Query Duration",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 8
+            },
+            "id": 3,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "vm_active_merges",
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "title": "VM Active Series",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "victoriametrics_uid"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "tooltip": false,
+                    "viz": false,
+                    "legend": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    }
+                  ]
+                },
+                "unit": "bytes"
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 8
+            },
+            "id": 4,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "victoriametrics_uid"
+                },
+                "expr": "vm_data_size_bytes",
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "title": "VM Data Size",
+            "type": "timeseries"
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [
+          "victoriametrics",
+          "monitoring"
+        ],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "VictoriaMetrics Monitoring",
+        "uid": "victoriametrics-monitoring",
+        "version": 1,
+        "weekStart": ""
   loki.yaml:
     content: |
       # Comprehensive Loki configuration with retention, performance optimizations, and best practices
@@ -11004,48 +16803,48 @@ services:
         target: /etc/grafana/provisioning/crowdsec-profiles.yaml
         mode: 0777
       # Additional Monitoring Dashboards
-      #- source: infrastructure-overview.json
-      #  target: /var/lib/grafana/dashboards/infrastructure/infrastructure-overview.json
-      #  mode: 0777
-      #- source: container-monitoring.json
-      #  target: /var/lib/grafana/dashboards/infrastructure/container-monitoring.json
-      #  mode: 0777
-      #- source: database-monitoring.json
-      #  target: /var/lib/grafana/dashboards/infrastructure/database-monitoring.json
-      #  mode: 0777
-      #- source: network-monitoring.json
-      #  target: /var/lib/grafana/dashboards/network/network-monitoring.json
-      #  mode: 0777
-      #- source: application-performance.json
-      #  target: /var/lib/grafana/dashboards/apps/application-performance.json
-      #  mode: 0777
-      #- source: prometheus-self-monitoring.json
-      #  target: /var/lib/grafana/dashboards/monitoring/prometheus-self-monitoring.json
-      #  mode: 0777
-      #- source: process-monitoring.json
-      #  target: /var/lib/grafana/dashboards/system/process-monitoring.json
-      #  mode: 0777
-      #- source: victoriametrics-monitoring.json
-      #  target: /var/lib/grafana/dashboards/monitoring/victoriametrics-monitoring.json
-      #  mode: 0777
-      #- source: loki-monitoring.json
-      #  target: /var/lib/grafana/dashboards/monitoring/loki-monitoring.json
-      #  mode: 0777
-      #- source: alert-overview.json
-      #  target: /var/lib/grafana/dashboards/monitoring/alert-overview.json
-      #  mode: 0777
-      #- source: alertmanager-monitoring.json
-      #  target: /var/lib/grafana/dashboards/monitoring/alertmanager-monitoring.json
-      #  mode: 0777
-      #- source: slo-error-budget.json
-      #  target: /var/lib/grafana/dashboards/monitoring/slo-error-budget.json
-      #  mode: 0777
-      #- source: log-analysis.json
-      #  target: /var/lib/grafana/dashboards/monitoring/log-analysis.json
-      #  mode: 0777
-      #- source: security-monitoring.json
-      #  target: /var/lib/grafana/dashboards/monitoring/security-monitoring.json
-      #  mode: 0777
+      - source: infrastructure-overview.json
+        target: /var/lib/grafana/dashboards/infrastructure/infrastructure-overview.json
+        mode: 0777
+      - source: container-monitoring.json
+        target: /var/lib/grafana/dashboards/infrastructure/container-monitoring.json
+        mode: 0777
+      - source: database-monitoring.json
+        target: /var/lib/grafana/dashboards/infrastructure/database-monitoring.json
+        mode: 0777
+      - source: network-monitoring.json
+        target: /var/lib/grafana/dashboards/network/network-monitoring.json
+        mode: 0777
+      - source: application-performance.json
+        target: /var/lib/grafana/dashboards/apps/application-performance.json
+        mode: 0777
+      - source: prometheus-self-monitoring.json
+        target: /var/lib/grafana/dashboards/monitoring/prometheus-self-monitoring.json
+        mode: 0777
+      - source: process-monitoring.json
+        target: /var/lib/grafana/dashboards/system/process-monitoring.json
+        mode: 0777
+      - source: victoriametrics-monitoring.json
+        target: /var/lib/grafana/dashboards/monitoring/victoriametrics-monitoring.json
+        mode: 0777
+      - source: loki-monitoring.json
+        target: /var/lib/grafana/dashboards/monitoring/loki-monitoring.json
+        mode: 0777
+      - source: alert-overview.json
+        target: /var/lib/grafana/dashboards/monitoring/alert-overview.json
+        mode: 0777
+      - source: alertmanager-monitoring.json
+        target: /var/lib/grafana/dashboards/monitoring/alertmanager-monitoring.json
+        mode: 0777
+      - source: slo-error-budget.json
+        target: /var/lib/grafana/dashboards/monitoring/slo-error-budget.json
+        mode: 0777
+      - source: log-analysis.json
+        target: /var/lib/grafana/dashboards/monitoring/log-analysis.json
+        mode: 0777
+      - source: security-monitoring.json
+        target: /var/lib/grafana/dashboards/monitoring/security-monitoring.json
+        mode: 0777
     volumes:
       - ${CONFIG_PATH:-./volumes}/grafana/dashboards:/var/lib/grafana/dashboards
       - ${CONFIG_PATH:-./volumes}/grafana/provisioning/alerting:/etc/grafana/provisioning/alerting
