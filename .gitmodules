@@ -1,27 +1,59 @@
 [submodule "src/cloudflare-ddns"]
 	path = src/cloudflare-ddns
 	url = https://github.com/favonia/cloudflare-ddns
+
 [submodule "projects/website/bolabaden-site"]
 	path = projects/website/bolabaden-site
 	url = https://github.com/bolabaden/bolabaden-site
+
 [submodule "projects/genai/gpt-researcher"]
 	path = projects/genai/gpt-researcher
 	url = https://github.com/bolabaden/ai-researchwizard
+
 [submodule "projects/reverse_proxy/logrotate-traefik"]
 	path = projects/reverse_proxy/logrotate-traefik
 	url = https://github.com/bolabaden/logrotate-traefik.git
+
 [submodule "projects/network/warp-nat-routing"]
 	path = projects/network/warp-nat-routing
 	url = https://github.com/bolabaden/warp-nat-routing.git
+
 [submodule "projects/kotor/HoloLSP"]
 	path = projects/kotor/HoloLSP
 	url = https://github.com/th3w1zard1/HoloLSP
+
 [submodule "projects/kotor/kotorscript-session-manager"]
 	path = projects/kotor/kotorscript-session-manager
 	url = https://github.com/bolabaden/bolabaden-infra
+
 [submodule "projects/genai/llm_fallbacks"]
 	path = projects/genai/llm_fallbacks
 	url = https://github.com/th3w1zard1/llm_fallbacks
+
 [submodule "projects/cloud/cloudcradle"]
 	path = projects/cloud/cloudcradle
 	url = https://github.com/bolabaden/cloudcradle
+
+[submodule "projects/reverse_proxy/nginx_traefik_converter"]
+	path = projects/reverse_proxy/nginx_traefik_converter
+	url = https://github.com/bolabaden/nginx-traefik-converter
+
+[submodule "projects/orchestration/k8s"]
+	path = projects/orchestration/k8s
+	url = https://github.com/bolabaden/k8s-slop
+
+[submodule "projects/orchestration/constellation"]
+	path = projects/orchestration/constellation
+	url = https://github.com/bolabaden/constellation
+
+[submodule "projects/network/vpn-manager"]
+	path = projects/network/vpn-manager
+	url = https://github.com/bolabaden/vpn-manager
+
+[submodule "projects/network/openvpn-nat-routing"]
+	path = projects/network/openvpn-nat-routing
+	url = https://github.com/bolabaden/openvpn-nat-routing
+
+[submodule "projects/kotor/kotormodsync"]
+	path = projects/kotor/kotormodsync
+	url = https://github.com/oldrepublicdevs/kotormodsync

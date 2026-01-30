@@ -46,7 +46,6 @@ logs/
 node_modules/
 npm-debug.log*
 opt/
-projects/
 vendor/docker/openvpn/client/auth.conf
 volumes/
 yarn-debug.log*
@@ -107,3 +106,4 @@ infra/infra
 infra/deploy
 *.test
 *.out
+*.backup-*

@@ -1,0 +1,233 @@
+{
+  "[docker-compose.*.yaml]": {
+    "editor.autoIndent": "advanced",
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers",
+    "editor.insertSpaces": true,
+    "editor.quickSuggestions": {
+      "comments": true,
+      "other": true,
+      "strings": true
+    },
+    "editor.tabSize": 2
+  },
+  "[docker-compose.*.yml]": {
+    "editor.autoIndent": "advanced",
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers",
+    "editor.insertSpaces": true,
+    "editor.quickSuggestions": {
+      "comments": true,
+      "other": true,
+      "strings": true
+    },
+    "editor.tabSize": 2
+  },
+  "[dockercompose]": {
+    "editor.autoIndent": "advanced",
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers",
+    "editor.insertSpaces": true,
+    "editor.quickSuggestions": {
+      "comments": true,
+      "other": true,
+      "strings": true
+    },
+    "editor.tabSize": 2
+  },
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[java]": {
+    "editor.defaultFormatter": "Oracle.oracle-java"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.tabSize": 2
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.tabSize": 2
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "mads-hartmann.bash-ide-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.tabSize": 2
+  },
+  "[yml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.tabSize": 2
+  },
+  "chat.tools.terminal.autoApprove": {
+    "chmod": false,
+    "chown": false,
+    "curl": false,
+    "dd": false,
+    "del": false,
+    "erase": false,
+    "eval": false,
+    "kill": false,
+    "ps": false,
+    "rd": false,
+    "Remove-Item": false,
+    "ri": false,
+    "rm": false,
+    "rmdir": false,
+    "Set-Acl": false,
+    "Set-ItemProperty": false,
+    "spps": false,
+    "Stop-Process": false,
+    "taskkill": false,
+    "taskkill.exe": false
+  },
+  "containers.containers.label": "ContainerName",
+  "containers.containers.sortBy": "Label",
+  "editor.minimap.enabled": true,
+  "files.exclude": {
+    "**/.history/**": true
+  },
+  "files.watcherExclude": {
+    "**/.history/**": true
+  },
+  "git.autofetch": true,
+  "redhat.telemetry.enabled": false,
+  "remote.autoForwardPorts": true,
+  "remote.autoForwardPortsSource": "hybrid",
+  "roo-cline.debug": false,
+  "roo-cline.deniedCommands": [
+    "chmod",
+    "chown",
+    "curl",
+    "dd",
+    "del",
+    "del",
+    "erase",
+    "eval",
+    "git push --force",
+    "git reset --hard",
+    "git reset",
+    "git rm -f",
+    "git rm",
+    "kill",
+    "ps",
+    "rd",
+    "Remove-Item -Force",
+    "Remove-Item -Recurse -Force",
+    "Remove-Item",
+    "Remove-Item",
+    "ri",
+    "rm -f",
+    "rm -fr",
+    "rm -recurse -force",
+    "rm -rf",
+    "rm -rvf",
+    "rm",
+    "rm",
+    "rmdir",
+    "Set-Acl",
+    "Set-ItemProperty",
+    "spps",
+    "Stop-Process",
+    "taskkill.exe",
+    "taskkill"
+  ],
+  "search.exclude": {
+    "**/.history/**": true
+  },
+  "totalTypeScript.hiddenTips": [
+    "any-type",
+    "array-type",
+    "as-assertion",
+    "basic-types",
+    "function-return-type",
+    "generic-slots-in-functions",
+    "interface-declaration",
+    "keyof",
+    "literal-type",
+    "never-keyword",
+    "optional-object-property",
+    "parameters-utility-type",
+    "passing-generics-to-types",
+    "record-utility-type",
+    "returntype-utility-type",
+    "ts-object-type",
+    "typeof",
+    "typing-function-parameters",
+    "union-type",
+    "variable-type-annotation"
+  ],
+  "totalTypeScript.hideAllTips": false,
+  "totalTypeScript.hideBasicTips": false,
+  "vs-kubernetes": {
+    "vs-kubernetes.knownKubeconfigs": [
+      "/etc/rancher/k3s/k3s.yaml"
+    ],
+    "vs-kubernetes.kubeconfig": "/etc/rancher/k3s/k3s.yaml",
+    "vscode-kubernetes.helm-path-linux": "/home/ubuntu/.local/state/vs-kubernetes/tools/helm/linux-arm64/helm",
+    "vscode-kubernetes.kubectl-path-linux": "/home/ubuntu/.local/state/vs-kubernetes/tools/kubectl/kubectl",
+    "vscode-kubernetes.minikube-path-linux": "/home/ubuntu/.local/state/vs-kubernetes/tools/minikube/linux-arm64/minikube"
+  },
+  "workbench.colorCustomizations": {
+    "[Vira*]": {
+      "activityBar.activeBorder": "#80CBC4",
+      "activityBarBadge.background": "#80CBC4",
+      "activityBarBadge.foreground": "#000000",
+      "activityBarTop.activeBorder": "#80CBC4",
+      "breadcrumb.activeSelectionForeground": "#80CBC4",
+      "button.background": "#80CBC4",
+      "button.foreground": "#000000",
+      "button.hoverBackground": "#80CBC4cc",
+      "chat.avatarForeground": "#80CBC4",
+      "chat.slashCommandForeground": "#80CBC4",
+      "commandCenter.activeBorder": "#80CBC480",
+      "editor.findMatchBorder": "#80CBC4",
+      "editorSuggestWidget.highlightForeground": "#80CBC4",
+      "editorWidget.border": "#80CBC4",
+      "editorWidget.resizeBorder": "#80CBC4",
+      "extensionButton.background": "#80CBC414",
+      "extensionButton.foreground": "#80CBC4",
+      "extensionButton.hoverBackground": "#80CBC433",
+      "extensionButton.prominentBackground": "#80CBC414",
+      "extensionButton.prominentForeground": "#80CBC4",
+      "extensionButton.prominentHoverBackground": "#80CBC433",
+      "extensionButton.separator": "#80CBC433",
+      "list.activeSelectionForeground": "#80CBC4",
+      "list.activeSelectionIconForeground": "#80CBC4",
+      "list.highlightForeground": "#80CBC4",
+      "list.inactiveSelectionForeground": "#80CBC4",
+      "list.inactiveSelectionIconForeground": "#80CBC4",
+      "menu.selectionForeground": "#80CBC4",
+      "menubar.selectionForeground": "#80CBC4",
+      "notebook.inactiveFocusedCellBorder": "#80CBC480",
+      "notificationLink.foreground": "#80CBC4",
+      "panelTitle.activeBorder": "#80CBC4",
+      "pickerGroup.foreground": "#80CBC4",
+      "progressBar.background": "#80CBC4",
+      "sash.hoverBorder": "#80CBC480",
+      "scrollbarSlider.activeBackground": "#80CBC480",
+      "selection.background": "#80CBC440",
+      "settings.modifiedItemIndicator": "#80CBC4",
+      "statusBar.debuggingBackground": "#80CBC433",
+      "statusBar.debuggingForeground": "#80CBC4",
+      "statusBarItem.remoteBackground": "#80CBC414",
+      "statusBarItem.remoteForeground": "#80CBC4",
+      "statusBarItem.remoteHoverBackground": "#80CBC4",
+      "statusBarItem.remoteHoverForeground": "#000000",
+      "tab.activeBorder": "#80CBC4",
+      "tab.activeBorderTop": "#80CBC400",
+      "tab.activeModifiedBorder": "#80CBC400",
+      "tab.unfocusedActiveBorder": "#80CBC4",
+      "tab.unfocusedActiveBorderTop": "#80CBC400",
+      "textLink.foreground": "#80CBC4",
+      "toolbar.activeBackground": "#80CBC426"
+    }
+  }
+}

@@ -31,6 +31,7 @@ Example: `git commit -m "fix: add healthcheck and self-healing to critical infra
 **MANDATORY**: When working with Docker Compose files, ALWAYS prefer inlining configurations over external file references.
 
 **PREFERRED APPROACH - Inline Configs:**
+
 ```yaml
 configs:
   config-name:
@@ -42,6 +43,7 @@ configs:
 ```
 
 **AVOID - External File References:**
+
 ```yaml
 configs:
   config-name:
@@ -49,6 +51,7 @@ configs:
 ```
 
 especially:
+
 ```yaml
 services:
   service-name:
@@ -57,18 +60,21 @@ services:
 ```
 
 **WHY:**
-- ✅ Single source of truth - all config in one place
+
+- ✅ Improved portability across environments, fully provisional.
 - ✅ Easier to version control and review changes
 - ✅ No file path resolution issues
 - ✅ Simpler deployment - no need to sync multiple files
 - ✅ Better for GitOps workflows
 
 **IMPORTANT NOTES:**
+
 - In docker-compose.yml `configs:` sections, escape dollar signs ($) with another dollar sign ($$)
 - Single `$` = Docker resolves variable at deploy time (when `docker compose up` runs)
 - Double `$$` = Literal dollar sign in the configuration content
 
 **EXAMPLE:**
+
 ```yaml
 configs:
   grafana.ini:
@@ -83,15 +89,17 @@ configs:
 
 ## ⚠️ CRITICAL: Healthcheck Requirements ⚠️
 
-**MANDATORY**: ALL Docker services MUST have comprehensive, exhaustive healthchecks. 
+**MANDATORY**: ALL Docker services MUST have comprehensive, exhaustive healthchecks.
 
 **NEVER:**
+
 - ❌ Disable healthchecks
 - ❌ Comment out healthchecks
 - ❌ Use simplified TCP-only checks (nc -z)
 - ❌ Remove healthchecks to "fix" issues
 
 **ALWAYS:**
+
 - ✅ Use full HTTP/HTTPS endpoint checks that validate the service actually works
 - ✅ Include proper intervals, timeouts, retries, and start_period
 - ✅ Test actual service functionality, not just port availability
@@ -100,6 +108,7 @@ configs:
 - ✅ Use comprehensive healthchecks like: `wget --spider`, `curl -f`, API endpoint validation
 
 **Example of PROPER healthcheck:**
+
 ```yaml
 healthcheck:
   test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1"]
