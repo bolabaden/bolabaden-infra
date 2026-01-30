@@ -57,3 +57,6 @@
 [submodule "projects/kotor/kotormodsync"]
 	path = projects/kotor/kotormodsync
 	url = https://github.com/oldrepublicdevs/kotormodsync
+[submodule "projects/orchestration/hashi-homelab"]
+	path = projects/orchestration/hashi-homelab
+	url = https://github.com/evandcoleman/ansible-hashicorp-homelab
