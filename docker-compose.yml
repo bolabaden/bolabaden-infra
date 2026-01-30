@@ -1,28 +1,27 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
 
-
-
 x-common-env: &common-env
   TZ: ${TZ:-America/Chicago}
   PUID: ${PUID:-1001}
   PGID: ${PGID:-999}
   UMASK: ${UMASK:-002}
 
-
 secrets:
   signing_secret:
     file: ${SECRETS_PATH:?}/signing_secret.txt
   #ssh_public_key:
-  #  file: ${ROOT_PATH:-.}/volumes/biodecompwarehouse/.ssh/id_rsa.pub
+  #  file: ${CONFIG_PATH:-./volumes}/biodecompwarehouse/.ssh/id_oldrepublicdevs_rsa.pub
+  #ssh_private_key:
+  #  file: ${CONFIG_PATH:-./volumes}/biodecompwarehouse/.ssh/id_oldrepublicdevs_rsa
 
 networks:
   # https://docs.docker.com/engine/network/drivers/bridge/#differences-between-user-defined-bridges-and-the-default-bridge
   warp-nat-net:
-    external: true  # docker network create --attachable -o com.docker.network.bridge.name=br_warp-nat-net -o com.docker.network.bridge.enable_ip_masquerade=false warp-nat-net --subnet=${WARP_NAT_NET_SUBNET:-10.0.2.0/24} --gateway=${WARP_NAT_NET_GATEWAY:-10.0.2.1}
+    external: true # docker network create --attachable -o com.docker.network.bridge.name=br_warp-nat-net -o com.docker.network.bridge.enable_ip_masquerade=false warp-nat-net --subnet=${WARP_NAT_NET_SUBNET:-10.0.2.0/24} --gateway=${WARP_NAT_NET_GATEWAY:-10.0.2.1}
     attachable: true
     driver_opts:
       com.docker.network.bridge.name: br_warp-nat-net
-      com.docker.network.bridge.enable_ip_masquerade: "false"  # required for custom NAT control
+      com.docker.network.bridge.enable_ip_masquerade: "false" # required for custom NAT control
     ipam:
       config:
         - subnet: ${WARP_NAT_NET_SUBNET:-10.0.2.0/24}
@@ -65,7 +64,7 @@ include:
 # Double dollar sign specifies a literal dollar sign in the configuration content.
 configs:
   watchtower-config.json:
-    file: ~/.docker/config.json  # docker credentials acquired through `docker login` on host!
+    file: ~/.docker/config.json # docker credentials acquired through `docker login` on host!
   session_manager.py:
     file: ${ROOT_PATH:-.}/projects/kotor/kotorscript-session-manager/session_manager.py
   session_manager_index.html:
@@ -107,7 +106,7 @@ configs:
       ---
       # For configuration options and examples, please see:
       # https://gethomepage.dev/configs/settings/
-      
+
       # Weather providers disabled - API keys not configured
       # providers:
       #   openweathermap: $OPENWEATHERMAP_API_KEY
@@ -130,7 +129,7 @@ configs:
         - LinkedIn:
           - abbr: LI
             href: https://www.linkedin.com/in/boden-crouch-555897193/
-      
+
       - AI/Research:
         - ai-researchwizard:
           - abbr: GP
@@ -450,10 +449,7 @@ services:
       traefik.tcp.services.mongodb.loadbalancer.server.port: 27017
       traefik.tcp.services.mongodb.loadbalancer.server.tls: true
     healthcheck:
-      test: [
-        "CMD-SHELL",
-        "mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand(\"ping\").ok' > /dev/null 2>&1 || exit 1"
-      ]
+      test: [ "CMD-SHELL", "mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand(\"ping\").ok' > /dev/null 2>&1 || exit 1" ]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -497,10 +493,7 @@ services:
       kuma.searxng.http.url: https://searxng.$DOMAIN
       kuma.searxng.http.interval: 30
     healthcheck:
-      test: [
-        "CMD-SHELL",
-        "wget --no-verbose --tries=1 --spider http://127.0.0.1:${SEARXNG_PORT:-8080}/ || exit 1"
-      ]
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${SEARXNG_PORT:-8080}/ || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -523,7 +516,7 @@ services:
       - 8443
     volumes:
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
-      - ${CONFIG_PATH:-./volumes}/code-server/dev/config:/config  # Contains all relevant configuration files.
+      - ${CONFIG_PATH:-./volumes}/code-server/dev/config:/config # Contains all relevant configuration files.
       - ${ROOT_PATH:-.}:${CODESERVER_DEFAULT_WORKSPACE:-/workspace}
     # You can set any environment variable from a file by using a special prepend FILE__.
     # As an example:
@@ -535,10 +528,10 @@ services:
       PUID: ${PUID:-1001}
       PGID: ${PGID:-121}
       UMASK: ${UMASK:-002}
-      HASHED_PASSWORD: ${CODESERVER_HASHED_PASSWORD:-}                           # create with `echo -n "thisismypassword" | argon2 "$$(openssl rand -hex 4)" -e`
-      SUDO_PASSWORD_HASH: ${CODESERVER_SUDO_PASSWORD_HASH:-}                     # create with `openssl -6 "yourpasswordhere"`
-      PWA_APPNAME: ${CODESERVER_PWA_APPNAME:-code-server.$TS_HOSTNAME.$DOMAIN}   # If this optional variable is set, the PWA app will the specified name.
-      DEFAULT_WORKSPACE: ${CODESERVER_DEFAULT_WORKSPACE:-/workspace}             # If this optional variable is set, code-server will open this directory by default
+      HASHED_PASSWORD: ${CODESERVER_HASHED_PASSWORD:-} # create with `echo -n "thisismypassword" | argon2 "$$(openssl rand -hex 4)" -e`
+      SUDO_PASSWORD_HASH: ${CODESERVER_SUDO_PASSWORD_HASH:-} # create with `openssl -6 "yourpasswordhere"`
+      PWA_APPNAME: ${CODESERVER_PWA_APPNAME:-code-server.$TS_HOSTNAME.$DOMAIN} # If this optional variable is set, the PWA app will the specified name.
+      DEFAULT_WORKSPACE: ${CODESERVER_DEFAULT_WORKSPACE:-/workspace} # If this optional variable is set, code-server will open this directory by default
     labels:
       traefik.enable: true
       traefik.http.middlewares.codeserver-redirect.redirectRegex.regex: '^https?://codeserver\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
@@ -567,7 +560,7 @@ services:
 
   session-manager:
     profiles:
-      - fixme  # TODO: need to create session_manager_index.html and the waiting.html. Do NOT remove this profile until those files are exhaustively created and fully functional to spec.
+      - fixme # TODO: need to create session_manager_index.html and the waiting.html. Do NOT remove this profile until those files are exhaustively created and fully functional to spec.
     image: alpine
     container_name: session-manager
     hostname: session-manager
@@ -644,7 +637,7 @@ services:
         mkdir -p /tmp/templates &&
         python3 session_manager.py
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${KOTORSCRIPT_SESSION_MANAGER_PORT:-8080}/health > /dev/null 2>&1 || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:${KOTORSCRIPT_SESSION_MANAGER_PORT:-8080}/health > /dev/null 2>&1 || exit 1" ]
       timeout: 10s
       start_period: 30s
     restart: always
@@ -684,7 +677,7 @@ services:
       kuma.bolabaden-nextjs.http.url: https://$DOMAIN
       kuma.bolabaden-nextjs.http.interval: 30
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:$${PORT:-3000} > /dev/null 2>&1 || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:$${PORT:-3000} > /dev/null 2>&1 || exit 1" ]
       timeout: 10s
       start_period: 30s
     restart: always
@@ -711,7 +704,7 @@ services:
       # Auto-restart on unhealthy state (requires deunhealth or autoheal container)
       deunhealth.restart.on.unhealthy: "true"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:2375/_ping > /dev/null 2>&1 || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:2375/_ping > /dev/null 2>&1 || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -742,7 +735,7 @@ services:
       DOZZLE_AUTH_HEADER_USER: ${DOZZLE_AUTH_USER:-}
       DOZZLE_AUTH_HEADER_EMAIL: ${DOZZLE_AUTH_EMAIL:-}
       DOZZLE_AUTH_PROVIDER: ${DOZZLE_AUTH_PROVIDER:-none}
-      DOZZLE_LEVEL: ${DOZZLE_LEVEL:-info}  # default: info
+      DOZZLE_LEVEL: ${DOZZLE_LEVEL:-info} # default: info
       DOZZLE_HOSTNAME: ${DOZZLE_HOSTNAME:-}
       DOZZLE_BASE: ${DOZZLE_BASE:-/}
       DOZZLE_ADDR: ${DOZZLE_ADDR:-:${DOZZLE_PORT:-8080}}
@@ -778,28 +771,28 @@ services:
     configs:
       - source: gethomepage-custom.css
         target: /app/config/custom.css
-        mode: 0777
+        mode: 777
       - source: gethomepage-custom.js
         target: /app/config/custom.js
-        mode: 0777
+        mode: 777
       - source: gethomepage-docker.yaml
         target: /app/config/docker.yaml
-        mode: 0777
+        mode: 777
       - source: gethomepage-widgets.yaml
         target: /app/config/widgets.yaml
-        mode: 0777
+        mode: 777
       - source: gethomepage-settings.yaml
         target: /app/config/settings.yaml
-        mode: 0777
+        mode: 777
       - source: gethomepage-bookmarks.yaml
         target: /app/config/bookmarks.yaml
-        mode: 0777
+        mode: 777
     volumes:
       # DO NOT create a bind mount to the entire /app/public/ directory.
       #- ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
       - ${CONFIG_PATH:-./volumes}/homepage:/app/config
     environment:
-      DOCKER_HOST: tcp://dockerproxy-ro:2375  # Point to proxy instead of socket
+      DOCKER_HOST: tcp://dockerproxy-ro:2375 # Point to proxy instead of socket
       HOMEPAGE_ALLOWED_HOSTS: "*"
       HOMEPAGE_VAR_TITLE: Bolabaden
       HOMEPAGE_VAR_SEARCH_PROVIDER: duckduckgo
@@ -922,7 +915,7 @@ services:
 
       # Cron expression in 6 fields which defines when and how often to check for new images.
       # Default: unset
-      WATCHTOWER_SCHEDULE: ${WATCHTOWER_SCHEDULE:-0 0 6 * * *}  # Run at 6am daily
+      WATCHTOWER_SCHEDULE: ${WATCHTOWER_SCHEDULE:-0 0 6 * * *} # Run at 6am daily
 
       # Will only monitor for new images, send notifications and invoke the pre-check/post-check hooks, but will not update the containers.
       # Default: false
@@ -1184,7 +1177,7 @@ services:
     image: bolabaden/kotormodsync-telemetry-auth
     container_name: telemetry-auth-test
     hostname: telemetry-auth
-    user: "0:0"  # Run as root to read secrets
+    user: "0:0" # Run as root to read secrets
     ports:
       - "8080:8080"
     secrets:
@@ -1196,10 +1189,7 @@ services:
       MAX_TIMESTAMP_DRIFT: ${MAX_TIMESTAMP_DRIFT:-300}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     healthcheck:
-      test: [
-        "CMD-SHELL",
-        "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1"
-      ]
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1" ]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -1225,7 +1215,7 @@ services:
       - ${REDIS_PORT:-6379}:${REDIS_PORT:-6379}
     volumes:
       - ${CONFIG_PATH:-./volumes}/redis:/data
-    privileged: true  # for `sysctl vm.overcommit_memory=1` to work
+    privileged: true # for `sysctl vm.overcommit_memory=1` to work
     environment:
       REDIS_HOST: ${REDIS_HOSTNAME:-redis}
       REDIS_PORT: ${REDIS_PORT:-6379}
@@ -1260,10 +1250,7 @@ services:
     #    max-size: "1m"
     #    max-file: "1"
     healthcheck:
-      test: [
-        "CMD-SHELL",
-        "redis-cli ping > /dev/null 2>&1 || exit 1"
-      ]
+      test: [ "CMD-SHELL", "redis-cli ping > /dev/null 2>&1 || exit 1" ]
       interval: 10s
       timeout: 5s
     cpus: 0.5
@@ -1309,17 +1296,17 @@ services:
     networks:
       - publicnet
     expose:
-      - 53/udp       # DNS service
-      - 80/tcp       # DNS-over-HTTP
-      - 443/tcp      # DNS-over-HTTPS
-      - 538/tcp      # DNS-over-TCP-PROXY
-      - 853/tcp      # DNS-over-TLS
-      - 853/udp      # DNS-over-QUIC
-      - 8053/tcp     # DNS-over-HTTPS
-      - 5380/tcp     # DNS web console (HTTP)
-      - 53443/tcp    # DNS web console (HTTPS)
+      - 53/udp # DNS service
+      - 80/tcp # DNS-over-HTTP
+      - 443/tcp # DNS-over-HTTPS
+      - 538/tcp # DNS-over-TCP-PROXY
+      - 853/tcp # DNS-over-TLS
+      - 853/udp # DNS-over-QUIC
+      - 8053/tcp # DNS-over-HTTPS
+      - 5380/tcp # DNS web console (HTTP)
+      - 53443/tcp # DNS web console (HTTPS)
     ports:
-      - 53:53/udp       # DNS service
+      - 53:53/udp # DNS service
     volumes:
       - ${CONFIG_PATH:-./volumes}/dns-server/config:/etc/dns
     labels:
@@ -1335,30 +1322,69 @@ services:
       kuma.dns-server.http.interval: 60
     restart: always
 
-  ghidra-server:
-    image: ghidra/ghidra:latest
-    container_name: ghidra-server
-    hostname: ghidra-server.$DOMAIN
+  biodecompwarehouse:
+    image: docker.io/blacktop/ghidra
+    container_name: biodecompwarehouse
+    hostname: biodecompwarehouse
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
       - publicnet
-    expose:
-      - 13100
-      - 13101
-      - 13102
     ports:
-      - 13100:13100  # RMI registry
-      - 13101:13101  # RMI server
-      - 13102:13102  # Ghidra server protocol
-    entrypoint: ["/opt/ghidra/support/ghidraSvr"]
-    command: ["console"]
-    environment:
-      GHIDRA_SERVER_HOME: /ghidra/server
-      GHIDRA_REPOSITORY_DIR: /ghidra/repos
-      GHIDRA_USER: OldRepublicDevs
-      GHIDRA_PASSWORD: MuchaShakkaPakka
+      - ${GHIDRA_SERVER_PORT:-13100}:13100  # Main client connection
+      - 13101:13101
+      - 13102:13102
+      - 13104:22  # SSH access
     volumes:
-      - ${CONFIG_PATH:-./volumes}/ghidra/server:/ghidra/server
-      - ${CONFIG_PATH:-./volumes}/ghidra/repos:/ghidra/repos
+      - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/repos:/repos  # Persistent repository storage
+      - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/ssh:/etc/ssh/ssh_host_keys  # Persistent SSH host keys
+      - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/ssh-home:/root/.ssh  # Persistent SSH authorized_keys
+    configs:
+      - source: biodecompwarehouse-ssh-setup.sh
+        target: /usr/local/bin/ssh-setup.sh
+        mode: 755
+      - source: biodecompwarehouse-sshd_config
+        target: /etc/ssh/sshd_config
+        mode: 600
+    secrets:
+      - source: ssh_public_key
+        target: /run/secrets/ssh_public_key
+        mode: 644
+      #- source: ssh_private_key
+      #  target: /run/secrets/ssh_private_key
+      #  mode: 600
+    environment:
+      <<: *common-env
+      GHIDRA_IP: 149.130.222.229
+      GHIDRA_PUBLIC_HOSTNAME: biodecompwarehouse.$DOMAIN
+      GHIDRA_USERS: ${GHIDRA_USERS:-th3w1zard1 OldRepublicDevs LaneDibello OpenKotOR}  # Space-separated usernames (admins by default)
+      SSH_USER: ${GHIDRA_SSH_USER:-LaneDibello}
+    #entrypoint: ["/bin/sh", "-c"]
+    #command:
+    #  - |
+    #    # Run SSH setup script in background
+    #    /usr/local/bin/ssh-setup.sh &
+    #    SSH_SETUP_PID=$$!
+    #    # Wait a moment for SSH to initialize
+    #    sleep 5
+    #    # Start Ghidra server as main process using original entrypoint
+    #    exec /entrypoint.sh server
+    command: server
+    labels:
+      traefik.enable: true
+      traefik.tcp.routers.biodecompwarehouse.rule: HostSNI(`biodecompwarehouse.$DOMAIN`) || HostSNI(`biodecompwarehouse.$TS_HOSTNAME.$DOMAIN`)
+      traefik.tcp.routers.biodecompwarehouse.service: biodecompwarehouse@docker
+      traefik.tcp.routers.biodecompwarehouse.tls.domains[0].main: $DOMAIN
+      traefik.tcp.routers.biodecompwarehouse.tls.domains[0].sans: "*.$DOMAIN,$TS_HOSTNAME.$DOMAIN"
+      traefik.tcp.routers.biodecompwarehouse.tls.passthrough: true
+      traefik.tcp.services.biodecompwarehouse.loadbalancer.server.port: ${GHIDRA_SERVER_PORT:-13100}
+      traefik.tcp.services.biodecompwarehouse.loadbalancer.server.tls: true
+      # Auto-restart on unhealthy state
+      deunhealth.restart.on.unhealthy: "true"
+    #healthcheck:
+    #  test: ["CMD-SHELL", "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=2 -o BatchMode=yes localhost exit 2>/dev/null || (nc -z localhost 22 && exit 0) || exit 1"]
+    #  interval: 30s
+    #  timeout: 10s
+    #  retries: 3
+    #  start_period: 60s
     restart: always
