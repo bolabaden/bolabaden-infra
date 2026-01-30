@@ -1347,9 +1347,9 @@ services:
         target: /etc/ssh/sshd_config
         mode: 600
     secrets:
-      - source: ssh_public_key
-        target: /run/secrets/ssh_public_key
-        mode: 644
+      #- source: ssh_public_key
+      #  target: /run/secrets/ssh_public_key
+      #  mode: 644
       #- source: ssh_private_key
       #  target: /run/secrets/ssh_private_key
       #  mode: 600
