@@ -11003,49 +11003,49 @@ services:
       - source: crowdsec-profiles.yaml
         target: /etc/grafana/provisioning/crowdsec-profiles.yaml
         mode: 0777
-      # Comprehensive Monitoring Dashboards
-      - source: infrastructure-overview.json
-        target: /var/lib/grafana/dashboards/infrastructure/infrastructure-overview.json
-        mode: 0777
-      - source: container-monitoring.json
-        target: /var/lib/grafana/dashboards/infrastructure/container-monitoring.json
-        mode: 0777
-      - source: database-monitoring.json
-        target: /var/lib/grafana/dashboards/infrastructure/database-monitoring.json
-        mode: 0777
-      - source: network-monitoring.json
-        target: /var/lib/grafana/dashboards/network/network-monitoring.json
-        mode: 0777
-      - source: application-performance.json
-        target: /var/lib/grafana/dashboards/apps/application-performance.json
-        mode: 0777
-      - source: prometheus-self-monitoring.json
-        target: /var/lib/grafana/dashboards/monitoring/prometheus-self-monitoring.json
-        mode: 0777
-      - source: process-monitoring.json
-        target: /var/lib/grafana/dashboards/system/process-monitoring.json
-        mode: 0777
-      - source: victoriametrics-monitoring.json
-        target: /var/lib/grafana/dashboards/monitoring/victoriametrics-monitoring.json
-        mode: 0777
-      - source: loki-monitoring.json
-        target: /var/lib/grafana/dashboards/monitoring/loki-monitoring.json
-        mode: 0777
-      - source: alert-overview.json
-        target: /var/lib/grafana/dashboards/monitoring/alert-overview.json
-        mode: 0777
-      - source: alertmanager-monitoring.json
-        target: /var/lib/grafana/dashboards/monitoring/alertmanager-monitoring.json
-        mode: 0777
-      - source: slo-error-budget.json
-        target: /var/lib/grafana/dashboards/monitoring/slo-error-budget.json
-        mode: 0777
-      - source: log-analysis.json
-        target: /var/lib/grafana/dashboards/monitoring/log-analysis.json
-        mode: 0777
-      - source: security-monitoring.json
-        target: /var/lib/grafana/dashboards/monitoring/security-monitoring.json
-        mode: 0777
+      # Additional Monitoring Dashboards
+      #- source: infrastructure-overview.json
+      #  target: /var/lib/grafana/dashboards/infrastructure/infrastructure-overview.json
+      #  mode: 0777
+      #- source: container-monitoring.json
+      #  target: /var/lib/grafana/dashboards/infrastructure/container-monitoring.json
+      #  mode: 0777
+      #- source: database-monitoring.json
+      #  target: /var/lib/grafana/dashboards/infrastructure/database-monitoring.json
+      #  mode: 0777
+      #- source: network-monitoring.json
+      #  target: /var/lib/grafana/dashboards/network/network-monitoring.json
+      #  mode: 0777
+      #- source: application-performance.json
+      #  target: /var/lib/grafana/dashboards/apps/application-performance.json
+      #  mode: 0777
+      #- source: prometheus-self-monitoring.json
+      #  target: /var/lib/grafana/dashboards/monitoring/prometheus-self-monitoring.json
+      #  mode: 0777
+      #- source: process-monitoring.json
+      #  target: /var/lib/grafana/dashboards/system/process-monitoring.json
+      #  mode: 0777
+      #- source: victoriametrics-monitoring.json
+      #  target: /var/lib/grafana/dashboards/monitoring/victoriametrics-monitoring.json
+      #  mode: 0777
+      #- source: loki-monitoring.json
+      #  target: /var/lib/grafana/dashboards/monitoring/loki-monitoring.json
+      #  mode: 0777
+      #- source: alert-overview.json
+      #  target: /var/lib/grafana/dashboards/monitoring/alert-overview.json
+      #  mode: 0777
+      #- source: alertmanager-monitoring.json
+      #  target: /var/lib/grafana/dashboards/monitoring/alertmanager-monitoring.json
+      #  mode: 0777
+      #- source: slo-error-budget.json
+      #  target: /var/lib/grafana/dashboards/monitoring/slo-error-budget.json
+      #  mode: 0777
+      #- source: log-analysis.json
+      #  target: /var/lib/grafana/dashboards/monitoring/log-analysis.json
+      #  mode: 0777
+      #- source: security-monitoring.json
+      #  target: /var/lib/grafana/dashboards/monitoring/security-monitoring.json
+      #  mode: 0777
     volumes:
       - ${CONFIG_PATH:-./volumes}/grafana/dashboards:/var/lib/grafana/dashboards
       - ${CONFIG_PATH:-./volumes}/grafana/provisioning/alerting:/etc/grafana/provisioning/alerting

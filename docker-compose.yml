@@ -10,9 +10,9 @@ secrets:
   signing_secret:
     file: ${SECRETS_PATH:?}/signing_secret.txt
   ssh_public_key:
-    file: ${ROOT_PATH:-.}/id_oldrepublicdevs_rsa.pub
+    file: ${CONFIG_PATH:-./volumes}/biodecompwarehouse/.ssh/id_oldrepublicdevs_rsa.pub
   ssh_private_key:
-    file: ${ROOT_PATH:-.}/id_oldrepublicdevs_rsa
+    file: ${CONFIG_PATH:-./volumes}/biodecompwarehouse/.ssh/id_oldrepublicdevs_rsa
 
 networks:
   # https://docs.docker.com/engine/network/drivers/bridge/#differences-between-user-defined-bridges-and-the-default-bridge
@@ -138,7 +138,7 @@ configs:
           - abbr: SE
             href: https://searxng.$DOMAIN/
   biodecompwarehouse-ssh-setup.sh:
-    config: |
+    content: |
       #!/bin/bash
       set -euo pipefail
 
@@ -146,16 +146,13 @@ configs:
       # This script sets up secure SSH access within the container
 
       SSH_USER="$${SSH_USER:-root}"
-      SSH_HOME="/root"
-      SSH_DIR="$${SSH_HOME}/.ssh"
-      AUTHORIZED_KEYS="$${SSH_DIR}/authorized_keys"
       SSH_PUBLIC_KEY="/run/secrets/ssh_public_key"
       SSH_PRIVATE_KEY="/run/secrets/ssh_private_key"
       SSHD_CONFIG="/etc/ssh/sshd_config"
 
       echo "🔐 Starting SSH setup for biodecompwarehouse container..."
 
-      # Install OpenSSH server if not already installed
+      # Install OpenSSH server and user management tools if not already installed
       if ! command -v sshd &> /dev/null; then
           echo "📦 Installing OpenSSH server..."
           if command -v apt-get &> /dev/null; then
@@ -164,9 +161,9 @@ configs:
               apt-get clean
               rm -rf /var/lib/apt/lists/*
           elif command -v apk &> /dev/null; then
-              apk add --no-cache openssh openssh-server
+              apk add --no-cache openssh openssh-server shadow
           elif command -v yum &> /dev/null; then
-              yum install -y -q openssh-server openssh-clients
+              yum install -y -q openssh-server openssh-clients shadow-utils
               yum clean all
           else
               echo "❌ ERROR: Cannot determine package manager. Please install OpenSSH manually."
@@ -174,18 +171,39 @@ configs:
           fi
       fi
 
+      # Create user if it doesn't exist (for non-root users)
+      if [ "$${SSH_USER}" != "root" ]; then
+          echo "👤 Setting up user $${SSH_USER}..."
+          if ! id "$${SSH_USER}" &>/dev/null; then
+              echo "➕ Creating user $${SSH_USER}..."
+              if command -v useradd &> /dev/null; then
+                  useradd -m -s /bin/bash "$${SSH_USER}" 2>/dev/null || useradd -m -s /bin/sh "$${SSH_USER}" 2>/dev/null || true
+              fi
+          fi
+          SSH_HOME="$$(getent passwd "$${SSH_USER}" | cut -d: -f6)"
+          if [ -z "$${SSH_HOME}" ]; then
+              SSH_HOME="/home/$${SSH_USER}"
+          fi
+      else
+          SSH_HOME="/root"
+      fi
+
+      SSH_DIR="$${SSH_HOME}/.ssh"
+      AUTHORIZED_KEYS="$${SSH_DIR}/authorized_keys"
+
       # Create SSH directory with proper permissions
-      echo "📁 Creating SSH directory structure..."
+      echo "📁 Creating SSH directory structure for $${SSH_USER}..."
       mkdir -p "$${SSH_DIR}"
       chmod 700 "$${SSH_DIR}"
+      chown "$${SSH_USER}:$${SSH_USER}" "$${SSH_DIR}" 2>/dev/null || true
 
       # Set up authorized_keys from public key secret
       if [ -f "$${SSH_PUBLIC_KEY}" ]; then
           echo "🔑 Setting up authorized_keys from secret..."
           cp "$${SSH_PUBLIC_KEY}" "$${AUTHORIZED_KEYS}"
           chmod 600 "$${AUTHORIZED_KEYS}"
-          chown "$${SSH_USER}:$${SSH_USER}" "$${AUTHORIZED_KEYS}"
-          echo "✅ Public key installed successfully"
+          chown "$${SSH_USER}:$${SSH_USER}" "$${AUTHORIZED_KEYS}" 2>/dev/null || true
+          echo "✅ Public key installed successfully for $${SSH_USER}"
       else
           echo "⚠️  WARNING: SSH public key secret not found at $${SSH_PUBLIC_KEY}"
       fi
@@ -1311,9 +1329,9 @@ services:
       - publicnet
     ports:
       - ${GHIDRA_SERVER_PORT:-13100}:13100  # Main client connection
-      - ${GHIDRA_SERVER_CONSOLE_PORT:-13101}:13101  # Optional: server console
-      - ${GHIDRA_SERVER_ADMIN_PORT:-13102}:13102  # Optional: admin tool
-      - ${SSH_PORT:-22}:22  # SSH access
+      - 13101:13101
+      - 13102:13102
+      - 13104:22  # SSH access
     volumes:
       - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/repos:/repos  # Persistent repository storage
       - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/ssh:/etc/ssh/ssh_host_keys  # Persistent SSH host keys
@@ -1329,25 +1347,26 @@ services:
       - source: ssh_public_key
         target: /run/secrets/ssh_public_key
         mode: 644
-      - source: ssh_private_key
-        target: /run/secrets/ssh_private_key
-        mode: 600
+      #- source: ssh_private_key
+      #  target: /run/secrets/ssh_private_key
+      #  mode: 600
     environment:
       <<: *common-env
       GHIDRA_IP: 149.130.222.229
       GHIDRA_PUBLIC_HOSTNAME: biodecompwarehouse.$DOMAIN
       GHIDRA_USERS: ${GHIDRA_USERS:-th3w1zard1 OldRepublicDevs LaneDibello OpenKotOR}  # Space-separated usernames (admins by default)
-      SSH_USER: root
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        # Run SSH setup script in background
-        /usr/local/bin/ssh-setup.sh &
-        SSH_SETUP_PID=$$!
-        # Wait a moment for SSH to initialize
-        sleep 5
-        # Start Ghidra server as main process
-        exec server
+      SSH_USER: ${GHIDRA_SSH_USER:-LaneDibello}
+    #entrypoint: ["/bin/sh", "-c"]
+    #command:
+    #  - |
+    #    # Run SSH setup script in background
+    #    /usr/local/bin/ssh-setup.sh &
+    #    SSH_SETUP_PID=$$!
+    #    # Wait a moment for SSH to initialize
+    #    sleep 5
+    #    # Start Ghidra server as main process using original entrypoint
+    #    exec /entrypoint.sh server
+    command: server
     labels:
       traefik.enable: true
       traefik.tcp.routers.biodecompwarehouse.rule: HostSNI(`biodecompwarehouse.$DOMAIN`) || HostSNI(`biodecompwarehouse.$TS_HOSTNAME.$DOMAIN`)
@@ -1357,26 +1376,12 @@ services:
       traefik.tcp.routers.biodecompwarehouse.tls.passthrough: true
       traefik.tcp.services.biodecompwarehouse.loadbalancer.server.port: ${GHIDRA_SERVER_PORT:-13100}
       traefik.tcp.services.biodecompwarehouse.loadbalancer.server.tls: true
-      traefik.tcp.routers.biodecompwarehouse2.rule: HostSNI(`biodecompwarehouse2.$DOMAIN`) || HostSNI(`biodecompwarehouse2.$TS_HOSTNAME.$DOMAIN`)
-      traefik.tcp.routers.biodecompwarehouse2.service: biodecompwarehouse2@docker
-      traefik.tcp.routers.biodecompwarehouse2.tls.domains[0].main: $DOMAIN
-      traefik.tcp.routers.biodecompwarehouse2.tls.domains[0].sans: "*.$DOMAIN,$TS_HOSTNAME.$DOMAIN"
-      traefik.tcp.routers.biodecompwarehouse2.tls.passthrough: true
-      traefik.tcp.services.biodecompwarehouse2.loadbalancer.server.port: ${GHIDRA_SERVER_CONSOLE_PORT:-13101}
-      traefik.tcp.services.biodecompwarehouse2.loadbalancer.server.tls: true
-      traefik.tcp.routers.biodecompwarehouse3.rule: HostSNI(`biodecompwarehouse3.$DOMAIN`) || HostSNI(`biodecompwarehouse3.$TS_HOSTNAME.$DOMAIN`)
-      traefik.tcp.routers.biodecompwarehouse3.service: biodecompwarehouse3@docker
-      traefik.tcp.routers.biodecompwarehouse3.tls.domains[0].main: $DOMAIN
-      traefik.tcp.routers.biodecompwarehouse3.tls.domains[0].sans: "*.$DOMAIN,$TS_HOSTNAME.$DOMAIN"
-      traefik.tcp.routers.biodecompwarehouse3.tls.passthrough: true
-      traefik.tcp.services.biodecompwarehouse3.loadbalancer.server.port: ${GHIDRA_SERVER_ADMIN_PORT:-13102}
-      traefik.tcp.services.biodecompwarehouse3.loadbalancer.server.tls: true
       # Auto-restart on unhealthy state
       deunhealth.restart.on.unhealthy: "true"
-    healthcheck:
-      test: ["CMD-SHELL", "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=2 -o BatchMode=yes localhost exit 2>/dev/null || (nc -z localhost 22 && exit 0) || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+    #healthcheck:
+    #  test: ["CMD-SHELL", "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=2 -o BatchMode=yes localhost exit 2>/dev/null || (nc -z localhost 22 && exit 0) || exit 1"]
+    #  interval: 30s
+    #  timeout: 10s
+    #  retries: 3
+    #  start_period: 60s
     restart: always
