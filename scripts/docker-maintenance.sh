@@ -58,6 +58,12 @@ docker builder prune -a -f --filter "until=168h" 2>&1 | tee -a "$LOG_FILE"
 log "Truncating Docker container logs larger than 100MB..."
 find /var/lib/docker/containers -name "*.log" -type f -size +100M -exec truncate -s 50M {} \; 2>&1 | tee -a "$LOG_FILE"
 
+# 7b. Clean up application logs under /opt/docker/data (e.g. homepage.log)
+if [ -d "/opt/docker/data" ]; then
+    log "Truncating large application logs in /opt/docker/data/*/logs/ (>100MB)..."
+    find /opt/docker/data -path "*/logs/*.log" -type f -size +100M -exec truncate -s 50M {} \; 2>&1 | tee -a "$LOG_FILE"
+fi
+
 # 8. Clean up specific application caches
 log "Cleaning application caches..."
 

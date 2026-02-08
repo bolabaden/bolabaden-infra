@@ -7,7 +7,7 @@ This document describes the automated maintenance system that prevents disk spac
 Docker-based media stacks can accumulate disk space through:
 - Docker overlay2 layers from stopped containers
 - Application caches (Stremio, Open-WebUI, Prometheus, etc.)
-- Unrotated container logs
+- Unrotated container logs and application logs (e.g. `homepage.log` under `/opt/docker/data/homepage/logs/`)
 - Metrics data (Prometheus WAL, VictoriaMetrics)
 - System logs and temporary files
 
@@ -39,6 +39,7 @@ Runs comprehensive cleanup:
 - ✅ Removes unused networks
 - ✅ Removes build cache (>7 days old)
 - ✅ Truncates large container logs (>100MB → 50MB)
+- ✅ Truncates large application logs under `/opt/docker/data/*/logs/` (e.g. `homepage.log` >100MB → 50MB)
 - ✅ Cleans application caches (Prometheus, Stremio, VictoriaMetrics, Open-WebUI)
 - ✅ Cleans system caches (APT, NPM, Python UV)
 - ✅ Rotates system logs (keep 30 days)
@@ -66,6 +67,8 @@ Schedules automatic maintenance:
 ```bash
 crontab -l
 ```
+
+Application logs under `/opt/docker/data/*/logs/` (e.g. `homepage.log`) are rotated by **logrotate** when you run `scripts/install-maintenance-system.sh`. That installs `/etc/logrotate.d/docker-data-app-logs` (daily, keep 7, copytruncate). The weekly maintenance script also truncates any log there over 100MB to 50MB.
 
 ### 4. Docker Compose Maintenance Overlay
 **Location:** `compose/docker-compose.maintenance.yml`
@@ -253,6 +256,7 @@ VICTORIAMETRICS_RETENTION_PERIOD=60d
 4. **Find large logs:**
    ```bash
    find /var/lib/docker/containers -name "*.log" -size +100M -exec ls -lh {} \;
+   find /opt/docker/data -path "*/logs/*.log" -size +100M -exec ls -lh {} \;
    ```
 
 5. **Run aggressive cleanup:**
