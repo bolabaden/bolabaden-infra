@@ -40,6 +40,7 @@ Runs comprehensive cleanup:
 - ✅ Removes build cache (>7 days old)
 - ✅ Truncates large container logs (>100MB → 50MB)
 - ✅ Truncates large application logs under `/opt/docker/data/*/logs/` (e.g. `homepage.log` >100MB → 50MB)
+- ✅ Compacts large SQLite DBs (e.g. `stremthru.db` >200MB via `VACUUM` when `sqlite3` is installed)
 - ✅ Cleans application caches (Prometheus, Stremio, VictoriaMetrics, Open-WebUI)
 - ✅ Cleans system caches (APT, NPM, Python UV)
 - ✅ Rotates system logs (keep 30 days)
@@ -69,6 +70,8 @@ crontab -l
 ```
 
 Application logs under `/opt/docker/data/*/logs/` (e.g. `homepage.log`) are rotated by **logrotate** when you run `scripts/install-maintenance-system.sh`. That installs `/etc/logrotate.d/docker-data-app-logs` (daily, keep 7, copytruncate). The weekly maintenance script also truncates any log there over 100MB to 50MB.
+
+The **stremthru** SQLite database (`/opt/docker/data/stremio/addons/stremthru/app/data/stremthru.db`) is compacted weekly when it exceeds 200MB (using `sqlite3 … VACUUM`). Install `sqlite3` on the host if needed. If the container has the DB locked, VACUUM is skipped and retried the next week.
 
 ### 4. Docker Compose Maintenance Overlay
 **Location:** `compose/docker-compose.maintenance.yml`
@@ -259,7 +262,14 @@ VICTORIAMETRICS_RETENTION_PERIOD=60d
    find /opt/docker/data -path "*/logs/*.log" -size +100M -exec ls -lh {} \;
    ```
 
-5. **Run aggressive cleanup:**
+5. **Compact stremthru.db manually** (if weekly VACUUM fails because DB is locked):
+   ```bash
+   docker stop stremthru
+   sqlite3 /opt/docker/data/stremio/addons/stremthru/app/data/stremthru.db "VACUUM;"
+   docker start stremthru
+   ```
+
+6. **Run aggressive cleanup:**
    ```bash
    ./scripts/emergency-cleanup.sh
    ```

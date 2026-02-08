@@ -64,6 +64,19 @@ if [ -d "/opt/docker/data" ]; then
     find /opt/docker/data -path "*/logs/*.log" -type f -size +100M -exec truncate -s 50M {} \; 2>&1 | tee -a "$LOG_FILE"
 fi
 
+# 7c. Compact large SQLite DBs (e.g. stremthru.db) via VACUUM to reclaim space
+STREMTHRU_DB="/opt/docker/data/stremio/addons/stremthru/app/data/stremthru.db"
+if [ -f "$STREMTHRU_DB" ] && [ "$(stat -c%s "$STREMTHRU_DB" 2>/dev/null)" -gt 209715200 ] && command -v sqlite3 &>/dev/null; then
+    # Only when DB > 200MB; VACUUM may fail if container holds lock (then we try again next run)
+    log "Compacting stremthru.db (SQLite VACUUM)..."
+    sqlite3 "$STREMTHRU_DB" "VACUUM;" 2>&1 | tee -a "$LOG_FILE" || true
+    if [ "${PIPESTATUS[0]:-1}" -eq 0 ]; then
+        log "stremthru.db compacted successfully"
+    else
+        log "stremthru.db VACUUM skipped or failed (database may be in use; will retry next week)"
+    fi
+fi
+
 # 8. Clean up specific application caches
 log "Cleaning application caches..."
 
