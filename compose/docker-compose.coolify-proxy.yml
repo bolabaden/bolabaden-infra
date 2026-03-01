@@ -527,6 +527,7 @@ configs:
 
                 # Crowdsec LAPI key for the bouncer (default: "")
                 crowdsecLapiKey: ${CROWDSEC_LAPI_KEY}
+                crowdsecLapiKeyFile: /run/secrets/crowdsec-lapi-key
 
                 # Disable TLS verification for Crowdsec LAPI (default: false)
                 crowdsecLapiTlsInsecureVerify: ${CROWDSEC_LAPI_TLS_INSECURE_VERIFY:-false}
@@ -934,7 +935,7 @@ services:
     environment:
       UID: ${PUID:-1001}
       GID: ${PGID:-999}
-      COLLECTIONS: crowdsecurity/appsec-crs crowdsecurity/appsec-generic-rules crowdsecurity/appsec-virtual-patching crowdsecurity/whitelist-good-actors crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/linux crowdsecurity/sshd
+      COLLECTIONS: crowdsecurity/appsec-crs crowdsecurity/appsec-generic-rules crowdsecurity/appsec-virtual-patching crowdsecurity/whitelist-good-actors crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/linux crowdsecurity/sshd crowdsecurity/traefik
     configs:
       # CrowdSec files are typically access restricted (644) by the root user.
       # If your log files are stored onto an NFS share, you may want to use poll_without_inotify: true for each log source as outlined by CrowdSec here.
@@ -991,6 +992,32 @@ services:
       retries: 3
       start_period: 10s
     restart: always
+  crowdsec-init:
+    # 🔹🔹 CrowdSec Init UI 🔹🔹
+    # Web-based setup wizard for CrowdSec. Auto-exits when healthy.
+    # Access at http://<host>:${CROWDSEC_INIT_PORT:-3100}
+    build:
+      context: ${ROOT_PATH:-.}/scripts/crowdsec-init
+      dockerfile: Dockerfile
+    image: crowdsec-init:local
+    container_name: crowdsec-init
+    depends_on:
+      crowdsec:
+        condition: service_started
+    ports:
+      - "${CROWDSEC_INIT_PORT:-3100}:3000"
+    environment:
+      CONFIG_PATH: /work/config
+      SECRETS_PATH: /work/secrets
+      CROWDSEC_CONTAINER_NAME: crowdsec
+      CROWDSEC_BOUNCER_NAME: ${CROWDSEC_BOUNCER_NAME:-traefik-bouncer}
+      CROWDSEC_WAIT_SECONDS: ${CROWDSEC_WAIT_SECONDS:-180}
+      AUTO_EXIT_DELAY: ${CROWDSEC_AUTO_EXIT_DELAY:-30}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONFIG_PATH:-./volumes}:/work/config
+      - ${SECRETS_PATH:?}:/work/secrets
+    restart: "no"
   traefik:
     # 🔹🔹 Traefik 🔹🔹
     # https://doc.traefik.io
@@ -1010,6 +1037,7 @@ services:
       - publicnet
     secrets:
       - cloudflare-api-key
+      - crowdsec-lapi-key
     expose:
       - 8080          # Dashboard API
     ports:
@@ -1018,6 +1046,7 @@ services:
       - 443:443/udp   # HTTPS/3
     #  - 853:853       # DNS over TLS
     #  - 3000:3000     # Ping
+    #  - 127.0.0.1:8080:8080     # Traefik API (if you want to expose it outside the Docker network, but be careful with security)
     cap_add:
       - NET_ADMIN
     volumes:

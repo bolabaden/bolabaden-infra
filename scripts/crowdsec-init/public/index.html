@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrowdSec Security Gateway — Setup</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>">
+<style>
+/* ===== Reset & Variables ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-base:#0a0e1a;--bg-surface:#111827;--bg-elevated:#1a2332;--bg-card:rgba(26,35,50,0.85);
+  --border-subtle:rgba(99,102,241,0.12);--border-default:rgba(99,102,241,0.25);--border-strong:rgba(99,102,241,0.5);
+  --text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;--text-dim:#475569;
+  --accent:#6366f1;--accent-hover:#818cf8;--accent-glow:rgba(99,102,241,0.3);
+  --success:#10b981;--success-bg:rgba(16,185,129,0.1);--success-glow:rgba(16,185,129,0.25);
+  --warning:#f59e0b;--warning-bg:rgba(245,158,11,0.1);--warning-glow:rgba(245,158,11,0.25);
+  --error:#ef4444;--error-bg:rgba(239,68,68,0.1);--error-glow:rgba(239,68,68,0.25);
+  --info:#3b82f6;--info-bg:rgba(59,130,246,0.1);
+  --radius:10px;--radius-lg:16px;--radius-sm:6px;
+  --shadow:0 4px 24px rgba(0,0,0,0.3);--shadow-lg:0 8px 40px rgba(0,0,0,0.4);
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --mono:'SF Mono',SFMono-Regular,'Cascadia Code',Consolas,'Liberation Mono',Menlo,monospace;
+  --transition:200ms cubic-bezier(0.4,0,0.2,1);
+}
+html{font-size:15px;scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg-base);color:var(--text-primary);line-height:1.6;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 0%,rgba(99,102,241,0.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(16,185,129,0.05) 0%,transparent 50%);pointer-events:none;z-index:0}
+
+/* ===== Layout ===== */
+.container{max-width:1200px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+section{margin-bottom:32px}
+
+/* ===== Header ===== */
+header{padding:24px 0;border-bottom:1px solid var(--border-subtle);margin-bottom:32px;position:relative}
+header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.5}
+.header-content{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.logo{display:flex;align-items:center;gap:16px}
+.logo svg{width:48px;height:48px;color:var(--accent);filter:drop-shadow(0 0 12px var(--accent-glow))}
+.logo h1{font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,var(--text-primary),var(--accent-hover));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo p{font-size:0.8rem;color:var(--text-muted);margin-top:2px}
+.header-right{display:flex;align-items:center;gap:16px}
+.version-badge{font-size:0.75rem;color:var(--text-muted);background:var(--bg-elevated);padding:4px 10px;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);font-family:var(--mono)}
+.live-badge{display:flex;align-items:center;gap:6px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;padding:5px 12px;border-radius:20px;background:var(--success-bg);color:var(--success);border:1px solid rgba(16,185,129,0.2)}
+.live-badge.error{background:var(--error-bg);color:var(--error);border-color:rgba(239,68,68,0.2)}
+.live-badge.loading{background:var(--warning-bg);color:var(--warning);border-color:rgba(245,158,11,0.2)}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 2s ease-in-out infinite}
+
+/* ===== Status Grid ===== */
+.status-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.status-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:20px;backdrop-filter:blur(12px);transition:all var(--transition);position:relative;overflow:hidden}
+.status-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--text-muted);transition:background var(--transition),box-shadow var(--transition)}
+.status-card:hover{border-color:var(--border-default);transform:translateY(-2px);box-shadow:var(--shadow)}
+.status-card.success{border-color:rgba(16,185,129,0.2)}.status-card.success::before{background:var(--success);box-shadow:0 0 12px var(--success-glow)}
+.status-card.error{border-color:rgba(239,68,68,0.2)}.status-card.error::before{background:var(--error);box-shadow:0 0 12px var(--error-glow)}
+.status-card.warning{border-color:rgba(245,158,11,0.2)}.status-card.warning::before{background:var(--warning);box-shadow:0 0 12px var(--warning-glow)}
+.status-card.loading .sc-icon{animation:spin 1.5s linear infinite}
+.sc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sc-icon{width:20px;height:20px;color:var(--text-muted);transition:color var(--transition)}
+.status-card.success .sc-icon{color:var(--success)}.status-card.error .sc-icon{color:var(--error)}.status-card.warning .sc-icon{color:var(--warning)}
+.sc-badge{font-size:0.65rem;padding:2px 8px;border-radius:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
+.sc-badge.ok{background:var(--success-bg);color:var(--success)}.sc-badge.fail{background:var(--error-bg);color:var(--error)}
+.sc-badge.warn{background:var(--warning-bg);color:var(--warning)}.sc-badge.unknown{background:rgba(100,116,139,0.15);color:var(--text-muted)}
+.sc-title{font-size:0.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:4px}
+.sc-value{font-size:1.1rem;font-weight:700;color:var(--text-primary)}
+.sc-detail{font-size:0.7rem;color:var(--text-muted);margin-top:6px;font-family:var(--mono)}
+
+/* ===== Auto-Exit Banner ===== */
+.auto-exit-banner{background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(99,102,241,0.08));border:1px solid rgba(16,185,129,0.2);border-radius:var(--radius-lg);padding:24px;text-align:center;animation:fadeIn 0.5s ease}
+.auto-exit-banner h3{font-size:1.1rem;color:var(--success);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.auto-exit-banner p{color:var(--text-secondary);font-size:0.9rem;margin-bottom:16px}
+.auto-exit-banner strong{color:var(--text-primary);font-variant-numeric:tabular-nums;font-size:1.3em}
+.progress-bar{height:4px;background:var(--bg-surface);border-radius:2px;margin-bottom:16px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--success),var(--accent));border-radius:2px;transition:width 1s linear}
+.auto-exit-actions{display:flex;gap:12px;justify-content:center}
+
+/* ===== Section Headers ===== */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-header h2{font-size:1.1rem;font-weight:600;display:flex;align-items:center;gap:10px;color:var(--text-primary)}
+.section-header h2 svg{width:20px;height:20px;color:var(--accent)}
+
+/* ===== Panels ===== */
+.panel{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);margin-bottom:12px;backdrop-filter:blur(12px);overflow:hidden;transition:border-color var(--transition)}
+.panel:hover{border-color:var(--border-default)}
+.panel.success{border-color:rgba(16,185,129,0.2)}.panel.error{border-color:rgba(239,68,68,0.2)}.panel.warning{border-color:rgba(245,158,11,0.2)}
+.panel-header{display:flex;align-items:center;padding:16px 20px;cursor:pointer;user-select:none;gap:12px;transition:background var(--transition)}
+.panel-header:hover{background:rgba(99,102,241,0.04)}
+.panel-icon{width:18px;height:18px;color:var(--accent);flex-shrink:0}
+.panel-title{flex:1;font-weight:600;font-size:0.9rem}
+.panel-status{margin-right:8px}
+.panel-chevron{width:16px;height:16px;color:var(--text-muted);transition:transform var(--transition);flex-shrink:0}
+.panel.open .panel-chevron{transform:rotate(180deg)}
+.panel-body{max-height:0;overflow:hidden;transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1),padding 0.35s ease}
+.panel.open .panel-body{max-height:800px;padding:0 20px 20px}
+.panel-divider{height:1px;background:var(--border-subtle);margin:0 20px}
+
+/* ===== Forms ===== */
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:0.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:6px}
+.form-hint{font-size:0.75rem;color:var(--text-muted);margin-top:6px;display:flex;align-items:center;gap:6px}
+.form-hint.success{color:var(--success)}.form-hint.error{color:var(--error)}.form-hint.warning{color:var(--warning)}
+.input-row{display:flex;gap:8px;align-items:stretch}
+input[type="text"],input[type="password"],select,textarea{flex:1;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text-primary);font-size:0.85rem;font-family:var(--mono);outline:none;transition:border-color var(--transition),box-shadow var(--transition)}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+input::placeholder{color:var(--text-dim)}
+input.valid{border-color:var(--success)!important;box-shadow:0 0 0 3px var(--success-glow)}
+input.invalid{border-color:var(--error)!important;box-shadow:0 0 0 3px var(--error-glow)}
+textarea{min-height:80px;resize:vertical}
+
+/* ===== Buttons ===== */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border:1px solid transparent;border-radius:var(--radius-sm);font-size:0.82rem;font-weight:600;cursor:pointer;transition:all var(--transition);white-space:nowrap;font-family:var(--font);outline:none}
+.btn:active{transform:scale(0.97)}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--accent);color:white;border-color:var(--accent)}.btn-primary:not(:disabled):hover{background:var(--accent-hover);box-shadow:0 0 16px var(--accent-glow)}
+.btn-success{background:var(--success);color:white}.btn-success:not(:disabled):hover{box-shadow:0 0 16px var(--success-glow)}
+.btn-secondary{background:transparent;color:var(--text-primary);border-color:var(--border-default)}.btn-secondary:not(:disabled):hover{border-color:var(--accent);background:rgba(99,102,241,0.06)}
+.btn-ghost{background:transparent;color:var(--text-secondary);padding:8px 12px}.btn-ghost:not(:disabled):hover{color:var(--text-primary);background:rgba(255,255,255,0.04)}
+.btn-danger{background:transparent;color:var(--error);border-color:rgba(239,68,68,0.3)}.btn-danger:not(:disabled):hover{background:var(--error-bg)}
+.btn-icon{width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);color:var(--text-secondary);cursor:pointer;transition:all var(--transition)}
+.btn-icon:hover{border-color:var(--accent);color:var(--accent);background:rgba(99,102,241,0.06)}
+.btn-sm{padding:5px 10px;font-size:0.75rem}
+.btn .spinner{width:14px;height:14px;border:2px solid transparent;border-top-color:currentColor;border-radius:50%;animation:spin 0.6s linear infinite}
+
+/* ===== Badges ===== */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;padding:2px 8px;border-radius:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
+.badge-ok{background:var(--success-bg);color:var(--success)}.badge-fail{background:var(--error-bg);color:var(--error)}
+.badge-warn{background:var(--warning-bg);color:var(--warning)}.badge-info{background:var(--info-bg);color:var(--info)}
+.badge-neutral{background:rgba(100,116,139,0.15);color:var(--text-muted)}
+
+/* ===== Collections Grid ===== */
+.collections-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+.coll-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);font-size:0.8rem;font-family:var(--mono);transition:border-color var(--transition)}
+.coll-item:hover{border-color:var(--border-default)}
+.coll-name{color:var(--text-primary)}.coll-version{color:var(--text-muted);font-size:0.7rem}
+.coll-status{display:flex;align-items:center;gap:6px}
+
+/* ===== Log Viewer ===== */
+.log-viewer{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius);font-family:var(--mono);font-size:0.75rem;line-height:1.7;max-height:350px;overflow-y:auto;padding:16px;scroll-behavior:smooth}
+.log-viewer::-webkit-scrollbar{width:6px}.log-viewer::-webkit-scrollbar-track{background:transparent}.log-viewer::-webkit-scrollbar-thumb{background:var(--border-default);border-radius:3px}
+.log-line{padding:1px 0;white-space:pre-wrap;word-break:break-all;color:var(--text-muted)}
+.log-line .ts{color:var(--text-dim)}.log-line .level-info{color:var(--info)}.log-line .level-warn{color:var(--warning)}.log-line .level-error{color:var(--error)}
+.log-line .level-debug{color:var(--text-dim)}
+.log-line:last-child{color:var(--text-secondary)}
+
+/* ===== Toast Notifications ===== */
+.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{pointer-events:auto;padding:12px 20px;border-radius:var(--radius);font-size:0.82rem;font-weight:500;display:flex;align-items:center;gap:10px;backdrop-filter:blur(12px);animation:slideIn 0.3s ease,fadeOut 0.3s ease 3.7s forwards;box-shadow:var(--shadow-lg);border:1px solid}
+.toast svg{width:18px;height:18px;flex-shrink:0}
+.toast-success{background:rgba(16,185,129,0.15);color:var(--success);border-color:rgba(16,185,129,0.2)}
+.toast-error{background:rgba(239,68,68,0.15);color:var(--error);border-color:rgba(239,68,68,0.2)}
+.toast-info{background:rgba(59,130,246,0.15);color:var(--info);border-color:rgba(59,130,246,0.2)}
+.toast-warning{background:rgba(245,158,11,0.15);color:var(--warning);border-color:rgba(245,158,11,0.2)}
+
+/* ===== Success Overlay ===== */
+.success-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(10,14,26,0.9);backdrop-filter:blur(8px);animation:fadeIn 0.4s ease}
+.success-content{text-align:center;animation:scaleIn 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+.success-shield{width:100px;height:100px;color:var(--success);margin:0 auto 24px;filter:drop-shadow(0 0 30px var(--success-glow));animation:successPulse 2s ease-in-out infinite}
+.success-content h2{font-size:1.8rem;color:var(--success);margin-bottom:8px}
+.success-content p{color:var(--text-secondary);margin-bottom:4px}
+
+/* ===== Install Collection Modal ===== */
+.modal-backdrop{position:fixed;inset:0;z-index:5000;background:rgba(10,14,26,0.85);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s}
+.modal{background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-lg);width:90%;max-width:480px;padding:24px;box-shadow:var(--shadow-lg);animation:scaleIn 0.25s cubic-bezier(0.34,1.56,0.64,1)}
+.modal h3{font-size:1rem;margin-bottom:16px;color:var(--text-primary)}
+.modal .form-group:last-of-type{margin-bottom:20px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+
+/* ===== Animations ===== */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+@keyframes successPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 30px var(--success-glow))}50%{transform:scale(1.06);filter:drop-shadow(0 0 40px rgba(16,185,129,0.4))}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes checkDraw{0%{stroke-dashoffset:24}100%{stroke-dashoffset:0}}
+.check-anim{stroke-dasharray:24;stroke-dashoffset:24;animation:checkDraw 0.5s ease forwards 0.2s}
+.shimmer{background:linear-gradient(90deg,var(--bg-surface) 25%,var(--bg-elevated) 50%,var(--bg-surface) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+
+/* ===== Responsive ===== */
+@media(max-width:1024px){.status-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){
+  .status-grid{grid-template-columns:repeat(2,1fr)}
+  .header-content{flex-direction:column;align-items:flex-start}
+  .collections-grid{grid-template-columns:1fr}
+  .auto-exit-actions{flex-direction:column}
+}
+@media(max-width:480px){.status-grid{grid-template-columns:1fr}.container{padding:0 12px}}
+
+/* ===== Hidden utility ===== */
+[hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+</style>
+</head>
+<body>
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="container">
+  <!-- ===== HEADER ===== -->
+  <header>
+    <div class="header-content">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M9 12l2 2 4-4" class="check-anim" stroke-width="2"/>
+        </svg>
+        <div>
+          <h1>CrowdSec Security Gateway</h1>
+          <p>Automated security initialization &amp; configuration</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="version-badge" id="versionBadge">loading...</span>
+        <span class="live-badge loading" id="liveBadge">
+          <span class="pulse-dot"></span>
+          <span id="liveBadgeText">CONNECTING</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== STATUS CARDS ===== -->
+  <section>
+    <div class="status-grid" id="statusGrid">
+      <div class="status-card loading" id="cardLapi">
+        <div class="sc-header">
+          <svg class="sc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span class="sc-badge unknown" id="badgeLapi">—</span>
+        </div>
+        <div class="sc-title">LAPI Health</div>
+        <div class="sc-value" id="valLapi">—</div>
+        <div class="sc-detail" id="detLapi">&nbsp;</div>
+      </div>
+      <div class="status-card loading" id="cardKey">
+        <div class="sc-header">
+          <svg class="sc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          <span class="sc-badge unknown" id="badgeKey">—</span>
+        </div>
+        <div class="sc-title">LAPI Key</div>
+        <div class="sc-value" id="valKey">—</div>
+        <div class="sc-detail" id="detKey">&nbsp;</div>
+      </div>
+      <div class="status-card loading" id="cardBouncer">
+        <div class="sc-header">
+          <svg class="sc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span class="sc-badge unknown" id="badgeBouncer">—</span>
+        </div>
+        <div class="sc-title">Bouncer</div>
+        <div class="sc-value" id="valBouncer">—</div>
+        <div class="sc-detail" id="detBouncer">&nbsp;</div>
+      </div>
+      <div class="status-card loading" id="cardCapi">
+        <div class="sc-header">
+          <svg class="sc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg>
+          <span class="sc-badge unknown" id="badgeCapi">—</span>
+        </div>
+        <div class="sc-title">Console (CAPI)</div>
+        <div class="sc-value" id="valCapi">—</div>
+        <div class="sc-detail" id="detCapi">&nbsp;</div>
+      </div>
+      <div class="status-card loading" id="cardCollections">
+        <div class="sc-header">
+          <svg class="sc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          <span class="sc-badge unknown" id="badgeCollections">—</span>
+        </div>
+        <div class="sc-title">Collections</div>
+        <div class="sc-value" id="valCollections">—</div>
+        <div class="sc-detail" id="detCollections">&nbsp;</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== AUTO-EXIT BANNER ===== -->
+  <section id="autoExitBanner" hidden>
+    <div class="auto-exit-banner">
+      <h3>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+        All Systems Operational
+      </h3>
+      <div class="progress-bar"><div class="progress-fill" id="autoExitProgress" style="width:100%"></div></div>
+      <p>CrowdSec is fully configured. Auto-finalizing in <strong id="autoExitCountdown">30</strong>s</p>
+      <div class="auto-exit-actions">
+        <button class="btn btn-success" onclick="doFinalize()">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Finalize Now
+        </button>
+        <button class="btn btn-ghost" onclick="cancelAutoExit()">Cancel Auto-Exit</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONFIGURATION PANELS ===== -->
+  <section>
+    <div class="section-header">
+      <h2>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Configuration
+      </h2>
+    </div>
+
+    <!-- LAPI Key Panel -->
+    <div class="panel open" id="panelKey">
+      <div class="panel-header" onclick="togglePanel('panelKey')">
+        <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        <span class="panel-title">LAPI Key</span>
+        <span class="panel-status" id="panelKeyStatus"></span>
+        <svg class="panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="panel-divider"></div>
+      <div class="panel-body">
+        <div class="form-group">
+          <label>Current Key</label>
+          <div class="input-row">
+            <input type="password" id="currentKeyDisplay" readonly placeholder="No key generated">
+            <button class="btn-icon" onclick="toggleKeyVis()" title="Show/Hide key">
+              <svg id="eyeIcon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <button class="btn-icon" onclick="copyKey()" title="Copy to clipboard">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+          </div>
+          <div class="form-hint" id="keyHint">Key used for Traefik bouncer ↔ CrowdSec LAPI authentication</div>
+        </div>
+        <div class="form-group">
+          <label>Set Key Manually</label>
+          <div class="input-row">
+            <input type="text" id="manualKeyInput" placeholder="Paste a hex key (min 32 chars)">
+            <button class="btn btn-secondary" onclick="setManualKey()">Apply</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="btnGenKey" onclick="generateKey()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+            Generate New Key
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bouncer Registration Panel -->
+    <div class="panel" id="panelBouncer">
+      <div class="panel-header" onclick="togglePanel('panelBouncer')">
+        <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span class="panel-title">Bouncer Registration</span>
+        <span class="panel-status" id="panelBouncerStatus"></span>
+        <svg class="panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="panel-divider"></div>
+      <div class="panel-body">
+        <div class="form-group">
+          <label>Bouncer Name</label>
+          <div class="input-row">
+            <input type="text" id="bouncerNameInput" value="traefik-bouncer" placeholder="e.g. traefik-bouncer">
+            <button class="btn btn-primary" id="btnRegBouncer" onclick="registerBouncer()">Register</button>
+          </div>
+          <div class="form-hint" id="bouncerHint">This bouncer allows Traefik to query CrowdSec decisions</div>
+        </div>
+        <div id="bouncerList"></div>
+      </div>
+    </div>
+
+    <!-- CAPI Enrollment Panel -->
+    <div class="panel" id="panelCapi">
+      <div class="panel-header" onclick="togglePanel('panelCapi')">
+        <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg>
+        <span class="panel-title">Console Enrollment (CAPI)</span>
+        <span class="panel-status" id="panelCapiStatus"></span>
+        <svg class="panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="panel-divider"></div>
+      <div class="panel-body">
+        <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:14px">
+          Enroll in the <a href="https://app.crowdsec.net" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:underline">CrowdSec Console</a> to share threat intelligence and view your instance in the cloud dashboard. This is <strong>optional</strong> but recommended.
+        </p>
+        <div class="form-group">
+          <label>Enrollment Key</label>
+          <div class="input-row">
+            <input type="text" id="capiKeyInput" placeholder="Paste your enrollment key from app.crowdsec.net">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Instance Name (optional)</label>
+          <div class="input-row">
+            <input type="text" id="capiNameInput" placeholder="e.g. my-server-01">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Tags (optional, comma-separated)</label>
+          <div class="input-row">
+            <input type="text" id="capiTagsInput" placeholder="e.g. production, traefik, docker">
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btnEnroll" onclick="enrollCapi()">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg>
+          Enroll in Console
+        </button>
+        <div class="form-hint" id="capiHint" style="margin-top:10px">
+          <a href="https://app.crowdsec.net/security-engines" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">→ Get your enrollment key from the CrowdSec Console</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collections Panel -->
+    <div class="panel" id="panelCollections">
+      <div class="panel-header" onclick="togglePanel('panelCollections')">
+        <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        <span class="panel-title">Collections</span>
+        <span class="panel-status" id="panelCollectionsStatus"></span>
+        <svg class="panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="panel-divider"></div>
+      <div class="panel-body">
+        <div id="collectionsContent" class="collections-grid"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="showInstallModal()">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Install Collection
+          </button>
+          <a href="https://hub.crowdsec.net/browse/#collections" target="_blank" rel="noopener" class="btn btn-ghost btn-sm" style="text-decoration:none">
+            Browse Hub →
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== LOG VIEWER ===== -->
+  <section>
+    <div class="section-header">
+      <h2>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        Live Logs
+      </h2>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="clearLogs()">Clear</button>
+        <button class="btn btn-ghost btn-sm" onclick="scrollLogs()">↓ Latest</button>
+        <button class="btn btn-ghost btn-sm" onclick="refreshLogs()">Refresh</button>
+      </div>
+    </div>
+    <div class="log-viewer" id="logViewer">
+      <div class="log-line" style="color:var(--text-dim)">Connecting to CrowdSec...</div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer style="text-align:center;padding:24px 0 40px;color:var(--text-dim);font-size:0.75rem">
+    <p>CrowdSec Init UI &middot; <a href="https://docs.crowdsec.net" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">Documentation</a> &middot; <a href="https://app.crowdsec.net" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">Console</a> &middot; <a href="https://hub.crowdsec.net" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">Hub</a></p>
+  </footer>
+</div>
+
+<!-- ===== Install Collection Modal ===== -->
+<div class="modal-backdrop" id="installModal" hidden>
+  <div class="modal">
+    <h3>Install Collection</h3>
+    <div class="form-group">
+      <label>Collection Name</label>
+      <input type="text" id="installCollInput" placeholder="e.g. crowdsecurity/nginx">
+      <div class="form-hint">Enter the full collection name from <a href="https://hub.crowdsec.net/browse/#collections" target="_blank" rel="noopener" style="color:var(--accent)">CrowdSec Hub</a></div>
+    </div>
+    <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px">Common collections:</p>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('installCollInput').value=this.textContent.trim()">crowdsecurity/nginx</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('installCollInput').value=this.textContent.trim()">crowdsecurity/apache2</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('installCollInput').value=this.textContent.trim()">crowdsecurity/pgsql</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('installCollInput').value=this.textContent.trim()">crowdsecurity/mysql</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('installCollInput').value=this.textContent.trim()">crowdsecurity/postfix</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('installCollInput').value=this.textContent.trim()">crowdsecurity/dovecot</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="hideInstallModal()">Cancel</button>
+      <button class="btn btn-primary" id="btnInstallColl" onclick="installCollection()">Install</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================================================================
+   CrowdSec Init – Frontend Controller
+   =================================================================== */
+
+// ===== State =====
+let state = {
+  lapi: { connected: false },
+  key: { exists: false, length: 0, masked: '', raw: '' },
+  bouncer: { name: 'traefik-bouncer', registered: false, all: [] },
+  capi: { enrolled: false },
+  collections: { installed: [], count: 0 },
+  decisions: { count: 0 },
+  version: '',
+  allHealthy: false,
+  container: { exists: false },
+  autoExit: { active: false, remaining: 0 },
+  logs: []
+};
+let pollTimer = null;
+let autoExitInterval = null;
+let keyVisible = false;
+
+// ===== API Layer =====
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch('/api/' + path, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+async function fetchStatus() {
+  try {
+    const s = await api('GET', 'status');
+    state = { ...state, ...s };
+    renderAll();
+    return s;
+  } catch (e) {
+    setBadge('liveBadge', 'liveBadgeText', 'error', 'ERROR');
+    return null;
+  }
+}
+
+async function fetchLogs() {
+  try {
+    const data = await api('GET', 'logs');
+    state.logs = data.logs || [];
+    renderLogs();
+  } catch {}
+}
+
+// ===== Rendering =====
+function renderAll() {
+  renderLiveBadge();
+  renderStatusCards();
+  renderAutoExit();
+  renderPanelStatuses();
+  renderKeyDisplay();
+  renderBouncerList();
+  renderCollections();
+}
+
+function renderLiveBadge() {
+  const el = document.getElementById('liveBadge');
+  const txt = document.getElementById('liveBadgeText');
+  const ver = document.getElementById('versionBadge');
+  el.className = 'live-badge';
+  if (state.allHealthy) { el.classList.add(''); txt.textContent = 'ALL OK'; el.style.background='var(--success-bg)'; el.style.color='var(--success)'; el.style.borderColor='rgba(16,185,129,0.2)'; }
+  else if (state.container?.exists) { el.className = 'live-badge loading'; txt.textContent = 'LIVE'; }
+  else { el.className = 'live-badge error'; txt.textContent = 'OFFLINE'; }
+  ver.textContent = state.version ? state.version.split('\n')[0].replace(/^.*version:\s*/i, '').trim() : '...';
+}
+
+function setCard(id, status, badge, value, detail) {
+  const card = document.getElementById(id);
+  card.className = 'status-card ' + status;
+  const badgeEl = card.querySelector('.sc-badge');
+  badgeEl.className = 'sc-badge ' + ({'success':'ok','error':'fail','warning':'warn'}[status] || 'unknown');
+  badgeEl.textContent = badge;
+  card.querySelector('.sc-value').textContent = value;
+  card.querySelector('.sc-detail').textContent = detail;
+}
+
+function renderStatusCards() {
+  // LAPI
+  if (state.lapi?.connected) setCard('cardLapi', 'success', 'OK', 'Connected', 'LAPI responding');
+  else if (state.container?.exists) setCard('cardLapi', 'error', 'DOWN', 'Unreachable', 'Waiting for LAPI...');
+  else setCard('cardLapi', 'error', 'N/A', 'No container', 'CrowdSec not running');
+  // Key
+  if (state.key?.exists && state.key.length >= 32) setCard('cardKey', 'success', 'OK', state.key.length + ' chars', state.key.path || '');
+  else if (state.key?.exists) setCard('cardKey', 'warning', 'SHORT', state.key.length + ' chars', 'Key may be too short');
+  else setCard('cardKey', 'error', 'MISSING', 'Not found', 'Generate or set a key');
+  // Bouncer
+  if (state.bouncer?.registered) setCard('cardBouncer', 'success', 'OK', state.bouncer.name, 'Registered & validated');
+  else setCard('cardBouncer', 'error', 'MISSING', 'Not registered', 'Register a bouncer below');
+  // CAPI
+  if (state.capi?.enrolled) setCard('cardCapi', 'success', 'OK', 'Enrolled', 'Connected to Console');
+  else setCard('cardCapi', 'warning', 'OPTIONAL', 'Not enrolled', 'Optional but recommended');
+  // Collections
+  if (state.collections?.count > 0) setCard('cardCollections', 'success', 'OK', state.collections.count + ' installed', state.collections.installed.slice(0,3).map(c=>c.name.split('/')[1]).join(', '));
+  else setCard('cardCollections', 'error', 'NONE', '0 installed', 'Install collections below');
+}
+
+function renderAutoExit() {
+  const banner = document.getElementById('autoExitBanner');
+  if (state.autoExit?.active) {
+    banner.hidden = false;
+    document.getElementById('autoExitCountdown').textContent = state.autoExit.remaining;
+    const pct = (state.autoExit.remaining / 30) * 100;
+    document.getElementById('autoExitProgress').style.width = pct + '%';
+  } else {
+    banner.hidden = true;
+  }
+}
+
+function setBadge(containerId, textId, cls, text) {}
+
+function renderPanelStatuses() {
+  setPanelBadge('panelKeyStatus', state.key?.exists && state.key.length >= 32 ? 'ok' : 'fail',
+    state.key?.exists && state.key.length >= 32 ? 'Valid' : 'Missing');
+  setPanelBadge('panelBouncerStatus', state.bouncer?.registered ? 'ok' : 'fail',
+    state.bouncer?.registered ? 'Registered' : 'Not registered');
+  setPanelBadge('panelCapiStatus', state.capi?.enrolled ? 'ok' : 'warn',
+    state.capi?.enrolled ? 'Enrolled' : 'Not enrolled');
+  setPanelBadge('panelCollectionsStatus', state.collections?.count > 0 ? 'ok' : 'fail',
+    state.collections?.count ? state.collections.count + ' installed' : 'None');
+  // Panel classes
+  setPanelClass('panelKey', state.key?.exists && state.key.length >= 32);
+  setPanelClass('panelBouncer', state.bouncer?.registered);
+  setPanelClass('panelCapi', state.capi?.enrolled, true);
+  setPanelClass('panelCollections', state.collections?.count > 0);
+}
+function setPanelBadge(id, type, text) {
+  const cls = {ok:'badge-ok',fail:'badge-fail',warn:'badge-warn'}[type] || 'badge-neutral';
+  document.getElementById(id).innerHTML = '<span class="badge '+cls+'">'+text+'</span>';
+}
+function setPanelClass(id, ok, isOptional) {
+  const el = document.getElementById(id);
+  el.classList.remove('success','error','warning');
+  if (ok) el.classList.add('success');
+  else if (isOptional) el.classList.add('warning');
+  else el.classList.add('error');
+}
+
+function renderKeyDisplay() {
+  const input = document.getElementById('currentKeyDisplay');
+  if (state.key?.masked) {
+    input.value = keyVisible ? (state.key.raw || state.key.masked) : state.key.masked;
+    input.placeholder = '';
+  } else {
+    input.value = '';
+    input.placeholder = 'No key generated';
+  }
+}
+
+function renderBouncerList() {
+  const all = state.bouncer?.all || [];
+  if (!all.length) { document.getElementById('bouncerList').innerHTML = ''; return; }
+  let html = '<div style="margin-top:12px"><label style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:6px">Registered Bouncers</label>';
+  for (const b of all) {
+    const isCurrent = b.name === state.bouncer.name;
+    html += `<div class="coll-item" style="margin-bottom:4px">
+      <span class="coll-name">${esc(b.name)} ${isCurrent?'<span class="badge badge-info" style="margin-left:6px">primary</span>':''}</span>
+      <div class="coll-status">
+        <span class="badge ${b.revoked==='true'?'badge-fail':'badge-ok'}">${b.revoked==='true'?'revoked':'active'}</span>
+        <button class="btn btn-danger btn-sm" onclick="removeBouncer('${esc(b.name)}')" title="Remove">✕</button>
+      </div></div>`;
+  }
+  html += '</div>';
+  document.getElementById('bouncerList').innerHTML = html;
+}
+
+function renderCollections() {
+  const colls = state.collections?.installed || [];
+  if (!colls.length) {
+    document.getElementById('collectionsContent').innerHTML = '<p style="color:var(--text-muted);font-size:0.82rem">No collections installed yet.</p>';
+    return;
+  }
+  let html = '';
+  for (const c of colls) {
+    html += `<div class="coll-item">
+      <div><span class="coll-name">${esc(c.name)}</span> <span class="coll-version">${esc(c.version||'')}</span></div>
+      <span class="badge ${c.status==='enabled'?'badge-ok':'badge-warn'}">${esc(c.status||'?')}</span>
+    </div>`;
+  }
+  document.getElementById('collectionsContent').innerHTML = html;
+}
+
+function renderLogs() {
+  const viewer = document.getElementById('logViewer');
+  const wasAtBottom = viewer.scrollHeight - viewer.scrollTop - viewer.clientHeight < 50;
+  let html = '';
+  for (const line of state.logs) {
+    const colorized = colorizeLine(line);
+    html += '<div class="log-line">' + colorized + '</div>';
+  }
+  viewer.innerHTML = html || '<div class="log-line" style="color:var(--text-dim)">No logs available</div>';
+  if (wasAtBottom) viewer.scrollTop = viewer.scrollHeight;
+}
+
+function colorizeLine(line) {
+  const escaped = esc(line);
+  // Timestamp
+  let result = escaped.replace(/^(\d{4}[\/-]\d{2}[\/-]\d{2}[T ]\d{2}:\d{2}:\d{2}[^\s]*)/,
+    '<span class="ts">$1</span>');
+  // Log levels
+  result = result.replace(/\b(INFO|info)\b/g, '<span class="level-info">$1</span>');
+  result = result.replace(/\b(WARN|WARNING|warn|warning)\b/g, '<span class="level-warn">$1</span>');
+  result = result.replace(/\b(ERR|ERROR|FATAL|err|error|fatal)\b/g, '<span class="level-error">$1</span>');
+  result = result.replace(/\b(DEBUG|debug|TRACE|trace)\b/g, '<span class="level-debug">$1</span>');
+  return result;
+}
+
+// ===== Actions =====
+async function generateKey() {
+  const btn = document.getElementById('btnGenKey');
+  setLoading(btn, true);
+  try {
+    const data = await api('POST', 'key/generate');
+    toast('success', 'New LAPI key generated (' + data.length + ' chars)');
+    await fetchStatus();
+    const keyData = await api('GET', 'key');
+    state.key = { ...state.key, ...keyData };
+    renderKeyDisplay();
+  } catch (e) { toast('error', 'Failed: ' + e.message); }
+  setLoading(btn, false);
+}
+
+async function setManualKey() {
+  const input = document.getElementById('manualKeyInput');
+  const key = input.value.trim();
+  if (key.length < 32) { toast('error', 'Key must be at least 32 characters'); input.classList.add('invalid'); setTimeout(()=>input.classList.remove('invalid'),2000); return; }
+  try {
+    await api('POST', 'key/set', { key });
+    toast('success', 'Key applied (' + key.length + ' chars)');
+    input.value = '';
+    await fetchStatus();
+  } catch (e) { toast('error', 'Failed: ' + e.message); }
+}
+
+async function registerBouncer() {
+  const btn = document.getElementById('btnRegBouncer');
+  const name = document.getElementById('bouncerNameInput').value.trim() || 'traefik-bouncer';
+  setLoading(btn, true);
+  try {
+    const data = await api('POST', 'bouncers/register', { name });
+    toast('success', data.alreadyExists ? 'Bouncer already registered' : 'Bouncer "' + name + '" registered');
+    await fetchStatus();
+  } catch (e) { toast('error', 'Failed: ' + e.message); }
+  setLoading(btn, false);
+}
+
+async function removeBouncer(name) {
+  if (!confirm('Remove bouncer "' + name + '"?')) return;
+  try {
+    await api('POST', 'bouncers/remove', { name });
+    toast('info', 'Bouncer "' + name + '" removed');
+    await fetchStatus();
+  } catch (e) { toast('error', 'Failed: ' + e.message); }
+}
+
+async function enrollCapi() {
+  const btn = document.getElementById('btnEnroll');
+  const key = document.getElementById('capiKeyInput').value.trim();
+  if (!key) { toast('error', 'Enrollment key required'); return; }
+  setLoading(btn, true);
+  try {
+    const name = document.getElementById('capiNameInput').value.trim() || undefined;
+    const tagsRaw = document.getElementById('capiTagsInput').value.trim();
+    const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : undefined;
+    await api('POST', 'enroll', { key, name, tags });
+    toast('success', 'Enrolled in CrowdSec Console! Approve the instance at app.crowdsec.net');
+    await fetchStatus();
+  } catch (e) { toast('error', 'Enrollment failed: ' + e.message); }
+  setLoading(btn, false);
+}
+
+function showInstallModal() { document.getElementById('installModal').hidden = false; document.getElementById('installCollInput').focus(); }
+function hideInstallModal() { document.getElementById('installModal').hidden = true; }
+
+async function installCollection() {
+  const btn = document.getElementById('btnInstallColl');
+  const name = document.getElementById('installCollInput').value.trim();
+  if (!name) { toast('error', 'Enter a collection name'); return; }
+  setLoading(btn, true);
+  try {
+    await api('POST', 'collections/install', { name });
+    toast('success', 'Collection "' + name + '" installed');
+    document.getElementById('installCollInput').value = '';
+    hideInstallModal();
+    await fetchStatus();
+  } catch (e) { toast('error', 'Install failed: ' + e.message); }
+  setLoading(btn, false);
+}
+
+async function doFinalize() {
+  try {
+    await api('POST', 'finalize');
+    showSuccessOverlay();
+  } catch (e) { toast('error', 'Finalize failed: ' + e.message); }
+}
+
+function cancelAutoExit() {
+  if (autoExitInterval) { clearInterval(autoExitInterval); autoExitInterval = null; }
+  fetch('/api/cancel-auto-exit', { method: 'POST' }).catch(() => {});
+  document.getElementById('autoExitBanner').hidden = true;
+  toast('info', 'Auto-exit cancelled. Use "Finalize Now" when ready.');
+}
+
+function showSuccessOverlay() {
+  const div = document.createElement('div');
+  div.className = 'success-overlay';
+  div.innerHTML = `<div class="success-content">
+    <svg class="success-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <path d="M9 12l2 2 4-4" stroke-width="2"/>
+    </svg>
+    <h2>Setup Complete</h2>
+    <p>CrowdSec is fully configured and protecting your services.</p>
+    <p style="margin-top:16px;color:var(--text-muted);font-size:0.82rem">This container will now exit. Traefik will start automatically.</p>
+  </div>`;
+  document.body.appendChild(div);
+}
+
+async function copyKey() {
+  try {
+    const data = await api('GET', 'key');
+    if (data.raw) {
+      await navigator.clipboard.writeText(data.raw);
+      toast('success', 'Key copied to clipboard');
+    } else {
+      toast('warning', 'No key available to copy');
+    }
+  } catch { toast('error', 'Copy failed'); }
+}
+
+function toggleKeyVis() {
+  keyVisible = !keyVisible;
+  const eye = document.getElementById('eyeIcon');
+  if (keyVisible) {
+    eye.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+    api('GET', 'key').then(d => { state.key.raw = d.raw || ''; renderKeyDisplay(); });
+  } else {
+    eye.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+    state.key.raw = '';
+    renderKeyDisplay();
+  }
+}
+
+// ===== Panels =====
+function togglePanel(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// ===== Log Viewer =====
+function clearLogs() { state.logs = []; renderLogs(); }
+function scrollLogs() { const v = document.getElementById('logViewer'); v.scrollTop = v.scrollHeight; }
+function refreshLogs() { fetchLogs(); }
+
+// ===== Utility =====
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function setLoading(btn, loading) {
+  if (loading) {
+    btn.disabled = true;
+    btn._origHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span> Working...';
+  } else {
+    btn.disabled = false;
+    if (btn._origHTML) btn.innerHTML = btn._origHTML;
+  }
+}
+function toast(type, msg) {
+  const icons = {
+    success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>',
+    error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+    warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+  };
+  const el = document.createElement('div');
+  el.className = 'toast toast-' + type;
+  el.innerHTML = (icons[type] || '') + '<span>' + esc(msg) + '</span>';
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), 4200);
+}
+
+// ===== Polling =====
+function startPolling() {
+  fetchStatus();
+  fetchLogs();
+  pollTimer = setInterval(async () => {
+    await fetchStatus();
+    await fetchLogs();
+  }, 4000);
+}
+
+// ===== Keyboard Shortcuts =====
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); doFinalize(); }
+  if (e.key === 'Escape') {
+    if (!document.getElementById('installModal').hidden) hideInstallModal();
+    else cancelAutoExit();
+  }
+});
+
+// ===== Modal outside click =====
+document.getElementById('installModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('installModal')) hideInstallModal();
+});
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', startPolling);
+</script>
+</body>
+</html>
