@@ -227,12 +227,16 @@ if [ "$ENABLE_DOCKER" = "true" ]; then
   "log-driver": "json-file",
   "log-opts": {
     "max-size": "20m",
-    "max-file": "5"
+    "max-file": "3"
   },
   "builder": {
     "gc": {
       "enabled": true,
-      "defaultKeepStorage": "10GB"
+      "defaultKeepStorage": "5GB",
+      "policy": [
+        {"keepStorage": "5GB", "filter": ["unused-for=72h"]},
+        {"keepStorage": "10GB", "all": true}
+      ]
     }
   }
 }
@@ -246,15 +250,82 @@ with open("/etc/docker/daemon.json") as f:
 cfg.setdefault("log-driver", "json-file")
 cfg.setdefault("log-opts", {})
 cfg["log-opts"].setdefault("max-size", "20m")
-cfg["log-opts"].setdefault("max-file", "5")
+cfg["log-opts"]["max-file"] = "3"
 cfg.setdefault("builder", {})
-cfg["builder"].setdefault("gc", {"enabled": True, "defaultKeepStorage": "10GB"})
+cfg["builder"]["gc"] = {
+    "enabled": True,
+    "defaultKeepStorage": "5GB",
+    "policy": [
+        {"keepStorage": "5GB", "filter": ["unused-for=72h"]},
+        {"keepStorage": "10GB", "all": True}
+    ]
+}
 with open("/etc/docker/daemon.json", "w") as f:
     json.dump(cfg, f, indent=2)
 ' 2>/dev/null || true
   fi
   systemctl restart docker.service 2>/dev/null || true
   log_success "Docker daemon.json configured"
+
+  # Create size-aware image tag retention script
+  log_info "Installing size-aware image retention script..."
+  cat >/usr/local/sbin/docker-image-retention.sh <<'IMAGE_RETENTION_EOF'
+#!/bin/bash
+# Smart image retention: Keep 2 tags normally, remove largest backups first in emergency
+set -euo pipefail
+
+KEEP_TAGS="${DOCKER_KEEP_TAGS:-2}"
+EMERGENCY_MODE="${1:-normal}"  # "normal" or "emergency"
+
+remove_backup_tags_for_image() {
+  local repo="$1"
+  [ -z "$repo" ] || [ "$repo" = "<none>" ] && return 0
+  
+  mapfile -t tags < <(docker images "$repo" --format "{{.Tag}}@{{.CreatedAt}}" | sort -t'@' -k2 -r 2>/dev/null || true)
+  [ "${#tags[@]}" -le 1 ] && return 0
+  
+  # Remove all but latest (backup removal mode)
+  for ((i=1; i<${#tags[@]}; i++)); do
+    tag="${tags[$i]%%@*}"
+    [ "$tag" = "<none>" ] || [ "$tag" = "latest" ] && continue
+    echo "  Removing backup: $repo:$tag"
+    docker rmi "$repo:$tag" 2>/dev/null || true
+  done
+}
+
+if [ "$EMERGENCY_MODE" = "emergency" ]; then
+  echo "[EMERGENCY] Size-aware cleanup: Removing backups of LARGEST images first..."
+  
+  # Get repos ranked by image count (proxy for size)
+  docker images --format "{{.Repository}}" | sort -u | while read -r repo; do
+    if [ ! -z "$repo" ] && [ "$repo" != "<none>" ]; then
+      count=$(docker images "$repo" --quiet 2>/dev/null | wc -l || echo 0)
+      echo "$count $repo"
+    fi
+  done | sort -rn | awk '{print $2}' | head -20 | while read -r repo; do
+    remove_backup_tags_for_image "$repo"
+  done
+else
+  # Normal mode: Keep KEEP_TAGS per repo
+  docker images --format "{{.Repository}}" | sort -u | while read -r repo; do
+    [ -z "$repo" ] || [ "$repo" = "<none>" ] && continue
+    
+    mapfile -t tags < <(docker images "$repo" --format "{{.Tag}}@{{.CreatedAt}}" | sort -t'@' -k2 -r 2>/dev/null || true)
+    [ "${#tags[@]}" -le "$KEEP_TAGS" ] && continue
+    
+    for ((i=KEEP_TAGS; i<${#tags[@]}; i++)); do
+      tag="${tags[$i]%%@*}"
+      [ "$tag" = "<none>" ] || [ "$tag" = "latest" ] && continue
+      echo "Removing old tag: $repo:$tag"
+      docker rmi "$repo:$tag" 2>/dev/null || true
+    done
+  done
+fi
+
+docker image prune -f >/dev/null 2>&1 || true
+IMAGE_RETENTION_EOF
+  chmod 0755 /usr/local/sbin/docker-image-retention.sh
+  log_success "Size-aware image retention script installed"
 
   # Docker Hub login  (if credentials are provided)
   if [ -n "$DOCKERHUB_USERNAME" ] && [ -n "$DOCKERHUB_TOKEN" ] && [ "$DOCKERHUB_TOKEN" != "changeme" ]; then
@@ -812,22 +883,58 @@ if [ "\$MODE" = "pressure" ]; then
     exit 0
   fi
 
+  # EMERGENCY: Less than threshold - aggressive cleanup
   if command -v docker >/dev/null 2>&1; then
+    echo "[PRESSURE] Only \${FREE_GB}GB free, triggering emergency cleanup..."
+    
+    # Level 1: Standard prune (removes unused)
     docker image prune -af --filter "until=\$DOCKER_PRUNE_UNTIL" >/dev/null 2>&1 || true
     docker container prune -f --filter "until=\$DOCKER_PRUNE_UNTIL" >/dev/null 2>&1 || true
-    docker network prune -f --filter "until=\$DOCKER_PRUNE_UNTIL" >/dev/null 2>&1 || true
+    docker network prune -f >/dev/null 2>&1 || true
     docker builder prune -af --keep-storage "\$DOCKER_BUILDER_KEEP_STORAGE" >/dev/null 2>&1 || true
     docker buildx prune -af --keep-storage "\$DOCKER_BUILDER_KEEP_STORAGE" >/dev/null 2>&1 || true
+    
+    # Level 2: Remove backups of LARGEST images (emergency mode)
+    if [ -f /usr/local/sbin/docker-image-retention.sh ]; then
+      /usr/local/sbin/docker-image-retention.sh emergency 2>&1 | sed 's/^/[RETENTION] /' || true
+    fi
+    
+    # Check if we freed enough space
+    FREE_GB_AFTER=$(df --output=avail -BG / 2>/dev/null | tail -n1 | tr -dc '0-9')
+    [ -z "\$FREE_GB_AFTER" ] && FREE_GB_AFTER=0
+    
+    # Level 3: NUCLEAR - Clear containerd snapshots if still critical (<10GB)
+    if [ "\$FREE_GB_AFTER" -lt 10 ] && [ -d /var/lib/containerd ]; then
+      echo "[EMERGENCY] Only \${FREE_GB_AFTER}GB after cleanup - purging containerd snapshots..."
+      systemctl stop docker >/dev/null 2>&1 || true
+      find /var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots -mindepth 1 -maxdepth 1 -type d -mtime +7 -exec rm -rf {} + 2>/dev/null || true
+      find /var/lib/containerd/io.containerd.content.v1.content/blobs -type f -mtime +7 -delete 2>/dev/null || true
+      systemctl start docker >/dev/null 2>&1 || true
+      echo "[EMERGENCY] Containerd cleanup complete - REBUILD YOUR IMAGES ASAP"
+    fi
   fi
 fi
 
 if [ "\$MODE" = "weekly" ] && command -v docker >/dev/null 2>&1; then
+  # Prune old images and enforce tag retention
   docker image prune -af --filter "until=\$DOCKER_PRUNE_UNTIL" >/dev/null 2>&1 || true
   docker container prune -f --filter "until=\$DOCKER_PRUNE_UNTIL" >/dev/null 2>&1 || true
   docker network prune -f --filter "until=\$DOCKER_PRUNE_UNTIL" >/dev/null 2>&1 || true
   docker volume prune -f >/dev/null 2>&1 || true
   docker builder prune -af --keep-storage "\$DOCKER_BUILDER_KEEP_STORAGE" >/dev/null 2>&1 || true
   docker buildx prune -af --keep-storage "\$DOCKER_BUILDER_KEEP_STORAGE" >/dev/null 2>&1 || true
+  
+  # Enforce tag retention (keep only latest + 1 backup per image)
+  if [ -f /usr/local/sbin/docker-image-retention.sh ]; then
+    /usr/local/sbin/docker-image-retention.sh >/dev/null 2>&1 || true
+  fi
+fi
+
+# Daily: Run tag retention to prevent tag accumulation
+if [ "\$MODE" = "daily" ] && command -v docker >/dev/null 2>&1; then
+  if [ -f /usr/local/sbin/docker-image-retention.sh ]; then
+    /usr/local/sbin/docker-image-retention.sh >/dev/null 2>&1 || true
+  fi
 fi
 
 logrotate -f /etc/logrotate.d/docker-container-json >/dev/null 2>&1 || true
