@@ -15,6 +15,11 @@ const CONFIG_PATH = process.env.CONFIG_PATH || '/work/config';
 const SECRETS_PATH = process.env.SECRETS_PATH || '/work/secrets';
 const CROWDSEC_CONTAINER = process.env.CROWDSEC_CONTAINER_NAME || 'crowdsec';
 const DEFAULT_BOUNCER = process.env.CROWDSEC_BOUNCER_NAME || 'traefik-bouncer';
+const CROWDSEC_BOUNCER_ENABLED =
+  String(process.env.CROWDSEC_BOUNCER_ENABLED ?? 'true').toLowerCase() !== 'false';
+const CROWDSEC_ORGANIZATION_ID = (process.env.CROWDSEC_ORGANIZATION_ID || '').trim();
+const CROWDSEC_AGENT_USERNAME = (process.env.CROWDSEC_AGENT_USERNAME || '').trim();
+const CROWDSEC_LAPI_KEY_ENV = (process.env.CROWDSEC_LAPI_KEY || '').trim();
 const WAIT_SECONDS = parseInt(process.env.CROWDSEC_WAIT_SECONDS || '180', 10);
 const AUTO_EXIT_DELAY = parseInt(process.env.AUTO_EXIT_DELAY || '30', 10);
 const LAPI_KEY_FILE = path.join(SECRETS_PATH, 'crowdsec-lapi-key.txt');
@@ -124,6 +129,13 @@ function prepareDirectories() {
 function ensureLapiKey() {
   const key = readLapiKey();
   if (key.length >= 32) return key;
+
+  if (CROWDSEC_LAPI_KEY_ENV.length >= 32) {
+    writeLapiKey(CROWDSEC_LAPI_KEY_ENV);
+    log(`Seeded LAPI key from environment (${CROWDSEC_LAPI_KEY_ENV.length} chars)`);
+    return CROWDSEC_LAPI_KEY_ENV;
+  }
+
   const newKey = crypto.randomBytes(24).toString('hex'); // 48 hex chars
   writeLapiKey(newKey);
   log(`Generated new LAPI key (${newKey.length} chars)`);
@@ -229,10 +241,15 @@ function getFullStatus() {
       container: { exists: false },
       lapi: { connected: false },
       key: { exists: false, length: 0, path: LAPI_KEY_FILE },
-      bouncer: { name: DEFAULT_BOUNCER, registered: false, all: [] },
+      bouncer: { name: DEFAULT_BOUNCER, enabled: CROWDSEC_BOUNCER_ENABLED, registered: false, all: [] },
       capi: { enrolled: false },
       collections: { installed: [], count: 0 },
       decisions: { count: 0 },
+      config: {
+        organizationIdConfigured: CROWDSEC_ORGANIZATION_ID.length > 0,
+        agentUsernameConfigured: CROWDSEC_AGENT_USERNAME.length > 0,
+        lapiKeyEnvConfigured: CROWDSEC_LAPI_KEY_ENV.length >= 32,
+      },
       version: 'N/A',
       autoExit: { active: autoExitTimer !== null, remaining: autoExitRemaining },
     };
@@ -247,8 +264,9 @@ function getFullStatus() {
   const capi = lapi.connected ? checkCapi() : { enrolled: false };
   const version = getVersion();
 
+  const bouncerHealthy = CROWDSEC_BOUNCER_ENABLED ? bouncerRegistered : true;
   const allHealthy =
-    lapi.connected && key.length >= 32 && bouncerRegistered && collections.length > 0;
+    lapi.connected && key.length >= 32 && bouncerHealthy && collections.length > 0;
 
   return {
     timestamp: new Date().toISOString(),
@@ -256,12 +274,22 @@ function getFullStatus() {
     container: { exists: true },
     lapi: { connected: lapi.connected, output: lapi.output || lapi.error },
     key: { exists: key.length > 0, length: key.length, path: LAPI_KEY_FILE },
-    bouncer: { name: DEFAULT_BOUNCER, registered: bouncerRegistered, all: bouncers },
+    bouncer: {
+      name: DEFAULT_BOUNCER,
+      enabled: CROWDSEC_BOUNCER_ENABLED,
+      registered: bouncerRegistered,
+      all: bouncers,
+    },
     capi: { enrolled: capi.enrolled },
     collections: { installed: collections, count: collections.length },
     decisions: {
       count: Array.isArray(decisions) ? decisions.length : 0,
       items: Array.isArray(decisions) ? decisions.slice(0, 20) : [],
+    },
+    config: {
+      organizationIdConfigured: CROWDSEC_ORGANIZATION_ID.length > 0,
+      agentUsernameConfigured: CROWDSEC_AGENT_USERNAME.length > 0,
+      lapiKeyEnvConfigured: CROWDSEC_LAPI_KEY_ENV.length >= 32,
     },
     version,
     autoExit: { active: autoExitTimer !== null, remaining: autoExitRemaining },
@@ -312,6 +340,11 @@ async function handleSetKey(req, res) {
 }
 
 async function handleRegisterBouncer(req, res) {
+  if (!CROWDSEC_BOUNCER_ENABLED) {
+    sendJSON(res, 400, { error: 'Bouncer registration is disabled by CROWDSEC_BOUNCER_ENABLED=false' });
+    return;
+  }
+
   const body = await parseBody(req);
   const name = body.name || DEFAULT_BOUNCER;
   const key = readLapiKey();
@@ -545,7 +578,10 @@ async function main() {
   log('CrowdSec Init starting...');
   log(`  Container: ${CROWDSEC_CONTAINER}`);
   log(`  Bouncer:   ${DEFAULT_BOUNCER}`);
+  log(`  Bouncer enabled: ${CROWDSEC_BOUNCER_ENABLED}`);
   log(`  Key file:  ${LAPI_KEY_FILE}`);
+  log(`  CROWDSEC_ORGANIZATION_ID configured: ${CROWDSEC_ORGANIZATION_ID.length > 0}`);
+  log(`  CROWDSEC_AGENT_USERNAME configured: ${CROWDSEC_AGENT_USERNAME.length > 0}`);
   log(`  UI port:   ${PORT}`);
 
   // Phase 1: Prepare host paths and key
@@ -592,19 +628,23 @@ async function main() {
 
   if (lapiReady) {
     // Auto-register bouncer
-    try {
-      const bouncers = listBouncers();
-      if (!bouncers.some((b) => b.name === DEFAULT_BOUNCER)) {
-        const lapiKey = readLapiKey();
-        if (lapiKey) {
-          dockerExec(`cscli bouncers add "${DEFAULT_BOUNCER}" -k "${lapiKey}"`, 15000);
-          log(`Bouncer '${DEFAULT_BOUNCER}' auto-registered.`);
+    if (CROWDSEC_BOUNCER_ENABLED) {
+      try {
+        const bouncers = listBouncers();
+        if (!bouncers.some((b) => b.name === DEFAULT_BOUNCER)) {
+          const lapiKey = readLapiKey();
+          if (lapiKey) {
+            dockerExec(`cscli bouncers add "${DEFAULT_BOUNCER}" -k "${lapiKey}"`, 15000);
+            log(`Bouncer '${DEFAULT_BOUNCER}' auto-registered.`);
+          }
+        } else {
+          log(`Bouncer '${DEFAULT_BOUNCER}' already registered.`);
         }
-      } else {
-        log(`Bouncer '${DEFAULT_BOUNCER}' already registered.`);
+      } catch (e) {
+        log(`Auto-register bouncer failed: ${e.message}`);
       }
-    } catch (e) {
-      log(`Auto-register bouncer failed: ${e.message}`);
+    } else {
+      log('Bouncer auto-registration skipped (CROWDSEC_BOUNCER_ENABLED=false).');
     }
 
     // Final check

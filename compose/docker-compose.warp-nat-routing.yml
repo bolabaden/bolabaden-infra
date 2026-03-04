@@ -21,6 +21,180 @@ volumes:
 #        - subnet: ${WARP_NAT_NET_SUBNET:-10.0.2.0/24}
 #          gateway: ${WARP_NAT_NET_GATEWAY:-10.0.2.1}
 
+services:
+  warp-net-init:
+    # Creates the warp-nat-net network if it doesn't exist
+    image: docker:cli
+    container_name: warp-net-init
+    network_mode: host
+    command:
+      - sh
+      - -c
+      - |
+        # Create network if it doesn't exist
+        if ! docker network inspect ${DOCKER_NETWORK_NAME:-warp-nat-net} >/dev/null 2>&1; then
+          echo "Creating network ${DOCKER_NETWORK_NAME:-warp-nat-net}..."
+          docker network create \
+            --driver=bridge \
+            --attachable \
+            -o com.docker.network.bridge.name=br_${DOCKER_NETWORK_NAME:-warp-nat-net} \
+            -o com.docker.network.bridge.enable_ip_masquerade=false \
+            --subnet=${WARP_NAT_NET_SUBNET:-10.0.2.0/24} \
+            --gateway=${WARP_NAT_NET_GATEWAY:-10.0.2.1} \
+            ${DOCKER_NETWORK_NAME:-warp-nat-net}
+          echo "Network created successfully"
+        else
+          echo "Network ${DOCKER_NETWORK_NAME:-warp-nat-net} already exists"
+        fi
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    restart: "no"
+
+  warp-nat-gateway:
+    # 🔹🔹 WARP in Docker (with NAT)🔹
+    depends_on:
+      warp-net-init:
+        condition: service_completed_successfully
+    image: docker.io/caomingjun/warp
+    container_name: warp-nat-gateway
+    hostname: warp-nat-gateway
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    secrets:
+      - warp-license-key
+    expose:
+      - ${GOST_SOCKS5_PORT:-1080} # SOCKS5 proxy port
+    # add removed rule back (https://github.com/opencontainers/runc/pull/3468)
+    device_cgroup_rules:
+      - "c 10:200 rwm"
+    cap_add:
+      # Docker already have them, these are for podman users
+      - MKNOD
+      - AUDIT_WRITE
+      # additional required cap for warp, both for podman and docker
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
+      - net.ipv6.conf.all.accept_ra=2
+    volumes:
+      - warp-config-data:/var/lib/cloudflare-warp
+    environment:
+      # If set, will add checks for host connectivity into healthchecks and automatically fix it if necessary.
+      # See https://github.com/cmj2002/warp-docker/blob/main/docs/host-connectivity.md for more information.
+      BETA_FIX_HOST_CONNECTIVITY: false
+      # The arguments passed to GOST. The default is -L :1080, which means to listen on port 1080 in the container at the same time through HTTP and SOCKS5 protocols.
+      # If you want to have UDP support or use advanced features provided by other protocols, you can modify this parameter. For more information, refer to https://v2.gost.run/en/.
+      # If you modify the port number, ensure you modify the `ports:` section above.
+      GOST_ARGS: ${GOST_ARGS:--L :${GOST_SOCKS5_PORT:-1080}}
+      # If set, will register consumer account (WARP or WARP+, in contrast to Zero Trust) even when mdm.xml exists.
+      # You usually don't need this, as mdm.xml are usually used for Zero Trust.
+      # However, some users may want to adjust advanced settings in mdm.xml while still using consumer account.
+      #REGISTER_WHEN_MDM_EXISTS: ""
+      # If set, will work as warp mode and turn NAT on.
+      # You can route L3 traffic through warp-docker to Warp.
+      # See https://github.com/cmj2002/warp-docker/blob/main/docs/nat-gateway.md for more information.
+      WARP_ENABLE_NAT: false
+      # The license key of the WARP client, which is optional.
+      # If you have subscribed to WARP+ service, you can fill in the key in this environment variable.
+      # If you have not subscribed to WARP+ service, you can ignore this environment variable.
+      WARP_LICENSE_KEY_FILE: /run/secrets/warp-license-key
+      # The time to wait for the WARP daemon to start, in seconds.
+      # If the time is too short, it may cause the WARP daemon to not start before using the proxy, resulting in the proxy not working properly.
+      # If the time is too long, it may cause the container to take too long to start. If your server has poor performance, you can increase this value appropriately.
+      WARP_SLEEP: 2 # The default is 2 seconds.
+    healthcheck: &warp-healthcheck
+      test:
+        [
+          "CMD-SHELL",
+          "sh -c \"if curl -s https://cloudflare.com/cdn-cgi/trace | grep -qE '^warp=on|warp=plus$$'; then echo \\\"Cloudflare WARP is active.\\\" && exit 0; else echo \\\"Cloudflare WARP is not active.\\\" && exit 1; fi\"",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    restart: always
+
+  warp_router:
+    depends_on:
+      warp-nat-gateway:
+        condition: service_started
+    build:
+      dockerfile_inline: |
+        FROM alpine
+        RUN apk update && apk add \
+            bash bc curl docker-cli ipcalc iproute2 iptables jq util-linux && \
+            rm -rf /var/cache/apk/*
+    container_name: warp_router
+    # run the monitor wrapper (it will run warp-nat-setup.sh ONLY when this container's health becomes 'unhealthy')
+    command:
+      - /bin/bash
+      - /usr/local/bin/warp-monitor.sh
+    privileged: true
+    # unsure if any of these are required or not
+    #    cap_add:
+    #      - NET_ADMIN
+    #      - NET_RAW
+    #      - SYS_ADMIN
+    network_mode: host
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'docker run --rm --network ${DOCKER_NETWORK_NAME:-warp-nat-net} --entrypoint sh curlimages/curl -c ''if curl -s --max-time 4 https://cloudflare.com/cdn-cgi/trace | grep -qE "^warp=on|warp=plus$$"; then exit 0; else exit 1; fi''',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    configs:
+      - source: warp-nat-setup.sh
+        target: /usr/local/bin/warp-nat-setup.sh
+        mode: 700
+      - source: warp-monitor.sh
+        target: /usr/local/bin/warp-monitor.sh
+        mode: 700
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
+      - /etc/iproute2/rt_tables:/etc/iproute2/rt_tables:rw
+      - /proc:/proc:rw
+    environment:
+      DOCKER_NETWORK_NAME: ${DOCKER_NETWORK_NAME:-warp-nat-net}
+      WARP_CONTAINER_NAME: ${WARP_CONTAINER_NAME:-warp-nat-gateway}
+      HOST_VETH_IP: ${HOST_VETH_IP:-169.254.100.1}
+      CONT_VETH_IP: ${CONT_VETH_IP:-169.254.100.2}
+      ROUTING_TABLE: ${ROUTING_TABLE:-warp-nat-routing}
+      VETH_HOST: ${VETH_HOST:-veth-warp} # 9 character maximum (Linux interface name limit is 15)
+      ROUTER_CONTAINER_NAME: ${ROUTER_CONTAINER_NAME:-warp_router}
+      WARP_NAT_NET_SUBNET: ${WARP_NAT_NET_SUBNET:-10.0.2.0/24}
+      WARP_NAT_NET_GATEWAY: ${WARP_NAT_NET_GATEWAY:-10.0.2.1}
+      RETRY_SETUP_AFTER: ${RETRY_SETUP_AFTER:-12} # retry setup after N consecutive health check failures
+      SLEEP_INTERVAL: ${SLEEP_INTERVAL:-5} # seconds between health checks
+    restart: always
+
+  ip-checker-warp:
+    # 🔹🔹 IP Checker WARP 🔹🔹
+    # This is a service that checks the IP address of the container.
+    # It uses the WARP network interface.
+    image: docker.io/alpine
+    container_name: ip-checker-warp
+    networks:
+      - warp-nat-net
+    command:
+      - /bin/sh
+      - -c
+      - |
+        apk add --no-cache curl ipcalc
+        while true; do echo "$(date): $(curl -s --max-time 4 ifconfig.me)"; sleep 5; done
+    # End of Selection
+    healthcheck: *warp-healthcheck
+    restart: always
+
+
+
+
 # reminder: everything in docker-compose.yml's `configs:` section must have dollar signs ($) escaped with another dollar sign ($$).
 # Single dollar sign specifies that we're expecting docker to resolve the variable itself at deploy time (e.g. when `docker compose up` is ran).
 # Double dollar sign specifies a literal dollar sign in the configuration content.
@@ -441,174 +615,3 @@ configs:
 
         sleep "$${SLEEP_INTERVAL}"
       done
-
-services:
-  warp-net-init:
-    # Creates the warp-nat-net network if it doesn't exist
-    image: docker:cli
-    container_name: warp-net-init
-    network_mode: host
-    command:
-      - sh
-      - -c
-      - |
-        # Create network if it doesn't exist
-        if ! docker network inspect ${DOCKER_NETWORK_NAME:-warp-nat-net} >/dev/null 2>&1; then
-          echo "Creating network ${DOCKER_NETWORK_NAME:-warp-nat-net}..."
-          docker network create \
-            --driver=bridge \
-            --attachable \
-            -o com.docker.network.bridge.name=br_${DOCKER_NETWORK_NAME:-warp-nat-net} \
-            -o com.docker.network.bridge.enable_ip_masquerade=false \
-            --subnet=${WARP_NAT_NET_SUBNET:-10.0.2.0/24} \
-            --gateway=${WARP_NAT_NET_GATEWAY:-10.0.2.1} \
-            ${DOCKER_NETWORK_NAME:-warp-nat-net}
-          echo "Network created successfully"
-        else
-          echo "Network ${DOCKER_NETWORK_NAME:-warp-nat-net} already exists"
-        fi
-    volumes:
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
-    restart: "no"
-
-  warp-nat-gateway:
-    # 🔹🔹 WARP in Docker (with NAT)🔹
-    depends_on:
-      warp-net-init:
-        condition: service_completed_successfully
-    image: docker.io/caomingjun/warp
-    container_name: warp-nat-gateway
-    hostname: warp-nat-gateway
-    extra_hosts:
-      - host.docker.internal:host-gateway
-    secrets:
-      - warp-license-key
-    expose:
-      - ${GOST_SOCKS5_PORT:-1080} # SOCKS5 proxy port
-    # add removed rule back (https://github.com/opencontainers/runc/pull/3468)
-    device_cgroup_rules:
-      - "c 10:200 rwm"
-    cap_add:
-      # Docker already have them, these are for podman users
-      - MKNOD
-      - AUDIT_WRITE
-      # additional required cap for warp, both for podman and docker
-      - NET_ADMIN
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=0
-      - net.ipv4.conf.all.src_valid_mark=1
-      - net.ipv4.ip_forward=1
-      - net.ipv6.conf.all.forwarding=1
-      - net.ipv6.conf.all.accept_ra=2
-    volumes:
-      - warp-config-data:/var/lib/cloudflare-warp
-    environment:
-      # If set, will add checks for host connectivity into healthchecks and automatically fix it if necessary.
-      # See https://github.com/cmj2002/warp-docker/blob/main/docs/host-connectivity.md for more information.
-      BETA_FIX_HOST_CONNECTIVITY: false
-      # The arguments passed to GOST. The default is -L :1080, which means to listen on port 1080 in the container at the same time through HTTP and SOCKS5 protocols.
-      # If you want to have UDP support or use advanced features provided by other protocols, you can modify this parameter. For more information, refer to https://v2.gost.run/en/.
-      # If you modify the port number, ensure you modify the `ports:` section above.
-      GOST_ARGS: ${GOST_ARGS:--L :${GOST_SOCKS5_PORT:-1080}}
-      # If set, will register consumer account (WARP or WARP+, in contrast to Zero Trust) even when mdm.xml exists.
-      # You usually don't need this, as mdm.xml are usually used for Zero Trust.
-      # However, some users may want to adjust advanced settings in mdm.xml while still using consumer account.
-      #REGISTER_WHEN_MDM_EXISTS: ""
-      # If set, will work as warp mode and turn NAT on.
-      # You can route L3 traffic through warp-docker to Warp.
-      # See https://github.com/cmj2002/warp-docker/blob/main/docs/nat-gateway.md for more information.
-      WARP_ENABLE_NAT: false
-      # The license key of the WARP client, which is optional.
-      # If you have subscribed to WARP+ service, you can fill in the key in this environment variable.
-      # If you have not subscribed to WARP+ service, you can ignore this environment variable.
-      WARP_LICENSE_KEY_FILE: /run/secrets/warp-license-key
-      # The time to wait for the WARP daemon to start, in seconds.
-      # If the time is too short, it may cause the WARP daemon to not start before using the proxy, resulting in the proxy not working properly.
-      # If the time is too long, it may cause the container to take too long to start. If your server has poor performance, you can increase this value appropriately.
-      WARP_SLEEP: 2 # The default is 2 seconds.
-    healthcheck: &warp-healthcheck
-      test:
-        [
-          "CMD-SHELL",
-          "sh -c \"if curl -s https://cloudflare.com/cdn-cgi/trace | grep -qE '^warp=on|warp=plus$$'; then echo \\\"Cloudflare WARP is active.\\\" && exit 0; else echo \\\"Cloudflare WARP is not active.\\\" && exit 1; fi\"",
-        ]
-      interval: 15s
-      timeout: 10s
-      retries: 10
-      start_period: 60s
-    restart: always
-
-  warp_router:
-    depends_on:
-      warp-nat-gateway:
-        condition: service_started
-    build:
-      dockerfile_inline: |
-        FROM alpine
-        RUN apk update && apk add \
-            bash bc curl docker-cli ipcalc iproute2 iptables jq util-linux && \
-            rm -rf /var/cache/apk/*
-    container_name: warp_router
-    # run the monitor wrapper (it will run warp-nat-setup.sh ONLY when this container's health becomes 'unhealthy')
-    command:
-      - /bin/bash
-      - /usr/local/bin/warp-monitor.sh
-    privileged: true
-    # unsure if any of these are required or not
-    #    cap_add:
-    #      - NET_ADMIN
-    #      - NET_RAW
-    #      - SYS_ADMIN
-    network_mode: host
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          'docker run --rm --network ${DOCKER_NETWORK_NAME:-warp-nat-net} --entrypoint sh curlimages/curl -c ''if curl -s --max-time 4 https://cloudflare.com/cdn-cgi/trace | grep -qE "^warp=on|warp=plus$$"; then exit 0; else exit 1; fi''',
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-    configs:
-      - source: warp-nat-setup.sh
-        target: /usr/local/bin/warp-nat-setup.sh
-        mode: 700
-      - source: warp-monitor.sh
-        target: /usr/local/bin/warp-monitor.sh
-        mode: 700
-    volumes:
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
-      - /etc/iproute2/rt_tables:/etc/iproute2/rt_tables:rw
-      - /proc:/proc:rw
-    environment:
-      DOCKER_NETWORK_NAME: ${DOCKER_NETWORK_NAME:-warp-nat-net}
-      WARP_CONTAINER_NAME: ${WARP_CONTAINER_NAME:-warp-nat-gateway}
-      HOST_VETH_IP: ${HOST_VETH_IP:-169.254.100.1}
-      CONT_VETH_IP: ${CONT_VETH_IP:-169.254.100.2}
-      ROUTING_TABLE: ${ROUTING_TABLE:-warp-nat-routing}
-      VETH_HOST: ${VETH_HOST:-veth-warp} # 9 character maximum (Linux interface name limit is 15)
-      ROUTER_CONTAINER_NAME: ${ROUTER_CONTAINER_NAME:-warp_router}
-      WARP_NAT_NET_SUBNET: ${WARP_NAT_NET_SUBNET:-10.0.2.0/24}
-      WARP_NAT_NET_GATEWAY: ${WARP_NAT_NET_GATEWAY:-10.0.2.1}
-      RETRY_SETUP_AFTER: ${RETRY_SETUP_AFTER:-12} # retry setup after N consecutive health check failures
-      SLEEP_INTERVAL: ${SLEEP_INTERVAL:-5} # seconds between health checks
-    restart: always
-
-  ip-checker-warp:
-    # 🔹🔹 IP Checker WARP 🔹🔹
-    # This is a service that checks the IP address of the container.
-    # It uses the WARP network interface.
-    image: docker.io/alpine
-    container_name: ip-checker-warp
-    networks:
-      - warp-nat-net
-    command:
-      - /bin/sh
-      - -c
-      - |
-        apk add --no-cache curl ipcalc
-        while true; do echo "$(date): $(curl -s --max-time 4 ifconfig.me)"; sleep 5; done
-    # End of Selection
-    healthcheck: *warp-healthcheck
-    restart: always

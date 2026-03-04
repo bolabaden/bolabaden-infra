@@ -463,11 +463,15 @@ configs:
               traefikerrorreplace:
                 matchStatus:
                   - 418
-                replaceStatus: 404
+                # Use a synthetic status that is handled globally by bolabaden-error-pages.
+                # This keeps catchall UX while avoiding replacement of real API/backend 4xx/5xx responses.
+                replaceStatus: 503  # 404
           bolabaden-error-pages:
             errors:
               status:
-                - 400-599
+                # Only handle synthetic catchall status mapped above.
+                # Do not rewrite real service/API error responses.
+                - 503  # 400-599
               service: bolabaden-nextjs@file
               query: /api/error/{status}
           nginx-auth:
@@ -885,24 +889,23 @@ services:
     volumes:
       - ${CONFIG_PATH:-./volumes}/traefik/tinyauth:/data
     environment:
-      SECRET_FILE: /run/secrets/tinyauth-secret
-      APP_URL: ${TINYAUTH_APP_URL:-https://auth.$DOMAIN}
-      USERS: $TINYAUTH_USERS
+      TINYAUTH_APPURL: ${TINYAUTH_APP_URL:-https://auth.$DOMAIN}
+      TINYAUTH_AUTH_USERS: $TINYAUTH_USERS
       # Google OAuth Configuration
-      GOOGLE_CLIENT_ID: ${TINYAUTH_GOOGLE_CLIENT_ID:?}
-      GOOGLE_CLIENT_SECRET_FILE: /run/secrets/tinyauth-google-client-secret
+      TINYAUTH_OAUTH_PROVIDERS_GOOGLE_CLIENTID: ${TINYAUTH_GOOGLE_CLIENT_ID:?}
+      TINYAUTH_OAUTH_PROVIDERS_GOOGLE_CLIENTSECRETFILE: /run/secrets/tinyauth-google-client-secret
       # GitHub OAuth Configuration
-      GITHUB_CLIENT_ID: ${TINYAUTH_GITHUB_CLIENT_ID:?}
-      GITHUB_CLIENT_SECRET_FILE: /run/secrets/tinyauth-github-client-secret
+      TINYAUTH_OAUTH_PROVIDERS_GITHUB_CLIENTID: ${TINYAUTH_GITHUB_CLIENT_ID:?}
+      TINYAUTH_OAUTH_PROVIDERS_GITHUB_CLIENTSECRETFILE: /run/secrets/tinyauth-github-client-secret
       # Additional recommended settings
-      SESSION_EXPIRY: ${TINYAUTH_SESSION_EXPIRY:-604800} # 2 weeks session expiry
-      COOKIE_SECURE: ${TINYAUTH_COOKIE_SECURE:-true} # Send cookie only with HTTPS
-      APP_TITLE: ${TINYAUTH_APP_TITLE:-$DOMAIN} # Customize login page title
-      LOGIN_MAX_RETRIES: ${TINYAUTH_LOGIN_MAX_RETRIES:-15} # Maximum login attempts before account lockout
-      LOGIN_TIMEOUT: ${TINYAUTH_LOGIN_TIMEOUT:-300} # Lock account for 5 minutes after too many failed attempts
-      OAUTH_AUTO_REDIRECT: ${TINYAUTH_OAUTH_AUTO_REDIRECT:-none} # Options: none, github, google, or generic
+      TINYAUTH_AUTH_SESSIONEXPIRY: ${TINYAUTH_SESSION_EXPIRY:-604800} # 2 weeks session expiry
+      TINYAUTH_AUTH_SECURECOOKIE: ${TINYAUTH_COOKIE_SECURE:-true} # Send cookie only with HTTPS
+      TINYAUTH_UI_TITLE: ${TINYAUTH_APP_TITLE:-$DOMAIN} # Customize login page title
+      TINYAUTH_AUTH_LOGINMAXRETRIES: ${TINYAUTH_LOGIN_MAX_RETRIES:-15} # Maximum login attempts before account lockout
+      TINYAUTH_AUTH_LOGINTIMEOUT: ${TINYAUTH_LOGIN_TIMEOUT:-300} # Lock account for 5 minutes after too many failed attempts
+      TINYAUTH_OAUTH_AUTOREDIRECT: ${TINYAUTH_OAUTH_AUTO_REDIRECT:-none} # Options: none, github, google, or generic
       # Uncomment below if you want to restrict OAuth login to specific users
-      OAUTH_WHITELIST: $TINYAUTH_OAUTH_WHITELIST  # e.g. user1,user2,/^admin.>
+      TINYAUTH_OAUTH_WHITELIST: $TINYAUTH_OAUTH_WHITELIST  # e.g. user1,user2,/^admin.>
     labels:
       traefik.enable: true
       traefik.http.services.tinyauth.loadbalancer.server.port: 3000
@@ -1011,8 +1014,13 @@ services:
       SECRETS_PATH: /work/secrets
       CROWDSEC_CONTAINER_NAME: crowdsec
       CROWDSEC_BOUNCER_NAME: ${CROWDSEC_BOUNCER_NAME:-traefik-bouncer}
+      CROWDSEC_BOUNCER_ENABLED: ${CROWDSEC_BOUNCER_ENABLED:-true}
+      CROWDSEC_ORGANIZATION_ID: ${CROWDSEC_ORGANIZATION_ID:-}
+      CROWDSEC_AGENT_USERNAME: ${CROWDSEC_AGENT_USERNAME:-}
+      CROWDSEC_LAPI_KEY: ${CROWDSEC_LAPI_KEY:-}
       CROWDSEC_WAIT_SECONDS: ${CROWDSEC_WAIT_SECONDS:-180}
       AUTO_EXIT_DELAY: ${CROWDSEC_AUTO_EXIT_DELAY:-30}
+      CROWDSEC_LAPI_PORT: ${CROWDSEC_LAPI_PORT:-8080}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${CONFIG_PATH:-./volumes}:/work/config
