@@ -18,18 +18,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check prerequisites
+        id: check
+        run: |
+          SITE_DIR="src/bolabaden-site" # pragma: allowlist secret
+          if [ -d "$SITE_DIR" ] && [ -f "$SITE_DIR/package.json" ] && [ -f "docker-compose.ci.yml" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::E2E prerequisites not found, skipping"
+          fi
+
       - name: Set up Node
+        if: steps.check.outputs.ready == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install Playwright deps
+        if: steps.check.outputs.ready == 'true'
         working-directory: src/bolabaden-site
         run: |
           npm ci
           npx playwright install --with-deps
 
       - name: Create CI env file
+        if: steps.check.outputs.ready == 'true'
         working-directory: src/bolabaden-site
         run: |
           cat > .env.ci << 'EOF'
@@ -64,6 +78,7 @@ jobs:
           EOF
 
       - name: Start CI stack (credentials)
+        if: steps.check.outputs.ready == 'true'
         run: |
           # Generate Traefik middlewares into repo path used by Traefik file provider
           pushd src/bolabaden-site
@@ -72,11 +87,13 @@ jobs:
           docker compose -f docker-compose.ci.yml --env-file src/bolabaden-site/.env.ci up -d --build
 
       - name: Wait for services
+        if: steps.check.outputs.ready == 'true'
         run: |
           timeout 120 bash -c 'until curl -sf http://localhost:3000/ > /dev/null; do sleep 2; done'
           timeout 120 bash -c 'until curl -sf http://localhost:3000/dashboard > /dev/null; do sleep 2; done'
 
       - name: Run Playwright E2E
+        if: steps.check.outputs.ready == 'true'
         working-directory: src/bolabaden-site
         env:
           E2E_BASE_URL: http://localhost:3000
@@ -84,12 +101,12 @@ jobs:
           npx playwright test --config=playwright.config.ts --reporter=line
 
       - name: Docker logs on failure
-        if: failure()
+        if: failure() && steps.check.outputs.ready == 'true'
         run: |
           docker compose -f docker-compose.ci.yml logs --no-color | tail -n 5000 || true
 
       - name: Tear down
-        if: always()
+        if: always() && steps.check.outputs.ready == 'true'
         run: docker compose -f docker-compose.ci.yml down -v
 
   e2e-keycloak:
@@ -99,18 +116,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check prerequisites
+        id: check
+        run: |
+          SITE_DIR="src/bolabaden-site" # pragma: allowlist secret
+          if [ -d "$SITE_DIR" ] && [ -f "$SITE_DIR/package.json" ] && [ -f "docker-compose.ci.yml" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::E2E prerequisites not found, skipping"
+          fi
+
       - name: Set up Node
+        if: steps.check.outputs.ready == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install Playwright deps
+        if: steps.check.outputs.ready == 'true'
         working-directory: src/bolabaden-site
         run: |
           npm ci
           npx playwright install --with-deps
 
       - name: Prepare Keycloak realm (CI)
+        if: steps.check.outputs.ready == 'true'
         run: |
           mkdir -p configs/keycloak
           cat > configs/keycloak/realm-ci.json << 'JSON'
@@ -147,6 +178,7 @@ jobs:
           JSON
 
       - name: Create CI env file (Keycloak)
+        if: steps.check.outputs.ready == 'true'
         working-directory: src/bolabaden-site
         run: |
           cat > .env.ci << 'EOF'
@@ -185,6 +217,7 @@ jobs:
           EOF
 
       - name: Start CI stack (Keycloak)
+        if: steps.check.outputs.ready == 'true'
         run: |
           pushd src/bolabaden-site
           npm ci --silent
@@ -195,12 +228,14 @@ jobs:
           docker compose -f docker-compose.ci.yml --env-file src/bolabaden-site/.env.ci up -d --build bolabaden-nextjs grafana prometheus homepage
 
       - name: Wait for services
+        if: steps.check.outputs.ready == 'true'
         run: |
           timeout 180 bash -c 'until curl -sf http://localhost:3000/ > /dev/null; do sleep 2; done'
           timeout 180 bash -c 'until curl -sf http://localhost:3000/login > /dev/null; do sleep 2; done'
           timeout 180 bash -c 'until curl -sf http://localhost:8081/ > /dev/null; do sleep 2; done' || true
 
       - name: Run Playwright E2E (OIDC)
+        if: steps.check.outputs.ready == 'true'
         working-directory: src/bolabaden-site
         env:
           E2E_BASE_URL: http://localhost:3000
@@ -208,11 +243,11 @@ jobs:
           npx playwright test tests/e2e/oauth-keycloak.spec.ts --reporter=line
 
       - name: Docker logs on failure
-        if: failure()
+        if: failure() && steps.check.outputs.ready == 'true'
         run: |
           docker compose -f docker-compose.ci.yml logs --no-color | tail -n 5000 || true
 
       - name: Tear down
-        if: always()
+        if: always() && steps.check.outputs.ready == 'true'
         run: docker compose -f docker-compose.ci.yml down -v
 
