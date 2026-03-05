@@ -47,8 +47,10 @@ jobs:
       run: |
         env \
           DOMAIN=localhost TS_HOSTNAME=dev STACK_NAME=dev \
-          SECRETS_PATH=/tmp/dev-secrets ROOT_DIR=${{ github.workspace }} \
-          CONFIG_PATH=${{ github.workspace }}/volumes \
+          SECRETS_PATH=/tmp/dev-secrets SECRETS_DIR=/tmp/dev-secrets \
+          ROOT_DIR=. ROOT_PATH=. CONFIG_PATH=./volumes \
+          CERTS_DIR=./certs CERTS_PATH=./certs \
+          DATA_DIR=./data DATA_PATH=./data \
           SEARXNG_SECRET=ci REDIS_PASSWORD=ci SUDO_PASSWORD=ci \
           NGINX_AUTH_API_KEY=ci PROWLARR_API_KEY=ci REALDEBRID_TOKEN=ci \
           REALDEBRID_API_KEY=ci ACME_RESOLVER_EMAIL=ci@ci.test \
@@ -72,8 +74,10 @@ jobs:
       run: |
         SERVICE_COUNT=$(env \
           DOMAIN=localhost TS_HOSTNAME=dev STACK_NAME=dev \
-          SECRETS_PATH=/tmp/dev-secrets ROOT_DIR=${{ github.workspace }} \
-          CONFIG_PATH=${{ github.workspace }}/volumes \
+          SECRETS_PATH=/tmp/dev-secrets SECRETS_DIR=/tmp/dev-secrets \
+          ROOT_DIR=. ROOT_PATH=. CONFIG_PATH=./volumes \
+          CERTS_DIR=./certs CERTS_PATH=./certs \
+          DATA_DIR=./data DATA_PATH=./data \
           SEARXNG_SECRET=ci REDIS_PASSWORD=ci SUDO_PASSWORD=ci \
           NGINX_AUTH_API_KEY=ci PROWLARR_API_KEY=ci REALDEBRID_TOKEN=ci \
           REALDEBRID_API_KEY=ci ACME_RESOLVER_EMAIL=ci@ci.test \

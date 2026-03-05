@@ -85,9 +85,12 @@ jobs:
         touch src/compose2hcl/gh-pages/.nojekyll
         
     - name: Setup Pages
+      id: pages
       uses: actions/configure-pages@v4
+      continue-on-error: true
       
     - name: Upload artifact
+      if: steps.pages.outcome == 'success'
       uses: actions/upload-pages-artifact@v3
       with:
         path: src/compose2hcl/gh-pages

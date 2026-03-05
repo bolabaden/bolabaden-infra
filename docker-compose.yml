@@ -90,24 +90,6 @@ configs:
       \  - LinkedIn:\n    - abbr: LI\n      href: https://www.linkedin.com/in/boden-crouch-555897193/\n\
       \n- AI/Research:\n  - ai-researchwizard:\n    - abbr: GP\n      href: https://gptr.$DOMAIN/\n\
       \  - searxng:\n    - abbr: SE\n      href: https://searxng.$DOMAIN/\n"
-  mcp_servers.json:
-    name: mcp_servers.json
-    content: "{\n  \"mcpServers\": {\n    \"firecrawl\": {\n      \"type\": \"stdio\"\
-      ,\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n       \
-      \ \"firecrawl-mcp@latest\"\n      ],\n      \"env\": {\n        \"FIRE_CRAWL_API_KEY\"\
-      : \"fc-e0e316bead3d497fb24d42ea21d5daf6\",\n        \"FIRE_CRAWL_API_URL\":\
-      \ \"https://firecrawl-api.bolabaden.org\",\n        \"FIRECRAWL_API_KEY\": \"\
-      fc-e0e316bead3d497fb24d42ea21d5daf6\",\n        \"FIRECRAWL_API_URL\": \"https://firecrawl-api.bolabaden.org\"\
-      \n      },\n      \"alwaysAllow\": [\n        \"firecrawl_agent_status\",\n\
-      \        \"firecrawl_agent\",\n        \"firecrawl_check_crawl_status\",\n \
-      \       \"firecrawl_crawl\",\n        \"firecrawl_extract\",\n        \"firecrawl_map\"\
-      ,\n        \"firecrawl_scrape\",\n        \"firecrawl_search\"\n      ],\n \
-      \     \"disabledTools\": [],\n      \"disabled\": false,\n      \"gallery\"\
-      : \"https://api.mcp.github.com\",\n      \"version\": \"1.0.0\"\n    },\n  \
-      \  \"pyghidra-mcp\": {\n      \"type\": \"stdio\",\n      \"command\": \"uvx\"\
-      ,\n      \"args\": [\n        \"pyghidra-mcp\"\n      ],\n      \"env\": {\n\
-      \        \"GHIDRA_API_KEY\": \"sk_Zn65N60A_ko2IUl3F_0IhACfjkEEgfluBCF1LLqcPY\"\
-      \n      }\n    }\n  }\n}\n"
 services:
   mongodb:
     image: docker.io/mongo
