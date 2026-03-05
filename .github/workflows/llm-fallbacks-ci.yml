@@ -55,7 +55,7 @@ jobs:
         python -m pytest tests/ -v --cov=llm_fallbacks --cov-report=xml
         
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
         file: ./src/llm_fallbacks/coverage.xml
         flags: unittests
