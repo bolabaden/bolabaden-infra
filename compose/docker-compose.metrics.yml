@@ -23,18 +23,11 @@ configs:
       #
 
       # possible values : production, development
-      app_mode = production
-
-      # instance name, defaults to HOSTNAME environment variable value or hostname if HOSTNAME var is empty
-      instance_name = $$HOSTNAME
-
-      #################################### Paths ###############################
       [paths]
       # Path to where grafana can store temp files, sessions, and the sqlite3 db (if that is used)
       data = data
 
       # Temporary files in `data` directory older than given duration will be removed
-      temp_data_lifetime = 24h
 
       # Directory where grafana can store logs
       logs = data/log
@@ -5013,11 +5006,7 @@ configs:
         wechat_api_corp_id: ${ALERTMANAGER_WECHAT_API_CORP_ID:-}
         telegram_api_url: ${ALERTMANAGER_TELEGRAM_API_URL:-https://api.telegram.org}
         telegram_bot_token: ${ALERTMANAGER_TELEGRAM_BOT_TOKEN:-}
-        telegram_chat_id: ${ALERTMANAGER_TELEGRAM_CHAT_ID:-}
         webex_api_url: ${ALERTMANAGER_WEBEX_API_URL:-https://webexapis.com/v1/messages}
-        webex_room_id: ${ALERTMANAGER_WEBEX_ROOM_ID:-}
-        discord_api_url: ${ALERTMANAGER_DISCORD_API_URL:-}
-        discord_webhook_url: ${ALERTMANAGER_DISCORD_WEBHOOK_URL:-}
 
       # The directory from which notification templates are read.
       templates:
@@ -5071,7 +5060,7 @@ configs:
           email_configs:
             - to: ${ALERTMANAGER_EMAIL_TO:-admin@${DOMAIN:-localhost}}
               headers:
-                Subject: ${ALERTMANAGER_EMAIL_SUBJECT:-'[Alerting] {{ .GroupLabels.alertname }}'}
+                Subject: ${ALERTMANAGER_EMAIL_SUBJECT:-"[Alerting] Alert"}
               send_resolved: ${ALERTMANAGER_SEND_RESOLVED:-true}
 
         - name: 'critical'
@@ -5081,7 +5070,7 @@ configs:
           email_configs:
             - to: ${ALERTMANAGER_EMAIL_TO:-admin@${DOMAIN:-localhost}}
               headers:
-                Subject: ${ALERTMANAGER_EMAIL_SUBJECT_CRITICAL:-'[CRITICAL] {{ .GroupLabels.alertname }}'}
+                Subject: ${ALERTMANAGER_EMAIL_SUBJECT_CRITICAL:-"[CRITICAL] Alert"}
               send_resolved: ${ALERTMANAGER_SEND_RESOLVED:-true}
 
         - name: 'warning'
@@ -5091,7 +5080,7 @@ configs:
           email_configs:
             - to: ${ALERTMANAGER_EMAIL_TO:-admin@${DOMAIN:-localhost}}
               headers:
-                Subject: ${ALERTMANAGER_EMAIL_SUBJECT_WARNING:-'[WARNING] {{ .GroupLabels.alertname }}'}
+                Subject: ${ALERTMANAGER_EMAIL_SUBJECT_WARNING:-"[WARNING] Alert"}
               send_resolved: ${ALERTMANAGER_SEND_RESOLVED:-true}
 
         - name: 'page'
@@ -5101,7 +5090,7 @@ configs:
           email_configs:
             - to: ${ALERTMANAGER_EMAIL_TO:-admin@${DOMAIN:-localhost}}
               headers:
-                Subject: ${ALERTMANAGER_EMAIL_SUBJECT_PAGE:-'[PAGE] {{ .GroupLabels.alertname }}'}
+                Subject: ${ALERTMANAGER_EMAIL_SUBJECT_PAGE:-"[PAGE] Alert"}
               send_resolved: ${ALERTMANAGER_SEND_RESOLVED:-true}
 
         # Slack Receiver (uncomment and configure if using Slack)
@@ -15881,9 +15870,6 @@ configs:
             store: inmemory
         replication_factor: ${LOKI_REPLICATION_FACTOR:-1}
         path_prefix: ${LOKI_PATH_PREFIX:-/loki}
-        storage:
-          filesystem:
-            directory: ${LOKI_STORAGE_DIRECTORY:-/loki/chunks}
 
       schema_config:
         configs:
@@ -15907,6 +15893,7 @@ configs:
         working_directory: ${LOKI_COMPACTOR_WORKING_DIR:-/loki/compactor}
         compaction_interval: ${LOKI_COMPACTION_INTERVAL:-10m}
         retention_enabled: ${LOKI_RETENTION_ENABLED:-true}
+        delete_request_store: ${LOKI_DELETE_REQUEST_STORE:-filesystem}
         retention_delete_delay: ${LOKI_RETENTION_DELETE_DELAY:-2h}
         retention_delete_worker_count: ${LOKI_RETENTION_DELETE_WORKER_COUNT:-150}
 
@@ -15944,7 +15931,6 @@ configs:
         chunk_target_size: ${LOKI_CHUNK_TARGET_SIZE:-1572864}  # 1.5MB
         max_chunk_age: ${LOKI_MAX_CHUNK_AGE:-1h}
         chunk_retain_period: ${LOKI_CHUNK_RETAIN_PERIOD:-15s}
-        max_transfer_retries: ${LOKI_MAX_TRANSFER_RETRIES:-0}
         wal:
           enabled: ${LOKI_WAL_ENABLED:-true}
           dir: ${LOKI_WAL_DIR:-/loki/wal}

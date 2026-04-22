@@ -74,7 +74,20 @@ sudo tee /etc/logrotate.d/docker-maintenance > /dev/null << 'EOF'
     create 644 root root
 }
 EOF
-echo "✅ Logrotate configured"
+
+# Application logs under /opt/docker/data (e.g. homepage.log) - copytruncate so app can keep file open
+sudo tee /etc/logrotate.d/docker-data-app-logs > /dev/null << 'EOF'
+/opt/docker/data/*/logs/*.log {
+    daily
+    missingok
+    rotate 7
+    compress
+    delaycompress
+    notifempty
+    copytruncate
+}
+EOF
+echo "✅ Logrotate configured (maintenance + app logs under /opt/docker/data/*/logs/)"
 echo ""
 
 # Step 5: Merge maintenance environment variables

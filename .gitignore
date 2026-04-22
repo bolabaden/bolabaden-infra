@@ -107,3 +107,4 @@ infra/deploy
 *.test
 *.out
 *.backup-*
+bootstrap-secrets.defaults.env

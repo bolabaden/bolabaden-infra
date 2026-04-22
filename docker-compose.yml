@@ -1,70 +1,49 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
-
-x-common-env: &common-env
+x-common-env:
   TZ: ${TZ:-America/Chicago}
   PUID: ${PUID:-1001}
   PGID: ${PGID:-999}
   UMASK: ${UMASK:-002}
-
 secrets:
   signing_secret:
     file: ${SECRETS_PATH:?}/signing_secret.txt
-  #ssh_public_key:
-  #  file: ${CONFIG_PATH:-./volumes}/biodecompwarehouse/.ssh/id_oldrepublicdevs_rsa.pub
-  #ssh_private_key:
-  #  file: ${CONFIG_PATH:-./volumes}/biodecompwarehouse/.ssh/id_oldrepublicdevs_rsa
-
 networks:
-  # https://docs.docker.com/engine/network/drivers/bridge/#differences-between-user-defined-bridges-and-the-default-bridge
   warp-nat-net:
-    external: true # docker network create --attachable -o com.docker.network.bridge.name=br_warp-nat-net -o com.docker.network.bridge.enable_ip_masquerade=false warp-nat-net --subnet=${WARP_NAT_NET_SUBNET:-10.0.2.0/24} --gateway=${WARP_NAT_NET_GATEWAY:-10.0.2.1}
+    external: true  # docker network create --driver bridge --opt com.docker.network.bridge.name=br_warp-nat-net --opt com.docker.network.bridge.enable_ip_masquerade=false --subnet 10.0.2.0/24 --gateway 10.0.2.1 warp-nat-net
     attachable: true
     driver_opts:
       com.docker.network.bridge.name: br_warp-nat-net
-      com.docker.network.bridge.enable_ip_masquerade: "false" # required for custom NAT control
+      com.docker.network.bridge.enable_ip_masquerade: 'false'
     ipam:
       config:
-        - subnet: ${WARP_NAT_NET_SUBNET:-10.0.2.0/24}
-          gateway: ${WARP_NAT_NET_GATEWAY:-10.0.2.1}
+      - subnet: ${WARP_NAT_NET_SUBNET:-10.0.2.0/24}
+        gateway: ${WARP_NAT_NET_GATEWAY:-10.0.2.1}
   publicnet:
-    #external: true  # docker network create --driver=bridge --attachable publicnet -o com.docker.network.bridge.name=br_publicnet --subnet=${PUBLICNET_SUBNET:-10.76.0.0/16} --gateway=${PUBLICNET_GATEWAY:-10.76.0.1}
     attachable: true
     driver_opts:
       com.docker.network.bridge.name: br_publicnet
     ipam:
       config:
-        - subnet: ${PUBLICNET_SUBNET:-10.76.0.0/16}
-          gateway: ${PUBLICNET_GATEWAY:-10.76.0.1}
+      - subnet: ${PUBLICNET_SUBNET:-10.76.0.0/16}
+        gateway: ${PUBLICNET_GATEWAY:-10.76.0.1}
   backend:
-    #external: true  # docker network create backend -o com.docker.network.bridge.name=br_backend --subnet=${BACKEND_SUBNET:-10.0.7.0/24} --gateway=${BACKEND_GATEWAY:-10.0.7.0}
     attachable: true
     driver_opts:
       com.docker.network.bridge.name: br_backend
     ipam:
       config:
-        - subnet: ${BACKEND_SUBNET:-10.0.7.0/24}
-          gateway: ${BACKEND_GATEWAY:-10.0.7.1}
-
+      - subnet: ${BACKEND_SUBNET:-10.0.7.0/24}
+        gateway: ${BACKEND_GATEWAY:-10.0.7.1}
 include:
-  #  - compose/docker-compose.authentik.yml
-  - compose/docker-compose.coolify-proxy.yml
-  - compose/docker-compose.firecrawl.yml
-  - compose/docker-compose.headscale.yml
-  - compose/docker-compose.llm.yml
-  - compose/docker-compose.metrics.yml
-  #  - compose/docker-compose.unsend.yml
-  - compose/docker-compose.stremio-group.yml
-  - compose/docker-compose.warp-nat-routing.yml
-#  - compose/docker-compose.vpn-docker.yml
-
-
-
-# reminder: everything in docker-compose.yml's `configs:` section must have dollar signs ($) escaped with another dollar sign ($$).
-# Single dollar sign specifies that we're expecting docker to resolve the variable itself at deploy time (e.g. when `docker compose up` is ran).
-# Double dollar sign specifies a literal dollar sign in the configuration content.
+- compose/docker-compose.coolify-proxy.yml
+- compose/docker-compose.firecrawl.yml
+- compose/docker-compose.headscale.yml
+- compose/docker-compose.llm.yml
+- compose/docker-compose.metrics.yml
+- compose/docker-compose.stremio-group.yml
+- compose/docker-compose.warp-nat-routing.yml
 configs:
   watchtower-config.json:
-    file: ~/.docker/config.json # docker credentials acquired through `docker login` on host!
+    file: ~/.docker/config.json
   session_manager.py:
     file: ${ROOT_PATH:-.}/projects/kotor/kotorscript-session-manager/session_manager.py
   session_manager_index.html:
@@ -72,484 +51,156 @@ configs:
   session_manager_waiting.html:
     file: ${ROOT_PATH:-.}/projects/kotor/kotorscript-session-manager/waiting.html
   gethomepage-custom.css:
-    content: |
-      /* Custom CSS for $DOMAIN - $TS_HOSTNAME */
+    content: '/* Custom CSS for $DOMAIN - $TS_HOSTNAME */
+
+      '
   gethomepage-custom.js:
-    content: |
-      /* Custom JavaScript for Bolabaden */
+    content: '/* Custom JavaScript for Bolabaden */
+
+      '
   gethomepage-docker.yaml:
-    content: |
-      ---
-      # For configuration options and examples, please see:
-      # https://gethomepage.dev/configs/docker/
-
-      my-docker:
-      #  socket: /var/run/docker.sock
-        host: dockerproxy-ro
-        port: 2375
+    content: "---\n# For configuration options and examples, please see:\n# https://gethomepage.dev/configs/docker/\n\
+      \nmy-docker:\n#  socket: /var/run/docker.sock\n  host: dockerproxy-ro\n  port:\
+      \ 2375\n"
   gethomepage-widgets.yaml:
-    content: |
-      ---
-      # For configuration options and examples, please see:
-      # https://gethomepage.dev/configs/info-widgets/
-
-      - resources:
-          cpu: true
-          memory: true
-          disk: /
-
-      - search:
-          provider: duckduckgo
-          target: _blank
+    content: "---\n# For configuration options and examples, please see:\n# https://gethomepage.dev/configs/info-widgets/\n\
+      \n- resources:\n    cpu: true\n    memory: true\n    disk: /\n\n- search:\n\
+      \    provider: duckduckgo\n    target: _blank\n"
   gethomepage-settings.yaml:
-    content: |
-      ---
+    content: '---
+
       # For configuration options and examples, please see:
+
       # https://gethomepage.dev/configs/settings/
 
+
       # Weather providers disabled - API keys not configured
+
       # providers:
+
       #   openweathermap: $OPENWEATHERMAP_API_KEY
+
       #   weatherapi: $WEATHERAPI_API_KEY
+
+      '
   gethomepage-bookmarks.yaml:
-    content: |
-      ---
-      # For configuration options and examples, please see:
-      # https://gethomepage.dev/configs/bookmarks
-
-      - Developer:
-        - Github:
-          - abbr: GH
-            href: https://github.com/bolabaden
-
-      - Portfolio:
-        - $DOMAIN:
-          - abbr: BO
-            href: https://$DOMAIN/
-        - LinkedIn:
-          - abbr: LI
-            href: https://www.linkedin.com/in/boden-crouch-555897193/
-
-      - AI/Research:
-        - ai-researchwizard:
-          - abbr: GP
-            href: https://gptr.$DOMAIN/
-        - searxng:
-          - abbr: SE
-            href: https://searxng.$DOMAIN/
-
-  biodecompwarehouse-ssh-setup.sh:
-    content: |
-      #!/bin/bash
-      set -euo pipefail
-
-      # SSH Setup Script for biodecompwarehouse container
-      # This script sets up secure SSH access within the container
-
-      SSH_USER="$${SSH_USER:-root}"
-      SSH_PUBLIC_KEY="/run/secrets/ssh_public_key"
-      SSH_PRIVATE_KEY="/run/secrets/ssh_private_key"
-      SSHD_CONFIG="/etc/ssh/sshd_config"
-
-      echo "🔐 Starting SSH setup for biodecompwarehouse container..."
-
-      # Install OpenSSH server and user management tools if not already installed
-      if ! command -v sshd &> /dev/null; then
-          echo "📦 Installing OpenSSH server..."
-          if command -v apt-get &> /dev/null; then
-              apt-get update -qq
-              apt-get install -y -qq openssh-server openssh-client
-              apt-get clean
-              rm -rf /var/lib/apt/lists/*
-          elif command -v apk &> /dev/null; then
-              apk add --no-cache openssh openssh-server shadow
-          elif command -v yum &> /dev/null; then
-              yum install -y -q openssh-server openssh-clients shadow-utils
-              yum clean all
-          else
-              echo "❌ ERROR: Cannot determine package manager. Please install OpenSSH manually."
-              exit 1
-          fi
-      fi
-
-      # Create user if it doesn't exist (for non-root users)
-      if [ "$${SSH_USER}" != "root" ]; then
-          echo "👤 Setting up user $${SSH_USER}..."
-          if ! id "$${SSH_USER}" &>/dev/null; then
-              echo "➕ Creating user $${SSH_USER}..."
-              if command -v useradd &> /dev/null; then
-                  useradd -m -s /bin/bash "$${SSH_USER}" 2>/dev/null || useradd -m -s /bin/sh "$${SSH_USER}" 2>/dev/null || true
-              fi
-          fi
-          SSH_HOME="$$(getent passwd "$${SSH_USER}" | cut -d: -f6)"
-          if [ -z "$${SSH_HOME}" ]; then
-              SSH_HOME="/home/$${SSH_USER}"
-          fi
-      else
-          SSH_HOME="/root"
-      fi
-
-      SSH_DIR="$${SSH_HOME}/.ssh"
-      AUTHORIZED_KEYS="$${SSH_DIR}/authorized_keys"
-
-      # Create SSH directory with proper permissions
-      echo "📁 Creating SSH directory structure for $${SSH_USER}..."
-      mkdir -p "$${SSH_DIR}"
-      chmod 700 "$${SSH_DIR}"
-      chown "$${SSH_USER}:$${SSH_USER}" "$${SSH_DIR}" 2>/dev/null || true
-
-      # Set up authorized_keys from public key secret
-      if [ -f "$${SSH_PUBLIC_KEY}" ]; then
-          echo "🔑 Setting up authorized_keys from secret..."
-          cp "$${SSH_PUBLIC_KEY}" "$${AUTHORIZED_KEYS}"
-          chmod 600 "$${AUTHORIZED_KEYS}"
-          chown "$${SSH_USER}:$${SSH_USER}" "$${AUTHORIZED_KEYS}" 2>/dev/null || true
-          echo "✅ Public key installed successfully for $${SSH_USER}"
-      else
-          echo "⚠️  WARNING: SSH public key secret not found at $${SSH_PUBLIC_KEY}"
-      fi
-
-      # Set up SSH host keys (persist across reboots)
-      SSH_HOST_KEYS_DIR="/etc/ssh/ssh_host_keys"
-      mkdir -p "$${SSH_HOST_KEYS_DIR}"
-
-      # Generate host keys if they don't exist
-      for key_type in rsa ecdsa ed25519; do
-          key_file="$${SSH_HOST_KEYS_DIR}/ssh_host_$${key_type}_key"
-          if [ ! -f "$${key_file}" ]; then
-              echo "🔐 Generating $${key_type} host key..."
-              ssh-keygen -t "$${key_type}" -f "$${key_file}" -N "" -q
-          fi
-      done
-
-      # Link host keys to standard location
-      ln -sf "$${SSH_HOST_KEYS_DIR}/ssh_host_rsa_key" /etc/ssh/ssh_host_rsa_key
-      ln -sf "$${SSH_HOST_KEYS_DIR}/ssh_host_ecdsa_key" /etc/ssh/ssh_host_ecdsa_key
-      ln -sf "$${SSH_HOST_KEYS_DIR}/ssh_host_ed25519_key" /etc/ssh/ssh_host_ed25519_key
-
-      # Ensure proper permissions on host keys
-      chmod 600 /etc/ssh/ssh_host_*_key
-      chmod 644 /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
-
-      # Create secure SSH daemon configuration
-      echo "⚙️  Configuring SSH daemon..."
-      cat > "$${SSHD_CONFIG}" << 'EOF'
-      # Secure SSH Daemon Configuration for Container
-      # This configuration ensures SSH cannot access host filesystem
-
-      # Basic Settings
-      Port 22
-      Protocol 2
-      AddressFamily inet
-      ListenAddress 0.0.0.0
-
-      # Security Settings - Prevent host filesystem access
-      PermitRootLogin prohibit-password
-      PubkeyAuthentication yes
-      PasswordAuthentication no
-      PermitEmptyPasswords no
-      ChallengeResponseAuthentication no
-      UsePAM no
-
-      # Disable dangerous features that could affect host
-      AllowAgentForwarding no
-      AllowTcpForwarding no
-      X11Forwarding no
-      PermitTunnel no
-      PermitUserEnvironment no
-
-      # Chroot and isolation (if supported)
-      # UsePrivilegeSeparation sandbox
-
-      # Logging
-      SyslogFacility AUTH
-      LogLevel INFO
-
-      # Connection Settings
-      MaxAuthTries 3
-      MaxSessions 10
-      MaxStartups 10:30:100
-      ClientAliveInterval 300
-      ClientAliveCountMax 2
-      TCPKeepAlive no
-
-      # Compression (disabled for security)
-      Compression no
-
-      # Key Exchange and Ciphers (modern, secure)
-      KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
-      Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
-      MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256,hmac-sha2-512
-
-      # Host Key Algorithms
-      HostKeyAlgorithms ssh-ed25519,ecdsa-sha2-nistp256,rsa-sha2-512,rsa-sha2-256
-
-      # Disable weak algorithms
-      UseDNS no
-      StrictModes yes
-      IgnoreRhosts yes
-      HostbasedAuthentication no
-      RhostsRSAAuthentication no
-
-      # Banner (optional - can be customized)
-      # Banner /etc/ssh/banner
-
-      # Match block for additional restrictions (if needed)
-      # Match User *
-      #     ForceCommand /bin/bash
-      EOF
-
-      chmod 600 "$${SSHD_CONFIG}"
-
-      # Create SSH banner (optional security notice)
-      cat > /etc/ssh/banner << 'EOF'
-      ***************************************************************************
-                                  WARNING - CONTAINER SSH
-      ***************************************************************************
-      You are accessing a containerized SSH session. This is an isolated environment.
-      Access to the host filesystem is restricted. All actions are contained within
-      this container only.
-      ***************************************************************************
-      EOF
-
-      chmod 644 /etc/ssh/banner
-
-      # Update sshd_config to use banner
-      if ! grep -q "^Banner" "$${SSHD_CONFIG}"; then
-          echo "Banner /etc/ssh/banner" >> "$${SSHD_CONFIG}"
-      fi
-
-      # Create necessary directories for SSH
-      mkdir -p /var/run/sshd
-      chmod 755 /var/run/sshd
-
-      # Test SSH configuration
-      echo "🧪 Testing SSH configuration..."
-      if sshd -t; then
-          echo "✅ SSH configuration is valid"
-      else
-          echo "❌ ERROR: SSH configuration test failed"
-          exit 1
-      fi
-
-      # Start SSH daemon in background (non-blocking)
-      echo "🚀 Starting SSH daemon..."
-      /usr/sbin/sshd -D -e &
-      SSHD_PID=$$!
-
-      # Wait a moment for SSH to start
-      sleep 3
-
-      # Verify SSH is running
-      if kill -0 "$${SSHD_PID}" 2>/dev/null; then
-          echo "✅ SSH daemon started successfully (PID: $${SSHD_PID})"
-          # Test SSH port is listening
-          if command -v nc &> /dev/null || command -v netstat &> /dev/null; then
-              if (nc -z localhost 22 2>/dev/null || netstat -ln 2>/dev/null | grep -q ":22 "); then
-                  echo "✅ SSH port 22 is listening"
-              fi
-          fi
-      else
-          echo "❌ ERROR: SSH daemon failed to start"
-          exit 1
-      fi
-
-      echo "✅ SSH setup completed successfully!"
-      echo "📝 SSH is running on port 22 (PID: $${SSHD_PID})"
-      echo "🔐 Only key-based authentication is enabled"
-      echo "🚫 Password authentication is disabled"
-      echo "🔒 Container isolation is enforced"
-
-      # Keep the script running to maintain the background SSH process
-      # This ensures sshd doesn't become orphaned
-      # The script will be backgrounded by the entrypoint, so this is fine
-      wait "$${SSHD_PID}" 2>/dev/null || true
-
-  biodecompwarehouse-sshd_config:
-    content: |
-      # Secure SSH Daemon Configuration for biodecompwarehouse Container
-      # This configuration ensures SSH cannot access host filesystem
-
-      # Basic Settings
-      Port 22
-      Protocol 2
-      AddressFamily inet
-      ListenAddress 0.0.0.0
-
-      # Security Settings - Prevent host filesystem access
-      PermitRootLogin prohibit-password
-      PubkeyAuthentication yes
-      PasswordAuthentication no
-      PermitEmptyPasswords no
-      ChallengeResponseAuthentication no
-      UsePAM no
-
-      # Disable dangerous features that could affect host
-      AllowAgentForwarding no
-      AllowTcpForwarding no
-      X11Forwarding no
-      PermitTunnel no
-      PermitUserEnvironment no
-
-      # Logging
-      SyslogFacility AUTH
-      LogLevel INFO
-
-      # Connection Settings
-      MaxAuthTries 3
-      MaxSessions 10
-      MaxStartups 10:30:100
-      ClientAliveInterval 300
-      ClientAliveCountMax 2
-      TCPKeepAlive no
-
-      # Compression (disabled for security)
-      Compression no
-
-      # Key Exchange and Ciphers (modern, secure)
-      KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
-      Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
-      MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256,hmac-sha2-512
-
-      # Host Key Algorithms
-      HostKeyAlgorithms ssh-ed25519,ecdsa-sha2-nistp256,rsa-sha2-512,rsa-sha2-256
-
-      # Disable weak algorithms
-      UseDNS no
-      StrictModes yes
-      IgnoreRhosts yes
-      HostbasedAuthentication no
-      RhostsRSAAuthentication no
-
-      # Banner
-      Banner /etc/ssh/banner
-
+    content: "---\n# For configuration options and examples, please see:\n# https://gethomepage.dev/configs/bookmarks\n\
+      \n- Developer:\n  - Github:\n    - abbr: GH\n      href: https://github.com/bolabaden\n\
+      \n- Portfolio:\n  - $DOMAIN:\n    - abbr: BO\n      href: https://$DOMAIN/\n\
+      \  - LinkedIn:\n    - abbr: LI\n      href: https://www.linkedin.com/in/boden-crouch-555897193/\n\
+      \n- AI/Research:\n  - ai-researchwizard:\n    - abbr: GP\n      href: https://gptr.$DOMAIN/\n\
+      \  - searxng:\n    - abbr: SE\n      href: https://searxng.$DOMAIN/\n"
 services:
   mongodb:
-    # 🔹🔹 MongoDB 🔹🔹
     image: docker.io/mongo
     container_name: mongodb
     hostname: ${MONGODB_HOSTNAME:-mongodb}
     extra_hosts:
-      - host.docker.internal:host-gateway
+    - host.docker.internal:host-gateway
     networks:
-      - backend
-      - publicnet
+    - backend
+    - publicnet
     expose:
-      - 27017
+    - 27017
     volumes:
-      - ${CONFIG_PATH:-./volumes}/mongodb/data:/data/db
+    - ${CONFIG_PATH:-./volumes}/mongodb/data:/data/db
     labels:
       traefik.enable: true
       traefik.tcp.routers.mongodb.rule: HostSNI(`mongodb.$DOMAIN`) || HostSNI(`mongodb.$TS_HOSTNAME.$DOMAIN`)
       traefik.tcp.routers.mongodb.service: mongodb@docker
       traefik.tcp.routers.mongodb.tls.domains[0].main: $DOMAIN
-      traefik.tcp.routers.mongodb.tls.domains[0].sans: "*.$DOMAIN,$TS_HOSTNAME.$DOMAIN"
+      traefik.tcp.routers.mongodb.tls.domains[0].sans: '*.$DOMAIN,$TS_HOSTNAME.$DOMAIN'
       traefik.tcp.routers.mongodb.tls.passthrough: true
       traefik.tcp.services.mongodb.loadbalancer.server.port: 27017
       traefik.tcp.services.mongodb.loadbalancer.server.tls: true
     healthcheck:
-      test: [ "CMD-SHELL", "mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand(\"ping\").ok' > /dev/null 2>&1 || exit 1" ]
+      test:
+      - CMD-SHELL
+      - mongosh 127.0.0.1:27017/test --quiet --eval 'db.runCommand("ping").ok' > /dev/null
+        2>&1 || exit 1
       interval: 10s
       timeout: 10s
       retries: 5
       start_period: 40s
     restart: always
-
   searxng:
-    # 🔹🔹 SearxNG 🔹🔹  # https://hub.docker.com/r/searxng/searxng
-    # SearxNG is a privacy-respecting, hackable, open-source metasearch engine.
     image: docker.io/searxng/searxng
     container_name: searxng
     hostname: searxng
     extra_hosts:
-      - host.docker.internal:host-gateway
+    - host.docker.internal:host-gateway
     networks:
-      - backend
-      - publicnet
+    - backend
+    - publicnet
     volumes:
-      # touch ${CONFIG_PATH:-./volumes}/searxng/limiter.toml
-      - ${CONFIG_PATH:-./volumes}/searxng/config:/etc/searxng
-      - ${CONFIG_PATH:-./volumes}/searxng/data:/var/cache/searxng
+    - ${CONFIG_PATH:-./volumes}/searxng/config:/etc/searxng
+    - ${CONFIG_PATH:-./volumes}/searxng/data:/var/cache/searxng
     environment:
       SEARXNG_BASE_URL: ${SEARXNG_INTERNAL_URL:-http://searxng:${SEARXNG_PORT:-8080}}
       SEARXNG_SECRET: ${SEARXNG_SECRET:?}
-    #logging:
-    #  driver: "json-file"
-    #  options:
-    #    max-size: "10m"
-    #    max-file: "3"
     labels:
-      # Auto-restart on unhealthy state
-      deunhealth.restart.on.unhealthy: "true"
+      deunhealth.restart.on.unhealthy: 'true'
       traefik.enable: true
       traefik.http.services.searxng.loadbalancer.server.port: ${SEARXNG_PORT:-8080}
       homepage.group: Search
       homepage.name: SearxNG
       homepage.icon: searxng.png
       homepage.href: https://searxng.$DOMAIN/
-      homepage.description: Privacy-focused metasearch that aggregates results from many sources without tracking
+      homepage.description: Privacy-focused metasearch that aggregates results from
+        many sources without tracking
       kuma.searxng.http.name: searxng.$TS_HOSTNAME.$DOMAIN
       kuma.searxng.http.url: https://searxng.$DOMAIN
       kuma.searxng.http.interval: 30
     healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${SEARXNG_PORT:-8080}/ || exit 1" ]
+      test:
+      - CMD-SHELL
+      - wget --no-verbose --tries=1 --spider http://127.0.0.1:${SEARXNG_PORT:-8080}/ || exit 1
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
     restart: always
-
   code-server:
-    # 🔹🔹 Code Server 🔹🔹
-    profiles:
-      - extras
     image: lscr.io/linuxserver/code-server
     container_name: code-server
     hostname: code-server
     extra_hosts:
-      - host.docker.internal:host-gateway
+    - host.docker.internal:host-gateway
     networks:
-      - backend
-      - publicnet
+    - backend
+    - publicnet
     expose:
-      - 8443
+    - ${CODESERVER_PORT:-8443}
     volumes:
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
-      - ${CONFIG_PATH:-./volumes}/code-server/dev/config:/config # Contains all relevant configuration files.
-      - ${ROOT_PATH:-.}:${CODESERVER_DEFAULT_WORKSPACE:-/workspace}
-    # You can set any environment variable from a file by using a special prepend FILE__.
-    # As an example:
-    # FILE__MYVAR="/run/secrets/mysecretvariable"
-    # Will set the environment variable `MYVAR` based on the contents of the `/run/secrets/mysecretvariable` file.
-    #user: ${PUID:-1001}:${PGID:-121}  # run as non-root (see docs: https://docs.linuxserver.io/misc/non-root/)
+    - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
+    - ${CONFIG_PATH:-./volumes}/code-server/dev/config:/config
+    - ${ROOT_PATH:-.}:${CODESERVER_DEFAULT_WORKSPACE:-/workspace}
     environment:
       TZ: ${TZ:-America/Chicago}
       PUID: ${PUID:-1001}
       PGID: ${PGID:-121}
       UMASK: ${UMASK:-002}
-      HASHED_PASSWORD: ${CODESERVER_HASHED_PASSWORD:-} # create with `echo -n "thisismypassword" | argon2 "$$(openssl rand -hex 4)" -e`
-      SUDO_PASSWORD_HASH: ${CODESERVER_SUDO_PASSWORD_HASH:-} # create with `openssl -6 "yourpasswordhere"`
-      PWA_APPNAME: ${CODESERVER_PWA_APPNAME:-code-server.$TS_HOSTNAME.$DOMAIN} # If this optional variable is set, the PWA app will the specified name.
-      DEFAULT_WORKSPACE: ${CODESERVER_DEFAULT_WORKSPACE:-/workspace} # If this optional variable is set, code-server will open this directory by default
+      HASHED_PASSWORD: ${CODESERVER_HASHED_PASSWORD:-}
+      SUDO_PASSWORD_HASH: ${CODESERVER_SUDO_PASSWORD_HASH:-}
+      PWA_APPNAME: ${CODESERVER_PWA_APPNAME:-code-server.$TS_HOSTNAME.$DOMAIN}
+      DEFAULT_WORKSPACE: ${CODESERVER_DEFAULT_WORKSPACE:-/workspace}
     labels:
       traefik.enable: true
-      traefik.http.middlewares.codeserver-redirect.redirectRegex.regex: '^https?://codeserver\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
-      traefik.http.middlewares.codeserver-redirect.redirectRegex.replacement: 'https://code-server.$1$2'
+      traefik.http.middlewares.codeserver-redirect.redirectRegex.regex: ^https?://codeserver\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$
+      traefik.http.middlewares.codeserver-redirect.redirectRegex.replacement: https://code-server.$1$2
       traefik.http.middlewares.codeserver-redirect.redirectRegex.permanent: false
-      # Main router for code-server
       traefik.http.routers.code-server.middlewares: nginx-auth@file
       traefik.http.services.code-server.loadbalancer.server.port: 8443
-      # Routers for redirects
-      traefik.http.routers.codeserver-redirect.rule: Host(`codeserver.$DOMAIN`) || Host(`codeserver.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.codeserver-redirect.rule: Host(`codeserver.$DOMAIN`) ||
+        Host(`codeserver.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.routers.codeserver-redirect.middlewares: codeserver-redirect@docker
       traefik.http.routers.codeserver-redirect.service: code-server@docker
-      # Homepage definitions for code-server
       homepage.group: Infrastructure
       homepage.name: Code Dev
       homepage.icon: code-server.png
       homepage.href: https://code-server.$DOMAIN/
-      homepage.description: In-browser VS Code environment for editing and managing code on this server
+      homepage.description: In-browser VS Code environment for editing and managing
+        code on this server
       kuma.code-server.http.name: code-server.$TS_HOSTNAME.$DOMAIN
       kuma.code-server.http.url: https://code-server.$DOMAIN
       kuma.code-server.http.interval: 60
@@ -557,28 +208,27 @@ services:
     mem_limit: 4G
     mem_reservation: 200M
     restart: always
-
   session-manager:
     profiles:
-      - fixme # TODO: need to create session_manager_index.html and the waiting.html. Do NOT remove this profile until those files are exhaustively created and fully functional to spec.
+    - fixme
     image: alpine
     container_name: session-manager
     hostname: session-manager
     extra_hosts:
-      - host.docker.internal:host-gateway
+    - host.docker.internal:host-gateway
     networks:
-      - backend
-      - publicnet
+    - backend
+    - publicnet
     configs:
-      - source: session_manager_index.html
-        target: /tmp/templates/index.html
-      - source: session_manager_waiting.html
-        target: /tmp/templates/waiting.html
-      - source: session_manager.py
-        target: /session_manager.py
+    - source: session_manager_index.html
+      target: /tmp/templates/index.html
+    - source: session_manager_waiting.html
+      target: /tmp/templates/waiting.html
+    - source: session_manager.py
+      target: /session_manager.py
     volumes:
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
-      - ${CONFIG_PATH:-./volumes}/extensions:${CONFIG_PATH:-./volumes}/extensions
+    - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
+    - ${CONFIG_PATH:-./volumes}/extensions:${CONFIG_PATH:-./volumes}/extensions
     environment:
       DOMAIN: $DOMAIN
       SESSION_MANAGER_PORT: ${SESSION_MANAGER_PORT:-8080}
@@ -587,29 +237,26 @@ services:
       EXT_PATH: ${CONFIG_PATH:-./volumes}/extensions/holo-lsp-1.0.0.vsix
     labels:
       traefik.enable: true
-      # Redirects for legacy/alternate hostnames to holoscript
-      traefik.http.middlewares.holoscripter-redirect.redirectRegex.regex: '^https?://holoscripter\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
-      traefik.http.middlewares.holoscripter-redirect.redirectRegex.replacement: 'https://holoscript.$1$2'
+      traefik.http.middlewares.holoscripter-redirect.redirectRegex.regex: ^https?://holoscripter\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$
+      traefik.http.middlewares.holoscripter-redirect.redirectRegex.replacement: https://holoscript.$1$2
       traefik.http.middlewares.holoscripter-redirect.redirectRegex.permanent: false
-      traefik.http.middlewares.kotorscripter-redirect.redirectRegex.regex: '^https?://kotorscripter\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
-      traefik.http.middlewares.kotorscripter-redirect.redirectRegex.replacement: 'https://holoscript.$1$2'
+      traefik.http.middlewares.kotorscripter-redirect.redirectRegex.regex: ^https?://kotorscripter\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$
+      traefik.http.middlewares.kotorscripter-redirect.redirectRegex.replacement: https://holoscript.$1$2
       traefik.http.middlewares.kotorscripter-redirect.redirectRegex.permanent: false
-      traefik.http.middlewares.kotorscript-redirect.redirectRegex.regex: '^https?://kotorscript\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
-      traefik.http.middlewares.kotorscript-redirect.redirectRegex.replacement: 'https://holoscript.$1$2'
+      traefik.http.middlewares.kotorscript-redirect.redirectRegex.regex: ^https?://kotorscript\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$
+      traefik.http.middlewares.kotorscript-redirect.redirectRegex.replacement: https://holoscript.$1$2
       traefik.http.middlewares.kotorscript-redirect.redirectRegex.permanent: false
-      traefik.http.middlewares.tslscript-redirect.redirectRegex.regex: '^https?://tslscript\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
-      traefik.http.middlewares.tslscript-redirect.redirectRegex.replacement: 'https://holoscript.$1$2'
+      traefik.http.middlewares.tslscript-redirect.redirectRegex.regex: ^https?://tslscript\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$
+      traefik.http.middlewares.tslscript-redirect.redirectRegex.replacement: https://holoscript.$1$2
       traefik.http.middlewares.tslscript-redirect.redirectRegex.permanent: false
-      traefik.http.middlewares.kscript-redirect.redirectRegex.regex: '^https?://kscript\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
-      traefik.http.middlewares.kscript-redirect.redirectRegex.replacement: 'https://holoscript.$1$2'
+      traefik.http.middlewares.kscript-redirect.redirectRegex.regex: ^https?://kscript\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$
+      traefik.http.middlewares.kscript-redirect.redirectRegex.replacement: https://holoscript.$1$2
       traefik.http.middlewares.kscript-redirect.redirectRegex.permanent: false
-      traefik.http.middlewares.hololsp-redirect.redirectRegex.regex: '^https?://hololsp\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$'
-      traefik.http.middlewares.hololsp-redirect.redirectRegex.replacement: 'https://holoscript.$1$2'
+      traefik.http.middlewares.hololsp-redirect.redirectRegex.regex: ^https?://hololsp\.((?:$DOMAIN|$TS_HOSTNAME\.$DOMAIN))(.*)$
+      traefik.http.middlewares.hololsp-redirect.redirectRegex.replacement: https://holoscript.$1$2
       traefik.http.middlewares.hololsp-redirect.redirectRegex.permanent: false
-      # Main router for holoscript
       traefik.http.routers.holoscript.rule: Host(`holoscript.$DOMAIN`) || Host(`holoscript.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.services.holoscript.loadbalancer.server.port: ${KOTORSCRIPT_SESSION_MANAGER_PORT:-8080}
-      # Routers for redirects
       traefik.http.routers.holoscripter-redirect.rule: Host(`holoscripter.$DOMAIN`) || Host(`holoscripter.$TS_HOSTNAME.$DOMAIN`)
       traefik.http.routers.holoscripter-redirect.middlewares: holoscripter-redirect@docker
       traefik.http.routers.holoscripter-redirect.service: holoscript@docker
@@ -629,21 +276,26 @@ services:
       traefik.http.routers.hololsp-redirect.middlewares: hololsp-redirect@docker
       traefik.http.routers.hololsp-redirect.service: holoscript@docker
     command:
-      - sh
-      - -c
-      - |
-        apk add python3 py3-pip docker-cli zip unzip &&
-        pip install fastapi uvicorn httpx websockets docker jinja2 python-multipart --break-system-packages --root-user-action=ignore &&
-        mkdir -p /tmp/templates &&
-        python3 session_manager.py
+    - sh
+    - -c
+    - 'apk add python3 py3-pip docker-cli zip unzip &&
+
+      pip install fastapi uvicorn httpx websockets docker jinja2 python-multipart
+      --break-system-packages --root-user-action=ignore &&
+
+      mkdir -p /tmp/templates &&
+
+      python3 session_manager.py
+
+      '
     healthcheck:
-      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:${KOTORSCRIPT_SESSION_MANAGER_PORT:-8080}/health > /dev/null 2>&1 || exit 1" ]
+      test:
+      - CMD-SHELL
+      - wget -qO- http://127.0.0.1:${KOTORSCRIPT_SESSION_MANAGER_PORT:-8080}/health > /dev/null 2>&1 || exit 1
       timeout: 10s
       start_period: 30s
     restart: always
-
   bolabaden-nextjs:
-    # 🔹🔹 bolabaden.org nextJS main website 🔹🔹
     build:
       context: https://github.com/bolabaden/bolabaden-site.git
       #context: ${SRC_PATH:-./projects}/website/bolabaden-site
@@ -652,82 +304,82 @@ services:
     container_name: bolabaden-nextjs
     hostname: bolabaden-nextjs
     networks:
-      - backend
-      - publicnet
+    - backend
+    - publicnet
     expose:
-      - 3000
-    # extra_hosts:
-    #   - host.docker.internal:host-gateway
+    - ${BOLABADEN_NEXTJS_PORT:-3000}
+    extra_hosts:
+    - host.docker.internal:host-gateway
     environment:
-      <<: *common-env
+      TZ: ${TZ:-America/Chicago}
+      PUID: ${PUID:-1001}
+      PGID: ${PGID:-999}
+      UMASK: ${UMASK:-002}
       NODE_ENV: production
-      PORT: 3000
+      PORT: ${BOLABADEN_NEXTJS_PORT:-3000}
       HOSTNAME: 0.0.0.0
-      ALLOW_ORIGIN: "*"
+      ALLOW_ORIGIN: '*'
     labels:
       traefik.enable: true
-      # Error pages
       traefik.http.middlewares.bolabaden-error-pages.errors.status: 400-599
       traefik.http.middlewares.bolabaden-error-pages.errors.service: bolabaden-nextjs@docker
       traefik.http.middlewares.bolabaden-error-pages.errors.query: /api/error/{status}
-      # Router for bolabaden-nextjs
       traefik.http.routers.bolabaden-nextjs.rule: Host(`$DOMAIN`) || Host(`$TS_HOSTNAME.$DOMAIN`)
-      # bolabaden-nextjs Service definition
       traefik.http.services.bolabaden-nextjs.loadbalancer.server.port: 3000
       kuma.bolabaden-nextjs.http.name: $TS_HOSTNAME.$DOMAIN
       kuma.bolabaden-nextjs.http.url: https://$DOMAIN
       kuma.bolabaden-nextjs.http.interval: 30
     healthcheck:
-      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:$${PORT:-3000} > /dev/null 2>&1 || exit 1" ]
+      test:
+      - CMD-SHELL
+      - wget -qO- http://127.0.0.1:$${PORT:-3000} > /dev/null 2>&1 || exit 1
       timeout: 10s
       start_period: 30s
     restart: always
-  # This is an optional security container.
-  # This will be used to filter ONLY get requests to the Docker Engine API.
-  # It stops stuff like https://blog.quarkslab.com/why-is-exposing-the-docker-socket-a-really-bad-idea.html
   dockerproxy-ro:
     image: docker.io/tecnativa/docker-socket-proxy
     container_name: dockerproxy-ro
     hostname: dockerproxy-ro
     networks:
-      - default
+    - default
     privileged: true
-    userns_mode: host # this is needed if https://docs.docker.com/engine/security/userns-remap/#enable-userns-remap-on-the-daemon is setup
+    userns_mode: host
     volumes:
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
+    - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
     environment:
-      <<: *common-env
+      TZ: ${TZ:-America/Chicago}
+      PUID: ${PUID:-1001}
+      PGID: ${PGID:-999}
+      UMASK: ${UMASK:-002}
       CONTAINERS: 1
       EVENTS: 1
       INFO: 1
       DISABLE_IPV6: ${DISABLE_IPV6:-0}
     labels:
-      # Auto-restart on unhealthy state (requires deunhealth or autoheal container)
-      deunhealth.restart.on.unhealthy: "true"
+      deunhealth.restart.on.unhealthy: 'true'
     healthcheck:
-      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:2375/_ping > /dev/null 2>&1 || exit 1" ]
+      test:
+      - CMD-SHELL
+      - wget -qO- http://127.0.0.1:2375/_ping > /dev/null 2>&1 || exit 1
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
     restart: always
   dozzle:
-    # 🔹🔹 Dozzle 🔹🔹
     depends_on:
-      - dockerproxy-ro
+    - dockerproxy-ro
     image: docker.io/amir20/dozzle
     container_name: dozzle
     hostname: dozzle
     extra_hosts:
-      - host.docker.internal:host-gateway
+    - host.docker.internal:host-gateway
     networks:
-      - backend
-      - default
-      - publicnet
+    - backend
+    - default
+    - publicnet
     expose:
-      - ${DOZZLE_PORT:-8080}
-    #volumes:
-    #  - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    - ${DOZZLE_PORT:-8080}
     environment:
       DOZZLE_NO_ANALYTICS: ${DOZZLE_NO_ANALYTICS:-true}
       DOZZLE_FILTER: ${DOZZLE_FILTER:-}
@@ -736,7 +388,7 @@ services:
       DOZZLE_AUTH_HEADER_USER: ${DOZZLE_AUTH_USER:-}
       DOZZLE_AUTH_HEADER_EMAIL: ${DOZZLE_AUTH_EMAIL:-}
       DOZZLE_AUTH_PROVIDER: ${DOZZLE_AUTH_PROVIDER:-none}
-      DOZZLE_LEVEL: ${DOZZLE_LEVEL:-info} # default: info
+      DOZZLE_LEVEL: ${DOZZLE_LEVEL:-info}
       DOZZLE_HOSTNAME: ${DOZZLE_HOSTNAME:-}
       DOZZLE_BASE: ${DOZZLE_BASE:-/}
       DOZZLE_ADDR: ${DOZZLE_ADDR:-:${DOZZLE_PORT:-8080}}
@@ -749,14 +401,13 @@ services:
       homepage.name: Dozzle
       homepage.icon: dozzle.png
       homepage.href: https://dozzle.$DOMAIN
-      homepage.description: Real-time web UI for viewing Docker container logs across the host
+      homepage.description: Real-time web UI for viewing Docker container logs across
+        the host
       kuma.dozzle.http.name: dozzle.$TS_HOSTNAME.$DOMAIN
       kuma.dozzle.http.url: https://dozzle.$DOMAIN
       kuma.dozzle.http.interval: 60
     restart: always
-
   homepage:
-    # 🔹🔹 Homepage 🔹🔹  # https://github.com/gethomepage/homepage
     depends_on:
       dockerproxy-ro:
         condition: service_healthy
@@ -764,37 +415,35 @@ services:
     container_name: homepage
     hostname: homepage
     extra_hosts:
-      - host.docker.internal:host-gateway
+    - host.docker.internal:host-gateway
     networks:
-      - backend
-      - default
-      - publicnet
+    - backend
+    - default
+    - publicnet
     configs:
-      - source: gethomepage-custom.css
-        target: /app/config/custom.css
-        mode: 777
-      - source: gethomepage-custom.js
-        target: /app/config/custom.js
-        mode: 777
-      - source: gethomepage-docker.yaml
-        target: /app/config/docker.yaml
-        mode: 777
-      - source: gethomepage-widgets.yaml
-        target: /app/config/widgets.yaml
-        mode: 777
-      - source: gethomepage-settings.yaml
-        target: /app/config/settings.yaml
-        mode: 777
-      - source: gethomepage-bookmarks.yaml
-        target: /app/config/bookmarks.yaml
-        mode: 777
+    - source: gethomepage-custom.css
+      target: /app/config/custom.css
+      mode: 777
+    - source: gethomepage-custom.js
+      target: /app/config/custom.js
+      mode: 777
+    - source: gethomepage-docker.yaml
+      target: /app/config/docker.yaml
+      mode: 777
+    - source: gethomepage-widgets.yaml
+      target: /app/config/widgets.yaml
+      mode: 777
+    - source: gethomepage-settings.yaml
+      target: /app/config/settings.yaml
+      mode: 777
+    - source: gethomepage-bookmarks.yaml
+      target: /app/config/bookmarks.yaml
+      mode: 777
     volumes:
-      # DO NOT create a bind mount to the entire /app/public/ directory.
-      #- ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
-      - ${CONFIG_PATH:-./volumes}/homepage:/app/config
+    - ${CONFIG_PATH:-./volumes}/homepage:/app/config
     environment:
-      DOCKER_HOST: tcp://dockerproxy-ro:2375 # Point to proxy instead of socket
-      HOMEPAGE_ALLOWED_HOSTS: "*"
+      DOCKER_HOST: tcp://dockerproxy-ro:2375
+      HOMEPAGE_ALLOWED_HOSTS: '*'
       HOMEPAGE_VAR_TITLE: Bolabaden
       HOMEPAGE_VAR_SEARCH_PROVIDER: duckduckgo
       HOMEPAGE_VAR_HEADER_STYLE: glass
@@ -804,19 +453,18 @@ services:
       HOMEPAGE_VAR_WEATHER_CITY: Iowa City
       HOMEPAGE_VAR_WEATHER_LAT: 41.661129
       HOMEPAGE_VAR_WEATHER_LONG: -91.5302
-      #      HOMEPAGE_VAR_WEATHER_TIME: ""
       HOMEPAGE_VAR_WEATHER_UNIT: fahrenheit
     labels:
-      # Auto-restart on unhealthy state
-      deunhealth.restart.on.unhealthy: "true"
+      deunhealth.restart.on.unhealthy: 'true'
       traefik.enable: true
       traefik.http.services.homepage.loadbalancer.server.port: 3000
       kuma.homepage.http.name: homepage.$TS_HOSTNAME.$DOMAIN
       kuma.homepage.http.url: https://homepage.$DOMAIN
       kuma.homepage.http.interval: 30
     healthcheck:
-      # to help find existing commands for the helpcheck run `docker exec homepage ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'`
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1"]
+      test:
+      - CMD-SHELL
+      - wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1
       interval: 30s
       timeout: 15s
       retries: 3
@@ -825,364 +473,130 @@ services:
     mem_reservation: 128M
     mem_limit: 1G
     restart: always
-
   watchtower:
-    # 🔹🔹 Watchtower 🔹🔹
     image: docker.io/containrrr/watchtower
     container_name: watchtower
     hostname: watchtower
     extra_hosts:
-      - host.docker.internal:host-gateway
+    - host.docker.internal:host-gateway
     networks:
-      - backend
+    - backend
     configs:
-      - source: watchtower-config.json
-        target: /config.json  # docker credentials acquired through `docker login` on host!
-        mode: 0444  # read-only
+    - source: watchtower-config.json
+      target: /config.json
+      mode: 292
     volumes:
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
+    - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
     environment:
-      # --------------------------------------------------------------------------
-      # Docker Host Configuration
-      # --------------------------------------------------------------------------
-      # Docker daemon socket to connect to. Can be pointed at a remote Docker host
-      # by specifying a TCP endpoint as "tcp://hostname:port".
-      # Default: "unix:///var/run/docker.sock"
       DOCKER_HOST: ${DOCKER_HOST:-unix:///var/run/docker.sock}
-
-      # Docker API version to use by the Docker client for connecting to the Docker daemon.
-      # Default: "1.24"
-      DOCKER_API_VERSION: ${DOCKER_API_VERSION:-1.24}
-
-      # Use TLS when connecting to the Docker socket and verify the server's certificate.
-      # Default: false
+      DOCKER_API_VERSION: ${DOCKER_API_VERSION:-1.44}
       DOCKER_TLS_VERIFY: ${DOCKER_TLS_VERIFY:-false}
-
-      # --------------------------------------------------------------------------
-      # Timezone
-      # --------------------------------------------------------------------------
-      # Sets the time zone to be used by WatchTower's logs and scheduling.
-      # Default: "UTC"
       TZ: ${TZ:-America/Chicago}
-
-      # --------------------------------------------------------------------------
-      # Registry Authentication (for private image pulls)
-      # --------------------------------------------------------------------------
-      # Docker registry username for private image pulls (if required).
-      # Default: "username"
       REPO_USER: ${WATCHTOWER_REPO_USER:-bolabaden}
-
-      # Docker registry password for private image pulls (if required).
-      # Default: "password"
       REPO_PASS: ${WATCHTOWER_REPO_PASS:-${SUDO_PASSWORD:?}}
-
-      # --------------------------------------------------------------------------
-      # Watchtower Container Filtering and Behavior
-      # --------------------------------------------------------------------------
-      # Will also include restarting containers.
-      # Default: false
       WATCHTOWER_INCLUDE_RESTARTING: ${WATCHTOWER_INCLUDE_RESTARTING:-true}
-
-      # Will also include created and exited containers.
-      # Default: false
       WATCHTOWER_INCLUDE_STOPPED: ${WATCHTOWER_INCLUDE_STOPPED:-true}
-
-      # Start any stopped containers that have had their image updated. Only usable with --include-stopped.
-      # Default: false
       WATCHTOWER_REVIVE_STOPPED: ${WATCHTOWER_REVIVE_STOPPED:-false}
-
-      # Monitor and update containers that have a com.centurylinklabs.watchtower.enable label set to true.
-      # Default: false
       WATCHTOWER_LABEL_ENABLE: ${WATCHTOWER_LABEL_ENABLE:-false}
-
-      # Monitor and update containers whose names are not in a given set of names (comma- or space-separated).
-      # Default: ""
       WATCHTOWER_DISABLE_CONTAINERS: ${WATCHTOWER_DISABLE_CONTAINERS:-}
-
-      # By default, arguments will take precedence over labels. If set to true, labels take precedence.
-      # Default: false
       WATCHTOWER_LABEL_TAKE_PRECEDENCE: ${WATCHTOWER_LABEL_TAKE_PRECEDENCE:-true}
-
-      # Update containers that have a com.centurylinklabs.watchtower.scope label set with the same value as the given argument.
-      # Default: unset
       WATCHTOWER_SCOPE: ${WATCHTOWER_SCOPE:-}
-
-      # --------------------------------------------------------------------------
-      # Update and Polling Behavior
-      # --------------------------------------------------------------------------
-      # Poll interval (in seconds). Controls how frequently watchtower will poll for new images.
-      # Default: 86400 (24 hours)
       WATCHTOWER_POLL_INTERVAL: ${WATCHTOWER_POLL_INTERVAL:-86400}
-
-      # Cron expression in 6 fields which defines when and how often to check for new images.
-      # Default: unset
-      WATCHTOWER_SCHEDULE: ${WATCHTOWER_SCHEDULE:-0 0 6 * * *} # Run at 6am daily
-
-      # Will only monitor for new images, send notifications and invoke the pre-check/post-check hooks, but will not update the containers.
-      # Default: false
+      WATCHTOWER_SCHEDULE: ${WATCHTOWER_SCHEDULE:-0 0 6 * * *}
       WATCHTOWER_MONITOR_ONLY: ${WATCHTOWER_MONITOR_ONLY:-false}
-
-      # Do not restart containers after updating.
-      # Default: false
       WATCHTOWER_NO_RESTART: ${WATCHTOWER_NO_RESTART:-false}
-
-      # Do not pull new images. Only monitor the local image cache for changes.
-      # Default: false
       WATCHTOWER_NO_PULL: ${WATCHTOWER_NO_PULL:-false}
-
-      # Removes old images after updating to prevent accumulation of orphaned images.
-      # Default: false
       WATCHTOWER_CLEANUP: ${WATCHTOWER_CLEANUP:-true}
-
-      # Removes anonymous volumes after updating.
-      # Default: false
       WATCHTOWER_REMOVE_VOLUMES: ${WATCHTOWER_REMOVE_VOLUMES:-false}
-
-      # Restart one image at time instead of stopping and starting all at once.
-      # Default: false
       WATCHTOWER_ROLLING_RESTART: ${WATCHTOWER_ROLLING_RESTART:-false}
-
-      # Timeout before the container is forcefully stopped. Example: 30s
-      # Default: 10s
       WATCHTOWER_TIMEOUT: ${WATCHTOWER_TIMEOUT:-10s}
-
-      # Run an update attempt against a container name list one time immediately and exit.
-      # Default: false
       WATCHTOWER_RUN_ONCE: ${WATCHTOWER_RUN_ONCE:-false}
-
-      # Do not send a message after watchtower started.
-      # Default: false
       WATCHTOWER_NO_STARTUP_MESSAGE: ${WATCHTOWER_NO_STARTUP_MESSAGE:-false}
-
-      # When to warn about HEAD pull requests failing. Possible values: always, auto, never
-      # Default: auto
       WATCHTOWER_WARN_ON_HEAD_FAILURE: ${WATCHTOWER_WARN_ON_HEAD_FAILURE:-auto}
-
-      # --------------------------------------------------------------------------
-      # HTTP API Mode
-      # --------------------------------------------------------------------------
-      # Runs Watchtower in HTTP API mode, only allowing image updates to be triggered by an HTTP request.
-      # Default: false
       WATCHTOWER_HTTP_API_UPDATE: ${WATCHTOWER_HTTP_API_UPDATE:-false}
-
-      # Sets an authentication token to HTTP API requests. Can also reference a file.
-      # Default: unset
       WATCHTOWER_HTTP_API_TOKEN: ${WATCHTOWER_HTTP_API_TOKEN:-}
-
-      # Keep running periodic updates if the HTTP API mode is enabled.
-      # Default: false
       WATCHTOWER_HTTP_API_PERIODIC_POLLS: ${WATCHTOWER_HTTP_API_PERIODIC_POLLS:-false}
-
-      # Enables a metrics endpoint, exposing prometheus metrics via HTTP.
-      # NOTE: Requires an API token to be set for WATCHTOWER_HTTP_API_TOKEN (above).
-      # Default: false
       WATCHTOWER_HTTP_API_METRICS: ${WATCHTOWER_HTTP_API_METRICS:-false}
-
-      # --------------------------------------------------------------------------
-      # Logging and Output
-      # --------------------------------------------------------------------------
-      # Enable debug mode with verbose logging.
-      # Default: false
       WATCHTOWER_DEBUG: ${WATCHTOWER_DEBUG:-true}
-
-      # Enable trace mode with very verbose logging. Caution: exposes credentials!
-      # Default: false
       WATCHTOWER_TRACE: ${WATCHTOWER_TRACE:-false}
-
-      # The maximum log level that will be written to STDERR. Possible values: panic, fatal, error, warn, info, debug, trace.
-      # Default: info
       WATCHTOWER_LOG_LEVEL: ${WATCHTOWER_LOG_LEVEL:-debug}
-
-      # Sets what logging format to use for console output. Possible values: Auto, LogFmt, Pretty, JSON.
-      # Default: Auto
       WATCHTOWER_LOG_FORMAT: ${WATCHTOWER_LOG_FORMAT:-Auto}
-
-      # Disable ANSI color escape codes in log output.
-      # Default: false
       NO_COLOR: ${NO_COLOR:-false}
-
-      # Enable programmatic output (porcelain). Possible values: v1
-      # Default: unset
       WATCHTOWER_PORCELAIN: ${WATCHTOWER_PORCELAIN:-}
-
-      # --------------------------------------------------------------------------
-      # Notification and Reporting
-      # --------------------------------------------------------------------------
-      # Notification URL(s) for sending update reports (e.g. shoutrrr URLs, email, Slack, etc).
-      # Default: unset
       WATCHTOWER_NOTIFICATION_URL: ${WATCHTOWER_NOTIFICATION_URL:-}
-
-      # Send a notification report after each update cycle.
-      # Default: false
       WATCHTOWER_NOTIFICATION_REPORT: ${WATCHTOWER_NOTIFICATION_REPORT:-true}
-
-      # Template for notification messages. See Watchtower docs for template variables.
-      # Default: unset
-      WATCHTOWER_NOTIFICATION_TEMPLATE: |
-        {{- if .Report -}}
-          {{- with .Report -}}
-            {{- if ( or .Updated .Failed ) -}}
-        {{len .Scanned}} Scanned, {{len .Updated}} Updated, {{len .Failed}} Failed
-              {{- range .Updated}}
-        - {{.Name}} ({{.ImageName}}): {{.CurrentImageID.ShortID}} updated to {{.LatestImageID.ShortID}}
-              {{- end -}}
-              {{- range .Skipped}}
-        - {{.Name}} ({{.ImageName}}): {{.State}}: {{.Error}}
-              {{- end -}}
-              {{- range .Failed}}
-        - {{.Name}} ({{.ImageName}}): {{.State}}: {{.Error}}
-              {{- end -}}
-            {{- end -}}
-          {{- end -}}
-        {{- else -}}
-          {{range .Entries -}}{{.Message}}{{"\n"}}{{- end -}}
-        {{- end -}}
+      WATCHTOWER_NOTIFICATION_TEMPLATE: "{{- if .Report -}}\n  {{- with .Report -}}\n\
+        \    {{- if ( or .Updated .Failed ) -}}\n{{len .Scanned}} Scanned, {{len .Updated}}\
+        \ Updated, {{len .Failed}} Failed\n      {{- range .Updated}}\n- {{.Name}}\
+        \ ({{.ImageName}}): {{.CurrentImageID.ShortID}} updated to {{.LatestImageID.ShortID}}\n\
+        \      {{- end -}}\n      {{- range .Skipped}}\n- {{.Name}} ({{.ImageName}}):\
+        \ {{.State}}: {{.Error}}\n      {{- end -}}\n      {{- range .Failed}}\n-\
+        \ {{.Name}} ({{.ImageName}}): {{.State}}: {{.Error}}\n      {{- end -}}\n\
+        \    {{- end -}}\n  {{- end -}}\n{{- else -}}\n  {{range .Entries -}}{{.Message}}{{\"\
+        \\n\"}}{{- end -}}\n{{- end -}}\n"
       restart: always
   dockerproxy-rw:
-    # 🔹🔹 Docker Socket Proxy 🔹🔹
     image: lscr.io/linuxserver/socket-proxy
     container_name: dockerproxy-rw
     hostname: dockerproxy-rw
     extra_hosts:
-      - host.docker.internal:host-gateway
+    - host.docker.internal:host-gateway
     networks:
-      - backend
-      - default
+    - backend
+    - default
     privileged: true
     ports:
-      - 127.0.0.1:2375:2375
+    - 127.0.0.1:2375:2375
     volumes:
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
+    - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
     environment:
-      <<: *common-env
-
-      # Controls /containers/{id}/start (POST).
-      # Set 1 to allow starting containers even if POST=0.
-      # Useful for selective starts in read-only mode.
+      TZ: ${TZ:-America/Chicago}
+      PUID: ${PUID:-1001}
+      PGID: ${PGID:-999}
+      UMASK: ${UMASK:-002}
       ALLOW_START: 1
-
-      # Controls /containers/{id}/stop (POST).
-      # Set 1 to allow stopping containers even if POST=0. Enables remote shutdown without broad write access.
       ALLOW_STOP: 1
-
-      # Enables /containers/{id}/stop, /restart, /kill (POST).
-      # Set 1 to allow restarts/kills even if POST=0. Useful for health checks and auto-scaling.
       ALLOW_RESTARTS: 1
-
-      # Controls /auth (POST) for registry authentication.
-      # Set 1 to allow credential handling for private image pulls.
       AUTH: 1
-
-      # Controls /build (POST) for building images.
-      # Set 1 to allow image builds, e.g. for CI tools.
       BUILD: 1
-
-      # Controls /commit (POST) to save container changes as new image.
-      # Set 1 to allow ad-hoc image creation.
       COMMIT: 1
-
-      # Controls /configs endpoints (Swarm).
-      # Set 1 to allow config management (create/list/delete).
       CONFIGS: 1
-
-      # Controls /containers endpoints.
-      # Set 1 to allow list, inspect, create, and manage containers.
       CONTAINERS: 1
-
-      # Set 1 to prevent proxy from binding to IPv6 interfaces. Useful for legacy systems.
       DISABLE_IPV6: ${DISABLE_IPV6:-0}
-
-      # Controls /distribution endpoints for image metadata.
-      # Set 1 to allow inspection of image distribution info.
       DISTRIBUTION: 1
-
-      # Enables /events (GET) for real-time Docker event streaming.
-      # Set 1 to allow monitoring.
       EVENTS: 1
-
-      # Controls /exec and /containers/{id}/exec.
-      # Set 1 to allow running commands in containers (shell access).
       EXEC: 1
-
-      # Controls /images endpoints.
-      # Set 1 to allow image list, pull, remove, etc.
       IMAGES: 1
-
-      # Enables /info (GET) for daemon diagnostics.
-      # Set 1 to allow health/status queries.
       INFO: 1
-
-      # Sets NGINX error_log level (debug, info, warning, etc). Affects proxy logging verbosity.
       LOG_LEVEL: info
-
-      # Controls /networks endpoints.
-      # Set 1 to allow network management (create/list/delete).
       NETWORKS: 1
-
-      # Controls /nodes endpoints (Swarm).
-      # Set 1 to allow node management.
       NODES: 1
-
-      # Enables /_ping (GET) for daemon health checks.
-      # Set 1 to allow.
       PING: 1
-
-      # Controls /plugins endpoints.
-      # Set 1 to allow plugin management (enable/disable/list).
       PLUGINS: 1
-
-      # Toggles all write methods (POST/PUT/DELETE) globally.
-      # Set 0 for read-only except for specific overrides.
       POST: 1
-
-      # Controls /secrets endpoints (Swarm).
-      # Set 1 to allow secret management.
       SECRETS: 1
-
-      # Controls /services endpoints (Swarm).
-      # Set 1 to allow service management.
       SERVICES: 1
-
-      # Enables /session for interactive protocols (attach/exec).
-      # Set 1 to allow.
       SESSION: 1
-
-      # Controls /swarm endpoints.
-      # Set 1 to allow Swarm cluster management.
       SWARM: 1
-
-      # Controls /system subpaths (info, version, df).
-      # Set 1 to allow system queries.
       SYSTEM: 1
-
-      # Controls /tasks endpoints (Swarm).
-      # Set 1 to allow task inspection.
       TASKS: 1
-
-      # Enables /version (GET) for daemon/client version info.
-      # Set 1 to allow.
       VERSION: 1
-
-      # Controls /volumes endpoints.
-      # Set 1 to allow volume management (create/list/delete).
       VOLUMES: 1
-
     restart: always
-
   telemetry-auth:
     profiles:
-      - fixme
+    - fixme
     build:
       context: projects/kotormodsync/telemetry-auth
       dockerfile: Dockerfile
     image: bolabaden/kotormodsync-telemetry-auth
     container_name: telemetry-auth-test
     hostname: telemetry-auth
-    user: "0:0" # Run as root to read secrets
+    user: 0:0
     ports:
-      - "8080:8080"
+    - 8080:8080
     secrets:
-      - signing_secret
+    - signing_secret
     environment:
       AUTH_SERVICE_PORT: 8080
       KOTORMODSYNC_SECRET_FILE: /run/secrets/signing_secret
@@ -1190,68 +604,61 @@ services:
       MAX_TIMESTAMP_DRIFT: ${MAX_TIMESTAMP_DRIFT:-300}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1" ]
+      test:
+      - CMD-SHELL
+      - wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit
+        1
       interval: 10s
       timeout: 3s
       retries: 5
       start_period: 30s
     restart: unless-stopped
   redis:
-    # 🔹🔹 Redis 🔹🔹
     image: docker.io/redis:alpine
-    # NOTE: If you want to use Valkey (open source) instead of Redis (source available),
-    # uncomment the Valkey statement and comment out the Redis statement.
-    # Using Valkey with Firecrawl is untested and not guaranteed to work. Use with caution.
-    # image: valkey/valkey:alpine
     container_name: redis
     hostname: redis
     extra_hosts:
-      - host.docker.internal:host-gateway
+    - host.docker.internal:host-gateway
     networks:
-      - backend
-      - publicnet
+    - backend
+    - publicnet
     expose:
-      - ${REDIS_PORT:-6379}
+    - ${REDIS_PORT:-6379}
     ports:
-      - ${REDIS_PORT:-6379}:${REDIS_PORT:-6379}
+    - ${REDIS_PORT:-6379}:${REDIS_PORT:-6379}
     volumes:
-      - ${CONFIG_PATH:-./volumes}/redis:/data
-    privileged: true # for `sysctl vm.overcommit_memory=1` to work
+    - ${CONFIG_PATH:-./volumes}/redis:/data
+    privileged: true
     environment:
       REDIS_HOST: ${REDIS_HOSTNAME:-redis}
       REDIS_PORT: ${REDIS_PORT:-6379}
       REDIS_DATABASE: ${REDIS_DATABASE:-0}
       REDIS_USERNAME: ${REDIS_USERNAME:-default}
       REDIS_PASSWORD: ${REDIS_PASSWORD:-redis}
-    #  REDIS_TLS_CERT_FILE: ${REDIS_TLS_CERT_FILE:-/data/redis.crt}
-    #  REDIS_TLS_KEY_FILE: ${REDIS_TLS_KEY_FILE:-/data/redis.key}
     command:
-      - sh
-      - -c
-      - |
-        sysctl vm.overcommit_memory=1 &> /dev/null &&
-        redis-server
-        --appendonly yes
-        --save 60 1
-        --bind 0.0.0.0
-        --port ${REDIS_PORT:-6379}
-        --requirepass ${REDIS_PASSWORD:?}
+    - sh
+    - -c
+    - 'sysctl vm.overcommit_memory=1 &> /dev/null &&
+      redis-server
+      --appendonly yes
+      --save 60 1
+      --bind 0.0.0.0
+      --port ${REDIS_PORT:-6379}
+      --requirepass ${REDIS_PASSWORD:?}
+      '
     labels:
       traefik.enable: true
       traefik.tcp.routers.redis.rule: HostSNI(`redis.$DOMAIN`) || HostSNI(`redis.$TS_HOSTNAME.$DOMAIN`)
       traefik.tcp.routers.redis.service: redis@docker
       traefik.tcp.routers.redis.tls.domains[0].main: $DOMAIN
-      traefik.tcp.routers.redis.tls.domains[0].sans: "*.$DOMAIN,$TS_HOSTNAME.$DOMAIN"
+      traefik.tcp.routers.redis.tls.domains[0].sans: '*.$DOMAIN,$TS_HOSTNAME.$DOMAIN'
       traefik.tcp.routers.redis.tls.passthrough: true
       traefik.tcp.services.redis.loadbalancer.server.port: ${REDIS_PORT:-6379}
       traefik.tcp.services.redis.loadbalancer.server.tls: true
-    #logging:
-    #  driver: "json-file"
-    #  options:
-    #    max-size: "1m"
-    #    max-file: "1"
     healthcheck:
-      test: [ "CMD-SHELL", "redis-cli ping > /dev/null 2>&1 || exit 1" ]
+      test:
+      - CMD-SHELL
+      - redis-cli ping > /dev/null 2>&1 || exit 1
       interval: 10s
       timeout: 5s
     cpus: 0.5
@@ -1263,19 +670,19 @@ services:
     container_name: portainer
     hostname: portainer
     extra_hosts:
-      - host.docker.internal:host-gateway
+    - host.docker.internal:host-gateway
     networks:
-      - backend
-      - publicnet
+    - backend
+    - publicnet
     expose:
-      - 8000
-      - 9000
-      - 9443
+    - 8000
+    - 9000
+    - 9443
     ports:
-      - 127.0.0.1:9443:9443
+    - 127.0.0.1:9443:9443
     volumes:
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
-      - ${CONFIG_PATH:-./volumes}/portainer/data:/data
+    - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:rw
+    - ${CONFIG_PATH:-./volumes}/portainer/data:/data
     labels:
       traefik.enable: true
       traefik.http.routers.portainer.middlewares: nginx-auth@file
@@ -1285,31 +692,30 @@ services:
       kuma.portainer.http.url: https://portainer.$DOMAIN
       kuma.portainer.http.interval: 60
     restart: always
-
   dns-server:
     profiles:
-      - experimental
+    - experimental
     image: docker.io/technitium/dns-server
     container_name: dns-server
     hostname: dns-server.$DOMAIN
     extra_hosts:
-      - host.docker.internal:host-gateway
+    - host.docker.internal:host-gateway
     networks:
-      - publicnet
+    - publicnet
     expose:
-      - 53/udp # DNS service
-      - 80/tcp # DNS-over-HTTP
-      - 443/tcp # DNS-over-HTTPS
-      - 538/tcp # DNS-over-TCP-PROXY
-      - 853/tcp # DNS-over-TLS
-      - 853/udp # DNS-over-QUIC
-      - 8053/tcp # DNS-over-HTTPS
-      - 5380/tcp # DNS web console (HTTP)
-      - 53443/tcp # DNS web console (HTTPS)
+    - 53/udp
+    - 80/tcp
+    - 443/tcp
+    - 538/tcp
+    - 853/tcp
+    - 853/udp
+    - 8053/tcp
+    - 5380/tcp
+    - 53443/tcp
     ports:
-      - 53:53/udp # DNS service
+    - 53:53/udp
     volumes:
-      - ${CONFIG_PATH:-./volumes}/dns-server/config:/etc/dns
+    - ${CONFIG_PATH:-./volumes}/dns-server/config:/etc/dns
     labels:
       traefik.enable: true
       traefik.http.services.dns-server.loadbalancer.server.port: 5380
@@ -1322,70 +728,148 @@ services:
       kuma.dns-server.http.url: https://dns-server.$DOMAIN/
       kuma.dns-server.http.interval: 60
     restart: always
-
   biodecompwarehouse:
-    image: docker.io/blacktop/ghidra
+    build:
+      context: https://github.com/bolabaden/agentdecompile.git#master
+      dockerfile: Dockerfile.ghidra
+    image: docker.io/bolabaden/ghidra:latest
     container_name: biodecompwarehouse
     hostname: biodecompwarehouse
     extra_hosts:
-      - host.docker.internal:host-gateway
+    - host.docker.internal:host-gateway
     networks:
-      - publicnet
+    - publicnet
     ports:
-      - ${GHIDRA_SERVER_PORT:-13100}:13100  # Main client connection
-      - 13101:13101
-      - 13102:13102
-      - 13104:22  # SSH access
+    - ${GHIDRA_SERVER_PORT1:-13100}:13100
+    - ${GHIDRA_SERVER_PORT2:-13101}:13101
+    - ${GHIDRA_SERVER_PORT3:-13102}:13102
     volumes:
-      - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/repos:/repos  # Persistent repository storage
-      - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/ssh:/etc/ssh/ssh_host_keys  # Persistent SSH host keys
-      - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/ssh-home:/root/.ssh  # Persistent SSH authorized_keys
-    configs:
-      - source: biodecompwarehouse-ssh-setup.sh
-        target: /usr/local/bin/ssh-setup.sh
-        mode: 755
-      - source: biodecompwarehouse-sshd_config
-        target: /etc/ssh/sshd_config
-        mode: 600
-    #secrets:
-      #- source: ssh_public_key
-      #  target: /run/secrets/ssh_public_key
-      #  mode: 644
-      #- source: ssh_private_key
-      #  target: /run/secrets/ssh_private_key
-      #  mode: 600
+    - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/bsim_datadir:/ghidra/bsim_datadir
+    - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/repos:/ghidra/repositories
+    - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/projects:/ghidra/projects
+    - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/work:/ghidra/work
     environment:
-      <<: *common-env
-      GHIDRA_IP: 149.130.222.229
-      GHIDRA_PUBLIC_HOSTNAME: biodecompwarehouse.$DOMAIN
-      GHIDRA_USERS: ${GHIDRA_USERS:-th3w1zard1 OldRepublicDevs LaneDibello OpenKotOR}  # Space-separated usernames (admins by default)
-      SSH_USER: ${GHIDRA_SSH_USER:-LaneDibello}
-    #entrypoint: ["/bin/sh", "-c"]
-    #command:
-    #  - |
-    #    # Run SSH setup script in background
-    #    /usr/local/bin/ssh-setup.sh &
-    #    SSH_SETUP_PID=$$!
-    #    # Wait a moment for SSH to initialize
-    #    sleep 5
-    #    # Start Ghidra server as main process using original entrypoint
-    #    exec /entrypoint.sh server
+      TZ: ${TZ:-America/Chicago}
+      PUID: ${PUID:-1001}
+      PGID: ${PGID:-999}
+      UMASK: ${UMASK:-002}
+      GHIDRA_USERS: ${GHIDRA_USERS:-th3w1zard1 OldRepublicDevs LaneDibello OpenKotOR}
     command: server
     labels:
       traefik.enable: true
       traefik.tcp.routers.biodecompwarehouse.rule: HostSNI(`biodecompwarehouse.$DOMAIN`) || HostSNI(`biodecompwarehouse.$TS_HOSTNAME.$DOMAIN`)
       traefik.tcp.routers.biodecompwarehouse.service: biodecompwarehouse@docker
       traefik.tcp.routers.biodecompwarehouse.tls.domains[0].main: $DOMAIN
-      traefik.tcp.routers.biodecompwarehouse.tls.domains[0].sans: "*.$DOMAIN,$TS_HOSTNAME.$DOMAIN"
+      traefik.tcp.routers.biodecompwarehouse.tls.domains[0].sans: '*.$DOMAIN,$TS_HOSTNAME.$DOMAIN'
       traefik.tcp.routers.biodecompwarehouse.tls.passthrough: true
       traefik.tcp.services.biodecompwarehouse.loadbalancer.server.port: ${GHIDRA_SERVER_PORT:-13100}
       traefik.tcp.services.biodecompwarehouse.loadbalancer.server.tls: true
-      # Auto-restart on unhealthy state
-      deunhealth.restart.on.unhealthy: "true"
-    #healthcheck:
-    #  test: ["CMD-SHELL", "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=2 -o BatchMode=yes localhost exit 2>/dev/null || (nc -z localhost 22 && exit 0) || exit 1"]
-    #  interval: 30s
-    #  timeout: 10s
-    #  retries: 3
-    #  start_period: 60s
+      deunhealth.restart.on.unhealthy: 'true'
+    restart: always
+  biodecompwarehouse-mcp:
+    build:
+      context: https://github.com/bolabaden/agentdecompile.git#master
+      dockerfile: Dockerfile
+    image: docker.io/bolabaden/agentdecompile-mcp:latest
+    container_name: biodecompwarehouse-mcp
+    hostname: biodecompwarehouse-mcp
+    extra_hosts:
+    - host.docker.internal:host-gateway
+    networks:
+    - publicnet
+    ports:
+    - ${BIOMEDWAREHOUSE_MCP_PORT:-8080}:8080
+    command: --transport streamable-http
+    labels:
+      traefik.enable: true
+      traefik.tcp.routers.biodecompwarehouse-mcp.rule: HostSNI(`biodecompwarehouse-mcp.$DOMAIN`) || HostSNI(`biodecompwarehouse-mcp.$TS_HOSTNAME.$DOMAIN`)
+      traefik.tcp.routers.biodecompwarehouse-mcp.service: biodecompwarehouse-mcp@docker
+      traefik.tcp.routers.biodecompwarehouse-mcp.tls.domains[0].main: $DOMAIN
+      traefik.tcp.routers.biodecompwarehouse-mcp.tls.domains[0].sans: '*.$DOMAIN,$TS_HOSTNAME.$DOMAIN'
+      traefik.tcp.routers.biodecompwarehouse-mcp.tls.passthrough: true
+      traefik.tcp.services.biodecompwarehouse-mcp.loadbalancer.server.port: ${GHIDRA_SERVER_PORT:-13100}
+      traefik.tcp.services.biodecompwarehouse-mcp.loadbalancer.server.tls: true
+      deunhealth.restart.on.unhealthy: 'true'
+    restart: always
+  biodecompwarehouse-bsim-server:
+    build:
+      context: https://github.com/bolabaden/agentdecompile.git#master
+      dockerfile: Dockerfile.ghidra-bsim-server
+    image: docker.io/bolabaden/ghidra-bsim-server:latest
+    container_name: biodecompwarehouse-bsim-server
+    hostname: biodecompwarehouse-bsim-server
+    extra_hosts:
+    - host.docker.internal:host-gateway
+    networks:
+    - publicnet
+    ports:
+    - ${GHIDRA_BSIM_SERVER_PORT:-5432}:5432
+    volumes:
+    - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/bsim_datadir:/ghidra/bsim_datadir
+    - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/repos:/ghidra/repositories
+    - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/projects:/ghidra/projects
+    - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/work:/ghidra/work
+    environment:
+      TZ: ${TZ:-America/Chicago}
+      PUID: ${PUID:-1001}
+      PGID: ${PGID:-999}
+      UMASK: ${UMASK:-002}
+      GHIDRA_USERS: ${GHIDRA_USERS:-th3w1zard1 OldRepublicDevs LaneDibello OpenKotOR}
+    command: server
+    labels:
+      traefik.enable: true
+      traefik.tcp.routers.biodecompwarehouse-bsim-server.rule: HostSNI(`biodecompwarehouse-bsim-server.$DOMAIN`) || HostSNI(`biodecompwarehouse-bsim-server.$TS_HOSTNAME.$DOMAIN`)
+      traefik.tcp.routers.biodecompwarehouse-bsim-server.service: biodecompwarehouse-bsim-server@docker
+      traefik.tcp.routers.biodecompwarehouse-bsim-server.tls.domains[0].main: $DOMAIN
+      traefik.tcp.routers.biodecompwarehouse-bsim-server.tls.domains[0].sans: '*.$DOMAIN,$TS_HOSTNAME.$DOMAIN'
+      traefik.tcp.routers.biodecompwarehouse-bsim-server.tls.passthrough: true
+      traefik.tcp.services.biodecompwarehouse-bsim-server.loadbalancer.server.port: ${GHIDRA_BSIM_SERVER_PORT:-5432}
+      traefik.tcp.services.biodecompwarehouse-bsim-server.loadbalancer.server.tls: true
+      deunhealth.restart.on.unhealthy: 'true'
+    restart: always
+  biodecompwarehouse-aio:
+    profiles:
+    - disabled
+    build:
+      context: https://github.com/bolabaden/agentdecompile.git#master
+      dockerfile: Dockerfile.aio
+    image: docker.io/bolabaden/agentdecompile-aio:latest
+    container_name: biodecompwarehouse-aio
+    hostname: biodecompwarehouse-aio
+    extra_hosts:
+    - host.docker.internal:host-gateway
+    networks:
+    - publicnet
+    ports:
+    - ${GHIDRA_BSIM_SERVER_PORT:-5432}:5432
+    - 8080:8080
+    - ${GHIDRA_SERVER_PORT1:-13100}:13100
+    - ${GHIDRA_SERVER_PORT2:-13101}:13101
+    - ${GHIDRA_SERVER_PORT3:-13102}:13102
+    volumes:
+    - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/bsim_datadir:/ghidra/bsim_datadir
+    - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/repos:/ghidra/repositories
+    - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/projects:/ghidra/projects
+    - ${CONFIG_PATH:-./volumes}/biodecompwarehouse/work:/ghidra/work
+    environment:
+      TZ: ${TZ:-America/Chicago}
+      PUID: ${PUID:-1001}
+      PGID: ${PGID:-999}
+      UMASK: ${UMASK:-002}
+      GHIDRA_USERS: ${GHIDRA_USERS:-th3w1zard1 OldRepublicDevs LaneDibello OpenKotOR}
+    command: server
+    labels:
+      traefik.enable: true
+      traefik.tcp.routers.biodecompwarehouse-aio.rule: HostSNI(`biodecompwarehouse.$DOMAIN`) || HostSNI(`biodecompwarehouse.$TS_HOSTNAME.$DOMAIN`)
+      traefik.tcp.services.biodecompwarehouse-aio.loadbalancer.server.port: ${GHIDRA_SERVER_PORT:-13100}
+      traefik.tcp.services.biodecompwarehouse-aio.loadbalancer.server.tls: true
+      traefik.tcp.routers.biodecompwarehouse-aio.service: biodecompwarehouse-aio@docker
+      traefik.tcp.routers.biodecompwarehouse-aio.tls.domains[0].main: $DOMAIN
+      traefik.tcp.routers.biodecompwarehouse-aio.tls.domains[0].sans: '*.$DOMAIN,$TS_HOSTNAME.$DOMAIN'
+      traefik.tcp.routers.biodecompwarehouse-aio.tls.passthrough: true
+      traefik.tcp.services.biodecompwarehouse-bsim-server.loadbalancer.server.port: ${GHIDRA_BSIM_SERVER_PORT:-5432}
+      traefik.tcp.services.biodecompwarehouse-bsim-server.loadbalancer.server.tls: true
+      traefik.http.routers.biodecompwarehouse-aio.rule: Host(`biodecompwarehouse-mcp.$DOMAIN`) || Host(`biodecompwarehouse-mcp.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.biodecompwarehouse-aio.entrypoints: websecure
+      deunhealth.restart.on.unhealthy: 'true'
     restart: always

@@ -293,13 +293,6 @@ Use conventional commit types:
 - `refactor:` - Code refactoring
 - `docs:` - Documentation
 - `chore:` - Maintenance
-
-## Summary
-
-This infrastructure prioritizes:
-1. **Simplicity**: No orchestrators, just Docker Compose
-2. **Resilience**: Multi-node with automatic failover
-3. **Observability**: Comprehensive monitoring and logging
-4. **Maintainability**: Everything in version control, configs inlined
-
-When in doubt, follow existing patterns in the compose files. The system is designed to be understandable by reading the compose definitions alone.
+- `test:` - Adding or fixing tests
+- `perf:` - Performance improvements
+- `ci:` - CI/CD changes

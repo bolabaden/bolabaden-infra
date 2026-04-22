@@ -23,29 +23,44 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      
+
+    - name: Check if compose2hcl exists
+      id: check
+      run: |
+        if [ -d "src/compose2hcl" ] && [ -f "src/compose2hcl/package.json" ]; then
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+          echo "::notice::src/compose2hcl not found, creating placeholder GitHub Pages artifact"
+        fi
+
     - name: Setup Node.js
+      if: steps.check.outputs.exists == 'true'
       uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
         
     - name: Install dependencies
+      if: steps.check.outputs.exists == 'true'
       run: |
         cd src/compose2hcl
         npm ci
         
     - name: Build project
+      if: steps.check.outputs.exists == 'true'
       run: |
         cd src/compose2hcl
         npm run build
         
     - name: Setup dynamic configuration
+      if: steps.check.outputs.exists == 'true'
       run: |
         chmod +x .github/scripts/setup-pages.sh
         .github/scripts/setup-pages.sh
         
     - name: Build web interface
+      if: steps.check.outputs.exists == 'true'
       run: |
         cd src/compose2hcl
         mkdir -p dist/web
@@ -57,14 +72,25 @@ jobs:
         cp src/index.ts dist/
         
     - name: Create GitHub Pages structure
+      if: steps.check.outputs.exists == 'true'
       run: |
         chmod +x .github/scripts/create-pages-structure.sh
         .github/scripts/create-pages-structure.sh
+
+    - name: Create placeholder pages artifact
+      if: steps.check.outputs.exists != 'true'
+      run: |
+        mkdir -p src/compose2hcl/gh-pages
+        echo '<!DOCTYPE html><html><body><p>Compose2HCL page not yet available.</p></body></html>' > src/compose2hcl/gh-pages/index.html
+        touch src/compose2hcl/gh-pages/.nojekyll
         
     - name: Setup Pages
+      id: pages
       uses: actions/configure-pages@v4
+      continue-on-error: true
       
     - name: Upload artifact
+      if: steps.pages.outcome == 'success'
       uses: actions/upload-pages-artifact@v3
       with:
         path: src/compose2hcl/gh-pages
