@@ -1,0 +1,57 @@
+# Wishlist - Self-hosted wishlist application
+# https://github.com/cmintey/wishlist
+
+services:
+  wishlist:
+    image: ghcr.io/cmintey/wishlist:latest
+    container_name: wishlist
+    hostname: wishlist
+    restart: always
+    networks:
+      - publicnet
+      - backend
+    expose:
+      - 3280
+    volumes:
+      - ${CONFIG_PATH:-./volumes}/wishlist/uploads:/usr/src/app/uploads
+      - ${CONFIG_PATH:-./volumes}/wishlist/data:/usr/src/app/data
+    environment:
+      # Set the origin to your wishlist domain
+      ORIGIN: ${WISHLIST_ORIGIN:-https://wishlist.${DOMAIN:?}}
+      # Hours until signup and password reset tokens expire
+      TOKEN_TIME: ${WISHLIST_TOKEN_TIME:-72}
+      # The currency to use when a product search does not return a currency
+      DEFAULT_CURRENCY: ${WISHLIST_DEFAULT_CURRENCY:-USD}
+      # Set the logging level: trace | debug | info | warn | error | fatal | silent
+      LOG_LEVEL: ${WISHLIST_LOG_LEVEL:-info}
+      # Maximum image size that can be uploaded (in bytes) - 5MB default
+      MAX_IMAGE_SIZE: ${WISHLIST_MAX_IMAGE_SIZE:-5000000}
+    labels:
+      # Traefik routing
+      traefik.enable: "true"
+      traefik.http.routers.wishlist.rule: "Host(`wishlist.${DOMAIN:?}`)"
+      traefik.http.routers.wishlist.entrypoints: "websecure"
+      traefik.http.routers.wishlist.tls: "true"
+      traefik.http.services.wishlist.loadbalancer.server.port: "3280"
+      # Healthcheck for Traefik
+      traefik.http.services.wishlist.loadbalancer.healthcheck.path: "/"
+      traefik.http.services.wishlist.loadbalancer.healthcheck.interval: "30s"
+      # Homepage integration
+      homepage.group: "Media"
+      homepage.name: "Wishlist"
+      homepage.icon: "giftopen.png"
+      homepage.href: "https://wishlist.${DOMAIN:?}"
+      homepage.description: "Self-hosted wishlist application"
+      homepage.widget.type: "ping"
+      homepage.widget.url: "https://wishlist.${DOMAIN:?}"
+      # Uptime monitoring
+      kuma.wishlist.http.name: "Wishlist"
+      kuma.wishlist.http.url: "https://wishlist.${DOMAIN:?}"
+      # Auto-restart on unhealthy
+      deunhealth.restart.on.unhealthy: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3280/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
