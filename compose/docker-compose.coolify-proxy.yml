@@ -760,7 +760,7 @@ configs:
 services:
   cloudflare-ddns:
     image: ghcr.io/th3w1zard1/cloudflare-ddns:${CLOUDFLARE_DDNS_BRANCH:-main}  # Branch tag published by your fork workflow
-    #image: ghcr.io/th3w1zard1/cloudflare-ddns:main  # Fixed tag example
+    #image: docker.io/favonia/cloudflare-ddns
     container_name: cloudflare-ddns
     network_mode: host  # This bypasses network isolation and makes IPv6 easier (optional; see below)
     read_only: true  # Make the container filesystem read-only (optional but recommended)
@@ -815,8 +815,8 @@ services:
       #HEALTHCHECKS: 
 
       # The Uptime Kuma’s Push URL to ping when the updater successfully updates IP addresses, such as `https://<host>/push/<id>`.
-      # You can directly copy the “Push URL” from the Uptime Kuma configuration page.
-      # ⚠️ The “Heartbeat Interval” should match the update schedule specified by `UPDATE_CRON`.
+      # You can directly copy the "Push URL" from the Uptime Kuma configuration page.
+      # ⚠️ The "Heartbeat Interval" should match the update schedule specified by `UPDATE_CRON`.
       #UPTIMEKUMA: 'https://uptimekuma.$DOMAIN/push/1234567890'
 
       # Newline-separated [shoutrrr URLs](https://containrrr.dev/shoutrrr/latest/services/overview/) to which the updater sends notifications of IP address changes and other events.
@@ -1025,7 +1025,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${CONFIG_PATH:-./volumes}:/work/config
       - ${SECRETS_PATH:?}:/work/secrets
-    restart: "no"
+    restart: no
   traefik:
     # 🔹🔹 Traefik 🔹🔹
     # https://doc.traefik.io
@@ -1114,11 +1114,11 @@ services:
       - '--entryPoints.websecure.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32'
       - '--entryPoints.websecure.address=:443'
       - '--entryPoints.websecure.http.encodeQuerySemiColons=true'
-      - '--entryPoints.websecure.http.middlewares=bolabaden-error-pages@file,crowdsec@file,strip-www@file'
+      - '--entryPoints.websecure.http.middlewares=crowdsec@file,strip-www@file'
       - '--entryPoints.websecure.http.tls=true'
       - '--entryPoints.websecure.http.tls.certResolver=letsencrypt'
       - '--entryPoints.websecure.http.tls.domains[0].main=$DOMAIN'
-      - '--entryPoints.websecure.http.tls.domains[0].sans=www.$DOMAIN,*.$DOMAIN,*.$TS_HOSTNAME.$DOMAIN'
+      - '--entryPoints.websecure.http.tls.domains[0].sans=*.$DOMAIN,*.$TS_HOSTNAME.$DOMAIN'
       - '--entryPoints.websecure.http2.maxConcurrentStreams=100'
       - '--entryPoints.websecure.http3'
       - '--global.checkNewVersion=true'
@@ -1133,7 +1133,7 @@ services:
       - '--providers.file.directory=/traefik/dynamic/'
       - '--providers.file.watch=true'
       - '--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin'
-      - '--experimental.plugins.bouncer.version=v1.4.6'
+      - '--experimental.plugins.bouncer.version=v1.5.1'
       - '--experimental.plugins.traefikerrorreplace.modulename=github.com/PseudoResonance/traefikerrorreplace'
       - '--experimental.plugins.traefikerrorreplace.version=v1.0.1'
       # TLS-specific option within the ServersTransport configuration.
