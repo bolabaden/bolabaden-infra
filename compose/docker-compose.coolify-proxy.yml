@@ -759,8 +759,8 @@ configs:
 
 services:
   cloudflare-ddns:
-    image: docker.io/favonia/cloudflare-ddns:1  # - "1" for the latest stable version whose major version is 1
-    #image: docker.io/favonia/cloudflare-ddns  # - "latest" for the latest stable version (which could become 2.x.y in the future and break things)
+    image: ghcr.io/th3w1zard1/cloudflare-ddns:${CLOUDFLARE_DDNS_BRANCH:-main}  # Branch tag published by your fork workflow
+    #image: ghcr.io/th3w1zard1/cloudflare-ddns:main  # Fixed tag example
     container_name: cloudflare-ddns
     network_mode: host  # This bypasses network isolation and makes IPv6 easier (optional; see below)
     read_only: true  # Make the container filesystem read-only (optional but recommended)
