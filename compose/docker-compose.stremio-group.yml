@@ -1306,6 +1306,22 @@ configs:
         }
       ];
 
+      const blockedAddonIds = new Set([
+        'org.stremio.watchhub'
+      ]);
+
+      const blockedAddonTransportUrls = new Set([
+        'https://watchhub.strem.io/manifest.json'
+      ]);
+
+      const isBlockedAddon = (addon) => {
+        if (!addon || typeof addon !== 'object') {
+          return false;
+        }
+        const addonId = addon.manifest && addon.manifest.id;
+        return blockedAddonIds.has(addonId) || blockedAddonTransportUrls.has(addon.transportUrl);
+      };
+
       const cloneAddon = (addon) => ({
         manifest: JSON.parse(JSON.stringify(addon.manifest)),
         transportUrl: addon.transportUrl,
@@ -1329,6 +1345,12 @@ configs:
         }
 
         let changed = false;
+        const cleanedAddons = obj.profile.addons.filter((addon) => !isBlockedAddon(addon));
+        if (cleanedAddons.length !== obj.profile.addons.length) {
+          obj.profile.addons = cleanedAddons;
+          changed = true;
+        }
+
         for (const addon of requiredAddons) {
           const exists = obj.profile.addons.some((a) => a && a.transportUrl === addon.transportUrl);
           if (!exists) {
@@ -1357,16 +1379,20 @@ configs:
         }
       }
 
-      const workerPatchMarker = 'BOLABADEN_STREMIO_DEFAULT_ADDONS_V1';
+      const workerPatchMarker = 'BOLABADEN_STREMIO_DEFAULT_ADDONS_V2';
       const workerAnchor = 't.get_state=function(e){return m(o.get_state(E(e)))}';
       const workerReplacement = 't.get_state=function(e){return bolabadenDefaultAddons(e,m(o.get_state(E(e))))}';
       const workerPatch = '\nfunction bolabadenDefaultAddons(field,state){\n' +
         'var marker="' + workerPatchMarker + '";\n' +
         'var required=' + JSON.stringify(requiredAddons) + ';\n' +
+        'var blockedAddonIds=' + JSON.stringify(Array.from(blockedAddonIds)) + ';\n' +
+        'var blockedAddonTransportUrls=' + JSON.stringify(Array.from(blockedAddonTransportUrls)) + ';\n' +
         'function clone(value){return JSON.parse(JSON.stringify(value));}\n' +
         'function addonTypes(addon){return addon&&addon.manifest&&Array.isArray(addon.manifest.types)?addon.manifest.types:[];}\n' +
+        'function isBlocked(addon){var addonId=addon&&addon.manifest?addon.manifest.id:null;var transportUrl=addon?addon.transportUrl:null;return blockedAddonIds.indexOf(addonId)!==-1||blockedAddonTransportUrls.indexOf(transportUrl)!==-1;}\n' +
+        'function removeBlocked(list){if(!Array.isArray(list))return false;var next=list.filter(function(addon){return !isBlocked(addon);});if(next.length===list.length)return false;list.length=0;next.forEach(function(addon){list.push(addon);});return true;}\n' +
         'function pushMissing(list,installedOnly,selectedType){if(!Array.isArray(list))return false;var changed=false;required.forEach(function(addon){if(selectedType&&addonTypes(addon).indexOf(selectedType)===-1)return;if(!list.some(function(item){return item&&item.transportUrl===addon.transportUrl;})){var next=clone(addon);if(installedOnly)next.installed=true;list.push(next);changed=true;}});return changed;}\n' +
-        'try{if(field==="ctx"&&state&&state.profile){if(!Array.isArray(state.profile.addons))state.profile.addons=[];pushMissing(state.profile.addons,false,null);return state;}if(field!=="installed_addons"||!state)return state;if(!Array.isArray(state.catalog))state.catalog=[];var selectedType=state.selected&&state.selected.request?state.selected.request.type:null;pushMissing(state.catalog,true,selectedType);if(state.selectable&&Array.isArray(state.selectable.types)){["movie","series"].forEach(function(type){if(!state.selectable.types.some(function(item){return item&&item.type===type;})){state.selectable.types.push({type:type,selected:selectedType===type,deepLinks:{addons:"#/addons/"+type}});}});}return state;}catch(error){console.warn("[stremio-addon-bootstrap] core addon patch warning",error);return state;}\n' +
+        'try{if(field==="ctx"&&state&&state.profile){if(!Array.isArray(state.profile.addons))state.profile.addons=[];removeBlocked(state.profile.addons);pushMissing(state.profile.addons,false,null);return state;}if(field!=="installed_addons"||!state)return state;if(!Array.isArray(state.catalog))state.catalog=[];removeBlocked(state.catalog);var selectedType=state.selected&&state.selected.request?state.selected.request.type:null;pushMissing(state.catalog,true,selectedType);if(state.selectable&&Array.isArray(state.selectable.types)){["movie","series"].forEach(function(type){if(!state.selectable.types.some(function(item){return item&&item.type===type;})){state.selectable.types.push({type:type,selected:selectedType===type,deepLinks:{addons:"#/addons/"+type}});}});}return state;}catch(error){console.warn("[stremio-addon-bootstrap] core addon patch warning",error);return state;}\n' +
         '}\n';
 
       const patchWorker = (workerPath) => {
@@ -1379,7 +1405,7 @@ configs:
           throw new Error('core worker get_state anchor not found in ' + workerPath);
         }
         source = source.replace(workerAnchor, workerReplacement);
-        source = source.replace(/\n\/\/# sourceMappingURL=worker\.js\.map\s*$/, workerPatch + '\n//# sourceMappingURL=worker.js.map');
+        source = source.replace(/\n\/\/# sourceMappingURL=worker\.js\.map\s*$$/, workerPatch + '\n//# sourceMappingURL=worker.js.map');
         if (source.indexOf(workerPatchMarker) === -1) {
           source += workerPatch;
         }
