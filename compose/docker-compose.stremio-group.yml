@@ -368,6 +368,11 @@ services:
       traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.regex: '^(http|https)://stremio\.($DOMAIN|$TS_HOSTNAME\.$DOMAIN)(/shell[^#?]*)(\\?[^#]*?streamingServer=[^&#]*)?([^#]*)(#.*)?$'
       traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.replacement: '$1://stremio.$2$3?streamingServer=https%3A%2F%2Fstremio.$2$5$6'
       traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.permanent: false
+      # Best-effort decode pass for over-encoded mediaURL values in /hlsv2/probe requests.
+      # Limitation: redirectRegex performs client redirects and applies one replacement per request.
+      traefik.http.middlewares.stremio-probe-mediaurl-decode.redirectRegex.regex: '^(http|https)://stremio\.($DOMAIN|$TS_HOSTNAME\.$DOMAIN)(/hlsv2/probe\?[^#]*mediaURL=[^#]*?)%25([0-9A-Fa-f]{2})([^#]*)$'
+      traefik.http.middlewares.stremio-probe-mediaurl-decode.redirectRegex.replacement: '$1://stremio.$2$3%$4$5'
+      traefik.http.middlewares.stremio-probe-mediaurl-decode.redirectRegex.permanent: false
       # Stremio Web UI
       traefik.http.routers.stremio.service: stremio
       traefik.http.routers.stremio.rule: "Host(`stremio-web.$DOMAIN`) || Host(`stremio-web.$TS_HOSTNAME.$DOMAIN`) || Host(`stremio.$DOMAIN`) || Host(`stremio.$TS_HOSTNAME.$DOMAIN`)"
@@ -377,6 +382,7 @@ services:
 
       # Stremio HTTP Streaming Server (port 11470)
       traefik.http.routers.stremio-http11470.service: stremio-http11470
+      traefik.http.routers.stremio-http11470.middlewares: stremio-probe-mediaurl-decode@docker
       traefik.http.services.stremio-http11470.loadbalancer.server.scheme: http
       traefik.http.services.stremio-http11470.loadbalancer.server.port: 11470
       # Stremio API/streaming routes to 11470
@@ -384,6 +390,7 @@ services:
 
       # Stremio HTTPS Streaming Server (port 12470)
       traefik.http.routers.stremio-https12470.service: stremio-https12470
+      traefik.http.routers.stremio-https12470.middlewares: stremio-probe-mediaurl-decode@docker
       traefik.http.services.stremio-https12470.loadbalancer.server.scheme: https
       traefik.http.services.stremio-https12470.loadbalancer.server.port: 12470
       # Stremio API/streaming routes to 12470

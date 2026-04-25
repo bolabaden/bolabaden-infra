@@ -641,7 +641,8 @@ services:
 
   gptr:
     build:
-      context: ./projects/genai/gpt-researcher
+      #context: https://github.com/bolabaden/ai-researchwizard.git#master  # :/frontend/nextjs
+      context: ../projects/genai/gpt-researcher  # :/frontend/nextjs
       dockerfile: Dockerfile.fullstack
     image: docker.io/bolabaden/ai-researchwizard-aio-fullstack:master
     container_name: gptr
