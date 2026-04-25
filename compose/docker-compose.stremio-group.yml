@@ -1251,19 +1251,66 @@ configs:
       }
   stremio-addon-bootstrap.js:
     content: |
-      // Ensure custom addon transport URLs are always present in Stremio defaults.
       const fs = require('fs');
+      const path = require('path');
+      const crypto = require('crypto');
 
       const requiredAddons = [
         {
+          manifest: {
+            id: 'org.bolabaden.baden-aio',
+            version: '1.0.0',
+            name: 'BadenAIO',
+            contactEmail: null,
+            description: 'BadenAIO streaming addon.',
+            logo: null,
+            background: null,
+            types: ['movie', 'series'],
+            resources: ['stream'],
+            idPrefixes: ['tt'],
+            catalogs: [],
+            addonCatalogs: [],
+            behaviorHints: {
+              adult: false,
+              p2p: false,
+              configurable: true,
+              configurationRequired: false
+            }
+          },
           transportUrl: 'https://aiostreams.bolabaden.org/stremio/f604daa3-45c7-4161-ab58-a79e3ad59e11/eyJpdiI6IlJDajJiV1BVaGhQb0dFaW5xNHpGd0E9PSIsImVuY3J5cHRlZCI6IkhCZlBud3FTMDZxOHcwYTR3bUhqU3UycXRXSUVmbzNnbFpzY3hjd3EvM2k1ZG5FbW1rOGpVckhQSFJXNU9nTGl5RjZrdEwxZHRNdWV5ZDRwTVJKanR3PT0iLCJ0eXBlIjoiYWlvRW5jcnlwdCJ9/manifest.json',
           flags: { official: false, protected: false }
         },
         {
+          manifest: {
+            id: 'viren070.aiostreams',
+            version: '1.0.0',
+            name: 'AIOStreams | ElfHosted',
+            contactEmail: null,
+            description: 'AIOStreams addon hosted by ElfHosted.',
+            logo: 'https://raw.githubusercontent.com/Viren070/AIOStreams/refs/heads/main/packages/frontend/public/logo.png',
+            background: null,
+            types: ['movie', 'series'],
+            resources: ['stream'],
+            idPrefixes: ['tt'],
+            catalogs: [],
+            addonCatalogs: [],
+            behaviorHints: {
+              adult: false,
+              p2p: false,
+              configurable: true,
+              configurationRequired: false
+            }
+          },
           transportUrl: 'https://aiostreams.elfhosted.com/stremio/6de0ccf1-34f9-42ce-bc68-97ed959024d9/eyJpdiI6IktVdGhFUERRTVQ3Z2NaVTZ2dFZJMkE9PSIsImVuY3J5cHRlZCI6IkQ1cFppNkx0YWhrRC93YkNac2JQTmVlbDgwRG05OHQyTTQvV2ovN29JRXN0NzF2UWhNaCtaT09mTm9PTUhPQ3h6bjVwR3VrWlAzMlZrRm0xR2JBRUZ3PT0iLCJ0eXBlIjoiYWlvRW5jcnlwdCJ9/manifest.json',
           flags: { official: false, protected: false }
         }
       ];
+
+      const cloneAddon = (addon) => ({
+        manifest: JSON.parse(JSON.stringify(addon.manifest)),
+        transportUrl: addon.transportUrl,
+        flags: Object.assign({}, addon.flags)
+      });
 
       const targets = [
         '/srv/stremio-server/localStorage.json',
@@ -1285,7 +1332,7 @@ configs:
         for (const addon of requiredAddons) {
           const exists = obj.profile.addons.some((a) => a && a.transportUrl === addon.transportUrl);
           if (!exists) {
-            obj.profile.addons.push(addon);
+            obj.profile.addons.push(cloneAddon(addon));
             changed = true;
           }
         }
@@ -1308,6 +1355,71 @@ configs:
         } catch (error) {
           console.log('[stremio-addon-bootstrap] warning for ' + filePath + ': ' + error.message);
         }
+      }
+
+      const workerPatchMarker = 'BOLABADEN_STREMIO_DEFAULT_ADDONS_V1';
+      const workerAnchor = 't.get_state=function(e){return m(o.get_state(E(e)))}';
+      const workerReplacement = 't.get_state=function(e){return bolabadenDefaultAddons(e,m(o.get_state(E(e))))}';
+      const workerPatch = '\nfunction bolabadenDefaultAddons(field,state){\n' +
+        'var marker="' + workerPatchMarker + '";\n' +
+        'var required=' + JSON.stringify(requiredAddons) + ';\n' +
+        'function clone(value){return JSON.parse(JSON.stringify(value));}\n' +
+        'function addonTypes(addon){return addon&&addon.manifest&&Array.isArray(addon.manifest.types)?addon.manifest.types:[];}\n' +
+        'function pushMissing(list,installedOnly,selectedType){if(!Array.isArray(list))return false;var changed=false;required.forEach(function(addon){if(selectedType&&addonTypes(addon).indexOf(selectedType)===-1)return;if(!list.some(function(item){return item&&item.transportUrl===addon.transportUrl;})){var next=clone(addon);if(installedOnly)next.installed=true;list.push(next);changed=true;}});return changed;}\n' +
+        'try{if(field==="ctx"&&state&&state.profile){if(!Array.isArray(state.profile.addons))state.profile.addons=[];pushMissing(state.profile.addons,false,null);return state;}if(field!=="installed_addons"||!state)return state;if(!Array.isArray(state.catalog))state.catalog=[];var selectedType=state.selected&&state.selected.request?state.selected.request.type:null;pushMissing(state.catalog,true,selectedType);if(state.selectable&&Array.isArray(state.selectable.types)){["movie","series"].forEach(function(type){if(!state.selectable.types.some(function(item){return item&&item.type===type;})){state.selectable.types.push({type:type,selected:selectedType===type,deepLinks:{addons:"#/addons/"+type}});}});}return state;}catch(error){console.warn("[stremio-addon-bootstrap] core addon patch warning",error);return state;}\n' +
+        '}\n';
+
+      const patchWorker = (workerPath) => {
+        let source = fs.readFileSync(workerPath, 'utf8');
+        if (source.indexOf(workerPatchMarker) !== -1) {
+          console.log('[stremio-addon-bootstrap] core worker already patched ' + workerPath);
+          return false;
+        }
+        if (source.indexOf(workerAnchor) === -1) {
+          throw new Error('core worker get_state anchor not found in ' + workerPath);
+        }
+        source = source.replace(workerAnchor, workerReplacement);
+        source = source.replace(/\n\/\/# sourceMappingURL=worker\.js\.map\s*$/, workerPatch + '\n//# sourceMappingURL=worker.js.map');
+        if (source.indexOf(workerPatchMarker) === -1) {
+          source += workerPatch;
+        }
+        fs.writeFileSync(workerPath, source);
+        console.log('[stremio-addon-bootstrap] patched core worker ' + workerPath);
+        return true;
+      };
+
+      const updateServiceWorkerRevision = (serviceWorkerPath, workerAssetPath) => {
+        if (!fs.existsSync(serviceWorkerPath)) {
+          return;
+        }
+        const revision = crypto.createHash('md5').update(fs.readFileSync(workerAssetPath)).digest('hex');
+        const assetUrl = path.relative(path.dirname(serviceWorkerPath), workerAssetPath).split(path.sep).join('/');
+        const source = fs.readFileSync(serviceWorkerPath, 'utf8');
+        const pattern = new RegExp('(url:"' + assetUrl.replace(/[.*+?^()|[\]\\]/g, '\\$&') + '",revision:")([^"]+)(")');
+        if (!pattern.test(source)) {
+          console.log('[stremio-addon-bootstrap] service-worker entry not found for ' + assetUrl);
+          return;
+        }
+        const next = source.replace(pattern, (match, prefix, oldRevision, suffix) => prefix + revision + suffix);
+        if (next !== source) {
+          fs.writeFileSync(serviceWorkerPath, next);
+          console.log('[stremio-addon-bootstrap] updated service-worker revision for ' + assetUrl + ' to ' + revision);
+        }
+      };
+
+      try {
+        const buildDir = '/srv/stremio-server/build';
+        const entries = fs.existsSync(buildDir) ? fs.readdirSync(buildDir) : [];
+        for (const entry of entries) {
+          const workerPath = path.join(buildDir, entry, 'scripts', 'worker.js');
+          if (fs.existsSync(workerPath)) {
+            patchWorker(workerPath);
+            updateServiceWorkerRevision(path.join(buildDir, 'service-worker.js'), workerPath);
+          }
+        }
+      } catch (error) {
+        console.log('[stremio-addon-bootstrap] core worker patch failed: ' + error.message);
+        process.exitCode = 1;
       }
   jackett-serverconfig.json:
     content: |
