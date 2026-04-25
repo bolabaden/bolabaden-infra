@@ -1388,23 +1388,31 @@ configs:
         return true;
       };
 
-      const updateServiceWorkerRevision = (serviceWorkerPath, workerAssetPath) => {
+      const disableServiceWorkerCache = (serviceWorkerPath, workerAssetPath) => {
         if (!fs.existsSync(serviceWorkerPath)) {
           return;
         }
         const revision = crypto.createHash('md5').update(fs.readFileSync(workerAssetPath)).digest('hex');
-        const assetUrl = path.relative(path.dirname(serviceWorkerPath), workerAssetPath).split(path.sep).join('/');
-        const source = fs.readFileSync(serviceWorkerPath, 'utf8');
-        const pattern = new RegExp('(url:"' + assetUrl.replace(/[.*+?^()|[\]\\]/g, '\\$&') + '",revision:")([^"]+)(")');
-        if (!pattern.test(source)) {
-          console.log('[stremio-addon-bootstrap] service-worker entry not found for ' + assetUrl);
+        const source = '// BOLABADEN_STREMIO_NETWORK_ONLY_SERVICE_WORKER_V1 ' + revision + '\n' +
+          'self.addEventListener("install",function(event){self.skipWaiting();});\n' +
+          'self.addEventListener("activate",function(event){event.waitUntil((async function(){var keys=await caches.keys();await Promise.all(keys.map(function(key){return caches.delete(key);}));await self.clients.claim();var clients=await self.clients.matchAll({type:"window",includeUncontrolled:true});clients.forEach(function(client){client.navigate(client.url);});})());});\n' +
+          'self.addEventListener("fetch",function(event){event.respondWith(fetch(event.request,{cache:"no-store"}));});\n';
+        fs.writeFileSync(serviceWorkerPath, source);
+        console.log('[stremio-addon-bootstrap] installed network-only service worker for patched worker ' + revision);
+      };
+
+      const injectClientCacheReset = (mainScriptPath) => {
+        if (!fs.existsSync(mainScriptPath)) {
           return;
         }
-        const next = source.replace(pattern, (match, prefix, oldRevision, suffix) => prefix + revision + suffix);
-        if (next !== source) {
-          fs.writeFileSync(serviceWorkerPath, next);
-          console.log('[stremio-addon-bootstrap] updated service-worker revision for ' + assetUrl + ' to ' + revision);
+        const marker = 'BOLABADEN_STREMIO_CLIENT_CACHE_RESET_V1';
+        let source = fs.readFileSync(mainScriptPath, 'utf8');
+        if (source.indexOf(marker) !== -1) {
+          return;
         }
+        const resetScript = '/* ' + marker + ' */!function(){try{if("caches"in window)caches.keys().then(function(keys){keys.forEach(function(key){caches.delete(key);});});}catch(error){console.warn("[stremio-addon-bootstrap] cache reset warning",error);}}();\n';
+        fs.writeFileSync(mainScriptPath, resetScript + source);
+        console.log('[stremio-addon-bootstrap] injected client cache reset into ' + mainScriptPath);
       };
 
       try {
@@ -1414,7 +1422,8 @@ configs:
           const workerPath = path.join(buildDir, entry, 'scripts', 'worker.js');
           if (fs.existsSync(workerPath)) {
             patchWorker(workerPath);
-            updateServiceWorkerRevision(path.join(buildDir, 'service-worker.js'), workerPath);
+            disableServiceWorkerCache(path.join(buildDir, 'service-worker.js'), workerPath);
+            injectClientCacheReset(path.join(buildDir, entry, 'scripts', 'main.js'));
           }
         }
       } catch (error) {
@@ -1762,7 +1771,10 @@ services:
       # Stremio Web UI
       traefik.http.routers.stremio.service: stremio
       traefik.http.routers.stremio.rule: "Host(`stremio-web.$DOMAIN`) || Host(`stremio-web.$TS_HOSTNAME.$DOMAIN`) || Host(`stremio.$DOMAIN`) || Host(`stremio.$TS_HOSTNAME.$DOMAIN`)"
-      traefik.http.routers.stremio.middlewares: stremio-web-redirect@docker,stremio-shell-redirect@docker,stremio-streaming-server-redirect@docker
+      traefik.http.routers.stremio.middlewares: stremio-web-redirect@docker,stremio-shell-redirect@docker,stremio-streaming-server-redirect@docker,stremio-web-no-cache@docker
+      traefik.http.middlewares.stremio-web-no-cache.headers.customResponseHeaders.Cache-Control: "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+      traefik.http.middlewares.stremio-web-no-cache.headers.customResponseHeaders.Pragma: "no-cache"
+      traefik.http.middlewares.stremio-web-no-cache.headers.customResponseHeaders.Expires: "0"
       traefik.http.services.stremio.loadbalancer.server.scheme: https
       traefik.http.services.stremio.loadbalancer.server.port: 8080
 
