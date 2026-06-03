@@ -29,6 +29,8 @@
 17. [Roadmap & Milestones](#17-roadmap--milestones)
 18. [Appendices](#18-appendices)
 
+TOC convention: top-level entries use numbered list items, nested entries use bullet notation with explicit subsection numbers in link text, and h2 module sections use explicit `{ #... }` anchor IDs for stable cross-references.
+
 ***
 
 ## 1. Executive Summary
@@ -258,7 +260,7 @@ bolabaden-sync-agent:
 
 ***
 
-## 5. Module 2: Docker Compose File Sync
+## 5. Module 2: Docker Compose File Sync { #5-module-2-docker-compose-file-sync }
 
 ### Problem
 
@@ -328,7 +330,7 @@ def detect_compose_changes(old_config, new_config):
 
 ***
 
-## 6. Module 3: Headscale HA (Leader Election)
+## 6. Module 3: Headscale HA (Leader Election) { #6-module-3-headscale-ha-leader-election }
 
 ### Problem
 
@@ -577,7 +579,7 @@ Container fails on Node A:
 
 ***
 
-## 8. Module 5: Cloudflare DDNS Multi-Record Load Balancing
+## 8. Module 5: Cloudflare DDNS Multi-Record Load Balancing { #8-module-5-cloudflare-ddns-multi-record-load-balancing }
 
 ### Problem
 
@@ -787,7 +789,7 @@ location @authentik_fallback {
 
 ***
 
-## 10. Module 7: Traefik Catchall Router Fix
+## 10. Module 7: Traefik Catchall Router Fix { #10-module-7-traefik-catchall-router-fix }
 
 ### Problem
 
@@ -899,7 +901,7 @@ api-passthrough:
 
 ***
 
-## 11. Module 8: Internal Tailscale DNS
+## 11. Module 8: Internal Tailscale DNS { #11-module-8-internal-tailscale-dns }
 
 ### Problem
 
@@ -998,7 +1000,7 @@ redis             IN  CNAME  vractormania.myscale.bolabaden.org.
 
 ***
 
-## 12. Module 9: Watchtower Fix
+## 12. Module 9: Watchtower Fix { #12-module-9-watchtower-fix }
 
 ### Problem
 
@@ -1238,7 +1240,7 @@ middlewares:
 
 ***
 
-## 14. Module 11: Meditation Wizard Lobby
+## 14. Module 11: Meditation Wizard Lobby { #14-module-11-meditation-wizard-lobby }
 
 ### Problem
 
@@ -1338,7 +1340,7 @@ async def packet_feed(websocket):
 
 ***
 
-## 15. Unified Bootstrap Flow
+## 15. Unified Bootstrap Flow { #15-unified-bootstrap-flow }
 
 ### Updated `cloud-init-bootstrap.sh` Flow
 
@@ -1377,7 +1379,7 @@ async def packet_feed(websocket):
 
 ***
 
-## 16. Templating for Others
+## 16. Templating for Others { #16-templating-for-others }
 
 ### Goal: Anyone Can Fork and Deploy
 
@@ -1474,7 +1476,7 @@ sudo BOOTSTRAP_CONFIG_FILE=./my-config.env ./cloud-init-bootstrap.sh $(hostname 
 
 ***
 
-## 18. Appendices
+## 18. Appendices { #18-appendices }
 
 ### Appendix A: New Docker Images to Build
 
