@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+# MkDocs Material — Infrastructure Knowledgebase
+# Serves all docs/ and infra/docs/ markdown files as a unified searchable site.
+# Access: https://docs.$DOMAIN  (or http://localhost:8001 for local host access)
+#
+# Start: docker compose -f docker-compose.yml -f compose/docker-compose.docs.yml up -d mkdocs
+# Logs:  docker logs mkdocs
+
+services:
+  mkdocs:
+    image: squidfunk/mkdocs-material:latest
+    container_name: mkdocs
+    hostname: mkdocs
+    # Serve in dev mode: live reload, no build step required
+    command: serve --dev-addr=0.0.0.0:8000 -f /docs/mkdocs.yml
+    working_dir: /docs
+    volumes:
+      # Mount the entire repo root read-only — mkdocs.yml references files at their real paths
+      - ${ROOT_PATH:-.}:/docs:ro
+    networks:
+      - publicnet
+    ports:
+      - "8001:8000"
+    expose:
+      - 8000
+    labels:
+      traefik.enable: true
+      traefik.http.routers.mkdocs.rule: Host(`docs.$DOMAIN`) || Host(`docs.$TS_HOSTNAME.$DOMAIN`)
+      traefik.http.routers.mkdocs.entrypoints: websecure
+      traefik.http.routers.mkdocs.tls: true
+      traefik.http.services.mkdocs.loadbalancer.server.port: 8000
+      traefik.http.services.mkdocs.loadbalancer.healthcheck.path: /
+      traefik.http.services.mkdocs.loadbalancer.healthcheck.interval: 30s
+      # Dashboard
+      homepage.group: Infrastructure
+      homepage.name: Knowledgebase
+      homepage.icon: mkdocs.png
+      homepage.href: https://docs.$DOMAIN
+      homepage.description: Infrastructure documentation and runbooks (MkDocs Material)
+      # Auto-restart on unhealthy
+      deunhealth.restart.on.unhealthy: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped

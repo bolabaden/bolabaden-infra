@@ -35,6 +35,7 @@ networks:
         gateway: ${BACKEND_GATEWAY:-10.0.7.1}
 include:
 - compose/docker-compose.coolify-proxy.yml
+- compose/docker-compose.docs.yml
 - compose/docker-compose.firecrawl.yml
 - compose/docker-compose.headscale.yml
 - compose/docker-compose.llm.yml
@@ -122,6 +123,51 @@ services:
       timeout: 10s
       retries: 5
       start_period: 40s
+    restart: always
+
+  dcef:
+    image: docker.io/slada/dcef:main
+    container_name: dcef
+    hostname: dcef
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    ports:
+      - 127.0.0.1:21011:21011
+    stdin_open: true
+    tty: true
+    volumes:
+      - ~:${CONFIG_PATH:-./volumes}/dcef/exports
+      - ${CONFIG_PATH:-./volumes}/dcef/cache:/dcef/cache
+    restart: always
+  chat-analytics:
+    build:
+      context: https://github.com/mlomb/chat-analytics.git
+      dockerfile: Dockerfile
+    image: docker.io/mlomb/chat-analytics:latest
+    container_name: chat-analytics
+    hostname: chat-analytics
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - backend
+      - publicnet
+    ports:
+      - 1234:${CHAT_ANALYTICS_PORT:-80}
+    labels:
+      deunhealth.restart.on.unhealthy: 'true'
+      traefik.enable: true
+      traefik.http.services.chat-analytics.loadbalancer.server.port: ${CHAT_ANALYTICS_PORT:-80}
+      homepage.group: Analytics
+      homepage.name: ChatAnalytics
+      homepage.icon: chat-analyticspng
+      homepage.href: https://chat-analytics.$DOMAIN/
+      homepage.description: A web app that takes chat exports from supported platforms and generates a single HTML file containing information, statistics and interactive graphs about them. Privacy is its main concern; chat data never leaves the device when generating reports. Selfhost with Docker!
+      kuma.chat-analytics.http.name: chat-analytics.TS_HOSTNAME.$DOMAIN
+      kuma.chat-analytics.http.url: https://chat-analytics.DOMAIN
+      kuma.chat-analytics.http.interval: 30
     restart: always
   searxng:
     image: docker.io/searxng/searxng

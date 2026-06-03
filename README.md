@@ -12,6 +12,7 @@
 - [Internal Failover & Routing](#4-internal-failover--routing)
 - [Configuration Management](#how-config-actually-becomes-live-behavior)
 - [Observability](#observability)
+- [Knowledgebase](#knowledgebase)
 - [Maintenance & Disk Management](#maintenance--disk-management) 🆕
 - [Hosting bolabaden.org](#hosting-bolabadenorg-specifically)
 - [Problems I expect, and how I'm handling them](#problems-i-expect-and-how-im-handling-them)
@@ -394,6 +395,42 @@ logs:
   targets:
     - /var/log/nginx/*.log
     - /var/log/haproxy.log
+```
+
+---
+
+## Knowledgebase {#knowledgebase}
+
+This repository includes a built-in MkDocs Material knowledgebase for operational docs and runbooks.
+
+Key files:
+
+- `mkdocs.yml`
+- `docs/index.md`
+- `compose/docker-compose.docs.yml`
+
+Start it with the main stack:
+
+```bash
+docker compose up -d mkdocs
+```
+
+Validate compose configuration:
+
+```bash
+docker compose config --quiet
+```
+
+Access endpoints:
+
+- Routed host: `https://docs.$DOMAIN`
+- Local host port: `http://localhost:8001`
+
+Quick checks:
+
+```bash
+docker ps --filter "name=mkdocs" --format "table {{.Names}}\t{{.Status}}"
+docker logs --tail=100 mkdocs
 ```
 
 ---

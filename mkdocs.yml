@@ -1,0 +1,123 @@
+site_name: bolabaden Infrastructure Knowledgebase
+site_description: Operations and architecture docs for bolabaden.org — a multi-node, Docker-based homelab.
+site_author: bolabaden
+docs_dir: .
+site_dir: /tmp/mkdocs-site
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+
+plugins:
+  - search:
+      lang: en
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+
+nav:
+  - Home: docs/index.md
+
+  - Getting Started:
+    - Project Overview: README.md
+    - Quick Start (5 min): infra/docs/QUICKSTART.md
+    - Secrets & Credentials: DOCKER_SECRETS_README.md
+    - Security Status: SECURITY_STATUS.md
+
+  - Architecture:
+    - Infrastructure Master Plan: docs/INFRASTRUCTURE_MASTER_PLAN.md
+    - Multi-Node Philosophy: plan-infrastructure-unification.md
+    - Orchestration Research 2026: docs/orchestration_research_2026.md
+    - Alternative Designs: alt_design.md
+
+  - Constellation Agent:
+    - Overview: infra/docs/README.md
+    - Architecture: infra/docs/ARCHITECTURE.md
+    - Components: infra/docs/COMPONENTS.md
+    - Configuration: infra/docs/CONFIGURATION.md
+    - Deployment Guide: infra/docs/DEPLOYMENT_GUIDE.md
+    - API Reference: infra/docs/API.md
+    - Code Examples: infra/docs/EXAMPLES.md
+    - Integration Guide: infra/docs/CONSTELLATION_INTEGRATION.md
+    - Best Practices: infra/docs/BEST_PRACTICES.md
+    - Cheat Sheet: infra/docs/CHEAT_SHEET.md
+    - Troubleshooting: infra/docs/TROUBLESHOOTING.md
+    - Migration Guide: infra/docs/MIGRATION_GUIDE.md
+    - Refactoring Guide: infra/docs/REFACTORING_GUIDE.md
+    - Integration Examples: infra/docs/INTEGRATION_EXAMPLES.md
+    - System Status: infra/docs/SYSTEM_STATUS.md
+    - Roadmap: infra/docs/ROADMAP.md
+    - vs Constellation Comparison: infra/docs/INFRA_VS_CONSTELLATION_COMPARISON.md
+    - Project Summary: infra/docs/PROJECT_SUMMARY.md
+    - Canonical Refactoring Summary: infra/docs/CANONICAL_REFACTORING_SUMMARY.md
+    - Implementation Status: infra/docs/IMPLEMENTATION_STATUS.md
+    - Implementation Complete: infra/docs/IMPLEMENTATION_COMPLETE.md
+    - Final Summary: infra/docs/FINAL_SUMMARY.md
+    - Verification: infra/docs/VERIFICATION.md
+    - Test Completion Report: infra/docs/TEST_COMPLETION_REPORT.md
+    - Quick Start (Canonical): infra/docs/QUICK_START.md
+
+  - High Availability:
+    - Stateful HA Plan: docs/stateful_ha_plan.md
+    - Ingress HA (OpenSVC): docs/osvc_ingress_ha.md
+    - OpenSVC Cluster Bootstrap: docs/opensvc_cluster_bootstrap.md
+
+  - Operations:
+    - Maintenance Guide: docs/MAINTENANCE.md
+    - OTLP Quickstart: docs/OTLP_QUICKSTART.md
+
+  - KotorModSync Integration:
+    - Telemetry Setup: docs/KOTORMODSYNC_TELEMETRY_SETUP.md
+    - Client Integration: docs/KOTORMODSYNC_CLIENT_INTEGRATION.md
+    - Security Summary: docs/KOTORMODSYNC_SECURITY_SUMMARY.md
+
+  - Contributing:
+    - Guidelines: CONTRIBUTING.md
+    - Agent Instructions: AGENTS.md
+    - Copilot Instructions: .github/copilot-instructions.md
