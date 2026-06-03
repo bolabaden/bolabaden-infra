@@ -1,7 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
 
-
-
 secrets:
   sudo-password:
     file: ${SECRETS_PATH:?}/sudo-password.txt
@@ -43,7 +41,6 @@ secrets:
     file: ${SECRETS_PATH:?}/stremthru-proxy-auth.txt
   stremthru-auth-admin:
     file: ${SECRETS_PATH:?}/stremthru-auth-admin.txt
-
 
 configs:
   fuse.conf:
@@ -1502,7 +1499,7 @@ configs:
     content: |
       #!/usr/bin/with-contenv bash
       # Jackett initialization script - provisions config and removes slow indexers
-      
+
       # Copy default ServerConfig if not exists
       mkdir -p /config/Jackett /config/Jackett/Indexers
       if [ ! -f /config/Jackett/ServerConfig.json ]; then
@@ -1510,7 +1507,7 @@ configs:
         chown abc:abc /config/Jackett/ServerConfig.json
         echo "Provisioned Jackett ServerConfig.json"
       fi
-      
+
       # Remove blacklisted indexers on every startup (self-healing)
       if [ -f /indexer-blacklist.txt ]; then
         while IFS= read -r indexer || [ -n "$$indexer" ]; do
@@ -1546,7 +1543,7 @@ configs:
       info_age = 2d
       chunk_total_size = 20G
       db_purge = true
-      
+
       [gdrive]
       type = drive
       client_id = $RCLONE_GOOGLE_CLIENT_ID
@@ -1557,7 +1554,7 @@ configs:
       token = $RCLONE_GOOGLE_TOKEN
       use_trash = false
       chunk_size = 16M
-      
+
       [gcrypt]
       type = crypt
       remote = gcache:
@@ -1756,10 +1753,10 @@ services:
     configs:
       - source: stremio-localstorage.json
         target: /srv/stremio-server/localStorage.json
-        mode: 0444
+        mode: 444
       - source: stremio-addon-bootstrap.js
         target: /srv/stremio-server/stremio-addon-bootstrap.js
-        mode: 0555
+        mode: 555
     command:
       - /bin/sh
       - -lc
@@ -1829,10 +1826,7 @@ services:
       kuma.stremio.http.interval: 60
     healthcheck:
       # Comprehensive HTTP healthcheck - installs curl if missing and validates actual service functionality
-      test: [
-        "CMD-SHELL",
-        "command -v curl >/dev/null || (apk add --no-cache curl >/dev/null 2>&1 || apt-get update >/dev/null 2>&1 && apt-get install -y curl >/dev/null 2>&1); (curl -fs http://127.0.0.1:11470/ >/dev/null 2>&1 || curl -fsk https://127.0.0.1:12470/ >/dev/null 2>&1) || exit 1"
-      ]
+      test: [ "CMD-SHELL", "command -v curl >/dev/null || (apk add --no-cache curl >/dev/null 2>&1 || apt-get update >/dev/null 2>&1 && apt-get install -y curl >/dev/null 2>&1); (curl -fs http://127.0.0.1:11470/ >/dev/null 2>&1 || curl -fsk https://127.0.0.1:12470/ >/dev/null 2>&1) || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -1860,16 +1854,16 @@ services:
       PGID: ${PGID:-988}
       UMASK: ${UMASK:-002}
       # FlareSolverr Environment Variables
-      LOG_LEVEL: debug  # Verbosity of the logging. Use LOG_LEVEL=debug for more information.
-      LOG_HTML: false  # Only for debugging. If true all HTML that passes through the proxy will be logged to the console in debug level.
-      CAPTCHA_SOLVER: none  # Captcha solving method. It is used when a captcha is encountered.  Note: none of the captcha solvers work with the current version of Flaresolverr.
-      PORT: ${FLARESOLVERR_PORT:-8191}  # Listening port.
-      HOST: 0.0.0.0  # Listening interface.
-      HEADLESS: ${FLARESOLVERR_HEADLESS:-true}  # Only for debugging. To run the web browser in headless mode or visible.
-      BROWSER_TIMEOUT: ${FLARESOLVERR_BROWSER_TIMEOUT:-120000}  # If you are experiencing errors/timeouts because your system is slow, you can try to increase this value.
-      TEST_URL: ${FLARESOLVERR_TEST_URL:-https://www.google.com}  # FlareSolverr makes a request on start to make sure the web browser is working.
-      PROMETHEUS_ENABLED: ${FLARESOLVERR_PROMETHEUS_ENABLED:-true}  # Enable Prometheus exporter
-      PROMETHEUS_PORT: ${PROMETHEUS_PORT:-9090}  # Listening port for Prometheus exporter
+      LOG_LEVEL: debug # Verbosity of the logging. Use LOG_LEVEL=debug for more information.
+      LOG_HTML: false # Only for debugging. If true all HTML that passes through the proxy will be logged to the console in debug level.
+      CAPTCHA_SOLVER: none # Captcha solving method. It is used when a captcha is encountered.  Note: none of the captcha solvers work with the current version of Flaresolverr.
+      PORT: ${FLARESOLVERR_PORT:-8191} # Listening port.
+      HOST: 0.0.0.0 # Listening interface.
+      HEADLESS: ${FLARESOLVERR_HEADLESS:-true} # Only for debugging. To run the web browser in headless mode or visible.
+      BROWSER_TIMEOUT: ${FLARESOLVERR_BROWSER_TIMEOUT:-120000} # If you are experiencing errors/timeouts because your system is slow, you can try to increase this value.
+      TEST_URL: ${FLARESOLVERR_TEST_URL:-https://www.google.com} # FlareSolverr makes a request on start to make sure the web browser is working.
+      PROMETHEUS_ENABLED: ${FLARESOLVERR_PROMETHEUS_ENABLED:-true} # Enable Prometheus exporter
+      PROMETHEUS_PORT: ${PROMETHEUS_PORT:-9090} # Listening port for Prometheus exporter
     labels:
       traefik.enable: true
       traefik.http.routers.flaresolverr.middlewares: nginx-auth@file
@@ -1884,7 +1878,7 @@ services:
       kuma.flaresolverr.http.url: https://flaresolverr.$DOMAIN
       kuma.flaresolverr.http.interval: 30
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:${FLARESOLVERR_PORT:-8191}/health > /dev/null 2>&1 || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://127.0.0.1:${FLARESOLVERR_PORT:-8191}/health > /dev/null 2>&1 || exit 1" ]
       interval: 30s
       timeout: 15s
       retries: 3
@@ -1910,13 +1904,13 @@ services:
     configs:
       - source: jackett-serverconfig.json
         target: /defaults/ServerConfig.json
-        mode: 0644
+        mode: 644
       - source: jackett-indexer-blacklist.txt
         target: /indexer-blacklist.txt
-        mode: 0644
+        mode: 644
       - source: jackett-init.sh
         target: /custom-cont-init.d/99-remove-slow-indexers
-        mode: 0755
+        mode: 755
     volumes:
       - ${CONFIG_PATH:-./volumes}/jackett/config:/config
       - /mnt/remote/blackhole:/blackhole
@@ -1939,7 +1933,7 @@ services:
       # Jackett is still accessible via direct URL, just not shown on Homepage dashboard
       # Per Jackett documentation, the /all endpoint should not be used - add indexers individually to client apps
     healthcheck:
-      test: ["CMD-SHELL", "curl -fs http://127.0.0.1:9117/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=$JACKETT_API_KEY > /dev/null 2>&1 || exit 1"]
+      test: [ "CMD-SHELL", "curl -fs http://127.0.0.1:9117/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=$JACKETT_API_KEY > /dev/null 2>&1 || exit 1" ]
       interval: 30s
       timeout: 10s
       start_period: 60s
@@ -1979,15 +1973,16 @@ services:
     mem_limit: 6G
     mem_reservation: 128M
     cpus: 2.0
-    healthcheck:  # docker exec prowlarr ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
-      test: ["CMD-SHELL", "curl -fs -H \"Authorization: Bearer ${PROWLARR_API_KEY:?}\" http://127.0.0.1:9696/api/v1/system/status || exit 1"]
+    healthcheck:
+      # docker exec prowlarr ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
+      test: [ "CMD-SHELL", "curl -fs -H \"Authorization: Bearer ${PROWLARR_API_KEY:?}\" http://127.0.0.1:9696/api/v1/system/status || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 120s
     restart: always
   aiostreams:
-    # 🔹🔹 AIOStreams 🔹🔹
+    # 🔹🔹 AIOStreams 🔹🔹 https://github.com/viren070/aiostreams
     image: ghcr.io/viren070/aiostreams
     container_name: aiostreams
     hostname: aiostreams
@@ -2023,9 +2018,9 @@ services:
 
       # --- Addon Identification ---
       # Descriptive name for your addon instance.
-      ADDON_NAME: ${AIOSTREAMS_ADDON_NAME:-BadenAIO}  # Default: "BadenAIO"
+      ADDON_NAME: ${AIOSTREAMS_ADDON_NAME:-BadenAIO} # Default: "BadenAIO"
       # Unique identifier for your addon.
-      ADDON_ID: aiostreams.$DOMAIN  # Default: "aiostreams.viren070.com"
+      ADDON_ID: aiostreams.$DOMAIN # Default: "aiostreams.viren070.com"
 
       # --- Network Configuration ---
       # The port on which the addon will listen.
@@ -2035,7 +2030,7 @@ services:
       # The base URL of your addon. Required for proper functioning.
       # Used for generating installation URLs, identifying self scraping, replacing genre links, generating stream URLs for built in addons etc.
       # Example: https://aiostreams.yourdomain.com
-      BASE_URL: https://aiostreams.$DOMAIN  # Default: ""
+      BASE_URL: https://aiostreams.$DOMAIN # Default: ""
 
       # Optionally override the internal URL. This URL is used when communicating with built-in addons. 
       # In most cases, the default is fine. 
@@ -2050,11 +2045,20 @@ services:
       #   Or: [System.Guid]::NewGuid().ToString("N") + [System.Guid]::NewGuid().ToString("N") (ensure it's 64 chars)
       SECRET_KEY: ${AIOSTREAMS_SECRET_KEY:?}
 
-      # API key to protect your addon installation and usage.
-      # Leave empty to disable password protection.
-      # Can be any string.
-      # Supports multiple passwords separated by commas
-      # Example: ADDON_PASSWORD: "password1,password2"
+      # --- Dashboard / API Authentication (v2.30+) ---
+      # v2.30 introduces user accounts for the dashboard. Provide a comma-separated
+      # list of `username:password` pairs. All listed users are admins by default
+      # (restrict with AIOSTREAMS_AUTH_ADMINS). At least one pair is required to log
+      # in to the dashboard / Settings page.
+      AIOSTREAMS_AUTH: ${AIOSTREAMS_AUTH:-admin:${AIOSTREAMS_ADDON_PASSWORD:-changeme}}
+      # Optionally restrict which of the above users are admins (comma-separated usernames).
+      # AIOSTREAMS_AUTH_ADMINS: admin
+
+      # --- Legacy config access key (ADDON_PASSWORD) ---
+      # NOTE (v2.30 migration): keep ADDON_PASSWORD set for at least ONE startup after
+      # upgrading so the migration can run; the config access key is then set to this
+      # value. It may be removed afterwards.
+      # Supports multiple passwords separated by commas, e.g. "password1,password2".
       ADDON_PASSWORD: ${AIOSTREAMS_ADDON_PASSWORD}
 
       # --- Database ---
@@ -2110,8 +2114,8 @@ services:
       # You may also limit the indexers used by adding a tag with the name "aiostreams" to the indexers in Prowlarr.
       # BUILTIN_PROWLARR_INDEXERS: 
       # The timeout for search requests.
-      BUILTIN_PROWLARR_SEARCH_TIMEOUT: 
-      # How long specific responses should be cached for. 
+      BUILTIN_PROWLARR_SEARCH_TIMEOUT: # How long specific responses should be cached for. 
+
       BUILTIN_PROWLARR_SEARCH_CACHE_TTL: 604800
       BUILTIN_PROWLARR_INDEXERS_CACHE_TTL: 1209600
 
@@ -2184,75 +2188,48 @@ services:
       #                     DEBRID & OTHER SERVICE API KEYS
       # ==============================================================================
 
-      # Provide a default TMDB access token to be used for the Title Matching filter if a user does not provide any.
-      TMDB_ACCESS_TOKEN_FILE: /run/secrets/tmdb-access-token
-      TMDB_API_KEY_FILE: /run/secrets/tmdb-api-key
+      # v2.30 NOTE: the per-service DEFAULT_<SERVICE>_* / FORCED_<SERVICE>_* variables
+      # were REMOVED and replaced by the consolidated DEFAULT_SERVICE_CREDENTIALS /
+      # FORCED_SERVICE_CREDENTIALS maps (one `serviceId.credentialId=value` per line).
+      # The old `*_FILE` secret-file convention is NO LONGER SUPPORTED by the app, so
+      # values must be supplied directly (env substitution below) or entered in the
+      # dashboard (Settings -> Services). Empty values leave the field blank/unlocked.
+
+      # Provide a default TMDB access token / API key for the Title Matching filter if a
+      # user does not provide any. These are individual runtime settings; if set here
+      # they become locked overrides in the dashboard. (`_FILE` is unsupported in v2.30.)
+      TMDB_ACCESS_TOKEN: ${TMDB_ACCESS_TOKEN:-}
+      TMDB_API_KEY: ${TMDB_API_KEY:-}
 
       # Provide a trakt client ID for authorised requests to get trakt aliases.
-      TRAKT_CLIENT_ID: 
+      TRAKT_CLIENT_ID:
 
-      # Configure API keys for debrid services and others you plan to use.
-      # 'DEFAULT_' values are pre-filled in the user's config page.
-      # 'FORCED_' values override user settings and hide the option.
+      # --- Default service credentials (pre-filled in the user's config page) ---
+      # Format: serviceId.credentialId=value (one per line). Old PUTIO_CLIENT_SECRET
+      # maps to putio.token. Values resolve from the matching env vars (or .env), and
+      # may instead be set in the dashboard.
+      DEFAULT_SERVICE_CREDENTIALS: |
+        realdebrid.apiKey=${REALDEBRID_API_KEY:-}
+        alldebrid.apiKey=${ALLDEBRID_API_KEY:-}
+        premiumize.apiKey=${PREMIUMIZE_API_KEY:-}
+        debridlink.apiKey=${DEBRIDLINK_API_KEY:-}
+        torbox.apiKey=${TORBOX_API_KEY:-}
+        offcloud.apiKey=${OFFCLOUD_API_KEY:-}
+        offcloud.email=${OFFCLOUD_EMAIL:-}
+        offcloud.password=${OFFCLOUD_PASSWORD:-}
+        putio.clientId=${PUTIO_CLIENT_ID:-}
+        putio.token=${PUTIO_CLIENT_SECRET:-}
+        easynews.username=${EASYNEWS_USERNAME:-}
+        easynews.password=${EASYNEWS_PASSWORD:-}
+        easydebrid.apiKey=${EASYDEBRID_API_KEY:-}
+        pikpak.email=${PIKPAK_EMAIL:-}
+        pikpak.password=${PIKPAK_PASSWORD:-}
+        seedr.encodedToken=${SEEDR_ENCODED_TOKEN:-}
 
-      # --- Real-Debrid ---
-      DEFAULT_REALDEBRID_API_KEY_FILE: /run/secrets/realdebrid-api-key
-      #FORCED_REALDEBRID_API_KEY_FILE: /run/secrets/realdebrid-api-key
-
-      # --- AllDebrid ---
-      DEFAULT_ALLDEBRID_API_KEY_FILE: /run/secrets/alldebrid-api-key
-      #FORCED_ALLDEBRID_API_KEY_FILE: /run/secrets/alldebrid-api-key
-
-      # --- Premiumize ---
-      DEFAULT_PREMIUMIZE_API_KEY_FILE: /run/secrets/premiumize-api-key
-      #FORCED_PREMIUMIZE_API_KEY_FILE: /run/secrets/premiumize-api-key
-
-      # --- Debrid-Link ---
-      DEFAULT_DEBRIDLINK_API_KEY_FILE: /run/secrets/debridlink-api-key
-      #FORCED_DEBRIDLINK_API_KEY_FILE: /run/secrets/debridlink-api-key
-
-      # --- Torbox ---
-      DEFAULT_TORBOX_API_KEY_FILE: /run/secrets/torbox-api-key
-      #FORCED_TORBOX_API_KEY_FILE: /run/secrets/torbox-api-key
-
-      # --- OffCloud ---
-      DEFAULT_OFFCLOUD_API_KEY_FILE: /run/secrets/offcloud-api-key
-      #FORCED_OFFCLOUD_API_KEY_FILE: /run/secrets/offcloud-api-key
-      DEFAULT_OFFCLOUD_EMAIL: $OFFCLOUD_EMAIL
-      #FORCED_OFFCLOUD_EMAIL: $OFFCLOUD_EMAIL
-      DEFAULT_OFFCLOUD_PASSWORD_FILE: /run/secrets/offcloud-password
-      #FORCED_OFFCLOUD_PASSWORD_FILE: /run/secrets/offcloud-password
-
-
-      # --- Put.io ---
-      DEFAULT_PUTIO_CLIENT_ID: $PUTIO_CLIENT_ID
-      #FORCED_PUTIO_CLIENT_ID: $PUTIO_CLIENT_ID
-      DEFAULT_PUTIO_CLIENT_SECRET: $PUTIO_CLIENT_SECRET
-      #FORCED_PUTIO_CLIENT_SECRET: $PUTIO_CLIENT_SECRET
-
-      # --- EasyNews ---
-      DEFAULT_EASYNEWS_USERNAME: ${EASYNEWS_USERNAME:-}
-      #FORCED_EASYNEWS_USERNAME: $EASYNEWS_USERNAME
-      DEFAULT_EASYNEWS_PASSWORD: ${EASYNEWS_PASSWORD:-}
-      #FORCED_EASYNEWS_PASSWORD: $EASYNEWS_PASSWORD
-
-      # --- EasyDebrid ---
-      DEFAULT_EASYDEBRID_API_KEY: $EASYDEBRID_API_KEY
-      #FORCED_EASYDEBRID_API_KEY: $EASYDEBRID_API_KEY
-
-      # --- Debrider ---
-      DEFAULT_DEBRIDER_API_KEY: 
-      FORCED_DEBRIDER_API_KEY: 
-
-      # --- PikPak ---
-      DEFAULT_PIKPAK_EMAIL: $PIKPAK_EMAIL
-      #FORCED_PIKPAK_EMAIL: $PIKPAK_EMAIL
-      DEFAULT_PIKPAK_PASSWORD: $PIKPAK_PASSWORD
-      #FORCED_PIKPAK_PASSWORD: $PIKPAK_PASSWORD
-
-      # --- Seedr ---
-      DEFAULT_SEEDR_ENCODED_TOKEN: $SEEDR_ENCODED_TOKEN
-      #FORCED_SEEDR_ENCODED_TOKEN: $SEEDR_ENCODED_TOKEN
+      # --- Forced service credentials (override user settings and hide the option) ---
+      # Same format as DEFAULT_SERVICE_CREDENTIALS. Uncomment to force values for all users.
+      # FORCED_SERVICE_CREDENTIALS: |
+      #   realdebrid.apiKey=${REALDEBRID_API_KEY:-}
 
 
       # ==============================================================================
@@ -2299,13 +2276,14 @@ services:
       # Format: e.g. ["/(\\[(Aergia|smol|SoM|Vodes)\\]|-(Aergia(?!-raws)|smol|SoM)\\b|\\b(Arg0|LYS1TH3A|OZR|SCY|ZeroBuild)\\b)|(?<!Not)-Vodes\\b/i", "/(\\[(Legion|sam|Vanilla)\\]|-(Legion|sam|Vanilla)\\b)/"]
       # You may also set a list of URLs e.g. ["https://raw.githubusercontent.com/Vidhin05/Releases-Regex/main/merged-regexes.json"]
       # Description supports markdown format for links and code only. (i.e. [linktext](link) and `code`)
-      # ALLOWED_REGEX_PATTERNS: 
-      # ALLOWED_REGEX_PATTERNS_URLS: 
-      # ALLOWED_REGEX_PATTERNS_DESCRIPTION: 
+      # v2.30: ALLOWED_REGEX_PATTERNS* were renamed to WHITELISTED_REGEX_PATTERNS*.
+      # WHITELISTED_REGEX_PATTERNS: 
+      # WHITELISTED_REGEX_PATTERNS_URLS: 
+      # WHITELISTED_REGEX_PATTERNS_DESCRIPTION: 
 
       # How often patterns from URLs will be refreshed. 
       # Default: 86400000 (1 day)
-      # ALLOWED_REGEX_PATTERNS_URLS_REFRESH_INTERVAL: 
+      # WHITELISTED_SYNC_REFRESH_INTERVAL: 
       # --- Aliased Configurations (Vanity URLs) ---
       # Create shorter, memorable installation URLs.
       # Format: aliasName1:uuid1:encryptedPassword1,aliasName2:uuid2:encryptedPassword2
@@ -2318,22 +2296,22 @@ services:
 
       # --- Default maximum cache size ----
       # The maximum number of items that can be held in a given cache instance, if not overriden by a specific cache instance
-      DEFAULT_MAX_CACHE_SIZE: 100000  # Default is 100000
+      DEFAULT_MAX_CACHE_SIZE: 100000 # Default is 100000
 
       # --- Proxy IP TTL (StremThru/MediaFlow Proxy)
       # The Time-To-Live (in seconds) of items in the Public IP cache.
       # Set to -1 to disable caching
-      PROXY_IP_CACHE_TTL: 900  # Default is 900
+      PROXY_IP_CACHE_TTL: 900 # Default is 900
 
       # --- Addon Resource Caching ---
       # Control the Caching of resources fetched from other addons
       # Set to -1 to disable caching.
-      MANIFEST_CACHE_TTL: 300  # Default is 300
-      SUBTITLE_CACHE_TTL: 300  # Default is 300
-      STREAM_CACHE_TTL: 1  # Default is 1
-      CATALOG_CACHE_TTL: 300  # Default is 300
-      META_CACHE_TTL: 300  # Default is 300
-      ADDON_CATALOG_CACHE_TTL: 300  # Default is 300
+      MANIFEST_CACHE_TTL: 300 # Default is 300
+      SUBTITLE_CACHE_TTL: 300 # Default is 300
+      STREAM_CACHE_TTL: 1 # Default is 1
+      CATALOG_CACHE_TTL: 300 # Default is 300
+      META_CACHE_TTL: 300 # Default is 300
+      ADDON_CATALOG_CACHE_TTL: 300 # Default is 300
 
       # timeout for background resource requests, uses the value of MAX_TIMEOUT if not set. 
       # This is the timeout for processing requests in the background after its initial timeout 
@@ -2382,12 +2360,12 @@ services:
 
       # --- Log Level ---
       # Set the verbosity of logs. Options: "error", "warn", "info", "http", "verbose","debug", "silly"
-      LOG_LEVEL: info  # Default: http
+      LOG_LEVEL: info # Default: http
 
       # --- Log Format ---
       # Output logs in "json" or "text" format.
-      # Default: text
-      LOG_FORMAT: text
+      # Default (v2.30+): json (recommended for production)
+      LOG_FORMAT: json
 
       # --- Log Sensitive Information ---
       # Whether to include potentially sensitive info (like API keys) in logs.
@@ -2399,7 +2377,6 @@ services:
       # Adjust the timezone used for logging
       # e.g. Europe/Paris, America/New_York
       LOG_TIMEZONE: Etc/UTC
-
 
       # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : 
       #                      URL MAPPINGS
@@ -2448,7 +2425,7 @@ services:
 
       # --- Stream Proxy Enabled ---
       # DEFAULT_PROXY_ENABLED: true  # Default state for enabling a stream proxy.
-      FORCE_PROXY_ENABLED: true   # Force stream proxy on/off for all users.
+      FORCE_PROXY_ENABLED: true # Force stream proxy on/off for all users.
 
       # --- Stream Proxy ID ---
       # 'mediaflow' or 'stremthru'
@@ -2489,8 +2466,6 @@ services:
       ENCRYPT_MEDIAFLOW_URLS: true
       ENCRYPT_STREMTHRU_URLS: true
 
-
-
       # ==============================================================================
       #                       ADVANCED CONFIGURATION & LIMITS
       # ==============================================================================
@@ -2508,13 +2483,13 @@ services:
 
       # --- Configuration Limits ---
       # Maximum number of addons allowed per AIOStreams configuration.
-      MAX_ADDONS: 100  # Default: 15
+      MAX_ADDONS: 100 # Default: 15
       # Maximum number of groups allowed per AIOStreams configuration
-      MAX_GROUPS: 50  # Default: 20
+      MAX_GROUPS: 50 # Default: 20
       # Maximum number of keyword filters per AIOStreams configuration.
-      MAX_KEYWORD_FILTERS: 50  # Default: 30
-      # Maximum number of stream expression filters per AIOStreams configuration
-      MAX_STREAM_EXPRESSION_FILTERS: 200  # Default: 30
+      MAX_KEYWORD_FILTERS: 50 # Default: 30
+      # Maximum number of stream expressions per AIOStreams configuration (renamed in v2.30)
+      MAX_STREAM_EXPRESSIONS: 200 # Default: 30
       # Maximum timeout (ms) an addon can be set to via override.
       MAX_TIMEOUT: 50000
       # Minimum timeout (ms) an addon can be set to via override.
@@ -2523,7 +2498,6 @@ services:
       # The minimum interval between precache attempts of the same episode by the same user in seconds.
       # Default: 1 day
       PRECACHE_NEXT_EPISODE_MIN_INTERVAL: 86400
-
 
       # ==============================================================================
       #                           RATE LIMIT CONFIGURATION
@@ -2581,7 +2555,6 @@ services:
       STREMIO_META_RATE_LIMIT_WINDOW: 5
       STREMIO_META_RATE_LIMIT_MAX_REQUESTS: 15
 
-
       # ==============================================================================
       #                         INACTIVE USER PRUNING
       # ==============================================================================
@@ -2598,7 +2571,6 @@ services:
       # Default: -1
       PRUNE_MAX_DAYS: -1
 
-
       # ==============================================================================
       #                      EXTERNAL ADDON SERVICE URLs & TIMEOUTS
       # ==============================================================================
@@ -2610,11 +2582,9 @@ services:
       # e.g. COMET_URL: '["https://comet.elfhosted.com", "https://comet.$DOMAIN"]'
       #COMET_URL: '["https://comet.elfhosted.com", "https://comet.$DOMAIN"]'
       # DEFAULT_COMET_TIMEOUT: 
-      # Advanced: Override Comet hostname/port/protocol if COMET_URL is internal but needs to be public-facing.
-      # Only uncomment and set if needed. Usually, leave these commented.
-      # FORCE_COMET_HOSTNAME: 
-      # FORCE_COMET_PORT: 
-      # FORCE_COMET_PROTOCOL:  # e.g., https
+      # Advanced (v2.30): FORCE_<ADDON>_HOSTNAME/PORT/PROTOCOL were removed. To rewrite
+      # an internal URL to a public-facing one, use the global STREAM_URL_MAPPINGS option
+      # above, e.g. STREAM_URL_MAPPINGS: '{"http://comet:2020":"https://comet.$DOMAIN"}'
 
       # ----------- MEDIAFUSION ------------
       # This can also be set to a list of URLs which would show as options to users when configuring
@@ -2622,7 +2592,8 @@ services:
       #MEDIAFUSION_URL: '["https://mediafusion.elfhosted.com", "https://mediafusion.$DOMAIN"]'
       # DEFAULT_MEDIAFUSION_TIMEOUT: 
       # API Password for self-hosted MediaFusion (for auto-configuration).
-      MEDIAFUSION_API_PASSWORD_FILE: /run/secrets/sudo-password
+      # v2.30: the `_FILE` suffix is no longer supported; provide the value directly.
+      MEDIAFUSION_API_PASSWORD: ${SUDO_PASSWORD:-}
 
       # ----------- JACKETTIO -------------
       # This can also be set to a list of URLs which would show as options to users when configuring
@@ -2635,25 +2606,19 @@ services:
       # DEFAULT_JACKETTIO_STREMTHRU_URL: https://stremthru.$DOMAIN  # https://stremthru.13377001.xyz
       # Self-hosted StremThru for Jackettio:
       # DEFAULT_JACKETTIO_STREMTHRU_URL: http://stremthru:8080
-      # Advanced: Override Jackettio hostname/port/protocol (similar to Comet).
-      # FORCE_JACKETTIO_HOSTNAME: 
-      # FORCE_JACKETTIO_PORT: 
-      # FORCE_JACKETTIO_PROTOCOL: 
+      # Advanced (v2.30): FORCE_<ADDON>_HOSTNAME/PORT/PROTOCOL were removed; use the global
+      # STREAM_URL_MAPPINGS option above to rewrite internal URLs to public-facing ones.
 
       # --------- STREMTHRU-STORE ---------
-      STREMTHRU_STORE_URL: ${STREMTHRU_STORE_HOST:-https://stremthru.$DOMAIN/stremio/store/}  # https://stremthru.elfhosted.com/stremio/store/  # https://stremthru.13377001.xyz/stremio/store/
+      STREMTHRU_STORE_URL: ${STREMTHRU_STORE_HOST:-https://stremthru.$DOMAIN/stremio/store/} # https://stremthru.elfhosted.com/stremio/store/  # https://stremthru.13377001.xyz/stremio/store/
       # DEFAULT_STREMTHRU_STORE_TIMEOUT: 
-      # Advanced: Override StremThru Store  hostname/port/protocol (similar to Comet).
-      # FORCE_STREMTHRU_STORE_HOSTNAME: 
-      # FORCE_STREMTHRU_STORE_PORT: 
-      # FORCE_STREMTHRU_STORE_PROTOCOL: 
+      # Advanced (v2.30): FORCE_<ADDON>_HOSTNAME/PORT/PROTOCOL were removed; use the global
+      # STREAM_URL_MAPPINGS option above to rewrite internal URLs to public-facing ones.
       # --------- STREMTHRU-TORZ -----
-      STREMTHRU_TORZ_URL: ${STREMTHRU_TORZ_HOST:-https://stremthru.$DOMAIN/stremio/torz/}  # https://stremthru.elfhosted.com/stremio/torz/    # https://stremthru.13377001.xyz/stremio/torz/
+      STREMTHRU_TORZ_URL: ${STREMTHRU_TORZ_HOST:-https://stremthru.$DOMAIN/stremio/torz/} # https://stremthru.elfhosted.com/stremio/torz/    # https://stremthru.13377001.xyz/stremio/torz/
       # DEFAULT_STREMTHRU_TORZ_TIMEOUT: 
-      # Advanced: Override StremThru Torz hostname/port/protocol (similar to Comet).
-      # FORCE_STREMTHRU_TORZ_HOSTNAME: 
-      # FORCE_STREMTHRU_TORZ_PORT: 
-      # FORCE_STREMTHRU_TORZ_PROTOCOL: 
+      # Advanced (v2.30): FORCE_<ADDON>_HOSTNAME/PORT/PROTOCOL were removed; use the global
+      # STREAM_URL_MAPPINGS option above to rewrite internal URLs to public-facing ones.
 
       # --------- EASYNEWS+ ADDON ---------
       # EASYNEWS_PLUS_URL: https://b89262c192b0-stremio-easynews-addon.baby-beamup.club/
@@ -2880,11 +2845,11 @@ services:
       # ============================== #
       # Cache Settings (Seconds)       #
       # ============================== #
-      METADATA_CACHE_TTL: 2592000  # 30 days
-      TORRENT_CACHE_TTL: 1296000  # 15 days
-      DEBRID_CACHE_TTL: 86400  # 1 day
-      SCRAPE_LOCK_TTL: 300  # 5 minutes - Duration for distributed scraping locks
-      SCRAPE_WAIT_TIMEOUT: 30  # 30 seconds - Max time to wait for other instance to complete scraping
+      METADATA_CACHE_TTL: 2592000 # 30 days
+      TORRENT_CACHE_TTL: 1296000 # 15 days
+      DEBRID_CACHE_TTL: 86400 # 1 day
+      SCRAPE_LOCK_TTL: 300 # 5 minutes - Duration for distributed scraping locks
+      SCRAPE_WAIT_TIMEOUT: 30 # 30 seconds - Max time to wait for other instance to complete scraping
 
       # ============================== #
       # Debrid Proxy Configuration     #
@@ -2897,7 +2862,7 @@ services:
       INDEXER_MANAGER_TYPE: prowlarr # Options: jackett, prowlarr, none
       INDEXER_MANAGER_URL: https://prowlarr.$DOMAIN
       INDEXER_MANAGER_API_KEY: ${PROWLARR_API_KEY:?}
-      INDEXER_MANAGER_TIMEOUT: 60  # Max time to get search results (seconds)
+      INDEXER_MANAGER_TIMEOUT: 60 # Max time to get search results (seconds)
       INDEXER_MANAGER_INDEXERS: ${COMET_INDEXERS:-["animetosho", "anirena", "bitsearch", "eztv", "nyaasi", "thepiratebay", "therarbg", "yts"]} # Jackett/Prowlarr indexers
 
       # ============================== #
@@ -2964,8 +2929,9 @@ services:
       kuma.comet.http.name: comet.$TS_HOSTNAME.$DOMAIN
       kuma.comet.http.url: https://comet.$DOMAIN
       kuma.comet.http.interval: 60
-    healthcheck:  # docker exec comet ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${COMET_PORT:-2020}/health > /dev/null 2>&1 || exit 1"]
+    healthcheck:
+      # docker exec comet ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
+      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:${COMET_PORT:-2020}/health > /dev/null 2>&1 || exit 1" ]
       interval: 1m
       timeout: 5s
       retries: 3
@@ -3005,116 +2971,116 @@ services:
       PGID: ${PGID:-988}
       UMASK: ${UMASK:-002}
       # CORE APPLICATION SETTINGS
-      ADDON_NAME: MediaFusion | $DOMAIN  # The name of the MediaFusion addon
-      VERSION: 1.0.0  # The version of the MediaFusion addon
-      DESCRIPTION: "MediaFusion | $DOMAIN"  # A brief description of the MediaFusion addon to show on Stremio Addon page
-      BRANDING_DESCRIPTION: "MediaFusion is a AIO media stream aggregator addon for Stremio/Kodi."  # Additional branding description text
-      CONTACT_EMAIL: "webmaster@$DOMAIN"  # The contact email for the MediaFusion addon
-      HOST_URL: "https://mediafusion.$DOMAIN"  # The URL where MediaFusion is hosted (required)
-      POSTER_HOST_URL: "https://mediafusion.$DOMAIN"  # The URL where poster images are served from (default: Same as host_url)
-      SECRET_KEY_FILE: /run/secrets/mediafusion-secret-key  # A 32-character secret key for securely signing the session (required)
-      API_PASSWORD_FILE: /run/secrets/sudo-password  # The password for accessing the API endpoints (required)
-      LOGGING_LEVEL: DEBUG  # The logging level of the application (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-      LOGO_URL: "https://mediafusion.$DOMAIN/static/logo.png"  # The URL of the MediaFusion logo
-      IS_PUBLIC_INSTANCE: false  # Set to True for community instances that don't require authentication except for /scraper endpoint
-      MIN_SCRAPING_VIDEO_SIZE: 26214400  # Minimum video size in bytes (25 MB) for scraping
-      METADATA_PRIMARY_SOURCE: tmdb  # Primary source for metadata. Options: "imdb" or "tmdb"
+      ADDON_NAME: MediaFusion | $DOMAIN # The name of the MediaFusion addon
+      VERSION: 1.0.0 # The version of the MediaFusion addon
+      DESCRIPTION: "MediaFusion | $DOMAIN" # A brief description of the MediaFusion addon to show on Stremio Addon page
+      BRANDING_DESCRIPTION: "MediaFusion is a AIO media stream aggregator addon for Stremio/Kodi." # Additional branding description text
+      CONTACT_EMAIL: "webmaster@$DOMAIN" # The contact email for the MediaFusion addon
+      HOST_URL: "https://mediafusion.$DOMAIN" # The URL where MediaFusion is hosted (required)
+      POSTER_HOST_URL: "https://mediafusion.$DOMAIN" # The URL where poster images are served from (default: Same as host_url)
+      SECRET_KEY_FILE: /run/secrets/mediafusion-secret-key # A 32-character secret key for securely signing the session (required)
+      API_PASSWORD_FILE: /run/secrets/sudo-password # The password for accessing the API endpoints (required)
+      LOGGING_LEVEL: DEBUG # The logging level of the application (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+      LOGO_URL: "https://mediafusion.$DOMAIN/static/logo.png" # The URL of the MediaFusion logo
+      IS_PUBLIC_INSTANCE: false # Set to True for community instances that don't require authentication except for /scraper endpoint
+      MIN_SCRAPING_VIDEO_SIZE: 26214400 # Minimum video size in bytes (25 MB) for scraping
+      METADATA_PRIMARY_SOURCE: tmdb # Primary source for metadata. Options: "imdb" or "tmdb"
       # STREAMING PROVIDER SETTINGS
       #DISABLED_PROVIDERS: ""  # List of disabled streaming providers (p2p, realdebrid, seedr, debridlink, alldebrid, offcloud, pikpak, torbox, premiumize, qbittorrent, stremthru, easydebrid)
       # DATABASE AND CACHE SETTINGS
-      MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/mediafusion}  # MongoDB connection URI (required)
-      DB_MAX_CONNECTIONS: 50  # Maximum database connections. Default is 50
-      REDIS_URL: ${REDIS_INTERNAL_URL:-redis://redis:6379}  # Redis service URL for caching and tasks
-      REDIS_MAX_CONNECTIONS: 100  # Maximum Redis connections. Default is 100
+      MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/mediafusion} # MongoDB connection URI (required)
+      DB_MAX_CONNECTIONS: 50 # Maximum database connections. Default is 50
+      REDIS_URL: ${REDIS_INTERNAL_URL:-redis://redis:6379} # Redis service URL for caching and tasks
+      REDIS_MAX_CONNECTIONS: 100 # Maximum Redis connections. Default is 100
       # EXTERNAL SERVICE SETTINGS
-#      REQUESTS_PROXY_URL: "${MEDIAFUSION_REQUESTS_PROXY_URL:-}"  # Optional proxy URL for requests
-      PLAYWRIGHT_CDP_URL: "${PLAYWRIGHT_CDP_URL:-ws://playwright-service:3000?blockAds=true&stealth=true}"  # Playwright CDP service URL
-      FLARESOLVERR_URL: "${FLARESOLVERR_URL:-https://flaresolverr.$DOMAIN/v1}"  # FlareSolverr service URL
-      TMDB_API_KEY: "${TMDB_API_KEY:-}"  # TMDB API key for metadata fetching
+      #      REQUESTS_PROXY_URL: "${MEDIAFUSION_REQUESTS_PROXY_URL:-}"  # Optional proxy URL for requests
+      PLAYWRIGHT_CDP_URL: "${PLAYWRIGHT_CDP_URL:-ws://playwright-service:3000?blockAds=true&stealth=true}" # Playwright CDP service URL
+      FLARESOLVERR_URL: "${FLARESOLVERR_URL:-https://flaresolverr.$DOMAIN/v1}" # FlareSolverr service URL
+      TMDB_API_KEY: "${TMDB_API_KEY:-}" # TMDB API key for metadata fetching
       # PROWLARR SETTINGS
-      IS_SCRAP_FROM_PROWLARR: true  # Enable/disable Prowlarr scraping
-      PROWLARR_API_KEY: "${PROWLARR_API_KEY:?}"  # Prowlarr API key
-      PROWLARR_URL: https://prowlarr.$DOMAIN  # Prowlarr service URL
-      PROWLARR_LIVE_TITLE_SEARCH: false  # Enable live title search in Prowlarr
-      PROWLARR_BACKGROUND_TITLE_SEARCH: true  # Enable background title search
-      PROWLARR_SEARCH_QUERY_TIMEOUT: 30  # Search query timeout in seconds
-      PROWLARR_IMMEDIATE_MAX_PROCESS: 10  # Max immediate processes. Default is 10
-      PROWLARR_IMMEDIATE_MAX_PROCESS_TIME: 15  # Max process time in seconds. Default is 15
-      PROWLARR_SEARCH_INTERVAL_HOUR: 72  # Search interval in hours
-      PROWLARR_FEED_SCRAPE_INTERVAL_HOUR: 3  # Feed scraping interval in hours
+      IS_SCRAP_FROM_PROWLARR: true # Enable/disable Prowlarr scraping
+      PROWLARR_API_KEY: "${PROWLARR_API_KEY:?}" # Prowlarr API key
+      PROWLARR_URL: https://prowlarr.$DOMAIN # Prowlarr service URL
+      PROWLARR_LIVE_TITLE_SEARCH: false # Enable live title search in Prowlarr
+      PROWLARR_BACKGROUND_TITLE_SEARCH: true # Enable background title search
+      PROWLARR_SEARCH_QUERY_TIMEOUT: 30 # Search query timeout in seconds
+      PROWLARR_IMMEDIATE_MAX_PROCESS: 10 # Max immediate processes. Default is 10
+      PROWLARR_IMMEDIATE_MAX_PROCESS_TIME: 15 # Max process time in seconds. Default is 15
+      PROWLARR_SEARCH_INTERVAL_HOUR: 72 # Search interval in hours
+      PROWLARR_FEED_SCRAPE_INTERVAL_HOUR: 3 # Feed scraping interval in hours
       # JACKETT SETTINGS
-      IS_SCRAP_FROM_JACKETT: true  # Enable/disable Jackett scraping
-      JACKETT_URL: https://jackett.$DOMAIN  # Jackett service URL
-      JACKETT_API_KEY: "${JACKETT_API_KEY:?}"  # Jackett API key
-      JACKETT_SEARCH_INTERVAL_HOUR: 72  # Search interval in hours
-      JACKETT_SEARCH_QUERY_TIMEOUT: 30  # Search query timeout in seconds
-      JACKETT_IMMEDIATE_MAX_PROCESS: 10  # Max immediate processes. Default is 10
-      JACKETT_IMMEDIATE_MAX_PROCESS_TIME: 15  # Max process time in seconds. Default is 15
-      JACKETT_LIVE_TITLE_SEARCH: false  # Enable live title search
-      JACKETT_BACKGROUND_TITLE_SEARCH: true  # Enable background title search
-      JACKETT_FEED_SCRAPE_INTERVAL_HOUR: "3"  # Feed scraping interval in hours
+      IS_SCRAP_FROM_JACKETT: true # Enable/disable Jackett scraping
+      JACKETT_URL: https://jackett.$DOMAIN # Jackett service URL
+      JACKETT_API_KEY: "${JACKETT_API_KEY:?}" # Jackett API key
+      JACKETT_SEARCH_INTERVAL_HOUR: 72 # Search interval in hours
+      JACKETT_SEARCH_QUERY_TIMEOUT: 30 # Search query timeout in seconds
+      JACKETT_IMMEDIATE_MAX_PROCESS: 10 # Max immediate processes. Default is 10
+      JACKETT_IMMEDIATE_MAX_PROCESS_TIME: 15 # Max process time in seconds. Default is 15
+      JACKETT_LIVE_TITLE_SEARCH: false # Enable live title search
+      JACKETT_BACKGROUND_TITLE_SEARCH: true # Enable background title search
+      JACKETT_FEED_SCRAPE_INTERVAL_HOUR: "3" # Feed scraping interval in hours
       # ZILEAN SETTINGS
-      IS_SCRAP_FROM_ZILEAN: true  # Enable/disable Zilean scraping
-      ZILEAN_SEARCH_INTERVAL_HOUR: 24  # Search interval in hours
-      ZILEAN_URL: "${ZILEAN_URL:-https://zilean.elfhosted.com}"  # Zilean service URL (https://zilean.elfhosted.com has zero rate limits)
+      IS_SCRAP_FROM_ZILEAN: true # Enable/disable Zilean scraping
+      ZILEAN_SEARCH_INTERVAL_HOUR: 24 # Search interval in hours
+      ZILEAN_URL: "${ZILEAN_URL:-https://zilean.elfhosted.com}" # Zilean service URL (https://zilean.elfhosted.com has zero rate limits)
       # TORRENTIO SETTINGS
-      IS_SCRAP_FROM_TORRENTIO: true  # Enable/disable Torrentio scraping
-      TORRENTIO_SEARCH_INTERVAL_DAYS: 3  # Search interval in days
-      TORRENTIO_URL: "${TORRENTIO_URL:-https://torrentio.strem.fun}"  # Torrentio service URL
+      IS_SCRAP_FROM_TORRENTIO: true # Enable/disable Torrentio scraping
+      TORRENTIO_SEARCH_INTERVAL_DAYS: 3 # Search interval in days
+      TORRENTIO_URL: "${TORRENTIO_URL:-https://torrentio.strem.fun}" # Torrentio service URL
       # MEDIAFUSION SETTINGS
-      IS_SCRAP_FROM_MEDIAFUSION: true  # Enable/disable MediaFusion scraping
-      MEDIAFUSION_SEARCH_INTERVAL_DAYS: 3  # Search interval in days
-      MEDIAFUSION_URL: https://mediafusion.elfhosted.com  # MediaFusion service URL
-      SYNC_DEBRID_CACHE_STREAMS: true  # Enable syncing debrid cache streams
+      IS_SCRAP_FROM_MEDIAFUSION: true # Enable/disable MediaFusion scraping
+      MEDIAFUSION_SEARCH_INTERVAL_DAYS: 3 # Search interval in days
+      MEDIAFUSION_URL: https://mediafusion.elfhosted.com # MediaFusion service URL
+      SYNC_DEBRID_CACHE_STREAMS: true # Enable syncing debrid cache streams
       # BT4G SETTINGS
-      IS_SCRAP_FROM_BT4G: true  # Enable/disable BT4G scraping
-      BT4G_URL: https://bt4gprx.com  # BT4G service URL
-      BT4G_SEARCH_INTERVAL_HOUR: 72  # Search interval in hours
-      BT4G_SEARCH_TIMEOUT: 5  # Search timeout in seconds
-      BT4G_IMMEDIATE_MAX_PROCESS: 15  # Max immediate processes
-      BT4G_IMMEDIATE_MAX_PROCESS_TIME: 15  # Max process time in seconds
+      IS_SCRAP_FROM_BT4G: true # Enable/disable BT4G scraping
+      BT4G_URL: https://bt4gprx.com # BT4G service URL
+      BT4G_SEARCH_INTERVAL_HOUR: 72 # Search interval in hours
+      BT4G_SEARCH_TIMEOUT: 5 # Search timeout in seconds
+      BT4G_IMMEDIATE_MAX_PROCESS: 15 # Max immediate processes
+      BT4G_IMMEDIATE_MAX_PROCESS_TIME: 15 # Max process time in seconds
       # PREMIUMIZE SETTINGS
-      PREMIUMIZE_OAUTH_CLIENT_ID: "$PREMIUMIZE_OAUTH_CLIENT_ID"  # Premiumize OAuth client ID
-      PREMIUMIZE_OAUTH_CLIENT_SECRET: "$PREMIUMIZE_OAUTH_CLIENT_SECRET"  # Premiumize OAuth client secret
+      PREMIUMIZE_OAUTH_CLIENT_ID: "$PREMIUMIZE_OAUTH_CLIENT_ID" # Premiumize OAuth client ID
+      PREMIUMIZE_OAUTH_CLIENT_SECRET: "$PREMIUMIZE_OAUTH_CLIENT_SECRET" # Premiumize OAuth client secret
       # TELEGRAM SETTINGS
-      TELEGRAM_BOT_TOKEN: "$TELEGRAM_BOT_TOKEN"  # Telegram bot token for notifications about contribution streams
-      TELEGRAM_CHAT_ID: "$TELEGRAM_CHAT_ID"  # Telegram chat ID for notifications
+      TELEGRAM_BOT_TOKEN: "$TELEGRAM_BOT_TOKEN" # Telegram bot token for notifications about contribution streams
+      TELEGRAM_CHAT_ID: "$TELEGRAM_CHAT_ID" # Telegram chat ID for notifications
       # CONTENT FILTERING SETTINGS
-      ADULT_CONTENT_REGEX_KEYWORDS: "\\b(porn|xxx|sex|nude|naked|erotic|fetish|bdsm|milf|anal|oral|gangbang|threesome|masturbat|orgasm|cumshot|blowjob|handjob|footjob|creampie|facial|bukkake|hentai|yaoi|yuri|ecchi|doujin|camgirl|webcam|stripper|escort|prostitut|brothel|redlight|peepshow|voyeur|exhibitionist|swinger|orgy|hardcore|softcore|playboy|penthouse|hustler|brazzers|bangbros|realitykings|naughtyamerica|digitalplayground|wickedpictures|evilangel|kink|publicagent|fakehub|teamskeet|mofos|twistys|metart|sexart|x-art|joymii|nubiles|18eighteen|lolita|incest|taboo|kinky|slutty|horny|sexy|sensual|seductive|raw|perverted|depraved)\\b"  # Regex pattern for filtering adult content
-      ADULT_CONTENT_FILTER_IN_TORRENT_TITLE: true  # Enable adult content filtering in torrent titles
+      ADULT_CONTENT_REGEX_KEYWORDS: "\\b(porn|xxx|sex|nude|naked|erotic|fetish|bdsm|milf|anal|oral|gangbang|threesome|masturbat|orgasm|cumshot|blowjob|handjob|footjob|creampie|facial|bukkake|hentai|yaoi|yuri|ecchi|doujin|camgirl|webcam|stripper|escort|prostitut|brothel|redlight|peepshow|voyeur|exhibitionist|swinger|orgy|hardcore|softcore|playboy|penthouse|hustler|brazzers|bangbros|realitykings|naughtyamerica|digitalplayground|wickedpictures|evilangel|kink|publicagent|fakehub|teamskeet|mofos|twistys|metart|sexart|x-art|joymii|nubiles|18eighteen|lolita|incest|taboo|kinky|slutty|horny|sexy|sensual|seductive|raw|perverted|depraved)\\b" # Regex pattern for filtering adult content
+      ADULT_CONTENT_FILTER_IN_TORRENT_TITLE: true # Enable adult content filtering in torrent titles
       # FEATURE TOGGLES
-      VALIDATE_M3U8_URLS_LIVENESS: false  # Validate M3U8 URLs for liveness
-      ENABLE_RATE_LIMIT: true  # Enable/disable rate limiting
-      STORE_STREMTHRU_MAGNET_CACHE: true  # Store StremThru magnet cache
-      IS_SCRAP_FROM_YTS: true  # Enable/disable YTS scraping
-      SCRAPE_WITH_AKA_TITLES: true  # Include alternative titles in scraping
-      ENABLE_FETCHING_TORRENT_METADATA_FROM_P2P: false  # Enable fetching torrent metadata from P2P (Caution: may raise DMCA issues)
+      VALIDATE_M3U8_URLS_LIVENESS: false # Validate M3U8 URLs for liveness
+      ENABLE_RATE_LIMIT: true # Enable/disable rate limiting
+      STORE_STREMTHRU_MAGNET_CACHE: true # Store StremThru magnet cache
+      IS_SCRAP_FROM_YTS: true # Enable/disable YTS scraping
+      SCRAPE_WITH_AKA_TITLES: true # Include alternative titles in scraping
+      ENABLE_FETCHING_TORRENT_METADATA_FROM_P2P: false # Enable fetching torrent metadata from P2P (Caution: may raise DMCA issues)
       # TIME-RELATED SETTINGS
-      META_CACHE_TTL: 1800  # Metadata cache TTL in seconds (Default: 1800 seconds = 30 minutes)
-      WORKER_MAX_TASKS_PER_CHILD: 20  # Max tasks per worker child process. Default is 20
+      META_CACHE_TTL: 1800 # Metadata cache TTL in seconds (Default: 1800 seconds = 30 minutes)
+      WORKER_MAX_TASKS_PER_CHILD: 20 # Max tasks per worker child process. Default is 20
       # SCHEDULER SETTINGS
-      DISABLE_ALL_SCHEDULER: false  # Disable all schedulers
-      BACKGROUND_SEARCH_INTERVAL_HOURS: 72  # Background search interval in hours
-      BACKGROUND_SEARCH_CRONTAB: "*/5 * * * *"  # Background search schedule
-      TAMILMV_SCHEDULER_CRONTAB: "0 */3 * * *"  # TamilMV scheduler crontab expression
-      TAMIL_BLASTERS_SCHEDULER_CRONTAB: "0 */6 * * *"  # Tamil Blasters scheduler crontab expression
-      FORMULA_TGX_SCHEDULER_CRONTAB: "*/30 * * * *"  # Formula TGX scheduler crontab expression
-      NOWMETV_SCHEDULER_CRONTAB: "0 0 * * *"  # NowMeTV scheduler crontab expression
-      NOWSPORTS_SCHEDULER_CRONTAB: "0 10 * * *"  # NowSports scheduler crontab expression
-      TAMILULTRA_SCHEDULER_CRONTAB: "0 8 * * *"  # TamilUltra scheduler crontab expression
-      VALIDATE_TV_STREAMS_IN_DB_CRONTAB: "0 */6 * * *"  # Validate TV streams in DB crontab expression
-      SPORT_VIDEO_SCHEDULER_CRONTAB: "*/20 * * * *"  # Sport video scheduler crontab expression
-      DLHD_SCHEDULER_CRONTAB: "25 * * * *"  # DLHD scheduler crontab expression
-      MOTOGP_TGX_SCHEDULER_CRONTAB: "0 5 * * *"  # MotoGP TGX scheduler crontab expression
-      UPDATE_SEEDERS_CRONTAB: "0 0 * * *"  # Update seeders crontab expression
-      ARAB_TORRENTS_SCHEDULER_CRONTAB: "0 0 * * *"  # Arab Torrents scheduler crontab expression
-      WWE_TGX_SCHEDULER_CRONTAB: "10 */3 * * *"  # WWE TGX scheduler crontab expression
-      UFC_TGX_SCHEDULER_CRONTAB: "30 */3 * * *"  # UFC TGX scheduler crontab expression
-      MOVIES_TV_TGX_SCHEDULER_CRONTAB: "0 * * * *"  # Movies TV TGX scheduler crontab expression
-      PROWLARR_FEED_SCRAPER_CRONTAB: "0 */3 * * *"  # Prowlarr feed scraper crontab expression
-      JACKETT_FEED_SCRAPER_CRONTAB: "0 */3 * * *"  # Jackett feed scraper crontab expression
-      CLEANUP_EXPIRED_SCRAPER_TASK_CRONTAB: "0 * * * *"  # Cleanup expired scraper task crontab expression
-      CLEANUP_EXPIRED_CACHE_TASK_CRONTAB: "0 0 * * *"  # Cleanup expired cache task crontab expression
+      DISABLE_ALL_SCHEDULER: false # Disable all schedulers
+      BACKGROUND_SEARCH_INTERVAL_HOURS: 72 # Background search interval in hours
+      BACKGROUND_SEARCH_CRONTAB: "*/5 * * * *" # Background search schedule
+      TAMILMV_SCHEDULER_CRONTAB: "0 */3 * * *" # TamilMV scheduler crontab expression
+      TAMIL_BLASTERS_SCHEDULER_CRONTAB: "0 */6 * * *" # Tamil Blasters scheduler crontab expression
+      FORMULA_TGX_SCHEDULER_CRONTAB: "*/30 * * * *" # Formula TGX scheduler crontab expression
+      NOWMETV_SCHEDULER_CRONTAB: "0 0 * * *" # NowMeTV scheduler crontab expression
+      NOWSPORTS_SCHEDULER_CRONTAB: "0 10 * * *" # NowSports scheduler crontab expression
+      TAMILULTRA_SCHEDULER_CRONTAB: "0 8 * * *" # TamilUltra scheduler crontab expression
+      VALIDATE_TV_STREAMS_IN_DB_CRONTAB: "0 */6 * * *" # Validate TV streams in DB crontab expression
+      SPORT_VIDEO_SCHEDULER_CRONTAB: "*/20 * * * *" # Sport video scheduler crontab expression
+      DLHD_SCHEDULER_CRONTAB: "25 * * * *" # DLHD scheduler crontab expression
+      MOTOGP_TGX_SCHEDULER_CRONTAB: "0 5 * * *" # MotoGP TGX scheduler crontab expression
+      UPDATE_SEEDERS_CRONTAB: "0 0 * * *" # Update seeders crontab expression
+      ARAB_TORRENTS_SCHEDULER_CRONTAB: "0 0 * * *" # Arab Torrents scheduler crontab expression
+      WWE_TGX_SCHEDULER_CRONTAB: "10 */3 * * *" # WWE TGX scheduler crontab expression
+      UFC_TGX_SCHEDULER_CRONTAB: "30 */3 * * *" # UFC TGX scheduler crontab expression
+      MOVIES_TV_TGX_SCHEDULER_CRONTAB: "0 * * * *" # Movies TV TGX scheduler crontab expression
+      PROWLARR_FEED_SCRAPER_CRONTAB: "0 */3 * * *" # Prowlarr feed scraper crontab expression
+      JACKETT_FEED_SCRAPER_CRONTAB: "0 */3 * * *" # Jackett feed scraper crontab expression
+      CLEANUP_EXPIRED_SCRAPER_TASK_CRONTAB: "0 * * * *" # Cleanup expired scraper task crontab expression
+      CLEANUP_EXPIRED_CACHE_TASK_CRONTAB: "0 0 * * *" # Cleanup expired cache task crontab expression
     labels:
       traefik.enable: true
       traefik.http.routers.mediafusion.rule: Host(`mediafusion.$DOMAIN`) || Host(`mediafusion.$TS_HOSTNAME.$DOMAIN`)
@@ -3131,7 +3097,7 @@ services:
     mem_reservation: 512M
     cpus: 0.33
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8000/health > /dev/null 2>&1 || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://127.0.0.1:8000/health > /dev/null 2>&1 || exit 1" ]
       interval: 30s
       timeout: 5s
       start_period: 2m
@@ -3175,10 +3141,7 @@ services:
       kuma.mediaflow-proxy.http.url: https://mediaflow-proxy.$DOMAIN
       kuma.mediaflow-proxy.http.interval: 60
     healthcheck:
-      test: [
-        "CMD-SHELL",
-        "python3 -c \"import socket; s=socket.socket(); s.connect(('127.0.0.1', ${MEDIAFLOW_PROXY_PORT:-8888})); print('Healthcheck passed')\""
-      ]
+      test: [ "CMD-SHELL", "python3 -c \"import socket; s=socket.socket(); s.connect(('127.0.0.1', ${MEDIAFLOW_PROXY_PORT:-8888})); print('Healthcheck passed')\"" ]
       interval: 1m
       timeout: 10s
       retries: 5
@@ -3218,15 +3181,14 @@ services:
       # Required for the StremThru Lists addon to work correctly with Trakt OAuth.
       STREMTHRU_BASE_URL: https://stremthru.$DOMAIN
 
-
       # =============================
       #     LOGGING CONFIGURATION
       # ================================
 
       # The level of information to log. The options are: DEBUG, INFO, WARN, ERROR
-      STREMTHRU_LOG_LEVEL: INFO  # DEBUG, INFO, WARN, ERROR
+      STREMTHRU_LOG_LEVEL: INFO # DEBUG, INFO, WARN, ERROR
 
-      STREMTHRU_LOG_FORMAT: text  # The format of the log output. The options are: json, text
+      STREMTHRU_LOG_FORMAT: text # The format of the log output. The options are: json, text
 
       # ============================
       #       PROXY CONFIGURATION
@@ -3263,7 +3225,6 @@ services:
       # (This DOES affect the proxying of stream links generated by other apps/addons like AIOStreams)
       STREMTHRU_CONTENT_PROXY_CONNECTION_LIMIT: "*:10"
 
-
       # ============================
       #       TUNNEL CONFIGURATION
       # ================================
@@ -3271,9 +3232,9 @@ services:
       # The tunnel is separate to the actual proxying of your addons. It lets you configure a
       # HTTP proxy to use for requests. Configuring a hostname to not be tunneled doesn't affect the proxying of the addon itself, 
       # only that it won't also be tunneled through the HTTP proxy.
-      # 
+      #
       # If you do not need a tunnel, you can comment out the STREMTHRU_HTTP_PROXY variable.
-      # 
+      #
       # This is the URL of the tunnel.
       # warp: http://warp:1080 or gluetun: http://gluetun:8080
       # (Must have the warp or gluetun profile running to use it as a tunnel)
@@ -3339,7 +3300,6 @@ services:
       STREMTHRU_INTEGRATION_GITHUB_USER: th3w1zard1
       STREMTHRU_INTEGRATION_GITHUB_TOKEN: $GITHUB_TOKEN
 
-
       # ================================
       #             OTHER
       # ================================
@@ -3348,8 +3308,7 @@ services:
       # On the first request, it returns only local torrents, and pulls the rest in the background,  
       # so that on the second search it has all the results available. 
       # Makes response times faster, but less results on the first request.
-      STREMTHRU_STREMIO_TORZ_LAZY_PULL: true  # default is false
-
+      STREMTHRU_STREMIO_TORZ_LAZY_PULL: true # default is false
 
       # Note: (almost) all features are enabled by default, except anime and stremio_p2p. So you should only need to make use of dash (-) prefixed features to disable features
       # you do not want to use.
@@ -3384,7 +3343,7 @@ services:
       #    DATABASE CONFIGURATION
       # ================================
       STREMTHRU_DATABASE_URI: ${STREMTHRU_DATABASE_URI:-sqlite://./data/stremthru.db}
-      STREMTHRU_REDIS_URI: ${REDIS_INTERNAL_URL:-redis://redis:6379}  # Optional (caching)
+      STREMTHRU_REDIS_URI: ${REDIS_INTERNAL_URL:-redis://redis:6379} # Optional (caching)
     labels:
       traefik.enable: true
       traefik.http.routers.stremthru.rule: Host(`stremthru.$DOMAIN`) || Host(`stremthru.$TS_HOSTNAME.$DOMAIN`)
@@ -3398,7 +3357,7 @@ services:
       kuma.stremthru.http.url: https://stremthru.$DOMAIN
       kuma.stremthru.http.interval: 60
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080 > /dev/null 2>&1 || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:8080 > /dev/null 2>&1 || exit 1" ]
       interval: 1m
       timeout: 5s
       retries: 3
@@ -3407,7 +3366,7 @@ services:
   rclone-init:
     depends_on:
       - rclone
-    image: ghcr.io/coanghel/rclone-docker-automount/rclone-init  # 2024-01-24 04:28:24+00:00
+    image: ghcr.io/coanghel/rclone-docker-automount/rclone-init # 2024-01-24 04:28:24+00:00
     container_name: rclone-init
     hostname: rclone-init
     extra_hosts:
@@ -3417,8 +3376,9 @@ services:
     configs:
       - source: rclone-mounts.json
         target: /app/mounts.json
-        mode: 0400
-    volumes:  # only used by the healthcheck.
+        mode: 400
+    volumes:
+      # only used by the healthcheck.
       - /mnt/remote:/mnt/remote:rshared
     environment:
       RCLONE_USERNAME: ""
@@ -3426,14 +3386,14 @@ services:
       RCLONE_PORT: ${RCLONE_PORT:-5572}
       RCLONE_CONFIG_PATH: /config/rclone/rclone.conf
     healthcheck:
-      test: ["CMD-SHELL", "mountpoint -q /mnt/remote"]
+      test: [ "CMD-SHELL", "mountpoint -q /mnt/remote" ]
       interval: 5s
       timeout: 3s
       retries: 2
       start_period: 15s
     restart: always
   rclone:
-    image: docker.io/rclone/rclone  # supports 1 for 1.x.x, 1.71 for 1.71.x etc. `beta` for latest commit.
+    image: docker.io/rclone/rclone # supports 1 for 1.x.x, 1.71 for 1.71.x etc. `beta` for latest commit.
     container_name: rclone
     hostname: rclone
     extra_hosts:
@@ -3442,14 +3402,14 @@ services:
       - backend
       - publicnet
     expose:
-      - ${RCLONE_PORT:-5572}  # rclone webui
+      - ${RCLONE_PORT:-5572} # rclone webui
     configs:
       - source: rclone.conf
         target: /config/rclone/rclone.conf
-        mode: 0400
+        mode: 400
       - source: fuse.conf
         target: /etc/fuse.conf
-        mode: 0400
+        mode: 400
     devices:
       - /dev/fuse:/dev/fuse:rwm
     cap_add:
@@ -3488,7 +3448,7 @@ services:
       kuma.rclone.http.url: https://rclone.$DOMAIN
       kuma.rclone.http.interval: 60
     healthcheck:
-      test: ["CMD-SHELL", "mountpoint -q /mnt/remote"]
+      test: [ "CMD-SHELL", "mountpoint -q /mnt/remote" ]
       interval: 5s
       timeout: 3s
       retries: 2
