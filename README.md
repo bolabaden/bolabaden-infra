@@ -421,6 +421,12 @@ Validate compose configuration:
 docker compose config --quiet
 ```
 
+Validate docs build in strict mode:
+
+```bash
+docker run --rm -v "$PWD:/docs" -w /docs squidfunk/mkdocs-material:latest build -f mkdocs.yml --strict
+```
+
 Access endpoints:
 
 - Routed host: `https://docs.$DOMAIN`
@@ -432,6 +438,11 @@ Quick checks:
 docker ps --filter "name=mkdocs" --format "table {{.Names}}\t{{.Status}}"
 docker logs --tail=100 mkdocs
 ```
+
+### PR Residual
+
+- [ ] P1 hardening follow-up: confirm loopback-only docs host binding is acceptable for all operator workflows. Track: https://github.com/bolabaden/bolabaden-infra/issues/32
+- [ ] P2 compose label follow-up: fix malformed Kuma interpolation for chat analytics labels. Track: https://github.com/bolabaden/bolabaden-infra/issues/33
 
 ---
 

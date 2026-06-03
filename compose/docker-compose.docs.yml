@@ -2,9 +2,9 @@
 
 # MkDocs Material — Infrastructure Knowledgebase
 # Serves all docs/ and infra/docs/ markdown files as a unified searchable site.
-# Access: https://docs.$DOMAIN  (or http://localhost:8001 for local host access)
+# Access: https://docs.$DOMAIN  (or http://localhost:8001 from localhost only)
 #
-# Start: docker compose -f docker-compose.yml -f compose/docker-compose.docs.yml up -d mkdocs
+# Start: docker compose up -d mkdocs
 # Logs:  docker logs mkdocs
 
 services:
@@ -21,7 +21,7 @@ services:
     networks:
       - publicnet
     ports:
-      - "8001:8000"
+      - "127.0.0.1:8001:8000"
     expose:
       - 8000
     labels:
