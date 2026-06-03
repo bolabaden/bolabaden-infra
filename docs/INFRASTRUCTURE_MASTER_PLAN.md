@@ -164,6 +164,11 @@ Troubleshooting quick checks:
 * `docker compose logs --tail=100 mkdocs traefik tinyauth nginx-traefik-extensions`
 * `docker compose logs --tail=100 crowdsec`
 
+Observability quick checks:
+
+* `docker compose ps traefik crowdsec mkdocs`
+* `docker compose logs --tail=200 traefik crowdsec`
+
 ***
 
 ## 4. Module 1: Secret & Env Sync Across VPS Nodes { #4-module-1-secret--env-sync-across-vps-nodes }
