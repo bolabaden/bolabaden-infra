@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
 
 # MkDocs Material — Infrastructure Knowledgebase
-# Serves all docs/ and infra/docs/ markdown files as a unified searchable site.
+# Serves the Knowledgebase child docs boundary as a unified searchable site.
 # Access: https://docs.$DOMAIN  (or http://localhost:8001 from localhost only)
 #
 # Start: docker compose up -d mkdocs
@@ -16,7 +16,7 @@ services:
     command: serve --dev-addr=0.0.0.0:8000 -f /docs/mkdocs.yml
     working_dir: /docs
     volumes:
-      # Mount the entire repo root read-only — mkdocs.yml references files at their real paths
+      # Mount the entire repo root read-only so the Knowledgebase boundary can resolve tracked symlinks
       - ${ROOT_PATH:-.}:/docs:ro
     networks:
       - publicnet
@@ -41,7 +41,7 @@ services:
       # Auto-restart on unhealthy
       deunhealth.restart.on.unhealthy: "true"
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8000/ || exit 1"]
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8000/ || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3

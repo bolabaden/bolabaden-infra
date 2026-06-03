@@ -1,28 +1,12 @@
 site_name: bolabaden Infrastructure Knowledgebase
 site_description: Operations and architecture docs for bolabaden.org — a multi-node, Docker-based homelab.
 site_author: bolabaden
-docs_dir: .
+docs_dir: knowledgebase
 site_dir: /tmp/mkdocs-site
-# Keep docs sources constrained to intended documentation surfaces.
-# Without explicit excludes, docs_dir='.' can ingest markdown from unrelated repo trees.
+# Keep non-site artifacts out of the rendered Knowledgebase.
 exclude_docs: |
-  .git/**
-  .github/**
-  certs/**
-  extracted_certs/**
-  node_modules/**
-  vendor/**
-  volumes/**
-  projects/**
-  opt/**
-  secrets/**
-  static/**
-  src/**
-  opensvc/**
-  opensvc_configs/**
-  nomad/**
-  paas/**
-  charts/**
+  docs/plans/**
+  docs/residual-review-findings/**
 
 theme:
   name: material
