@@ -405,10 +405,17 @@ logs:
 
 This repository includes a built-in MkDocs Material knowledgebase for operational docs and runbooks.
 
+The active model uses a child docs boundary:
+
+* `mkdocs.yml` sets `docs_dir: knowledgebase`
+* `knowledgebase/` is the rendered docs boundary and contains curated links to selected repo docs
+* Internal planning and review artifacts are intentionally excluded from publishing
+
 Key files:
 
 * `mkdocs.yml`
-* `docs/index.md`
+* `knowledgebase/index.md`
+* `knowledgebase/README.md`
 * `compose/docker-compose.docs.yml`
 
 Start it with the main stack:
@@ -429,10 +436,14 @@ Validate docs build in strict mode:
 docker run --rm -v "$PWD:/docs" -w /docs squidfunk/mkdocs-material:latest build -f mkdocs.yml --strict
 ```
 
+Note: the Material image currently prints an upstream framework warning banner during build; this does not indicate a local configuration failure when strict validation still finishes with `Documentation built`.
+
 Access endpoints:
 
 * Routed host: `https://docs.$DOMAIN`
 * Local host port: `http://localhost:8001`
+
+Endpoint behavior note: the docs service is bound to loopback on the host, and external access should occur through Traefik routing on `docs.$DOMAIN`.
 
 Quick checks:
 
@@ -441,10 +452,10 @@ docker ps --filter "name=mkdocs" --format "table {{.Names}}\t{{.Status}}"
 docker logs --tail=100 mkdocs
 ```
 
-### PR Residual
+### Known Follow-Ups
 
-- [ ] P1 hardening follow-up: confirm loopback-only docs host binding is acceptable for all operator workflows. Track: https://github.com/bolabaden/bolabaden-infra/issues/32
-- [ ] P2 compose label follow-up: fix malformed Kuma interpolation for chat analytics labels. Track: https://github.com/bolabaden/bolabaden-infra/issues/33
+* Loopback-binding workflow confirmation is tracked in issue #32: https://github.com/bolabaden/bolabaden-infra/issues/32
+* Kuma interpolation label fix is tracked in issue #33: https://github.com/bolabaden/bolabaden-infra/issues/33
 
 ***
 
