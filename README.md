@@ -443,8 +443,8 @@ docker logs --tail=100 mkdocs
 
 ### PR Residual
 
-* \[ ] P1 hardening follow-up: confirm loopback-only docs host binding is acceptable for all operator workflows. Track: https://github.com/bolabaden/bolabaden-infra/issues/32
-* \[ ] P2 compose label follow-up: fix malformed Kuma interpolation for chat analytics labels. Track: https://github.com/bolabaden/bolabaden-infra/issues/33
+- [ ] P1 hardening follow-up: confirm loopback-only docs host binding is acceptable for all operator workflows. Track: https://github.com/bolabaden/bolabaden-infra/issues/32
+- [ ] P2 compose label follow-up: fix malformed Kuma interpolation for chat analytics labels. Track: https://github.com/bolabaden/bolabaden-infra/issues/33
 - [ ] P1 mkdocs follow-up: harden strict build scope to avoid repo-root non-doc tree scanning fragility. Track: https://github.com/bolabaden/bolabaden-infra/issues/35
 
 ***

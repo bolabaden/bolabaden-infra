@@ -8,6 +8,8 @@ site_dir: /tmp/mkdocs-site
 exclude_docs: |
   .git/**
   .github/**
+  certs/**
+  extracted_certs/**
   node_modules/**
   vendor/**
   volumes/**
@@ -20,7 +22,7 @@ exclude_docs: |
   opensvc_configs/**
   nomad/**
   paas/**
-  chart*/**
+  charts/**
 
 theme:
   name: material
@@ -138,4 +140,3 @@ nav:
   - Contributing:
     - Guidelines: CONTRIBUTING.md
     - Agent Instructions: AGENTS.md
-    - Copilot Instructions: .github/copilot-instructions.md
