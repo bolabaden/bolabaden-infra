@@ -759,8 +759,8 @@ configs:
 
 services:
   cloudflare-ddns:
-    image: ghcr.io/th3w1zard1/cloudflare-ddns:${CLOUDFLARE_DDNS_BRANCH:-main}  # Branch tag published by your fork workflow
-    #image: docker.io/favonia/cloudflare-ddns
+    #image: ghcr.io/th3w1zard1/cloudflare-ddns:${CLOUDFLARE_DDNS_BRANCH:-main}  # Branch tag published by your fork workflow
+    image: docker.io/favonia/cloudflare-ddns
     container_name: cloudflare-ddns
     network_mode: host  # This bypasses network isolation and makes IPv6 easier (optional; see below)
     read_only: true  # Make the container filesystem read-only (optional but recommended)
@@ -929,8 +929,16 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
+      # NOTE: traefik must share exactly ONE working network with crowdsec so
+      # Docker's embedded DNS returns only a reachable IP for the bouncer.
+      # The `default` bridge (172.17.0.0/16) inter-container traffic is
+      # blackholed by the CloudflareWARP/Tailscale fwmark policy routing
+      # (`ip rule ... fwmark 0x80000 unreachable`), which caused the Traefik
+      # crowdsec bouncer's LAPI calls to time out (fail-closed -> 403 on every
+      # request). `publicnet` is unaffected and is also Traefik's provider
+      # network, so the bouncer reaches the LAPI reliably here.
       - backend
-      - default
+      - publicnet
     expose:
       - ${CROWDSEC_LAPI_PORT:-8080}    # HTTP API for bouncers
       - ${CROWDSEC_APPSEC_PORT:-7422}  # AppSec WAF endpoint

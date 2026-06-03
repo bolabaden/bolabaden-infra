@@ -14,21 +14,21 @@ New to Constellation? Start here:
 
 ### Architecture and Design
 
-- **[Architecture Guide](ARCHITECTURE.md)** - Deep dive into system design, components, and data flow
-- **[Component Guide](COMPONENTS.md)** - Detailed documentation for each component
-- **[API Reference](API.md)** - Complete API documentation
+* **[Architecture Guide](ARCHITECTURE.md)** - Deep dive into system design, components, and data flow
+* **[Component Guide](COMPONENTS.md)** - Detailed documentation for each component
+* **[API Reference](API.md)** - Complete API documentation
 
 ### Configuration and Usage
 
-- **[Configuration Guide](CONFIGURATION.md)** - All configuration options explained
-- **[Examples](EXAMPLES.md)** - Practical examples and use cases
-- **[Roadmap](ROADMAP.md)** - Planned features and improvements
+* **[Configuration Guide](CONFIGURATION.md)** - All configuration options explained
+* **[Examples](EXAMPLES.md)** - Practical examples and use cases
+* **[Roadmap](ROADMAP.md)** - Planned features and improvements
 
 ### Operations
 
-- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Step-by-step deployment instructions
-- **[Verification Guide](VERIFICATION.md)** - How to verify your installation
-- **[Troubleshooting](DEPLOYMENT_GUIDE.md#troubleshooting)** - Common issues and solutions
+* **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Step-by-step deployment instructions
+* **[Verification Guide](VERIFICATION.md)** - How to verify your installation
+* **[Troubleshooting](DEPLOYMENT_GUIDE.md#troubleshooting)** - Common issues and solutions
 
 ## Documentation Structure
 
@@ -64,47 +64,52 @@ If you're running Constellation in production:
 ### Common Tasks
 
 **Deploy Services**
+
 ```bash
 cd infra
 go run main.go
 ```
 
 **Start Agent**
+
 ```bash
 systemctl start constellation-agent
 ```
 
 **Check Status**
+
 ```bash
 systemctl status constellation-agent
 ```
 
 **View Logs**
+
 ```bash
 journalctl -u constellation-agent -f
 ```
 
 **Verify Installation**
+
 ```bash
 ./scripts/verify.sh
 ```
 
 ### Key Concepts
 
-- **Gossip Protocol**: Decentralized service discovery
-- **Raft Consensus**: Strong consistency for critical operations
-- **HTTP Provider**: Dynamic Traefik configuration
-- **DNS Controller**: Automatic DNS management
-- **Service Monitor**: Health checking and broadcasting
+* **Gossip Protocol**: Decentralized service discovery
+* **Raft Consensus**: Strong consistency for critical operations
+* **HTTP Provider**: Dynamic Traefik configuration
+* **DNS Controller**: Automatic DNS management
+* **Service Monitor**: Health checking and broadcasting
 
 ### Important Files
 
-- `services*.go`: Service definitions
-- `cmd/agent/main.go`: Agent entry point
-- `cluster/gossip/`: Gossip protocol
-- `cluster/raft/`: Raft consensus
-- `traefik/`: Traefik HTTP provider
-- `dns/`: DNS management
+* `services*.go`: Service definitions
+* `cmd/agent/main.go`: Agent entry point
+* `cluster/gossip/`: Gossip protocol
+* `cluster/raft/`: Raft consensus
+* `traefik/`: Traefik HTTP provider
+* `dns/`: DNS management
 
 ## Documentation Updates
 
@@ -114,12 +119,11 @@ If you find errors or have suggestions, please open an issue or submit a pull re
 
 ## Additional Resources
 
-- **Main README**: [../README.md](../README.md) - Project overview
-- **Main README**: [Project README](https://github.com/bolabaden/bolabaden-infra/blob/main/README.md) - Project overview
-- **Source Code**: [Infra source tree](https://github.com/bolabaden/bolabaden-infra/tree/main/infra) - Browse the codebase
-- **Scripts**: [Infra scripts](https://github.com/bolabaden/bolabaden-infra/tree/main/infra/scripts) - Installation and utility scripts
+* **Main README**: [../README.md](../README.md) - Project overview
+* **Main README**: [Project README](https://github.com/bolabaden/bolabaden-infra/blob/main/README.md) - Project overview
+* **Source Code**: [Infra source tree](https://github.com/bolabaden/bolabaden-infra/tree/main/infra) - Browse the codebase
+* **Scripts**: [Infra scripts](https://github.com/bolabaden/bolabaden-infra/tree/main/infra/scripts) - Installation and utility scripts
 
----
+***
 
 *Last updated: 2024*
-
