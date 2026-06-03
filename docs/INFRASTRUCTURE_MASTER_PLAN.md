@@ -12,6 +12,7 @@
 1. [Executive Summary](#1-executive-summary)
 2. [Current State Analysis](#2-current-state-analysis)
 3. [Architecture Overview](#3-architecture-overview)
+  1. [Knowledgebase Operations](#31-knowledgebase-operations)
 4. [Module 1: Secret & Env Sync Across VPS Nodes](#4-module-1-secret--env-sync-across-vps-nodes)
 5. [Module 2: Docker Compose File Sync](#5-module-2-docker-compose-file-sync)
 6. [Module 3: Headscale HA (Leader Election)](#6-module-3-headscale-ha-leader-election)
@@ -131,6 +132,29 @@ vractormania.myscale.bolabaden.org                → Tailscale IP of VPS1
 grafana.vractormania.myscale.bolabaden.org        → Resolved by CoreDNS on each node
 grafana.myscale.bolabaden.org               → Any node running grafana
 ```
+
+### 3.1 Knowledgebase Operations { #31-knowledgebase-operations }
+
+The infrastructure plan assumes the documentation surface remains continuously verifiable so operator runbooks stay trustworthy during rollout work.
+
+Operational checks:
+
+```bash
+docker compose config --quiet
+docker run --rm -v "$PWD:/docs" -w /docs squidfunk/mkdocs-material:latest build -f mkdocs.yml --strict
+```
+
+Expected behavior:
+
+* `docker compose config --quiet` may print environment-variable warnings but should not fail.
+* Strict MkDocs builds should complete with `Documentation built`.
+* The Material image may print an upstream warning banner that is informational when strict build still succeeds.
+
+Docs access model:
+
+* Local host check: `http://localhost:8001`
+* Routed host check: `https://docs.$DOMAIN`
+* Service is loopback-bound on host; external access should use Traefik routing via `docs.$DOMAIN`.
 
 ***
 
@@ -354,6 +378,15 @@ Every CHECK_INTERVAL seconds on each node:
   │   └── FAILURE: Another node is leader
   │       ├── Is headscale-server running locally?
   │       │   ├── YES: Stop it (gracefully)
+
+#### Redis Outage Failure Mode
+
+If Redis is unavailable during election checks, nodes should fail closed to avoid split-brain.
+
+* Sentinel enters `degraded` mode and does not acquire or refresh leadership.
+* A node may keep running Headscale only while its last valid lock lease is still within TTL.
+* Once lease age exceeds `LOCK_TTL`, the local node must stop `headscale-server` until lock state can be verified.
+* Recovery tie-breaker after Redis returns: lowest stable node priority wins first lock attempt; others remain standby.
   │       │   └── NO:  Good, do nothing
   │       └── Verify leader is healthy (ping headscale API via Tailscale)
   │           └── If unhealthy for 3 consecutive checks: force-release lock
@@ -499,17 +532,23 @@ http:
   services:
     grafana-failover:
       loadBalancer:
+        strategy: weighted-round-robin
         healthCheck:
           path: /api/health
           interval: 15s
           timeout: 5s
         servers:
           - url: http://grafana:3000          # Local (fast path)
+            weight: 100
           - url: https://grafana.vractormania.bolabaden.org  # Peer via Traefik
+            weight: 40
           - url: https://grafana.zeus.bolabaden.org    # Another peer
+            weight: 40
 ```
 
 Traefik's built-in health checking will automatically route around failed backends.
+
+The weighting above keeps local service preference while still distributing failover traffic across healthy peers.
 
 #### Failover Sequence
 
@@ -635,6 +674,14 @@ cloudflare-ddns:
     CF_DDNS_STALE_TIMEOUT: ${CF_DDNS_STALE_TIMEOUT:-3600}  # seconds before removing a dead node's records
     CF_DDNS_HEALTH_CHECK_URL: ${CF_DDNS_HEALTH_CHECK_URL:-}  # URL to check if peer nodes are alive
 ```
+
+  Health check endpoint contract for `CF_DDNS_HEALTH_CHECK_URL`:
+
+  * Method: `GET`
+  * Success criteria: HTTP `200-299`
+  * Recommended payload: JSON object with at least `{ "status": "ok", "node": "<hostname>" }`
+  * Timeout budget: 2 seconds per probe before treating node as unknown
+  * Deletion guard: remove stale peer records only when both heartbeat age exceeds `CF_DDNS_STALE_TIMEOUT` and health check has failed in at least 2 consecutive probes
 
 #### Record Layout After Deploy (3 nodes)
 
