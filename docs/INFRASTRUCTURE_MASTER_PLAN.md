@@ -158,6 +158,12 @@ Docs access model:
 * Routed host check: `https://docs.$DOMAIN`
 * Service is loopback-bound on host; external access should use Traefik routing via `docs.$DOMAIN`.
 
+Troubleshooting quick checks:
+
+* `docker compose ps mkdocs traefik tinyauth nginx-traefik-extensions`
+* `docker compose logs --tail=100 mkdocs traefik tinyauth nginx-traefik-extensions`
+* `docker compose logs --tail=100 crowdsec`
+
 ***
 
 ## 4. Module 1: Secret & Env Sync Across VPS Nodes { #4-module-1-secret--env-sync-across-vps-nodes }
@@ -380,6 +386,10 @@ Every CHECK_INTERVAL seconds on each node:
   │   └── FAILURE: Another node is leader
   │       ├── Is headscale-server running locally?
   │       │   ├── YES: Stop it (gracefully)
+  │       │   └── NO:  Good, do nothing
+  │       └── Verify leader is healthy (ping headscale API via Tailscale)
+  │           └── If unhealthy for 3 consecutive checks: force-release lock
+```
 
 #### Redis Outage Failure Mode
 
@@ -389,10 +399,6 @@ If Redis is unavailable during election checks, nodes should fail closed to avoi
 * A node may keep running Headscale only while its last valid lock lease is still within TTL.
 * Once lease age exceeds `LOCK_TTL`, the local node must stop `headscale-server` until lock state can be verified.
 * Recovery tie-breaker after Redis returns: lowest stable node priority wins first lock attempt; others remain standby.
-  │       │   └── NO:  Good, do nothing
-  │       └── Verify leader is healthy (ping headscale API via Tailscale)
-  │           └── If unhealthy for 3 consecutive checks: force-release lock
-```
 
 #### Database Replication
 
@@ -451,6 +457,8 @@ docker-gen-failover:
     # Missing: -event-filter event=stop
     -watch /templates/traefik-failover-dynamic.conf.tmpl /traefik/dynamic/failover-fallbacks.yaml
 ```
+
+  `dockerproxy-rw` denotes a Docker socket proxy service exposing a controlled TCP Docker API endpoint. If that proxy is not present on a node, use `unix:///var/run/docker.sock` with equivalent access controls.
 
 **Root Cause of Bug**: docker-gen re-runs the template on events. When a container stops, docker-gen regenerates the template **without** the stopped container's data (even with `-include-stopped`), effectively deleting its Traefik route. This is because the template iterates over containers and only generates routes for those with `traefik.enable=true` — stopped containers lose their labels from the docker-gen context.
 
@@ -643,6 +651,13 @@ def update_dns_record(zone_id, domain, current_ip, mode, node_comment):
                 cf_api.update(record.id, content=current_ip, comment=node_comment)
         else:
             cf_api.create(zone_id, type='A', name=domain, content=current_ip, comment=node_comment)
+
+  def is_node_alive(node_comment):
+    # Determine liveness from heartbeat freshness and recent health-check history.
+    node_id = parse_node_id(node_comment)
+    heartbeat_age = get_heartbeat_age_seconds(node_id)
+    probe_failures = get_consecutive_probe_failures(node_id)
+    return heartbeat_age < CF_DDNS_STALE_TIMEOUT and probe_failures < 2
 ```
 
 #### Docker Compose Update
@@ -1082,7 +1097,7 @@ watchtower:
     
     # HTTP API: Enable for manual triggers
     WATCHTOWER_HTTP_API_UPDATE: true
-    WATCHTOWER_HTTP_API_TOKEN: ${WATCHTOWER_HTTP_API_TOKEN:-${NGINX_AUTH_API_KEY}}
+    WATCHTOWER_HTTP_API_TOKEN: ${WATCHTOWER_HTTP_API_TOKEN:-${WATCHTOWER_API_TOKEN:-}}
     WATCHTOWER_HTTP_API_PERIODIC_POLLS: true
     WATCHTOWER_HTTP_API_METRICS: true
     
