@@ -115,8 +115,9 @@ If you find errors or have suggestions, please open an issue or submit a pull re
 ## Additional Resources
 
 - **Main README**: [../README.md](../README.md) - Project overview
-- **Source Code**: [../](../) - Browse the codebase
-- **Scripts**: [../scripts/](../scripts/) - Installation and utility scripts
+- **Main README**: [Project README](https://github.com/bolabaden/bolabaden-infra/blob/main/README.md) - Project overview
+- **Source Code**: [Infra source tree](https://github.com/bolabaden/bolabaden-infra/tree/main/infra) - Browse the codebase
+- **Scripts**: [Infra scripts](https://github.com/bolabaden/bolabaden-infra/tree/main/infra/scripts) - Installation and utility scripts
 
 ---
 
