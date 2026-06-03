@@ -2178,11 +2178,13 @@ services:
       ANIME_DB_LEVEL_OF_DETAIL: required
       # Control how often the datasources for the local anime database will refresh.
 
-      ANIME_DB_FRIBB_MAPPINGS_REFRESH_INTERVAL: 86400000
-      ANIME_DB_MANAMI_DB_REFRESH_INTERVAL: 604800000
-      ANIME_DB_KITSU_IMDB_MAPPING_REFRESH_INTERVAL: 86400000
-      ANIME_DB_EXTENDED_ANITRAKT_MOVIES_REFRESH_INTERVAL: 86400000
-      ANIME_DB_EXTENDED_ANITRAKT_TV_REFRESH_INTERVAL: 86400000
+      # v2.30 expects these intervals in seconds (not milliseconds).
+      # Values below preserve prior behavior: 1 day / 7 days cadences.
+      ANIME_DB_FRIBB_MAPPINGS_REFRESH_INTERVAL: 86400
+      ANIME_DB_MANAMI_DB_REFRESH_INTERVAL: 604800
+      ANIME_DB_KITSU_IMDB_MAPPING_REFRESH_INTERVAL: 86400
+      ANIME_DB_EXTENDED_ANITRAKT_MOVIES_REFRESH_INTERVAL: 86400
+      ANIME_DB_EXTENDED_ANITRAKT_TV_REFRESH_INTERVAL: 86400
 
       # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : 
       #                     DEBRID & OTHER SERVICE API KEYS
