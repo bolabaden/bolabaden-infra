@@ -438,6 +438,12 @@ docker run --rm -v "$PWD:/docs" -w /docs squidfunk/mkdocs-material:latest build 
 
 Note: the Material image currently prints an upstream framework warning banner during build; this does not indicate a local configuration failure when strict validation still finishes with `Documentation built`.
 
+Optional noise check (expect no matches):
+
+```bash
+docker run --rm -v "$PWD:/docs" -w /docs squidfunk/mkdocs-material:latest build -f mkdocs.yml --strict 2>&1 | grep -Ei "not included in nav|excluded from the built site"
+```
+
 Access endpoints:
 
 * Routed host: `https://docs.$DOMAIN`
