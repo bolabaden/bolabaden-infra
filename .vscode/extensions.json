@@ -9,6 +9,7 @@
         "xyz.local-history",
         "ms-vscode.go",
         "docker.docker",
-        "mads-hartmann.bash-ide-vscode"
+        "mads-hartmann.bash-ide-vscode",
+        "ms-vscode.vscode-chat-customizations-evaluations"
     ]
 }
