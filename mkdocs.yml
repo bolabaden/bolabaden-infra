@@ -4,6 +4,7 @@ site_author: bolabaden
 docs_dir: knowledgebase
 site_dir: /tmp/mkdocs-site
 # Keep non-site artifacts out of the rendered Knowledgebase.
+# Patterns are evaluated relative to docs_dir (knowledgebase).
 exclude_docs: |
   docs/plans/**
   docs/residual-review-findings/**
@@ -81,6 +82,8 @@ nav:
     - Alternative Designs: alt_design.md
 
   - Constellation Agent:
+    - Top-Level Overview: infra/README.md
+    - Top-Level Contributing: infra/CONTRIBUTING.md
     - Overview: infra/docs/README.md
     - Architecture: infra/docs/ARCHITECTURE.md
     - Components: infra/docs/COMPONENTS.md
@@ -100,6 +103,8 @@ nav:
     - vs Constellation Comparison: infra/docs/INFRA_VS_CONSTELLATION_COMPARISON.md
     - Project Summary: infra/docs/PROJECT_SUMMARY.md
     - Canonical Refactoring Summary: infra/docs/CANONICAL_REFACTORING_SUMMARY.md
+    - Complete Refactoring Summary: infra/docs/COMPLETE_REFACTORING_SUMMARY.md
+    - Completion Summary: infra/docs/COMPLETION_SUMMARY.md
     - Implementation Status: infra/docs/IMPLEMENTATION_STATUS.md
     - Implementation Complete: infra/docs/IMPLEMENTATION_COMPLETE.md
     - Final Summary: infra/docs/FINAL_SUMMARY.md
