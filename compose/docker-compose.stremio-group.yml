@@ -2052,7 +2052,7 @@ services:
       # in to the dashboard / Settings page.
       AIOSTREAMS_AUTH: ${AIOSTREAMS_AUTH:-admin:${AIOSTREAMS_ADDON_PASSWORD:-changeme}}
       # Optionally restrict which of the above users are admins (comma-separated usernames).
-      # AIOSTREAMS_AUTH_ADMINS: admin
+      AIOSTREAMS_AUTH_ADMINS: ${AIOSTREAMS_AUTH_ADMINS:-}
 
       # --- Legacy config access key (ADDON_PASSWORD) ---
       # NOTE (v2.30 migration): keep ADDON_PASSWORD set for at least ONE startup after
