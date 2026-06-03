@@ -12,7 +12,7 @@
 1. [Executive Summary](#1-executive-summary)
 2. [Current State Analysis](#2-current-state-analysis)
 3. [Architecture Overview](#3-architecture-overview)
-  1. [Knowledgebase Operations](#31-knowledgebase-operations)
+   * [3.1 Knowledgebase Operations](#31-knowledgebase-operations)
 4. [Module 1: Secret & Env Sync Across VPS Nodes](#4-module-1-secret--env-sync-across-vps-nodes)
 5. [Module 2: Docker Compose File Sync](#5-module-2-docker-compose-file-sync)
 6. [Module 3: Headscale HA (Leader Election)](#6-module-3-headscale-ha-leader-election)
@@ -675,13 +675,13 @@ cloudflare-ddns:
     CF_DDNS_HEALTH_CHECK_URL: ${CF_DDNS_HEALTH_CHECK_URL:-}  # URL to check if peer nodes are alive
 ```
 
-  Health check endpoint contract for `CF_DDNS_HEALTH_CHECK_URL`:
+Health check endpoint contract for `CF_DDNS_HEALTH_CHECK_URL`:
 
-  * Method: `GET`
-  * Success criteria: HTTP `200-299`
-  * Recommended payload: JSON object with at least `{ "status": "ok", "node": "<hostname>" }`
-  * Timeout budget: 2 seconds per probe before treating node as unknown
-  * Deletion guard: remove stale peer records only when both heartbeat age exceeds `CF_DDNS_STALE_TIMEOUT` and health check has failed in at least 2 consecutive probes
+* Method: `GET`
+* Success criteria: HTTP `200-299`
+* Recommended payload: JSON object with at least `{ "status": "ok", "node": "<hostname>" }`
+* Timeout budget: 2 seconds per probe before treating node as unknown
+* Deletion guard: remove stale peer records only when both heartbeat age exceeds `CF_DDNS_STALE_TIMEOUT` and health check has failed in at least 2 consecutive probes
 
 #### Record Layout After Deploy (3 nodes)
 
