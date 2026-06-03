@@ -3,6 +3,24 @@ site_description: Operations and architecture docs for bolabaden.org — a multi
 site_author: bolabaden
 docs_dir: .
 site_dir: /tmp/mkdocs-site
+# Keep docs sources constrained to intended documentation surfaces.
+# Without explicit excludes, docs_dir='.' can ingest markdown from unrelated repo trees.
+exclude_docs: |
+  .git/**
+  .github/**
+  node_modules/**
+  vendor/**
+  volumes/**
+  projects/**
+  opt/**
+  secrets/**
+  static/**
+  src/**
+  opensvc/**
+  opensvc_configs/**
+  nomad/**
+  paas/**
+  chart*/**
 
 theme:
   name: material
