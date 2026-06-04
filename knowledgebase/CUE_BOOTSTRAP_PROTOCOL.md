@@ -43,6 +43,7 @@ Once the mesh is alive, CUE connects to the cluster's Kine (SQLite) database.
    * Creates `/opt/cue/volumes` for local persistence.
    * Sets up `/run/secrets` as a `tmpfs` (RAM) mount.
 3. **System Plane Deployment**: Automatically pulls and starts core system pods (Traefik, Dozzle, Watchtower) if they are designated for this node.
+4. **Recursive Spec Application**: CUE executes the `cue up` cycle on the `docker-compose.yml` manifest, applying all `x-cue` extensions (see [knowledgebase/CUE_SPEC_EXTENSIONS.md](knowledgebase/CUE_SPEC_EXTENSIONS.md)) to the local containerd instance.
 
 ***
 

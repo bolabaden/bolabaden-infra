@@ -105,6 +105,17 @@ To achieve our goal of being "more unified than Swarm or K3s," CUE implements a 
 | **Networking** | Overlay Mesh (VIP) | CNI / Ingress | **Tailscale Anycast.** Services get a cluster-wide VIP that routes over the WireGuard mesh. |
 | **State** | Shared Folder (Risky) | PVC / CSI | **Local-First CSI.** Automatically handles host-path persistence with node-affinity, ensuring a DB pod always restarts on the node where its data lives. |
 
+### 🚀 Strategic "Clean" Manifests (`x-cue`)
+
+As documented in [knowledgebase/CUE_SPEC_EXTENSIONS.md](knowledgebase/CUE_SPEC_EXTENSIONS.md), CUE's true power lies in its **Recursive Capability**. We prioritize the work in existing `compose/` files and `docker-compose.yml` by treating them as the **Primary Declarative Manifest**.
+
+Instead of manual K8s YAML or HCL jobs, CUE reads standard Compose files and extracts "Kube-Level" requirements from the `x-cue` extension namespace. This approach bridges the gap that frustrated previous Nomad/K8s attempts:
+
+1.  **Definitions remain human-readable.**
+2.  **No manual K8s/Nomad boilerplate is required.**
+3.  **The system remains portable.** (Standard Docker just ignores the `x-cue` keys).
+4.  **Implicit Hardware Intelligence.** Porting the logic from [infra/services.go](infra/services.go), CUE automatically adds GPU passthrough and Transcoding optimizations based on service identity.
+
 ***
 
 ## 🔌 Compatibility Translation Interfaces
