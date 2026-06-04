@@ -13,13 +13,13 @@ import (
 
 func createTestMigrationManager() (*MigrationManager, *gossip.ClusterState) {
 	state := gossip.NewClusterState()
-	manager := NewMigrationManager(nil, state, "test-node")
+	manager := NewMigrationManager(nil, state, nil, "test-node")
 	return manager, state
 }
 
 func TestMigrationManager_NewMigrationManager(t *testing.T) {
 	state := gossip.NewClusterState()
-	manager := NewMigrationManager(nil, state, "test-node")
+	manager := NewMigrationManager(nil, state, nil, "test-node")
 
 	assert.NotNil(t, manager)
 	assert.Equal(t, "test-node", manager.nodeName)

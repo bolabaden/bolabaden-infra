@@ -227,7 +227,7 @@ func (cm *ConsensusManager) JoinCluster(seedNodes []string) error {
 }
 
 // AcquireLease attempts to acquire a lease
-func (cm *ConsensusManager) AcquireLease(leaseType LeaseType, leaseID string, term uint64) error {
+func (cm *ConsensusManager) AcquireLease(leaseType LeaseType, target string, leaseID string, term uint64) error {
 	if cm.raft.State() != raft.Leader {
 		return fmt.Errorf("not the leader, cannot acquire lease")
 	}
@@ -235,6 +235,7 @@ func (cm *ConsensusManager) AcquireLease(leaseType LeaseType, leaseID string, te
 	cmd := LeaseCommand{
 		Action:    "acquire",
 		LeaseType: leaseType,
+		Target:    target,
 		NodeName:  cm.nodeName,
 		LeaseID:   leaseID,
 		Term:      term,
@@ -258,7 +259,7 @@ func (cm *ConsensusManager) AcquireLease(leaseType LeaseType, leaseID string, te
 }
 
 // ReleaseLease releases a lease
-func (cm *ConsensusManager) ReleaseLease(leaseType LeaseType, leaseID string, term uint64) error {
+func (cm *ConsensusManager) ReleaseLease(leaseType LeaseType, target string, leaseID string, term uint64) error {
 	if cm.raft.State() != raft.Leader {
 		return fmt.Errorf("not the leader, cannot release lease")
 	}
@@ -266,6 +267,7 @@ func (cm *ConsensusManager) ReleaseLease(leaseType LeaseType, leaseID string, te
 	cmd := LeaseCommand{
 		Action:    "release",
 		LeaseType: leaseType,
+		Target:    target,
 		NodeName:  cm.nodeName,
 		LeaseID:   leaseID,
 		Term:      term,
@@ -293,14 +295,14 @@ func (cm *ConsensusManager) IsLeader() bool {
 	return cm.raft.State() == raft.Leader
 }
 
-// GetLease returns the current lease for a given type
-func (cm *ConsensusManager) GetLease(leaseType LeaseType) *Lease {
-	return cm.fsm.GetLease(leaseType)
+// GetLease returns the current lease for a given type and target
+func (cm *ConsensusManager) GetLease(leaseType LeaseType, target string) *Lease {
+	return cm.fsm.GetLease(leaseType, target)
 }
 
 // HasLease returns whether this node holds a specific lease
-func (cm *ConsensusManager) HasLease(leaseType LeaseType) bool {
-	lease := cm.fsm.GetLease(leaseType)
+func (cm *ConsensusManager) HasLease(leaseType LeaseType, target string) bool {
+	lease := cm.fsm.GetLease(leaseType, target)
 	return lease != nil && lease.NodeName == cm.nodeName
 }
 
@@ -328,7 +330,8 @@ func (cm *ConsensusManager) monitorLeaderChanges() {
 
 		// Check lease ownership changes
 		for leaseType := range cm.callbacks {
-			hasLease := cm.HasLease(leaseType)
+			// For callbacks (currently DNSWriter/LBLeader), target is empty
+			hasLease := cm.HasLease(leaseType, "")
 			if hadLeases[leaseType] != hasLease {
 				log.Printf("Lease %s ownership changed: hasLease=%v", leaseType, hasLease)
 				hadLeases[leaseType] = hasLease

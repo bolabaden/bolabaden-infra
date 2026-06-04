@@ -14,6 +14,7 @@ import (
 	"github.com/docker/docker/client"
 
 	"cluster/infra/cluster/gossip"
+	"cluster/infra/cluster/raft"
 	"cluster/infra/monitoring"
 )
 
@@ -21,6 +22,7 @@ import (
 type MigrationManager struct {
 	dockerClient *client.Client
 	gossipState  *gossip.ClusterState
+	leaseManager *raft.LeaseManager
 	nodeName     string
 	mu           sync.RWMutex
 	migrations   map[string]*Migration // service name -> active migration
@@ -72,10 +74,11 @@ type MigrationTrigger struct {
 }
 
 // NewMigrationManager creates a new migration manager
-func NewMigrationManager(dockerClient *client.Client, gossipState *gossip.ClusterState, nodeName string) *MigrationManager {
+func NewMigrationManager(dockerClient *client.Client, gossipState *gossip.ClusterState, leaseManager *raft.LeaseManager, nodeName string) *MigrationManager {
 	return &MigrationManager{
 		dockerClient:     dockerClient,
 		gossipState:      gossipState,
+		leaseManager:     leaseManager,
 		nodeName:         nodeName,
 		migrations:       make(map[string]*Migration),
 		remoteDockerPort: 2375,  // Default Docker API port
@@ -169,6 +172,31 @@ func (mm *MigrationManager) executeMigration(ctx context.Context, migration *Mig
 	mm.mu.Unlock()
 
 	log.Printf("Starting migration of %s from %s to %s", migration.ServiceName, migration.SourceNode, migration.TargetNode)
+
+	// Step 0: Ensure we hold the fencing token for this service
+	// This ensures that only one node at a time can migrate or run this service.
+	if mm.leaseManager != nil {
+		log.Printf("[FENCING] Acquiring lease for service %s", migration.ServiceName)
+		if err := mm.leaseManager.AcquireServiceLease(migration.ServiceName); err != nil {
+			mm.mu.Lock()
+			migration.Status = MigrationStatusFailed
+			migration.Error = fmt.Errorf("fencing failure: failed to acquire service lease: %w", err)
+			mm.mu.Unlock()
+			log.Printf("Migration of %s failed: fencing failure: %v", migration.ServiceName, err)
+			return
+		}
+
+		term, leaseID, err := mm.leaseManager.GetLeaseFencingToken(raft.LeaseTypeService, migration.ServiceName)
+		if err != nil {
+			mm.mu.Lock()
+			migration.Status = MigrationStatusFailed
+			migration.Error = fmt.Errorf("fencing failure: failed to get fencing token: %w", err)
+			mm.mu.Unlock()
+			log.Printf("Migration of %s failed: fencing failure: %v", migration.ServiceName, err)
+			return
+		}
+		log.Printf("[FENCING] Service %s fenced with Token(Term: %d, ID: %s)", migration.ServiceName, term, leaseID)
+	}
 
 	// Step 1: Validate container exists and is running on source node
 	if mm.dockerClient == nil {

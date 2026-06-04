@@ -235,7 +235,7 @@ func main() {
 
 	// Initialize migration manager for enhanced failover
 	log.Printf("Initializing migration manager...")
-	migrationManager := failover.NewMigrationManager(dockerClient, gossipCluster.GetState(), *nodeName)
+	migrationManager := failover.NewMigrationManager(dockerClient, gossipCluster.GetState(), leaseManager, *nodeName)
 
 	// Load migration rules from configuration
 	migrationRulesPath := getEnv("MIGRATION_RULES_PATH", "/opt/constellation/config/migration-rules.json")
@@ -540,7 +540,7 @@ func reconcileNodeDNS(ctx context.Context, dnsController *dns.Controller, cluste
 			return
 		case <-ticker.C:
 			// Only reconcile if we hold the DNS writer lease
-			lease := consensusManager.GetLease(raft.LeaseTypeDNSWriter)
+			lease := consensusManager.GetLease(raft.LeaseTypeDNSWriter, "")
 			if lease != nil && lease.NodeName == currentNodeName {
 				updateNodeDNSRecords(dnsController, cluster)
 			}
