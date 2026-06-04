@@ -15,11 +15,13 @@ type LeaseType string
 const (
 	LeaseTypeLBLeader  LeaseType = "lb_leader"
 	LeaseTypeDNSWriter LeaseType = "dns_writer"
+	LeaseTypeService   LeaseType = "service"
 )
 
 // Lease represents a leader lease
 type Lease struct {
 	Type       LeaseType `json:"type"`
+	Target     string    `json:"target,omitempty"` // Service name or other specific target
 	NodeName   string    `json:"node_name"`
 	Term       uint64    `json:"term"`
 	LeaseID    string    `json:"lease_id"`
@@ -30,6 +32,7 @@ type Lease struct {
 type LeaseCommand struct {
 	Action    string    `json:"action"` // "acquire" or "release"
 	LeaseType LeaseType `json:"lease_type"`
+	Target    string    `json:"target,omitempty"`
 	NodeName  string    `json:"node_name"`
 	LeaseID   string    `json:"lease_id"`
 	Term      uint64    `json:"term"`
@@ -38,14 +41,22 @@ type LeaseCommand struct {
 // RaftFSM implements the Raft FSM for managing leader leases
 type RaftFSM struct {
 	mu     sync.RWMutex
-	leases map[LeaseType]*Lease // Current active leases
+	leases map[string]*Lease // Combined key: type + ":" + target
 }
 
 // NewRaftFSM creates a new Raft FSM
 func NewRaftFSM() *RaftFSM {
 	return &RaftFSM{
-		leases: make(map[LeaseType]*Lease),
+		leases: make(map[string]*Lease),
 	}
+}
+
+// getLeaseKey returns a unique key for the lease map
+func getLeaseKey(leaseType LeaseType, target string) string {
+	if target == "" {
+		return string(leaseType)
+	}
+	return fmt.Sprintf("%s:%s", leaseType, target)
 }
 
 // Apply applies a log entry to the FSM
@@ -70,12 +81,14 @@ func (f *RaftFSM) Apply(log *raft.Log) interface{} {
 
 // acquireLease acquires a lease if it's not already held or if the term is higher
 func (f *RaftFSM) acquireLease(cmd *LeaseCommand, logIndex uint64) error {
-	currentLease, exists := f.leases[cmd.LeaseType]
+	key := getLeaseKey(cmd.LeaseType, cmd.Target)
+	currentLease, exists := f.leases[key]
 
 	// If lease doesn't exist, or if the new term is higher, acquire it
 	if !exists || cmd.Term > currentLease.Term {
-		f.leases[cmd.LeaseType] = &Lease{
+		f.leases[key] = &Lease{
 			Type:       cmd.LeaseType,
+			Target:     cmd.Target,
 			NodeName:   cmd.NodeName,
 			Term:       cmd.Term,
 			LeaseID:    cmd.LeaseID,
@@ -86,12 +99,13 @@ func (f *RaftFSM) acquireLease(cmd *LeaseCommand, logIndex uint64) error {
 
 	// If same term but different node, reject (split-brain prevention)
 	if cmd.Term == currentLease.Term && cmd.NodeName != currentLease.NodeName {
-		return fmt.Errorf("lease already held by %s in term %d", currentLease.NodeName, cmd.Term)
+		return fmt.Errorf("lease %s already held by %s in term %d", key, currentLease.NodeName, cmd.Term)
 	}
 
 	// Same node, same term - renew lease
-	f.leases[cmd.LeaseType] = &Lease{
+	f.leases[key] = &Lease{
 		Type:       cmd.LeaseType,
+		Target:     cmd.Target,
 		NodeName:   cmd.NodeName,
 		Term:       cmd.Term,
 		LeaseID:    cmd.LeaseID,
@@ -103,18 +117,19 @@ func (f *RaftFSM) acquireLease(cmd *LeaseCommand, logIndex uint64) error {
 
 // releaseLease releases a lease if it's held by the requesting node
 func (f *RaftFSM) releaseLease(cmd *LeaseCommand) error {
-	currentLease, exists := f.leases[cmd.LeaseType]
+	key := getLeaseKey(cmd.LeaseType, cmd.Target)
+	currentLease, exists := f.leases[key]
 	if !exists {
 		return nil // Already released
 	}
 
 	// Only allow release if it's the same node and term
 	if currentLease.NodeName != cmd.NodeName || currentLease.Term != cmd.Term {
-		return fmt.Errorf("cannot release lease: held by %s (term %d), requested by %s (term %d)",
-			currentLease.NodeName, currentLease.Term, cmd.NodeName, cmd.Term)
+		return fmt.Errorf("cannot release lease %s: held by %s (term %d), requested by %s (term %d)",
+			key, currentLease.NodeName, currentLease.Term, cmd.NodeName, cmd.Term)
 	}
 
-	delete(f.leases, cmd.LeaseType)
+	delete(f.leases, key)
 	return nil
 }
 
@@ -124,7 +139,7 @@ func (f *RaftFSM) Snapshot() (raft.FSMSnapshot, error) {
 	defer f.mu.RUnlock()
 
 	// Create a copy of leases
-	leasesCopy := make(map[LeaseType]*Lease)
+	leasesCopy := make(map[string]*Lease)
 	for k, v := range f.leases {
 		leaseCopy := *v
 		leasesCopy[k] = &leaseCopy
@@ -139,7 +154,7 @@ func (f *RaftFSM) Restore(reader io.ReadCloser) error {
 	defer f.mu.Unlock()
 
 	var snapshotData struct {
-		Leases map[LeaseType]*Lease `json:"leases"`
+		Leases map[string]*Lease `json:"leases"`
 	}
 
 	if err := json.NewDecoder(reader).Decode(&snapshotData); err != nil {
@@ -150,12 +165,13 @@ func (f *RaftFSM) Restore(reader io.ReadCloser) error {
 	return nil
 }
 
-// GetLease returns the current lease for a given type
-func (f *RaftFSM) GetLease(leaseType LeaseType) *Lease {
+// GetLease returns the current lease for a given type and optional target
+func (f *RaftFSM) GetLease(leaseType LeaseType, target string) *Lease {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
 
-	lease, exists := f.leases[leaseType]
+	key := getLeaseKey(leaseType, target)
+	lease, exists := f.leases[key]
 	if !exists {
 		return nil
 	}
@@ -166,11 +182,11 @@ func (f *RaftFSM) GetLease(leaseType LeaseType) *Lease {
 }
 
 // GetAllLeases returns all current leases
-func (f *RaftFSM) GetAllLeases() map[LeaseType]*Lease {
+func (f *RaftFSM) GetAllLeases() map[string]*Lease {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
 
-	leasesCopy := make(map[LeaseType]*Lease)
+	leasesCopy := make(map[string]*Lease)
 	for k, v := range f.leases {
 		leaseCopy := *v
 		leasesCopy[k] = &leaseCopy
@@ -181,7 +197,7 @@ func (f *RaftFSM) GetAllLeases() map[LeaseType]*Lease {
 
 // fsmSnapshot implements raft.FSMSnapshot
 type fsmSnapshot struct {
-	leases map[LeaseType]*Lease
+	leases map[string]*Lease
 }
 
 // Persist persists the snapshot to the given sink

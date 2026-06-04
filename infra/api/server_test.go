@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -27,8 +28,14 @@ func getNextPort() int {
 	portCounterMu.Lock()
 	defer portCounterMu.Unlock()
 	portCounter++
-	basePort := 9000
-	return basePort + int(portCounter%1000) // Use ports 9000-9999
+
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		panic(fmt.Sprintf("failed to reserve test port: %v", err))
+	}
+	defer listener.Close()
+
+	return listener.Addr().(*net.TCPAddr).Port
 }
 
 // Test helpers for creating test instances
@@ -45,7 +52,10 @@ func createTestGossipCluster() *gossip.GossipCluster {
 		Capabilities: []string{},
 		SeedNodes:    []string{},
 	}
-	cluster, _ := gossip.NewGossipCluster(config)
+	cluster, err := gossip.NewGossipCluster(config)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create test gossip cluster: %v", err))
+	}
 	return cluster
 }
 
@@ -62,13 +72,16 @@ func createTestConsensusManager() *raft.ConsensusManager {
 		SeedNodes: []string{},
 		LogLevel:  "error", // Reduce noise in tests
 	}
-	manager, _ := raft.NewConsensusManager(config)
+	manager, err := raft.NewConsensusManager(config)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create test consensus manager: %v", err))
+	}
 	return manager
 }
 
 func createTestMigrationManager() *failover.MigrationManager {
 	state := gossip.NewClusterState()
-	return failover.NewMigrationManager(nil, state, "test-node")
+	return failover.NewMigrationManager(nil, state, nil, "test-node")
 }
 
 func TestServer_NewServer(t *testing.T) {
@@ -266,6 +279,12 @@ func TestServer_HandleServices(t *testing.T) {
 		ServiceName: "service1",
 		NodeName:    "node1",
 		Healthy:     true,
+		CurrentLease: &gossip.ServiceLease{
+			NodeName:   "node1",
+			Term:       4,
+			LeaseID:    "lease-4",
+			ObservedAt: time.Now().UTC(),
+		},
 	})
 	state.UpdateServiceHealth(&gossip.ServiceHealth{
 		ServiceName: "service1",
@@ -292,6 +311,18 @@ func TestServer_HandleServices(t *testing.T) {
 
 	services := response["services"].([]interface{})
 	assert.GreaterOrEqual(t, len(services), 2)
+
+	foundLease := false
+	for _, raw := range services {
+		service := raw.(map[string]interface{})
+		if service["service_name"] == "service1" {
+			lease := service["current_lease"].(map[string]interface{})
+			assert.Equal(t, "node1", lease["node_name"])
+			assert.Equal(t, "lease-4", lease["lease_id"])
+			foundLease = true
+		}
+	}
+	assert.True(t, foundLease)
 }
 
 func TestServer_HandleService(t *testing.T) {
@@ -309,11 +340,23 @@ func TestServer_HandleService(t *testing.T) {
 		NodeName:    "node1",
 		Healthy:     true,
 		Endpoints:   map[string]string{"http": "http://test-service:8080"},
+		CurrentLease: &gossip.ServiceLease{
+			NodeName:   "node2",
+			Term:       8,
+			LeaseID:    "lease-8",
+			ObservedAt: time.Now().UTC(),
+		},
 	})
 	state.UpdateServiceHealth(&gossip.ServiceHealth{
 		ServiceName: "test-service",
 		NodeName:    "node2",
 		Healthy:     false,
+		CurrentLease: &gossip.ServiceLease{
+			NodeName:   "node2",
+			Term:       8,
+			LeaseID:    "lease-8",
+			ObservedAt: time.Now().UTC(),
+		},
 	})
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/services/test-service", nil)
@@ -329,6 +372,12 @@ func TestServer_HandleService(t *testing.T) {
 	assert.Equal(t, "test-service", response["service_name"])
 	assert.Contains(t, response, "instances")
 	assert.Contains(t, response, "healthy_count")
+	lease := response["current_lease"].(map[string]interface{})
+	assert.Equal(t, "node2", lease["node_name"])
+	assert.Equal(t, "lease-8", lease["lease_id"])
+
+	instances := response["instances"].([]interface{})
+	require.Len(t, instances, 2)
 }
 
 func TestServer_HandleRaftStatus(t *testing.T) {
@@ -439,6 +488,51 @@ func TestServer_HandleMigrations(t *testing.T) {
 	assert.Contains(t, response, "migrations")
 }
 
+func TestServer_HandleMigrations_IncludesFailedHistory(t *testing.T) {
+	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
+	consensusManager := createTestConsensusManager()
+	defer consensusManager.Shutdown()
+	migrationManager := createTestMigrationManager()
+	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
+	server := NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
+
+	err := migrationManager.StartMigration(httptest.NewRequest(http.MethodGet, "/", nil).Context(), failover.MigrationRule{
+		ServiceName: "history-service",
+		TargetNode:  "target-node",
+	})
+	require.NoError(t, err)
+
+	require.Eventually(t, func() bool {
+		migration, exists := migrationManager.GetMigrationStatus("history-service")
+		return exists && migration.Status != failover.MigrationStatusPending && migration.Status != failover.MigrationStatusRunning
+	}, time.Second, 25*time.Millisecond)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/migrations", nil)
+	w := httptest.NewRecorder()
+	server.handleMigrations(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response map[string]interface{}
+	err = json.Unmarshal(w.Body.Bytes(), &response)
+	require.NoError(t, err)
+
+	migrations := response["migrations"].([]interface{})
+	require.NotEmpty(t, migrations)
+
+	found := false
+	for _, raw := range migrations {
+		migration := raw.(map[string]interface{})
+		if migration["service_name"] == "history-service" {
+			assert.Equal(t, "relocation", migration["type"])
+			assert.Contains(t, migration, "status")
+			found = true
+		}
+	}
+	assert.True(t, found)
+}
+
 func TestServer_HandleMigrations_NoManager(t *testing.T) {
 	gossipCluster := createTestGossipCluster()
 	consensusManager := createTestConsensusManager()
@@ -462,13 +556,24 @@ func TestServer_HandleMigration(t *testing.T) {
 	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
 	server := NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
 
+	err := migrationManager.StartMigration(httptest.NewRequest(http.MethodGet, "/", nil).Context(), failover.MigrationRule{
+		ServiceName: "test-service",
+		TargetNode:  "target-node",
+	})
+	require.NoError(t, err)
+
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/migrations/test-service", nil)
 	w := httptest.NewRecorder()
 
 	server.handleMigration(w, req)
 
-	// Should return 404 if migration doesn't exist
-	assert.Equal(t, http.StatusNotFound, w.Code)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response map[string]interface{}
+	err = json.Unmarshal(w.Body.Bytes(), &response)
+	require.NoError(t, err)
+	assert.Equal(t, "test-service", response["service_name"])
+	assert.Equal(t, "relocation", response["type"])
 }
 
 func TestServer_HandleMigration_NoManager(t *testing.T) {
@@ -510,6 +615,7 @@ func TestServer_HandleMigrations_POST(t *testing.T) {
 	err := json.NewDecoder(w.Body).Decode(&response)
 	require.NoError(t, err)
 	assert.Equal(t, "test-service", response["service_name"])
+	assert.Equal(t, "relocation", response["type"])
 	assert.Equal(t, "pending", response["status"])
 }
 

@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os/exec"
+	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -14,13 +17,21 @@ import (
 	"github.com/docker/docker/client"
 
 	"cluster/infra/cluster/gossip"
+	"cluster/infra/cluster/raft"
 	"cluster/infra/monitoring"
 )
+
+type leaseProvider interface {
+	AcquireServiceLease(serviceName string) error
+	GetLeaseFencingToken(leaseType raft.LeaseType, target string) (uint64, string, error)
+	GetLease(leaseType raft.LeaseType, target string) *raft.Lease
+}
 
 // MigrationManager handles container migration between nodes
 type MigrationManager struct {
 	dockerClient *client.Client
 	gossipState  *gossip.ClusterState
+	leaseManager leaseProvider
 	nodeName     string
 	mu           sync.RWMutex
 	migrations   map[string]*Migration // service name -> active migration
@@ -28,9 +39,13 @@ type MigrationManager struct {
 	remoteDockerPort int  // Port for remote Docker API access (default 2375)
 	remoteDockerTLS  bool // Whether to use TLS for remote Docker access
 	// Metrics collection
-	metricsCollector *monitoring.MetricsCollector
-	lastMetrics      *monitoring.NodeMetrics
-	metricsMu        sync.RWMutex
+	metricsCollector       *monitoring.MetricsCollector
+	lastMetrics            *monitoring.NodeMetrics
+	metricsMu              sync.RWMutex
+	findRunningContainerFn func(context.Context, string) (string, error)
+	stopContainerFn        func(context.Context, string) error
+	runComposeUpFn         func(context.Context, string) error
+	composeProjectDir      string
 }
 
 // Migration represents an active container migration
@@ -38,16 +53,23 @@ type Migration struct {
 	ServiceName string
 	SourceNode  string
 	TargetNode  string
+	Type        MigrationType
 	Status      MigrationStatus
 	StartedAt   time.Time
 	CompletedAt *time.Time
 	Error       error
 }
 
+// MigrationType describes the kind of failover action that was performed.
+type MigrationType string
+
 // MigrationStatus represents the status of a migration
 type MigrationStatus string
 
 const (
+	MigrationTypeRelocation MigrationType = "relocation"
+	MigrationTypePeerPickup MigrationType = "peer_pickup"
+
 	MigrationStatusPending   MigrationStatus = "pending"
 	MigrationStatusRunning   MigrationStatus = "running"
 	MigrationStatusCompleted MigrationStatus = "completed"
@@ -72,15 +94,77 @@ type MigrationTrigger struct {
 }
 
 // NewMigrationManager creates a new migration manager
-func NewMigrationManager(dockerClient *client.Client, gossipState *gossip.ClusterState, nodeName string) *MigrationManager {
+func NewMigrationManager(dockerClient *client.Client, gossipState *gossip.ClusterState, leaseManager *raft.LeaseManager, nodeName string) *MigrationManager {
+	var provider leaseProvider
+	if leaseManager != nil {
+		provider = leaseManager
+	}
+
 	return &MigrationManager{
 		dockerClient:     dockerClient,
 		gossipState:      gossipState,
+		leaseManager:     provider,
 		nodeName:         nodeName,
 		migrations:       make(map[string]*Migration),
 		remoteDockerPort: 2375,  // Default Docker API port
 		remoteDockerTLS:  false, // Default to no TLS (can be configured)
 		metricsCollector: monitoring.NewMetricsCollector(),
+	}
+}
+
+// SetComposeProjectDir configures the directory used for local compose-based recovery.
+func (mm *MigrationManager) SetComposeProjectDir(dir string) {
+	mm.composeProjectDir = dir
+}
+
+// SetComposeUpRunner overrides the local compose recovery action.
+// This is useful for environments that want custom recovery behavior and for deterministic tests.
+func (mm *MigrationManager) SetComposeUpRunner(run func(context.Context, string) error) {
+	mm.runComposeUpFn = run
+}
+
+// StartLeaseEnforcer continuously enforces service leases for locally running services.
+func (mm *MigrationManager) StartLeaseEnforcer(ctx context.Context, interval time.Duration) {
+	if interval <= 0 {
+		interval = 15 * time.Second
+	}
+
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			mm.EnforceServiceLeases(ctx)
+		}
+	}
+}
+
+// EnforceServiceLeases performs one lease-enforcement pass.
+func (mm *MigrationManager) EnforceServiceLeases(ctx context.Context) {
+	if mm.leaseManager == nil || mm.gossipState == nil {
+		return
+	}
+
+	seenServices := make(map[string]struct{})
+	for _, health := range mm.gossipState.GetAllServiceHealth() {
+		if health.NodeName != mm.nodeName {
+			continue
+		}
+		if _, seen := seenServices[health.ServiceName]; seen {
+			continue
+		}
+		seenServices[health.ServiceName] = struct{}{}
+
+		lease := mm.leaseManager.GetLease(raft.LeaseTypeService, health.ServiceName)
+		mm.syncServiceLeaseState(health.ServiceName, lease)
+		if lease == nil || lease.NodeName == mm.nodeName {
+			continue
+		}
+
+		mm.enforceLostServiceLease(ctx, health.ServiceName, lease)
 	}
 }
 
@@ -111,6 +195,7 @@ func (mm *MigrationManager) StartMigration(ctx context.Context, rule MigrationRu
 		ServiceName: rule.ServiceName,
 		SourceNode:  mm.nodeName,
 		TargetNode:  targetNode,
+		Type:        MigrationTypeRelocation,
 		Status:      MigrationStatusPending,
 		StartedAt:   time.Now(),
 	}
@@ -120,6 +205,31 @@ func (mm *MigrationManager) StartMigration(ctx context.Context, rule MigrationRu
 	// Start migration in background
 	go mm.executeMigration(ctx, migration, rule)
 
+	return nil
+}
+
+// StartPeerPickup starts local recovery for a service that lost its source node.
+func (mm *MigrationManager) StartPeerPickup(ctx context.Context, rule MigrationRule, sourceNode string) error {
+	mm.mu.Lock()
+	defer mm.mu.Unlock()
+
+	if existing, exists := mm.migrations[rule.ServiceName]; exists {
+		if existing.Status == MigrationStatusRunning || existing.Status == MigrationStatusPending {
+			return fmt.Errorf("migration already in progress for service %s", rule.ServiceName)
+		}
+	}
+
+	migration := &Migration{
+		ServiceName: rule.ServiceName,
+		SourceNode:  sourceNode,
+		TargetNode:  mm.nodeName,
+		Type:        MigrationTypePeerPickup,
+		Status:      MigrationStatusPending,
+		StartedAt:   time.Now(),
+	}
+
+	mm.migrations[rule.ServiceName] = migration
+	go mm.executePeerPickup(ctx, migration, rule)
 	return nil
 }
 
@@ -133,6 +243,9 @@ func (mm *MigrationManager) selectTargetNode(serviceName string) (string, error)
 	for _, node := range allNodes {
 		if node.Name == mm.nodeName {
 			continue // Skip current node
+		}
+		if !node.Online {
+			continue // Skip offline nodes
 		}
 		if node.Cordoned {
 			continue // Skip cordoned nodes
@@ -162,6 +275,140 @@ func (mm *MigrationManager) selectTargetNode(serviceName string) (string, error)
 	return bestNode.Name, nil
 }
 
+func (mm *MigrationManager) selectPickupNode(serviceName string) (string, error) {
+	state := mm.gossipState
+	allNodes := state.GetAllNodes()
+
+	candidates := make([]*gossip.NodeMetadata, 0)
+	for _, node := range allNodes {
+		if !node.Online || node.Cordoned {
+			continue
+		}
+		candidates = append(candidates, node)
+	}
+
+	if len(candidates) == 0 {
+		return "", fmt.Errorf("no online nodes available for peer pickup")
+	}
+
+	bestNode := candidates[0]
+	for _, node := range candidates[1:] {
+		if node.Priority < bestNode.Priority {
+			bestNode = node
+		}
+	}
+
+	return bestNode.Name, nil
+}
+
+func (mm *MigrationManager) enforceLostServiceLease(ctx context.Context, serviceName string, lease *raft.Lease) {
+	containerID, err := mm.findRunningContainer(ctx, serviceName)
+	if err != nil {
+		log.Printf("[FENCING] Failed to inspect local container for service %s after lease transfer to %s: %v", serviceName, lease.NodeName, err)
+		return
+	}
+	if containerID == "" {
+		return
+	}
+
+	log.Printf("[FENCING] Service %s lost lease to %s (term %d); stopping local container %s", serviceName, lease.NodeName, lease.Term, containerID)
+	if err := mm.stopContainer(ctx, containerID); err != nil {
+		log.Printf("[FENCING] Failed to stop local container %s for service %s after lease transfer to %s: %v", containerID, serviceName, lease.NodeName, err)
+		return
+	}
+
+	if currentHealth, exists := mm.gossipState.GetServiceHealth(serviceName, mm.nodeName); exists {
+		updated := *currentHealth
+		updated.Healthy = false
+		mm.gossipState.UpdateServiceHealth(&updated)
+	}
+}
+
+func (mm *MigrationManager) syncServiceLeaseState(serviceName string, lease *raft.Lease) {
+	if mm.gossipState == nil {
+		return
+	}
+
+	if lease == nil {
+		mm.gossipState.UpdateServiceLease(serviceName, nil)
+		return
+	}
+
+	mm.gossipState.UpdateServiceLease(serviceName, &gossip.ServiceLease{
+		NodeName:   lease.NodeName,
+		Term:       lease.Term,
+		LeaseID:    lease.LeaseID,
+		ObservedAt: time.Now().UTC(),
+	})
+}
+
+func (mm *MigrationManager) findRunningContainer(ctx context.Context, serviceName string) (string, error) {
+	if mm.findRunningContainerFn != nil {
+		return mm.findRunningContainerFn(ctx, serviceName)
+	}
+	if mm.dockerClient == nil {
+		return "", nil
+	}
+
+	containers, err := mm.dockerClient.ContainerList(ctx, types.ContainerListOptions{
+		Filters: filters.NewArgs(filters.Arg("name", serviceName)),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	for _, ctr := range containers {
+		if containerNameMatchesService(ctr.Names, serviceName) {
+			return ctr.ID, nil
+		}
+	}
+	if len(containers) > 0 {
+		return containers[0].ID, nil
+	}
+
+	return "", nil
+}
+
+func (mm *MigrationManager) stopContainer(ctx context.Context, containerID string) error {
+	if mm.stopContainerFn != nil {
+		return mm.stopContainerFn(ctx, containerID)
+	}
+	if mm.dockerClient == nil {
+		return fmt.Errorf("docker client not available")
+	}
+
+	timeoutSeconds := 30
+	return mm.dockerClient.ContainerStop(ctx, containerID, container.StopOptions{Timeout: &timeoutSeconds})
+}
+
+func (mm *MigrationManager) runComposeUp(ctx context.Context, serviceName string) error {
+	if mm.runComposeUpFn != nil {
+		return mm.runComposeUpFn(ctx, serviceName)
+	}
+
+	cmd := exec.CommandContext(ctx, "docker", "compose", "up", "-d", serviceName)
+	if mm.composeProjectDir != "" {
+		cmd.Dir = mm.composeProjectDir
+	}
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("docker compose up failed: %w: %s", err, strings.TrimSpace(string(output)))
+	}
+
+	return nil
+}
+
+func containerNameMatchesService(names []string, serviceName string) bool {
+	for _, name := range names {
+		if strings.TrimPrefix(name, "/") == serviceName {
+			return true
+		}
+	}
+
+	return false
+}
+
 // executeMigration performs the actual container migration from source to target node
 func (mm *MigrationManager) executeMigration(ctx context.Context, migration *Migration, rule MigrationRule) {
 	mm.mu.Lock()
@@ -169,6 +416,32 @@ func (mm *MigrationManager) executeMigration(ctx context.Context, migration *Mig
 	mm.mu.Unlock()
 
 	log.Printf("Starting migration of %s from %s to %s", migration.ServiceName, migration.SourceNode, migration.TargetNode)
+
+	// Step 0: Ensure we hold the fencing token for this service
+	// This ensures that only one node at a time can migrate or run this service.
+	if mm.leaseManager != nil {
+		log.Printf("[FENCING] Acquiring lease for service %s", migration.ServiceName)
+		if err := mm.leaseManager.AcquireServiceLease(migration.ServiceName); err != nil {
+			mm.mu.Lock()
+			migration.Status = MigrationStatusFailed
+			migration.Error = fmt.Errorf("fencing failure: failed to acquire service lease: %w", err)
+			mm.mu.Unlock()
+			log.Printf("Migration of %s failed: fencing failure: %v", migration.ServiceName, err)
+			return
+		}
+
+		term, leaseID, err := mm.leaseManager.GetLeaseFencingToken(raft.LeaseTypeService, migration.ServiceName)
+		if err != nil {
+			mm.mu.Lock()
+			migration.Status = MigrationStatusFailed
+			migration.Error = fmt.Errorf("fencing failure: failed to get fencing token: %w", err)
+			mm.mu.Unlock()
+			log.Printf("Migration of %s failed: fencing failure: %v", migration.ServiceName, err)
+			return
+		}
+		log.Printf("[FENCING] Service %s fenced with Token(Term: %d, ID: %s)", migration.ServiceName, term, leaseID)
+		mm.syncServiceLeaseState(migration.ServiceName, mm.leaseManager.GetLease(raft.LeaseTypeService, migration.ServiceName))
+	}
 
 	// Step 1: Validate container exists and is running on source node
 	if mm.dockerClient == nil {
@@ -408,6 +681,59 @@ func (mm *MigrationManager) executeMigration(ctx context.Context, migration *Mig
 	log.Printf("Migration of %s from %s to %s completed successfully", migration.ServiceName, migration.SourceNode, migration.TargetNode)
 }
 
+func (mm *MigrationManager) executePeerPickup(ctx context.Context, migration *Migration, rule MigrationRule) {
+	mm.mu.Lock()
+	migration.Status = MigrationStatusRunning
+	mm.mu.Unlock()
+
+	log.Printf("Starting peer pickup of %s from %s onto %s", migration.ServiceName, migration.SourceNode, migration.TargetNode)
+
+	if mm.leaseManager != nil {
+		log.Printf("[FENCING] Acquiring lease for peer pickup of service %s", migration.ServiceName)
+		if err := mm.leaseManager.AcquireServiceLease(migration.ServiceName); err != nil {
+			mm.mu.Lock()
+			migration.Status = MigrationStatusFailed
+			migration.Error = fmt.Errorf("peer pickup fencing failure: %w", err)
+			mm.mu.Unlock()
+			return
+		}
+
+		mm.syncServiceLeaseState(migration.ServiceName, mm.leaseManager.GetLease(raft.LeaseTypeService, migration.ServiceName))
+	}
+
+	if err := mm.runComposeUp(ctx, migration.ServiceName); err != nil {
+		mm.mu.Lock()
+		migration.Status = MigrationStatusFailed
+		migration.Error = err
+		mm.mu.Unlock()
+		log.Printf("Peer pickup of %s failed: %v", migration.ServiceName, err)
+		return
+	}
+
+	if lease, ok := mm.gossipState.GetServiceLease(migration.ServiceName); ok {
+		mm.gossipState.UpdateServiceHealth(&gossip.ServiceHealth{
+			ServiceName:  migration.ServiceName,
+			NodeName:     mm.nodeName,
+			Healthy:      false,
+			CurrentLease: lease,
+		})
+	} else {
+		mm.gossipState.UpdateServiceHealth(&gossip.ServiceHealth{
+			ServiceName: migration.ServiceName,
+			NodeName:    mm.nodeName,
+			Healthy:     false,
+		})
+	}
+
+	mm.mu.Lock()
+	migration.Status = MigrationStatusCompleted
+	now := time.Now()
+	migration.CompletedAt = &now
+	mm.mu.Unlock()
+
+	log.Printf("Peer pickup of %s onto %s completed", migration.ServiceName, migration.TargetNode)
+}
+
 // GetMigrationStatus returns the status of a migration
 func (mm *MigrationManager) GetMigrationStatus(serviceName string) (*Migration, bool) {
 	mm.mu.RLock()
@@ -418,16 +744,7 @@ func (mm *MigrationManager) GetMigrationStatus(serviceName string) (*Migration, 
 		return nil, false
 	}
 
-	// Return a copy
-	return &Migration{
-		ServiceName: migration.ServiceName,
-		SourceNode:  migration.SourceNode,
-		TargetNode:  migration.TargetNode,
-		Status:      migration.Status,
-		StartedAt:   migration.StartedAt,
-		CompletedAt: migration.CompletedAt,
-		Error:       migration.Error,
-	}, true
+	return copyMigration(migration), true
 }
 
 // MonitorAndMigrate monitors services and triggers migrations based on rules
@@ -516,6 +833,58 @@ func (mm *MigrationManager) CheckAndMigrate(ctx context.Context, rules []Migrati
 			}
 		}
 	}
+
+	seenPeerServices := make(map[string]struct{})
+	for _, rule := range rules {
+		if _, seen := seenPeerServices[rule.ServiceName]; seen {
+			continue
+		}
+		seenPeerServices[rule.ServiceName] = struct{}{}
+
+		instances := state.GetServiceInstances(rule.ServiceName)
+		if len(instances) == 0 {
+			continue
+		}
+		if len(state.GetHealthyServiceNodes(rule.ServiceName)) > 0 {
+			continue
+		}
+
+		pickupNode, err := mm.selectPickupNode(rule.ServiceName)
+		if err != nil || pickupNode != mm.nodeName {
+			continue
+		}
+
+		sourceNode := ""
+		for _, instance := range instances {
+			if instance.NodeName == mm.nodeName {
+				continue
+			}
+
+			node, exists := state.GetNode(instance.NodeName)
+			nodeUnavailable := !exists || !node.Online || node.Cordoned
+			if nodeUnavailable || !instance.Healthy {
+				sourceNode = instance.NodeName
+				break
+			}
+		}
+
+		if sourceNode == "" {
+			continue
+		}
+
+		mm.mu.RLock()
+		existing, exists := mm.migrations[rule.ServiceName]
+		inProgress := exists && (existing.Status == MigrationStatusRunning || existing.Status == MigrationStatusPending)
+		mm.mu.RUnlock()
+		if inProgress {
+			continue
+		}
+
+		log.Printf("Triggering peer pickup of %s from stranded node %s", rule.ServiceName, sourceNode)
+		if err := mm.StartPeerPickup(ctx, rule, sourceNode); err != nil {
+			log.Printf("Failed to start peer pickup of %s: %v", rule.ServiceName, err)
+		}
+	}
 }
 
 // GetActiveMigrations returns all active migrations
@@ -526,17 +895,56 @@ func (mm *MigrationManager) GetActiveMigrations() []*Migration {
 	result := make([]*Migration, 0, len(mm.migrations))
 	for _, migration := range mm.migrations {
 		if migration.Status == MigrationStatusRunning || migration.Status == MigrationStatusPending {
-			result = append(result, &Migration{
-				ServiceName: migration.ServiceName,
-				SourceNode:  migration.SourceNode,
-				TargetNode:  migration.TargetNode,
-				Status:      migration.Status,
-				StartedAt:   migration.StartedAt,
-				CompletedAt: migration.CompletedAt,
-				Error:       migration.Error,
-			})
+			result = append(result, copyMigration(migration))
 		}
 	}
 
+	sortMigrations(result)
 	return result
+}
+
+// GetAllMigrations returns all recorded migrations, including completed and failed ones.
+func (mm *MigrationManager) GetAllMigrations() []*Migration {
+	mm.mu.RLock()
+	defer mm.mu.RUnlock()
+
+	result := make([]*Migration, 0, len(mm.migrations))
+	for _, migration := range mm.migrations {
+		result = append(result, copyMigration(migration))
+	}
+
+	sortMigrations(result)
+	return result
+}
+
+func copyMigration(migration *Migration) *Migration {
+	if migration == nil {
+		return nil
+	}
+
+	var completedAt *time.Time
+	if migration.CompletedAt != nil {
+		completed := *migration.CompletedAt
+		completedAt = &completed
+	}
+
+	return &Migration{
+		ServiceName: migration.ServiceName,
+		SourceNode:  migration.SourceNode,
+		TargetNode:  migration.TargetNode,
+		Type:        migration.Type,
+		Status:      migration.Status,
+		StartedAt:   migration.StartedAt,
+		CompletedAt: completedAt,
+		Error:       migration.Error,
+	}
+}
+
+func sortMigrations(migrations []*Migration) {
+	sort.Slice(migrations, func(i, j int) bool {
+		if migrations[i].StartedAt.Equal(migrations[j].StartedAt) {
+			return migrations[i].ServiceName < migrations[j].ServiceName
+		}
+		return migrations[i].StartedAt.After(migrations[j].StartedAt)
+	})
 }

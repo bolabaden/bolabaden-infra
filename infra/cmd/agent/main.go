@@ -166,7 +166,7 @@ func main() {
 	if cfg.DNS.ZoneID != "" {
 		dnsZoneID = cfg.DNS.ZoneID
 	}
-	
+
 	dnsReconciler, err := dns.NewDNSReconciler(&dns.Config{
 		APIToken:   cfAPIToken,
 		ZoneID:     dnsZoneID,
@@ -235,7 +235,8 @@ func main() {
 
 	// Initialize migration manager for enhanced failover
 	log.Printf("Initializing migration manager...")
-	migrationManager := failover.NewMigrationManager(dockerClient, gossipCluster.GetState(), *nodeName)
+	migrationManager := failover.NewMigrationManager(dockerClient, gossipCluster.GetState(), leaseManager, *nodeName)
+	migrationManager.SetComposeProjectDir(cfg.RootPath)
 
 	// Load migration rules from configuration
 	migrationRulesPath := getEnv("MIGRATION_RULES_PATH", "/opt/constellation/config/migration-rules.json")
@@ -249,6 +250,7 @@ func main() {
 
 	// Start migration monitoring with loaded rules
 	go migrationManager.MonitorAndMigrate(ctx, migrationRules)
+	go migrationManager.StartLeaseEnforcer(ctx, 15*time.Second)
 
 	// Initialize WebSocket server
 	log.Printf("Initializing WebSocket server...")
@@ -540,7 +542,7 @@ func reconcileNodeDNS(ctx context.Context, dnsController *dns.Controller, cluste
 			return
 		case <-ticker.C:
 			// Only reconcile if we hold the DNS writer lease
-			lease := consensusManager.GetLease(raft.LeaseTypeDNSWriter)
+			lease := consensusManager.GetLease(raft.LeaseTypeDNSWriter, "")
 			if lease != nil && lease.NodeName == currentNodeName {
 				updateNodeDNSRecords(dnsController, cluster)
 			}

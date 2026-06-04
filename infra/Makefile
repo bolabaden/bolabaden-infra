@@ -1,4 +1,4 @@
-.PHONY: help build test clean validate config-init config-tool install
+.PHONY: help build test test-convergence test-failover test-ha clean validate config-init config-tool install
 
 # Default target
 help:
@@ -7,6 +7,9 @@ help:
 	@echo "Available targets:"
 	@echo "  make build          - Build all binaries"
 	@echo "  make test           - Run all tests"
+	@echo "  make test-convergence - Run multi-node state/config convergence verification"
+	@echo "  make test-failover  - Run repeatable HA/failover verification suites"
+	@echo "  make test-ha        - Run the milestone HA verification bundle"
 	@echo "  make validate       - Validate configuration files"
 	@echo "  make config-init     - Run configuration wizard"
 	@echo "  make config-tool     - Build configuration tool"
@@ -28,6 +31,21 @@ test:
 	@echo "Running tests..."
 	go test ./... -v
 	@echo "✓ Tests complete"
+
+# Run focused HA/failover verification
+test-convergence:
+	@echo "Running convergence verification..."
+	go test ./cluster/gossip/... ./controlplane/... -count=1
+	@echo "✓ Convergence verification complete"
+
+# Run focused HA/failover verification
+test-failover:
+	@echo "Running failover verification..."
+	go test ./failover/... ./api/... -count=1
+	@echo "✓ Failover verification complete"
+
+test-ha: test-convergence test-failover
+	@echo "✓ HA verification bundle complete"
 
 # Validate configuration
 validate: config-tool

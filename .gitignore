@@ -111,3 +111,4 @@ bootstrap-secrets.defaults.env
 
 .compound-engineering/*.local.yaml
 .tmp/
+.worktrees

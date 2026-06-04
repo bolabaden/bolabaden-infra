@@ -107,7 +107,7 @@ The original Constellation Python project provided several features that should 
    - ✅ Ping/pong support for connection keepalive
    - ✅ Integrated into agent at `/ws` endpoint
 
-3. **Enhanced Failover** ✅ COMPLETE (with note on migration execution)
+3. **Enhanced Failover** ✅ COMPLETE (with staged execution paths)
    - ✅ Container migration framework (`failover/migration.go`)
    - ✅ Intelligent service placement (priority-based node selection)
    - ✅ Migration monitoring and rule-based triggers
@@ -116,12 +116,12 @@ The original Constellation Python project provided several features that should 
      - POST: Manually trigger migrations via API
    - ✅ Health-based migration triggers
    - ✅ Node-based migration triggers (cordoned nodes)
+   - ✅ Offline-node peer pickup with local compose recovery
+   - ✅ Service lease observation and fencing-aware local shutdown
+   - ✅ Migration history and type visibility (`relocation`, `peer_pickup`)
    - ✅ Manual migration triggers via REST API
-   - ⚠️ Migration execution: Currently simulates migration (logs + status tracking)
-     - Migration framework is fully implemented
-     - Actual container transfer/state migration is simulated
-     - Container discovery and validation is implemented
-     - Full migration would require remote Docker API access, volume transfer, etc.
+   - ✅ Relocation execution path includes container discovery, remote Docker target connection, image transfer/pull fallback, remote container create/start, and health verification
+   - ⚠️ Full stateful migration hardening still needs richer data-transfer/rollback coverage for every workload class
    - ✅ Resource-aware scheduling (threshold parsing implemented, requires metrics infrastructure)
      - ResourceThreshold field supported in migration rules
      - Threshold parsing and logging implemented
@@ -146,6 +146,7 @@ The original Constellation Python project provided several features that should 
 
 3. **End-to-end tests** ✅ COMPLETE
    - ✅ End-to-end tests for failover scenarios (`api/e2e_test.go`)
+   - ✅ Deterministic peer-pickup E2E coverage without Docker dependencies
    - ✅ End-to-end tests for node join and service discovery
    - ✅ End-to-end tests for service health change propagation
    - ✅ End-to-end tests for migration workflows
@@ -175,12 +176,12 @@ The original Constellation Python project provided several features that should 
 **Phase 1: 100% Complete** ✅
 - All core missing features implemented
 - All TODOs resolved
-- Core functionality fully implemented (migration execution uses simulation/logging for container transfer)
+- Core functionality fully implemented, including active lease enforcement and peer-pickup recovery paths
 
 **Phase 2: 100% Complete** ✅
 - REST API: ✅ Complete
 - WebSocket: ✅ Complete
-- Enhanced Failover: ✅ Complete (migration framework implemented, execution simulated for testing)
+- Enhanced Failover: ✅ Complete (relocation, fencing, peer pickup, and recovery visibility implemented)
 
 **Phase 3: 100% Complete** ✅
 - Unit tests: ✅ Complete (core functions + API/WebSocket/Migration)
@@ -272,6 +273,21 @@ Run all tests:
 go test ./api/... ./failover/... -v
 ```
 
+Run convergence verification:
+```bash
+make test-convergence
+```
+
+Run focused failover verification:
+```bash
+make test-failover
+```
+
+Run the full milestone HA verification bundle:
+```bash
+make test-ha
+```
+
 Run specific test suites:
 ```bash
 # Unit tests only
@@ -302,33 +318,27 @@ All phases of the Constellation integration are now complete:
 
 ### Implementation Notes
 
-**Migration Execution**: The container migration system includes a complete framework for:
+**Migration Execution**: The container migration system now includes active execution paths for:
 - Migration rule definition and monitoring
 - Target node selection based on priority and health
 - Migration status tracking via API
 - Service health-based and node-based triggers
+- Local node fencing when a service lease moves elsewhere
+- Peer pickup via compose-based local recovery on the selected surviving node
+- Remote relocation attempts using Docker API access, image transfer/pull fallback, and target health verification
 
-The actual container migration execution is currently **simulated** (logs migration events and tracks status). For full production container migration, additional work is needed:
-1. Remote Docker API access to target nodes
-2. Container state export/import
-3. Volume/data transfer mechanisms
-4. Network configuration synchronization
-5. Rollback capabilities
+Further production hardening is still useful for workload-specific rollback, richer volume migration guarantees, and broader multi-node infrastructure E2E coverage.
 
-The framework is designed to support full migration implementation when needed, with all the infrastructure and APIs in place.
-
-The infrastructure is fully tested and ready for production use. The migration system can be used for monitoring and planning migrations, with full execution implementation as a future enhancement.
+**Distributed services registry**: The planned `services.yaml` control artifact now has a concrete Go model in `infra/controlplane/` with YAML round-trip coverage and cluster-state merge tests. It is not yet wired into a long-running sync agent, but it gives the June milestone a real, testable shared-registry artifact instead of leaving `services.yaml` purely conceptual.
 
 ## Known Limitations and Future Enhancements
 
 ### Migration System
-- **Container Migration Execution**: Currently simulated/logged. Full implementation requires:
-  - Remote Docker API client for target nodes
-  - Container state persistence and transfer
-  - Volume/data synchronization mechanisms
-  - Network configuration migration
+- **Stateful relocation hardening**: The execution path exists, but some workloads will still need stronger guarantees for:
+  - Volume/data synchronization validation
   - Rollback and recovery mechanisms
-  - See `infra/failover/migration.go` for implementation details and TODO comments
+  - Service-specific readiness and cutover policies
+  - Multi-node infrastructure E2E coverage beyond in-process tests
 
 ### Resource-Aware Scheduling
 - **Resource Threshold Parsing**: Implemented and logged
@@ -339,6 +349,7 @@ The infrastructure is fully tested and ready for production use. The migration s
 
 ### Testing
 - **Multi-Node Tests**: Integration tests for gossip and Raft require actual multi-node setup
+- **Current convergence coverage**: Multi-node gossip convergence is now covered by repeatable localhost integration tests, but broader service-registry/secret distribution automation still needs implementation beyond gossip state propagation
 - **Infrastructure E2E Tests**: DNS updates and Traefik configuration tests require full infrastructure
 - **Performance Tests**: Some tests may take longer to run; use `-short` flag to skip
 - **Test Infrastructure**: All tests now use unique ports and proper cleanup to prevent conflicts
@@ -358,7 +369,7 @@ The infrastructure is fully tested and ready for production use. The migration s
 
 **Total Test Functions**: 59 test functions across 8 test files (includes shutdown tests)
 **Total Test Cases Executed**: 57 passing test cases
-**All Critical Tests**: ✅ Passing (verified with `go test ./api/... ./failover/... -v -count=1`)
+**All Critical Tests**: ✅ Passing (verified with `make test-failover` and `make test`)
 
 ## Verification Checklist
 
@@ -594,14 +605,13 @@ grep -r "NewServer\|apiServer.Start" infra/cmd/agent
 
 ### Conclusion
 
-**The Constellation integration is 100% complete, fully tested, and production-ready.**
+**The Constellation integration is substantially implemented, with repeatable failover verification now in place.**
 
 All features from the original Python Constellation project have been successfully integrated into the Go implementation:
 - ✅ REST API with 15+ endpoints
 - ✅ WebSocket service for real-time updates
-- ✅ Enhanced failover with migration framework
+- ✅ Enhanced failover with migration, fencing, peer pickup, and recovery visibility
 - ✅ Config file support (YAML/JSON)
 - ✅ Image building via Docker API
 
 **The system is ready for production deployment.**
-
