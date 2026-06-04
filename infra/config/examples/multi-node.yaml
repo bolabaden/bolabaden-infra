@@ -1,0 +1,39 @@
+# Multi-Node Cluster Configuration Example
+# This shows how to configure a multi-node cluster
+# Each node should have its own config file with node-specific settings
+
+domain: example.com
+stack_name: production
+
+# Node-specific settings (set per node)
+node_name: node1  # Change to node2, node3, etc. for other nodes
+
+# Cluster configuration
+cluster:
+  bind_port: 7946
+  raft_port: 8300
+  api_port: 8080
+  priority: 100  # Lower priority = higher priority (fast nodes first)
+  # node1: 50 (fast node)
+  # node2: 100 (normal node)
+  # node3: 150 (slower node)
+
+# Traefik configuration (same across all nodes)
+traefik:
+  web_port: 80
+  websecure_port: 443
+  cert_resolver: "letsencrypt"
+  http_provider_port: 8081
+
+# DNS configuration (only leader node needs this)
+dns:
+  provider: cloudflare
+  domain: example.com
+  # Set via environment:
+  # CLOUDFLARE_API_KEY
+  # CLOUDFLARE_ZONE_ID
+
+# Registry configuration (same across all nodes)
+registry:
+  image_prefix: "docker.io/myorg"
+  default_registry: "docker.io"

@@ -18,6 +18,29 @@ environments:
       PUID: 1001
       PGID: 999
       UMASK: "002"
+  - name: k8s
+    variables:
+      base-hostname: my-media-stack.local.demo.garden
+      domain: ${var.base-hostname}
+      ts-hostname: ${local.hostname}
+      config-path: ./volumes
+      certs-path: ./certs
+      docker-socket: /var/run/docker.sock
+      root-path: .
+      src-path: ./src
+      tz: America/Chicago
+      stack-name: my-media-stack
+      PUID: 1001
+      PGID: 999
+      UMASK: "002"
+      
+      # HA Configuration
+      ha:
+        enabled: true
+        minReplicas: 3
+        antiAffinity: true
+        podDisruptionBudget:
+          minAvailable: 1
       
       # Common system variables
       sudo-password: ${env.SUDO_PASSWORD}
@@ -119,9 +142,33 @@ environments:
 
 providers:
   - name: local-kubernetes
-    environments: [default]
+    environments: [k8s]
     buildMode: cluster-buildkit
     defaultHostname: ${var.base-hostname}
     copySecrets:
       - name: docker-config
         namespace: default
+    context: ${var.k8s-context || "kind-my-media-stack"}
+    namespace: ${var.k8s-namespace || "my-media-stack-default"}
+    setupIngressController: null
+    ingressClass: nginx
+    createSystemNamespace: true
+  - name: ha-kubernetes
+    environments: [ha-k8s]
+    buildMode: cluster-buildkit
+    defaultHostname: ${var.base-hostname}
+    context: ${var.ha-k8s-context || "ha-cluster"}
+    namespace: ${var.ha-k8s-namespace || "my-media-stack-ha"}
+    setupIngressController: null
+    ingressClass: nginx
+    createSystemNamespace: true
+    kubeconfig: ${var.ha-k8s-kubeconfig || "~/.kube/config"}
+  - name: local-kubernetes
+    environments: [default]
+    buildMode: local-docker
+    defaultHostname: ${var.base-hostname}
+    context: ${var.k8s-context || "kind-my-media-stack"}
+    namespace: ${var.k8s-namespace || "my-media-stack-default"}
+    setupIngressController: null
+    ingressClass: nginx
+    createSystemNamespace: true

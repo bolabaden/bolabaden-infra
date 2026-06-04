@@ -1,13 +1,19 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: homepage
 description: Homepage dashboard for service overview
 type: container
+dependencies:
+  - deploy.dockerproxy-ro
 
 spec:
+  replicas: 3
   image: ghcr.io/gethomepage/homepage
+  hostname: homepage
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
-    TZ: ${var.tz}
+    DOCKER_HOST: tcp://dockerproxy-ro:2375
     HOMEPAGE_ALLOWED_HOSTS: "*"
     HOMEPAGE_VAR_TITLE: Bolabaden
     HOMEPAGE_VAR_SEARCH_PROVIDER: duckduckgo
@@ -23,13 +29,9 @@ spec:
     - name: http
       containerPort: 3000
   volumes:
-    - name: docker-sock
-      containerPath: /var/run/docker.sock
-      sourcePath: ${var.docker-socket}
-      readOnly: true
     - name: config
       containerPath: /app/config
-      sourcePath: ${var.config-path}/homepage
+      hostPath: ${var.config-path}/homepage
   resources:
     limits:
       cpu: 250m
@@ -40,8 +42,22 @@ spec:
     - path: /
       port: http
       hostname: homepage.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /
+    - path: /
       port: http
+      hostname: homepage.${var.ts-hostname}.${var.domain}
+  annotations:
+    deunhealth.restart.on.unhealthy: "true"
+    traefik.enable: "true"
+    traefik.http.services.homepage.loadbalancer.server.port: 3000
+    kuma.homepage.http.name: homepage.${var.ts-hostname}.${var.domain}
+    kuma.homepage.http.url: https://homepage.${var.domain}
+    kuma.homepage.http.interval: "30"
+  healthCheck:
+    exec:
+      command: [sh, -c, "wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 15
+    failureThreshold: 3
+    startPeriodSeconds: 30
   restartPolicy: always

@@ -1,11 +1,15 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: rclone
 description: Rclone cloud storage mount service
 type: container
 
 spec:
-  image: docker.io/rclone/rclone:1.71
+  replicas: 3
+  image: docker.io/rclone/rclone
+  hostname: rclone
+  extraHosts:
+    - host.docker.internal:host-gateway
   capAdd:
     - SYS_ADMIN
   securityOpt:
@@ -14,11 +18,12 @@ spec:
     TZ: ${var.tz}
   ports:
     - name: http
-      containerPort: 5572
+      containerPort: ${var.RCLONE_PORT || "5572"}
   volumes:
     - name: hostfs
       containerPath: /hostfs
       hostPath: /
+      readOnly: true
     - name: etc-group
       containerPath: /etc/group
       hostPath: /etc/group
@@ -32,16 +37,17 @@ spec:
       hostPath: /mnt/remote
     - name: cache
       containerPath: /.cache
-      sourcePath: ${var.config-path}/rclone/.cache
+      hostPath: ${var.config-path}/rclone/.cache
     - name: config
       containerPath: /config/rclone
-      sourcePath: ${var.config-path}/rclone/config/rclone
+      hostPath: ${var.config-path}/rclone/config/rclone
     - name: rclonefm-js
       containerPath: /var/lib/rclonefm/js
-      sourcePath: ${var.config-path}/rclonefm/js
+      hostPath: ${var.config-path}/rclonefm/js
     - name: rclone-conf
       containerPath: /config/rclone/rclone.conf
-      sourcePath: ${var.config-path}/rclone/rclone.conf
+      hostPath: ${var.config-path}/rclone/rclone.conf
+      readOnly: true
     - name: fuse-conf
       containerPath: /etc/fuse.conf
       hostPath: /etc/fuse.conf
@@ -69,8 +75,30 @@ spec:
     - path: /
       port: http
       hostname: rclone.${var.domain}
+    - path: /
+      port: http
+      hostname: rclone.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.rclone.middlewares: nginx-auth@file
+    traefik.http.routers.rclone.rule: Host(`rclone.${var.domain}`) || Host(`rclone.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.rclone.loadbalancer.server.port: ${var.RCLONE_PORT || "5572"}
+    homepage.group: Cloud
+    homepage.name: Rclone
+    homepage.icon: rclone.png
+    homepage.href: https://rclone.${var.domain}/
+    homepage.description: A web interface for Rclone.
+    homepage.weight: "0"
+    kuma.rclone.http.name: rclone.${var.ts-hostname}.${var.domain}
+    kuma.rclone.http.url: https://rclone.${var.domain}
+    kuma.rclone.http.interval: "60"
   healthCheck:
     exec:
-      command: [mountpoint, -q, /mnt/remote]
+      command: [sh, -c, "mountpoint -q /mnt/remote"]
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 2
+    startPeriodSeconds: 15
   restartPolicy: always
 

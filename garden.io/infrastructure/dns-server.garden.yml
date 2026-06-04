@@ -1,0 +1,58 @@
+kind: Deploy
+apiVersion: garden.io/v0
+name: dns-server
+description: Technitium DNS Server
+type: container
+
+spec:
+  replicas: 3
+  image: docker.io/technitium/dns-server
+  hostname: dns-server.${var.domain}
+  extraHosts:
+    - host.docker.internal:host-gateway
+  ports:
+    - name: dns-udp
+      containerPort: 53
+      protocol: UDP
+      hostPort: 53
+    - name: dns-http
+      containerPort: 80
+    - name: dns-https
+      containerPort: 443
+    - name: dns-tcp-proxy
+      containerPort: 538
+    - name: dns-tls
+      containerPort: 853
+    - name: dns-quic
+      containerPort: 853
+      protocol: UDP
+    - name: dns-https-alt
+      containerPort: 8053
+    - name: console-http
+      containerPort: 5380
+    - name: console-https
+      containerPort: 53443
+  volumes:
+    - name: config
+      containerPath: /etc/dns
+      hostPath: ${var.config-path}/dns-server/config
+  ingresses:
+    - path: /
+      port: console-http
+      hostname: dns-server.${var.domain}
+    - path: /
+      port: console-http
+      hostname: dns-server.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.services.dns-server.loadbalancer.server.port: "5380"
+    homepage.group: Infrastructure
+    homepage.name: Technitium DNS Server
+    homepage.icon: dns-server.png
+    homepage.href: https://dns-server.${var.domain}
+    homepage.description: DNS server used to resolve DNS queries
+    kuma.dns-server.http.name: dns-server.${var.ts-hostname}.${var.domain}
+    kuma.dns-server.http.url: https://dns-server.${var.domain}/
+    kuma.dns-server.http.interval: "60"
+  restartPolicy: always
+

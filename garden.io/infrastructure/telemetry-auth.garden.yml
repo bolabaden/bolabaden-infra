@@ -1,0 +1,47 @@
+kind: Build
+apiVersion: garden.io/v0
+name: telemetry-auth
+description: Telemetry authentication service build
+type: container
+source:
+  path: ${var.root-path || "."}/projects/kotormodsync/telemetry-auth
+
+---
+kind: Deploy
+apiVersion: garden.io/v0
+name: telemetry-auth
+description: Telemetry authentication service
+type: container
+dependencies:
+  - build.telemetry-auth
+
+spec:
+  replicas: 3
+  image: bolabaden/kotormodsync-telemetry-auth
+  hostname: telemetry-auth
+  runAsUser: 0
+  runAsGroup: 0
+  env:
+    AUTH_SERVICE_PORT: 8080
+    KOTORMODSYNC_SECRET_FILE: /run/secrets/signing_secret
+    REQUIRE_AUTH: ${var.REQUIRE_AUTH || "true"}
+    MAX_TIMESTAMP_DRIFT: ${var.MAX_TIMESTAMP_DRIFT || "300"}
+    LOG_LEVEL: ${var.LOG_LEVEL || "info"}
+  ports:
+    - name: http
+      containerPort: 8080
+      hostPort: 8080
+  volumes:
+    - name: signing-secret
+      containerPath: /run/secrets/signing_secret
+      hostPath: ${(var.SECRETS_PATH || (var.config-path + "/../secrets")) + "/signing_secret.txt"}
+  healthCheck:
+    exec:
+      command: [sh, -c, "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1"]
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 5
+    startPeriodSeconds: 30
+  restartPolicy: unless-stopped
+

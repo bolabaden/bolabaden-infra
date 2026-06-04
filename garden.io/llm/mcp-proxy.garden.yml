@@ -1,0 +1,42 @@
+kind: Deploy
+apiVersion: garden.io/v0
+name: mcp-proxy
+description: MCP Proxy for proxying MCP servers
+type: container
+
+spec:
+  replicas: 3
+  image: ghcr.io/tbxark/mcp-proxy
+  hostname: mcp
+  extraHosts:
+    - host.docker.internal:host-gateway
+  ports:
+    - name: http
+      containerPort: ${var.MCP_PROXY_PORT || "9090"}
+  volumes:
+    - name: config
+      containerPath: /config.json
+      hostPath: ${var.config-path}/mcp-proxy/config.json
+      readOnly: true
+  command:
+    - --config
+    - config.json
+    - -expand-env
+  ingresses:
+    - path: /
+      port: http
+      hostname: mcp.${var.domain}
+    - path: /
+      port: http
+      hostname: mcp.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.mcp-proxy.rule: Host(`mcp.${var.domain}`) || Host(`mcp.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.mcp-proxy.loadbalancer.server.port: ${var.MCP_PROXY_PORT || "9090"}
+    homepage.group: MCP
+    homepage.name: MCP Proxy
+    homepage.icon: mcp-proxy.png
+    homepage.href: https://mcp.${var.domain}
+    homepage.description: MCP Proxy is a tool for proxying MCP servers.
+  restartPolicy: always
+

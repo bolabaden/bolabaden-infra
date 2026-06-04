@@ -1,11 +1,15 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: prowlarr
 description: Prowlarr indexer proxy and manager
 type: container
 
 spec:
+  replicas: 3
   image: lscr.io/linuxserver/prowlarr
+  hostname: prowlarr
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}
@@ -18,7 +22,8 @@ spec:
   volumes:
     - name: config
       containerPath: /config
-      sourcePath: ${var.config-path}/prowlarr/config
+      hostPath: ${var.config-path}/prowlarr/config
+      readOnly: false
   resources:
     limits:
       cpu: 2000m
@@ -29,12 +34,23 @@ spec:
     - path: /
       port: http
       hostname: prowlarr.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /api/v1/system/status
+    - path: /
       port: http
-      httpHeaders:
-        - name: Authorization
-          value: Bearer ${var.PROWLARR_API_KEY}
+      hostname: prowlarr.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.prowlarr.rule: Host(`prowlarr.${var.domain}`) || Host(`prowlarr.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.prowlarr.loadbalancer.server.port: 9696
+    kuma.prowlarr.http.name: prowlarr.${var.ts-hostname}.${var.domain}
+    kuma.prowlarr.http.url: https://prowlarr.${var.domain}/api/v1/system/status
+    kuma.prowlarr.http.interval: 60
+  healthCheck:
+    exec:
+      command: [sh, -c, "curl -fs -H \"Authorization: Bearer $${PROWLARR_API_KEY:?}\" http://127.0.0.1:9696/api/v1/system/status || exit 1"]
+    initialDelaySeconds: 0
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+    startPeriodSeconds: 120
   restartPolicy: always
 
