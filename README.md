@@ -2,28 +2,29 @@
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [The Core Idea](#the-core-idea)
-- [Components at a glance](#components)
-- [Request Flow](#what-happens-when-someone-visits-bolabadenorg)
-- [Multi-Node Layout](#1-multi-node-layout)
-- [DNS and Failover](#2-dns-and-failover)
-- [Service Discovery](#3-service-discovery)
-- [Internal Failover & Routing](#4-internal-failover--routing)
-- [Configuration Management](#how-config-actually-becomes-live-behavior)
-- [Observability](#observability)
-- [Maintenance & Disk Management](#maintenance--disk-management) 🆕
-- [Hosting bolabaden.org](#hosting-bolabadenorg-specifically)
-- [Problems I expect, and how I'm handling them](#problems-i-expect-and-how-im-handling-them)
-- [Failure Scenarios](#failure-stories-on-purpose)
-- [Trade-offs](#where-im-okay-with-tradeoffs)
-- [Implementation Details](#what-still-needs-real-values-placeholders-to-fill)
-- [Testing Checklist](#sanity-checklist-before-i-call-it-done-enough)
-- [Complete Flow](#5-the-complete-flow-for-bolabadenorg)
-- [Remaining Considerations](#6-remaining-considerations)
-- [Summary](#-summary)
+* [Overview](#overview)
+* [The Core Idea](#the-core-idea)
+* [Components at a glance](#components)
+* [Request Flow](#what-happens-when-someone-visits-bolabadenorg)
+* [Multi-Node Layout](#1-multi-node-layout)
+* [DNS and Failover](#2-dns-and-failover)
+* [Service Discovery](#3-service-discovery)
+* [Internal Failover & Routing](#4-internal-failover--routing)
+* [Configuration Management](#how-config-actually-becomes-live-behavior)
+* [Observability](#observability)
+* [Knowledgebase](#knowledgebase)
+* [Maintenance & Disk Management](#maintenance--disk-management) 🆕
+* [Hosting bolabaden.org](#hosting-bolabadenorg-specifically)
+* [Problems I expect, and how I'm handling them](#problems-i-expect-and-how-im-handling-them)
+* [Failure Scenarios](#failure-stories-on-purpose)
+* [Trade-offs](#where-im-okay-with-tradeoffs)
+* [Implementation Details](#what-still-needs-real-values-placeholders-to-fill)
+* [Testing Checklist](#sanity-checklist-before-i-call-it-done-enough)
+* [Complete Flow](#5-the-complete-flow-for-bolabadenorg)
+* [Remaining Considerations](#6-remaining-considerations)
+* [Summary](#-summary)
 
----
+***
 
 ## Overview {#overview}
 
@@ -47,7 +48,7 @@ Every node runs the same “edge” stack:
 
 No schedulers. No leaders. No replicas knob. Just: *if you ask this node for `X` and `X` isn’t here, we’ll forward you to a node that has `X`.*
 
----
+***
 
 ## What happens when someone visits bolabaden.org {#what-happens-when-someone-visits-bolabadenorg}
 
@@ -73,7 +74,7 @@ Client -> DNS -> node1
 
 If the request lands on the “wrong” node, it still succeeds. That’s the entire trick.
 
----
+***
 
 ## The only hard part: service discovery (but small) {#the-only-hard-part-service-discovery-but-small}
 
@@ -137,9 +138,7 @@ tcp:
 * This file describes *where services live*, not where they *should* live. I place services manually by starting containers on the nodes I choose.
 * Health checks + weights live in the proxy layer; the registry stays simple.
 
----
-
- 
+***
 
 ## 2. DNS and failover {#2-dns-and-failover}
 
@@ -161,7 +160,7 @@ TTL: [your TTL]
 
 This gives me **multi-node failover at the network level**, without relying on a central orchestrator. Application-layer failover is handled by Traefik at the service level (primary + fallback).
 
----
+***
 
 ## 3. Service discovery {#3-service-discovery}
 
@@ -201,7 +200,7 @@ logs:
     - /var/log/haproxy.log
 ```
 
----
+***
 
 ## Maintenance & Disk Management {#maintenance--disk-management}
 
@@ -210,12 +209,13 @@ logs:
 ### The Problem
 
 Common disk space killers:
-- **Docker overlay2:** 97GB from a single stopped container's `/tmp` directory
-- **Container logs:** Grow unbounded without rotation
-- **Prometheus WAL:** Accumulates write-ahead logs
-- **Stremio cache:** Can grow to 10GB+
-- **VictoriaMetrics data:** Long retention periods
-- **System logs:** `/var/log` accumulation
+
+* **Docker overlay2:** 97GB from a single stopped container's `/tmp` directory
+* **Container logs:** Grow unbounded without rotation
+* **Prometheus WAL:** Accumulates write-ahead logs
+* **Stremio cache:** Can grow to 10GB+
+* **VictoriaMetrics data:** Long retention periods
+* **System logs:** `/var/log` accumulation
 
 ### The Solution
 
@@ -229,31 +229,33 @@ cd /home/ubuntu/my-media-stack
 ```
 
 This installs:
-- ✅ Docker daemon log rotation (10MB × 3 files, compressed)
-- ✅ Weekly full cleanup (Sundays at 2 AM)
-- ✅ Daily light cleanup (Every day at 3 AM)
-- ✅ Daily disk monitoring (Every day at 4 AM)
-- ✅ Logrotate for maintenance logs
-- ✅ Emergency cleanup script
+
+* ✅ Docker daemon log rotation (10MB × 3 files, compressed)
+* ✅ Weekly full cleanup (Sundays at 2 AM)
+* ✅ Daily light cleanup (Every day at 3 AM)
+* ✅ Daily disk monitoring (Every day at 4 AM)
+* ✅ Logrotate for maintenance logs
+* ✅ Emergency cleanup script
 
 #### 📖 Full Documentation
 
 See **[docs/MAINTENANCE.md](docs/MAINTENANCE.md)** for complete details on:
-- What gets cleaned and when
-- How to customize retention periods
-- Monitoring and troubleshooting
-- Emergency procedures
-- Cloud-init bootstrap
+
+* What gets cleaned and when
+* How to customize retention periods
+* Monitoring and troubleshooting
+* Emergency procedures
+* Cloud-init bootstrap
 
 #### 🚀 Key Features
 
 1. **Docker Log Rotation:** Configured in `/etc/docker/daemon.json`
 2. **Automated Cleanup:** `scripts/docker-maintenance.sh` removes:
-   - Stopped containers (>7 days)
-   - Unused images (>30 days)
-   - Unused volumes, networks, build cache
-   - Application caches (Prometheus, Stremio, Open-WebUI)
-   - System logs (keep 30 days)
+   * Stopped containers (>7 days)
+   * Unused images (>30 days)
+   * Unused volumes, networks, build cache
+   * Application caches (Prometheus, Stremio, Open-WebUI)
+   * System logs (keep 30 days)
 3. **Resource Limits:** `compose/docker-compose.maintenance.yml` adds memory limits and logging to all services
 4. **Environment Tuning:** `.env.maintenance` contains recommended retention settings
 
@@ -300,13 +302,14 @@ sudo bash scripts/cloud-init-maintenance.sh
 ```
 
 Or in cloud-init user-data:
+
 ```yaml
 #cloud-config
 runcmd:
   - curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/my-media-stack/main/scripts/cloud-init-maintenance.sh | bash
 ```
 
----
+***
 
 ## Hosting bolabaden.org specifically {#hosting-bolabadenorg-specifically}
 
@@ -336,7 +339,7 @@ http:
         port: 8080
 ```
 
----
+***
 
 ## How config actually becomes live behavior {#how-config-actually-becomes-live-behavior}
 
@@ -368,7 +371,7 @@ health_checks:
 
 I can test changes locally (dry-run render), then ship the registry file to all nodes. If something goes sideways, the last-known-good config stays in place.
 
----
+***
 
 ## Observability (so I’m not guessing) {#observability}
 
@@ -396,7 +399,71 @@ logs:
     - /var/log/haproxy.log
 ```
 
----
+***
+
+## Knowledgebase {#knowledgebase}
+
+This repository includes a built-in MkDocs Material knowledgebase for operational docs and runbooks.
+
+The active model uses a child docs boundary:
+
+* `mkdocs.yml` sets `docs_dir: knowledgebase`
+* `knowledgebase/` is the rendered docs boundary and contains curated links to selected repo docs
+* Internal planning and review artifacts are intentionally excluded from publishing
+
+Key files:
+
+* `mkdocs.yml`
+* `knowledgebase/index.md`
+* `knowledgebase/README.md`
+* `compose/docker-compose.docs.yml`
+
+Start it with the main stack:
+
+```bash
+docker compose up -d mkdocs
+```
+
+Validate compose configuration:
+
+```bash
+docker compose config --quiet
+```
+
+Validate docs build in strict mode:
+
+```bash
+docker run --rm -v "$PWD:/docs" -w /docs squidfunk/mkdocs-material:latest build -f mkdocs.yml --strict
+```
+
+Note: the Material image currently prints an upstream framework warning banner during build; this does not indicate a local configuration failure when strict validation still finishes with `Documentation built`.
+
+Optional noise check (expect no matches):
+
+```bash
+docker run --rm -v "$PWD:/docs" -w /docs squidfunk/mkdocs-material:latest build -f mkdocs.yml --strict 2>&1 | grep -Ei "not included in nav|excluded from the built site"
+```
+
+Access endpoints:
+
+* Routed host: `https://docs.$DOMAIN`
+* Local host port: `http://localhost:8001`
+
+Endpoint behavior note: the docs service is bound to loopback on the host, and external access should occur through Traefik routing on `docs.$DOMAIN`.
+
+Quick checks:
+
+```bash
+docker ps --filter "name=mkdocs" --format "table {{.Names}}\t{{.Status}}"
+docker logs --tail=100 mkdocs
+```
+
+### Known Follow-Ups
+
+* Loopback-binding workflow confirmation is tracked in issue #32: https://github.com/bolabaden/bolabaden-infra/issues/32
+* Kuma interpolation label fix is tracked in issue #33: https://github.com/bolabaden/bolabaden-infra/issues/33
+
+***
 
 ## Problems I expect, and how I’m handling them {#problems-i-expect-and-how-im-handling-them}
 
@@ -412,7 +479,7 @@ Each edge does active health checks. If the registry says “node3 has `dozzle`�
 
 Terminating TLS at the edge node that receives traffic is easiest. For cross-node proxying I keep TLS to the backend (or use trusted internal certs) so I avoid mixed-content headaches and keep things private over the inter-node network.
 
----
+***
 
 ## Failure stories (on purpose) {#failure-stories-on-purpose}
 
@@ -422,7 +489,7 @@ Terminating TLS at the edge node that receives traffic is easiest. For cross-nod
 
 * **Registry stops syncing:** Nothing blows up. Proxies keep the last config. Health checks keep things safe.
 
----
+***
 
 ## Where I’m okay with tradeoffs {#where-im-okay-with-tradeoffs}
 
@@ -430,7 +497,7 @@ Terminating TLS at the edge node that receives traffic is easiest. For cross-nod
 * **Yes, a request might hop nodes,** but TLS stays intact and the hop is (relatively) fast, especially when used on LAN.
 * **Yes, Redis isn’t magically multi-primary,** but I prefer explicit primary/standby to mystery replication.
 
----
+***
 
 ## What still needs real values (placeholders to fill) {#what-still-needs-real-values-placeholders-to-fill}
 
@@ -457,17 +524,16 @@ repo: git@github.com:me/bolabaden-infra.git
 branch: main
 ```
 
----
+***
 
 ## Sanity checklist before I call it “done enough” {#sanity-checklist-before-i-call-it-done-enough}
 
-* [ ] `curl -H "Host: bolabaden.org" http://<each node>` returns the site.
-* [ ] `curl -H "Host: dozzle.bolabaden.org" http://<each node>` returns Dozzle from whichever node actually runs it.
-* [ ] Kill a backend container → edge removes it after N failures → traffic shifts.
-* [ ] Stop the registry sync → no traffic outage.
-* [ ] TLS renews via DNS-01 with no downtime.
-* [ ] Redis primary restart → either sentinel/manual failover works and L4 proxy follows.
-
+* \[ ] `curl -H "Host: bolabaden.org" http://<each node>` returns the site.
+* \[ ] `curl -H "Host: dozzle.bolabaden.org" http://<each node>` returns Dozzle from whichever node actually runs it.
+* \[ ] Kill a backend container → edge removes it after N failures → traffic shifts.
+* \[ ] Stop the registry sync → no traffic outage.
+* \[ ] TLS renews via DNS-01 with no downtime.
+* \[ ] Redis primary restart → either sentinel/manual failover works and L4 proxy follows.
 
 **Flow example:**
 
@@ -480,7 +546,7 @@ User → node1 (HTTP request for dozzle.bolabaden.org)
 
 This ensures **unified service discovery** without a “master node” that could fail.
 
----
+***
 
 ## 4. Internal failover & routing {#4-internal-failover--routing}
 
@@ -496,7 +562,7 @@ This **eliminates single points of failure**:
 * No single service node.
 * DNS + proxies + registry together handle failover.
 
----
+***
 
 ## 5. The complete flow for bolabaden.org {#5-the-complete-flow-for-bolabadenorg}
 
@@ -516,7 +582,7 @@ At every layer, there’s **redundancy**:
 * L4/L7 forwarding ensures cross-node routing.
 * Registry ensures dynamic awareness of services.
 
----
+***
 
 ## 6. Remaining considerations {#6-remaining-considerations}
 
@@ -594,7 +660,7 @@ backend redis_back
     server redis_node3 node3_ip:6379 check
 ```
 
----
+***
 
 ### ✅ Summary {#-summary}
 
@@ -607,5 +673,3 @@ I plan to build a **multi-node, fully unified hosting environment** with:
 * No single points of failure for access, service routing, or DNS
 
 The next step will be **finalizing registry automation and proxy configs**, so that bolabaden.org can become truly unified and resilient.
-
-

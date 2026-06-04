@@ -60,3 +60,6 @@
 [submodule "projects/orchestration/hashi-homelab"]
 	path = projects/orchestration/hashi-homelab
 	url = https://github.com/evandcoleman/ansible-hashicorp-homelab
+[submodule "projects/cloudflare-ddns"]
+	path = projects/cloudflare-ddns
+	url = https://github.com/th3w1zard1/cloudflare-ddns.git

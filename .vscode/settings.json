@@ -53,7 +53,7 @@
     "editor.tabSize": 2
   },
   "[markdown]": {
-    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+    "editor.defaultFormatter": "unifiedjs.vscode-remark"
   },
   "[shellscript]": {
     "editor.defaultFormatter": "mads-hartmann.bash-ide-vscode"
@@ -229,5 +229,6 @@
       "textLink.foreground": "#80CBC4",
       "toolbar.activeBackground": "#80CBC426"
     }
-  }
+  },
+  "markdown.validate.enabled": true
 }
