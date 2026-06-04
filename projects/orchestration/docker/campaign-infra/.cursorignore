@@ -1,0 +1,4 @@
+*.history
+*docker_volume_data
+configs/code-server/campaign/config
+start.sh
