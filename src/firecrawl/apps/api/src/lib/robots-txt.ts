@@ -1,7 +1,6 @@
 import robotsParser, { Robot } from "robots-parser";
 import axios from "axios";
 import { axiosTimeout } from "./timeout";
-import https from "https";
 import { Logger } from "winston";
 
 function isIPv4Address(hostname: string): boolean {
@@ -77,17 +76,9 @@ export async function fetchRobotsTxt(
   }
   const robotsTxtUrl = `${urlObj.protocol}//${urlObj.host}/robots.txt`;
 
-  let extraArgs: any = {};
-  if (skipTlsVerification) {
-    extraArgs.httpsAgent = new https.Agent({
-      rejectUnauthorized: false,
-    });
-  }
-
   const response = await axios.get(robotsTxtUrl, {
     timeout: axiosTimeout,
     signal: abort,
-    ...extraArgs,
   });
 
   const contentType = (Object.entries(response.headers).find(
