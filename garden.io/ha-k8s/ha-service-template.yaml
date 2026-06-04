@@ -1,0 +1,80 @@
+# High Availability Service Template
+# All services should use this pattern for HA deployment
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${SERVICE_NAME}-ha
+  labels:
+    app: ${SERVICE_NAME}
+    ha: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app: ${SERVICE_NAME}
+  ports:
+    - port: ${SERVICE_PORT}
+      targetPort: ${SERVICE_PORT}
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${SERVICE_NAME}-ha
+  labels:
+    app: ${SERVICE_NAME}
+    ha: "true"
+spec:
+  replicas: 3  # Minimum 3 for HA
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # Zero downtime
+  selector:
+    matchLabels:
+      app: ${SERVICE_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${SERVICE_NAME}
+        ha: "true"
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - ${SERVICE_NAME}
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: ${SERVICE_NAME}
+          image: ${SERVICE_IMAGE}
+          ports:
+            - containerPort: ${SERVICE_PORT}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: ${SERVICE_PORT}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: ${SERVICE_PORT}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3

@@ -1,0 +1,24 @@
+# Custom Middlewares Configuration Example
+# This shows how to customize Traefik middleware names
+
+domain: example.com
+stack_name: my-stack
+
+traefik:
+  web_port: 80
+  websecure_port: 443
+  # Custom middleware names
+  error_pages_middleware: "my-custom-error-pages@file"
+  crowdsec_middleware: "my-custom-crowdsec@file"
+  strip_www_middleware: "my-custom-strip-www@file"
+  cert_resolver: "letsencrypt"
+  http_provider_port: 8081
+
+# Middleware configuration
+middlewares:
+  error_pages_enabled: true
+  error_pages_name: "my-custom-error-pages"
+  crowdsec_enabled: true
+  crowdsec_name: "my-custom-crowdsec"
+  strip_www_enabled: true
+  strip_www_name: "my-custom-strip-www"

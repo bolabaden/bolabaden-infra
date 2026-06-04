@@ -1,0 +1,57 @@
+# Garden.io High Availability Configuration
+# Zero SPOF Service Deployment
+
+apiVersion: garden.io/v0
+kind: Project
+name: my-media-stack-ha
+
+environments:
+  - name: ha-k8s
+    variables:
+      # HA Configuration
+      replicas:
+        controlPlane: 3
+        etcd: 3
+        coreDNS: 3
+        ingressController: 3
+        defaultService: 3
+        
+      # Node Configuration
+      nodes:
+        controlPlane:
+          - micklethefickle.bolabaden.org
+          - cloudserver1.bolabaden.org
+          - cloudserver2.bolabaden.org
+        workers:
+          - cloudserver3.bolabaden.org
+          - blackboar.bolabaden.org
+          
+      # Storage HA
+      storage:
+        type: longhorn
+        replicationFactor: 3
+        enableBackup: true
+        
+      # Networking HA
+      networking:
+        cni: calico
+        podCIDR: "10.244.0.0/16"
+        serviceCIDR: "10.96.0.0/12"
+        
+      # Anti-Affinity
+      antiAffinity:
+        enabled: true
+        preferredDuringSchedulingIgnoredDuringExecution: true
+        
+      # Pod Disruption Budgets
+      podDisruptionBudgets:
+        enabled: true
+        minAvailable: 1
+
+providers:
+  - name: ha-kubernetes
+    environments: [ha-k8s]
+    config:
+      context: ha-cluster
+      namespace: my-media-stack-ha
+      defaultHostname: ${var.base-hostname}

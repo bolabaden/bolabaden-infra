@@ -1,0 +1,14 @@
+kind: Run
+apiVersion: garden.io/v0
+name: init-prometheus
+description: Prometheus storage initialization
+type: container
+
+spec:
+  image: docker.io/prom/prometheus
+  command: ["/bin/sh", "-c", "chown -R 65534:65534 /prometheus"]
+  volumes:
+    - name: data
+      containerPath: /prometheus
+      hostPath: ${var.config-path}/prometheus/data
+  user: root

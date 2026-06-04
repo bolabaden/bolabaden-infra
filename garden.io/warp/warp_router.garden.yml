@@ -1,0 +1,72 @@
+kind: Build
+apiVersion: garden.io/v0
+name: warp-router
+description: WARP router for NAT routing setup
+type: container
+
+spec:
+  replicas: 3
+  dockerfile: |
+    FROM alpine
+    RUN apk update && apk add \
+        bash bc curl docker-cli ipcalc iproute2 iptables jq util-linux && \
+        rm -rf /var/cache/apk/*
+
+---
+kind: Deploy
+apiVersion: garden.io/v0
+name: warp-router
+description: WARP router container for NAT setup
+type: container
+dependencies:
+  - build.warp-router
+  - deploy.warp-nat-gateway
+
+spec:
+  replicas: 3
+  image: ${actions.build.warp-router.outputs.deploymentImageId}
+  privileged: true
+  networkMode: host
+  env:
+    DOCKER_NETWORK_NAME: ${var.DOCKER_NETWORK_NAME || "warp-nat-net"}
+    WARP_CONTAINER_NAME: ${var.WARP_CONTAINER_NAME || "warp-nat-gateway"}
+    HOST_VETH_IP: ${var.HOST_VETH_IP || "169.254.100.1"}
+    CONT_VETH_IP: ${var.CONT_VETH_IP || "169.254.100.2"}
+    ROUTING_TABLE: ${var.ROUTING_TABLE || "warp-nat-routing"}
+    VETH_HOST: ${var.VETH_HOST || "veth-warp"}
+    ROUTER_CONTAINER_NAME: ${var.ROUTER_CONTAINER_NAME || "warp-router"}
+    WARP_NAT_NET_SUBNET: ${var.WARP_NAT_NET_SUBNET || "10.0.2.0/24"}
+    WARP_NAT_NET_GATEWAY: ${var.WARP_NAT_NET_GATEWAY || "10.0.2.1"}
+    RETRY_SETUP_AFTER: ${var.RETRY_SETUP_AFTER || "12"}
+    SLEEP_INTERVAL: ${var.SLEEP_INTERVAL || "5"}
+  command:
+    - /bin/bash
+    - /usr/local/bin/warp-monitor.sh
+  volumes:
+    - name: docker-sock
+      containerPath: /var/run/docker.sock
+      hostPath: ${var.docker-socket}
+    - name: rt-tables
+      containerPath: /etc/iproute2/rt_tables
+      hostPath: /etc/iproute2/rt_tables
+    - name: proc
+      containerPath: /proc
+      hostPath: /proc
+    - name: warp-nat-setup
+      containerPath: /usr/local/bin/warp-nat-setup.sh
+      hostPath: ${var.config-path}/warp/scripts/warp-nat-setup.sh
+      readOnly: true
+    - name: warp-monitor
+      containerPath: /usr/local/bin/warp-monitor.sh
+      hostPath: ${var.config-path}/warp/scripts/warp-monitor.sh
+      readOnly: true
+  healthCheck:
+    exec:
+      command: [sh, -c, "docker run --rm --network ${var.DOCKER_NETWORK_NAME || \"warp-nat-net\"} --entrypoint sh curlimages/curl -c 'if curl -s --max-time 4 https://cloudflare.com/cdn-cgi/trace | grep -qE \"^warp=on|warp=plus$\"; then exit 0; else exit 1; fi'"]
+    initialDelaySeconds: 20
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+    startPeriodSeconds: 20
+  restartPolicy: always
+

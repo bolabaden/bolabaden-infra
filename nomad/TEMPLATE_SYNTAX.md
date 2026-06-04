@@ -34,7 +34,7 @@ env {
 # In variables.auto.tfvars.hcl:
 domain = "example.com"
 
-# In docker-compose.nomad.hcl:
+# In nomad.hcl:
 variable "domain" {
   type = string
 }
@@ -249,7 +249,7 @@ LOG_LEVEL=info
 {{ end }}
 ```
 
-## Real Example from docker-compose.nomad.hcl
+## Real Example from nomad.hcl
 
 ```hcl
 # Variable declaration (resolved at job submission)

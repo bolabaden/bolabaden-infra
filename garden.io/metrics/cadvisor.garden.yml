@@ -1,11 +1,13 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: cadvisor
 description: cAdvisor for container metrics
 type: container
 
 spec:
+  replicas: 3
   image: gcr.io/cadvisor/cadvisor
+  hostname: cadvisor
   privileged: true
   ports:
     - name: http
@@ -40,12 +42,36 @@ spec:
     - '--docker_only=${var.CADVISOR_DOCKER_ONLY || "true"}'
     - '--disable_metrics=${var.CADVISOR_DISABLE_METRICS || "cpu_topology,disk,memory_numa,tcp,udp,percpu,sched,process,hugetlb,referenced_memory,resctrl,cpuset,advtcp"}'
     - '--store_container_labels=${var.CADVISOR_STORE_CONTAINER_LABELS || "false"}'
-  labels:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "8080"
-    prometheus.io/path: "metrics"
   ingresses:
     - path: /
       port: http
       hostname: cadvisor.${var.domain}
+    - path: /
+      port: http
+      hostname: cadvisor.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.cadvisor.middlewares: nginx-auth@file
+    traefik.http.routers.cadvisor.rule: Host(`cadvisor.${var.domain}`) || Host(`cadvisor.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.cadvisor.loadbalancer.server.port: "8080"
+    homepage.group: Monitoring
+    homepage.name: cAdvisor
+    homepage.icon: https://raw.githubusercontent.com/google/cadvisor/master/logo.png
+    homepage.href: https://cadvisor.${var.domain}/
+    homepage.description: Container resource usage and performance characteristics
+    kuma.cadvisor.http.name: cadvisor.${var.ts-hostname}.${var.domain}
+    kuma.cadvisor.http.url: https://cadvisor.${var.domain}
+    kuma.cadvisor.http.interval: "60"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: metrics
+    deunhealth.restart.on.unhealthy: "true"
+  healthCheck:
+    exec:
+      command: [sh, -c, "command -v wget >/dev/null || (apt-get update >/dev/null 2>&1 && apt-get install -y wget >/dev/null 2>&1); wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/metrics || exit 1"]
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+    startPeriodSeconds: 30
   restartPolicy: always
