@@ -21,7 +21,7 @@
 17. [Roadmap & Milestones](#17-roadmap--milestones)
 18. [Appendices](#18-appendices)
 
----
+***
 
 ## 1. Executive Summary
 
@@ -40,7 +40,7 @@ Bolabaden is a multi-node Docker infrastructure that runs the same `docker-compo
 | **Inline Configs** | Docker Compose configs are inline YAML, not external files. |
 | **Template-Ready** | Anyone can fork, set their domain/secrets, and deploy their own cloud. |
 
----
+***
 
 ## 2. Current State Analysis
 
@@ -72,7 +72,7 @@ Bolabaden is a multi-node Docker infrastructure that runs the same `docker-compo
 3. **Traefik catchall router** intercepts frontend POST requests that should stay client-side (affects ai-researchwizard static frontend)
 4. **Cloudflare DDNS** overwrites existing A/AAAA records instead of appending (breaks multi-VPS DNS)
 
----
+***
 
 ## 3. Architecture Overview
 
@@ -125,7 +125,7 @@ grafana.athena.myscale.bolabaden.org        → Resolved by CoreDNS on each node
 grafana.myscale.bolabaden.org               → Any node running grafana
 ```
 
----
+***
 
 ## 4. Module 1: Secret & Env Sync Across VPS Nodes
 
@@ -135,10 +135,10 @@ Changing `OPENAI_API_KEY` or any secret requires manually updating every VPS's `
 
 ### Current Implementation
 
-- Secrets stored as individual files in `${SECRETS_PATH}/` (e.g., `secrets/cf-api-token.txt`)
-- Environment variables in `.env` file at stack root
-- Bootstrap merges `.secrets` into `.env` during deploy
-- `generate-secrets.sh` creates placeholder secret files
+* Secrets stored as individual files in `${SECRETS_PATH}/` (e.g., `secrets/cf-api-token.txt`)
+* Environment variables in `.env` file at stack root
+* Bootstrap merges `.secrets` into `.env` during deploy
+* `generate-secrets.sh` creates placeholder secret files
 
 ### Design
 
@@ -187,21 +187,21 @@ bolabaden-sync-agent:
 
 **Option A: Git-based (recommended for simplicity)**
 
-- Secrets are **encrypted** with `age`/`sops` and committed to a private branch or separate repo
-- Each node's sync-agent decrypts using a node-specific key stored in Tailscale's secret store
-- Changes detected via `git diff` on pull
+* Secrets are **encrypted** with `age`/`sops` and committed to a private branch or separate repo
+* Each node's sync-agent decrypts using a node-specific key stored in Tailscale's secret store
+* Changes detected via `git diff` on pull
 
 **Option B: Headscale Peer Broadcast**
 
-- Leader node pushes secrets over Tailscale WireGuard tunnel via simple HTTP API
-- Each node runs a lightweight receiver that writes to `${SECRETS_PATH}/`
-- Authenticated via Tailscale identity (no extra auth needed)
+* Leader node pushes secrets over Tailscale WireGuard tunnel via simple HTTP API
+* Each node runs a lightweight receiver that writes to `${SECRETS_PATH}/`
+* Authenticated via Tailscale identity (no extra auth needed)
 
 **Option C: Consul KV (if Consul is enabled)**
 
-- Secrets stored in Consul KV with ACLs
-- `consul-template` or sync-agent watches for changes
-- Already partially supported since bootstrap installs Consul
+* Secrets stored in Consul KV with ACLs
+* `consul-template` or sync-agent watches for changes
+* Already partially supported since bootstrap installs Consul
 
 #### Configuration Matrix
 
@@ -225,7 +225,7 @@ bolabaden-sync-agent:
 7. Add Headscale peer discovery for push mode
 8. Package as Docker image `ghcr.io/bolabaden/sync-agent`
 
----
+***
 
 ## 5. Module 2: Docker Compose File Sync
 
@@ -235,9 +235,9 @@ Changing `docker-compose.yml` or any `compose/*.yml` file requires manually pull
 
 ### Current Implementation
 
-- Bootstrap does `git pull --ff-only` on the infra repo
-- No automatic detection of compose file changes
-- No automatic `docker compose up` after changes
+* Bootstrap does `git pull --ff-only` on the infra repo
+* No automatic detection of compose file changes
+* No automatic `docker compose up` after changes
 
 ### Design
 
@@ -290,12 +290,12 @@ def detect_compose_changes(old_config, new_config):
 
 #### Safety Mechanisms
 
-- **Pre-validation**: Always run `docker compose config` before applying
-- **Canary deploy**: On multi-node, update one node first, health-check, then propagate
-- **Auto-rollback**: If service fails health check within 2 minutes of update, revert
-- **Excluded services**: Honor `STACK_EXCLUDE_SERVICES` env var from bootstrap
+* **Pre-validation**: Always run `docker compose config` before applying
+* **Canary deploy**: On multi-node, update one node first, health-check, then propagate
+* **Auto-rollback**: If service fails health check within 2 minutes of update, revert
+* **Excluded services**: Honor `STACK_EXCLUDE_SERVICES` env var from bootstrap
 
----
+***
 
 ## 6. Module 3: Headscale HA (Leader Election)
 
@@ -305,9 +305,9 @@ Headscale is a singleton service — if the node running it goes down, the entir
 
 ### Current Implementation
 
-- Single `headscale-server` container defined in `compose/docker-compose.headscale.yml`
-- SQLite database at `/var/lib/headscale/db.sqlite`
-- No replication or failover
+* Single `headscale-server` container defined in `compose/docker-compose.headscale.yml`
+* SQLite database at `/var/lib/headscale/db.sqlite`
+* No replication or failover
 
 ### Design: Leader Election via Lightweight Distributed Lock
 
@@ -385,7 +385,7 @@ headscale-litestream:
 | Headscale container crashes | 10s (health check) | 5s (restart) | ~15s |
 | DB corruption | Immediate (Litestream) | 30s (restore from replica) | ~30s |
 
----
+***
 
 ## 7. Module 4: Service Failover & Auto-Redeploy
 
@@ -529,7 +529,7 @@ Container fails on Node A:
          └── Traffic gradually returns to Node A
 ```
 
----
+***
 
 ## 8. Module 5: Cloudflare DDNS Multi-Record Load Balancing
 
@@ -648,7 +648,7 @@ hera.bolabaden.org    A  192.0.2.3     proxied  comment: bolabaden-ddns:hera
 *.bolabaden.org   A  192.0.2.3    proxied  comment: bolabaden-ddns:hera
 ```
 
----
+***
 
 ## 9. Module 6: DNS Routing Pattern & ACL
 
@@ -731,7 +731,7 @@ location @authentik_fallback {
 }
 ```
 
----
+***
 
 ## 10. Module 7: Traefik Catchall Router Fix
 
@@ -843,7 +843,7 @@ api-passthrough:
 3. Browser navigation still gets styled error pages
 4. No per-service configuration needed
 
----
+***
 
 ## 11. Module 8: Internal Tailscale DNS
 
@@ -942,7 +942,7 @@ redis             IN  CNAME  athena.myscale.bolabaden.org.
 | `grafana.athena.myscale.bolabaden.org` | CoreDNS → Docker container IP |
 | `grafana.myscale.bolabaden.org` | CoreDNS → CNAME to nearest available node |
 
----
+***
 
 ## 12. Module 9: Watchtower Fix
 
@@ -971,16 +971,16 @@ watchtower:
 
 ### Root Cause Diagnosis
 
-**Issue 1: `REPO_PASS` is set to `SUDO_PASSWORD`**  
+**Issue 1: `REPO_PASS` is set to `SUDO_PASSWORD`**\
 This is likely the system password, not the Docker Hub/GHCR password. Watchtower auth fails silently.
 
-**Issue 2: `WATCHTOWER_POLL_INTERVAL` conflicts with `WATCHTOWER_SCHEDULE`**  
+**Issue 2: `WATCHTOWER_POLL_INTERVAL` conflicts with `WATCHTOWER_SCHEDULE`**\
 When both are set, behavior is undefined. Watchtower docs say SCHEDULE takes precedence, but the poll interval still runs.
 
-**Issue 3: No HTTP API for triggering updates**  
+**Issue 3: No HTTP API for triggering updates**\
 `WATCHTOWER_HTTP_API_UPDATE` is false and no token is set.
 
-**Issue 4: `watchtower-config.json` mapped from `~/.docker/config.json`**  
+**Issue 4: `watchtower-config.json` mapped from `~/.docker/config.json`**\
 This may not contain the correct auth for private registries.
 
 ### Fix
@@ -1077,7 +1077,7 @@ for container in $(docker ps --format '{{.Names}}'); do
 done
 ```
 
----
+***
 
 ## 13. Module 10: Rate Limiting, Auth & Paid Tiers
 
@@ -1182,7 +1182,7 @@ middlewares:
       query: /wait?reason=rate_limit&tier={tier}
 ```
 
----
+***
 
 ## 14. Module 11: Meditation Wizard Lobby
 
@@ -1250,11 +1250,11 @@ meditation-lobby:
 
 #### Tech Stack
 
-- **Frontend**: Vanilla HTML/CSS/JS + Canvas API or Three.js for 3D wizard
-- **Animation**: CSS keyframes for meditation breathing + JS for particle system
-- **Packet Feed**: WebSocket to backend that tails CrowdSec decision stream + iptables counters
-- **Smile Mechanic**: More allowed packets → wider smile (CSS `transform: scaleX()` on mouth element)
-- **Forcefield**: SVG circle with `opacity` animated by blocked packet rate
+* **Frontend**: Vanilla HTML/CSS/JS + Canvas API or Three.js for 3D wizard
+* **Animation**: CSS keyframes for meditation breathing + JS for particle system
+* **Packet Feed**: WebSocket to backend that tails CrowdSec decision stream + iptables counters
+* **Smile Mechanic**: More allowed packets → wider smile (CSS `transform: scaleX()` on mouth element)
+* **Forcefield**: SVG circle with `opacity` animated by blocked packet rate
 
 #### Packet Feed Backend
 
@@ -1282,7 +1282,7 @@ async def packet_feed(websocket):
         await asyncio.sleep(0.5)  # 2 updates/sec
 ```
 
----
+***
 
 ## 15. Unified Bootstrap Flow
 
@@ -1321,7 +1321,7 @@ async def packet_feed(websocket):
     └── Report node status to peers
 ```
 
----
+***
 
 ## 16. Templating for Others
 
@@ -1359,18 +1359,18 @@ sudo BOOTSTRAP_CONFIG_FILE=./my-config.env ./cloud-init-bootstrap.sh $(hostname 
 
 #### What's Included Out of the Box
 
-- Traefik reverse proxy with automatic TLS
-- CrowdSec WAF + rate limiting
-- Cloudflare DDNS (single or multi-record)
-- Headscale/Tailscale mesh networking
-- OAuth login (Google/GitHub via TinyAuth)
-- Grafana + VictoriaMetrics monitoring
-- Service health checking + auto-restart
-- Watchtower auto-updates
-- Automated storage maintenance
-- Homepage dashboard
+* Traefik reverse proxy with automatic TLS
+* CrowdSec WAF + rate limiting
+* Cloudflare DDNS (single or multi-record)
+* Headscale/Tailscale mesh networking
+* OAuth login (Google/GitHub via TinyAuth)
+* Grafana + VictoriaMetrics monitoring
+* Service health checking + auto-restart
+* Watchtower auto-updates
+* Automated storage maintenance
+* Homepage dashboard
 
----
+***
 
 ## 17. Roadmap & Milestones
 
@@ -1418,7 +1418,7 @@ sudo BOOTSTRAP_CONFIG_FILE=./my-config.env ./cloud-init-bootstrap.sh $(hostname 
 | Disaster recovery runbook | 🟡 High | 2 days |
 | Ansible playbooks for non-Docker tasks | 🟢 Medium | 3 days |
 
----
+***
 
 ## 18. Appendices
 
@@ -1497,6 +1497,6 @@ include:
 | Auth session hijacking | Secure cookies, HTTPS only, short session TTL |
 | DNS poisoning | DNSSEC enabled, Cloudflare proxy hides origin IPs |
 
----
+***
 
 *This document is the single source of truth for the Bolabaden infrastructure roadmap. All implementation PRs should reference the relevant module number.*

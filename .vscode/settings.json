@@ -230,5 +230,13 @@
       "toolbar.activeBackground": "#80CBC426"
     }
   },
-  "markdown.validate.enabled": true
+  "markdown.validate.enabled": true,
+  "markdown.validate.ignoredLinks": [
+    "SECRETS_QUICK_START.txt",
+    "knowledgebase/infra/docs/ARCHITECTURE.md",
+    "cloud-init-bootstrap.sh",
+    "knowledgebase/infra/docs/CONFIGURATION.md",
+    "compose/docker-compose.l4-ingress.yml",
+    "docker-compose.yml"
+  ]
 }

@@ -1,7 +1,8 @@
----
+***
+
 name: bolabaden.org Infrastructure
-last_updated: 2026-06-04
----
+last\_updated: 2026-06-04
+-------------------------
 
 # bolabaden.org Infrastructure Strategy
 
@@ -19,11 +20,11 @@ We run a no-orchestrator, Git-centered architecture where each node shares the s
 
 ## Key metrics
 
-- **Automated recovery success rate** - Percent of service or node failures that are automatically detected and repaired without manual operator intervention; measured via health-check and auto-restart logs.
-- **Successful request continuity under node loss** - Percent of routed requests that still succeed during a simulated single-node failure; measured with synthetic checks and proxy logs.
-- **Service recovery time after failure** - Time from container/node failure detection to healthy traffic restoration for impacted services; measured from health-check and deployment logs.
-- **Configuration convergence time** - Time for service registry/config/secret updates to propagate and become active on all nodes; measured from git-sync and proxy reload timestamps.
-- **Template onboarding time** - Time for a new operator/node to reach a healthy baseline deployment using the unified bootstrap flow; measured during onboarding runs.
+* **Automated recovery success rate** - Percent of service or node failures that are automatically detected and repaired without manual operator intervention; measured via health-check and auto-restart logs.
+* **Successful request continuity under node loss** - Percent of routed requests that still succeed during a simulated single-node failure; measured with synthetic checks and proxy logs.
+* **Service recovery time after failure** - Time from container/node failure detection to healthy traffic restoration for impacted services; measured from health-check and deployment logs.
+* **Configuration convergence time** - Time for service registry/config/secret updates to propagate and become active on all nodes; measured from git-sync and proxy reload timestamps.
+* **Template onboarding time** - Time for a new operator/node to reach a healthy baseline deployment using the unified bootstrap flow; measured during onboarding runs.
 
 ## Tracks
 
@@ -31,39 +32,39 @@ We run a no-orchestrator, Git-centered architecture where each node shares the s
 
 Harden automated secret/env sync, service failover, and auto-redeploy capabilities (Modules 1, 2, 4, 9) to eliminate manual synchronization bottlenecks.
 
-_Why it serves the approach:_ Automation is the core mechanism that delivers high availability and self-healing without introducing a heavy orchestrator.
+*Why it serves the approach:* Automation is the core mechanism that delivers high availability and self-healing without introducing a heavy orchestrator.
 
 ### Scalable networking and HA service mesh
 
 Optimize Headscale HA leader election, Cloudflare DDNS load balancing, and internal Tailscale DNS (Modules 3, 5, 8) for horizontal scalability and persistent routing.
 
-_Why it serves the approach:_ A scalable network layer ensures nodes can independently resolve and proxy traffic to peers reliably.
+*Why it serves the approach:* A scalable network layer ensures nodes can independently resolve and proxy traffic to peers reliably.
 
 ### Routing, ACLs, and access control
 
 Refine DNS routing patterns, ACLs, Traefik catchall routers, and authenticated rate limiting (Modules 6, 7, 10) to secure the distributed ingress.
 
-_Why it serves the approach:_ Secure and deterministic routing is required for a predictable "any-node" ingress model.
+*Why it serves the approach:* Secure and deterministic routing is required for a predictable "any-node" ingress model.
 
 ### Operability and platform packaging
 
 Expand monitoring, unified bootstrap flows, and templating (Modules 11, 15, 16) so the platform is easy to reproduce and maintain.
 
-_Why it serves the approach:_ Idempotent operations depend on low-friction onboarding and a clear, observable operational state.
+*Why it serves the approach:* Idempotent operations depend on low-friction onboarding and a clear, observable operational state.
 
----
+***
 
 Detailed technical specs for all referenced modules (1-16) live in the [Infrastructure Master Plan](docs/INFRASTRUCTURE_MASTER_PLAN.md).
 
 ## Milestones
 
-- **2026-06-30** - Validate multi-node failover and sync workflows with repeatable test evidence across representative services.
-- **2026-09-30** - Publish a hardened template path that brings a fresh node/domain to healthy baseline with minimal manual intervention.
+* **2026-06-30** - Validate multi-node failover and sync workflows with repeatable test evidence across representative services.
+* **2026-09-30** - Publish a hardened template path that brings a fresh node/domain to healthy baseline with minimal manual intervention.
 
 ## Not working on
 
-- Migrating the platform to Kubernetes or Docker Swarm.
-- Building a heavyweight centralized control plane before lightweight sync/failover paths are fully mature.
+* Migrating the platform to Kubernetes or Docker Swarm.
+* Building a heavyweight centralized control plane before lightweight sync/failover paths are fully mature.
 
 ## Marketing
 

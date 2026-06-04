@@ -135,7 +135,7 @@ grafana.vractormania.myscale.bolabaden.org        → Resolved by CoreDNS on eac
 grafana.myscale.bolabaden.org               → Any node running grafana
 ```
 
-### 3.1 Knowledgebase Operations { #31-knowledgebase-operations }
+### 3.1 Knowledgebase Operations
 
 The infrastructure plan assumes the documentation surface remains continuously verifiable so operator runbooks stay trustworthy during rollout work.
 
@@ -171,7 +171,7 @@ Observability quick checks:
 
 ***
 
-## 4. Module 1: Secret & Env Sync Across VPS Nodes { #4-module-1-secret--env-sync-across-vps-nodes }
+## 4. Module 1: Secret & Env Sync Across VPS Nodes
 
 ### Problem
 
@@ -271,7 +271,7 @@ bolabaden-sync-agent:
 
 ***
 
-## 5. Module 2: Docker Compose File Sync { #5-module-2-docker-compose-file-sync }
+## 5. Module 2: Docker Compose File Sync
 
 ### Problem
 
@@ -341,7 +341,7 @@ def detect_compose_changes(old_config, new_config):
 
 ***
 
-## 6. Module 3: Headscale HA (Leader Election) { #6-module-3-headscale-ha-leader-election }
+## 6. Module 3: Headscale HA (Leader Election)
 
 ### Problem
 
@@ -440,7 +440,7 @@ headscale-litestream:
 
 ***
 
-## 7. Module 4: Service Failover & Auto-Redeploy { #7-module-4-service-failover--auto-redeploy }
+## 7. Module 4: Service Failover & Auto-Redeploy
 
 ### Problem
 
@@ -463,7 +463,7 @@ docker-gen-failover:
     -watch /templates/traefik-failover-dynamic.conf.tmpl /traefik/dynamic/failover-fallbacks.yaml
 ```
 
-  `dockerproxy-rw` denotes a Docker socket proxy service exposing a controlled TCP Docker API endpoint. If that proxy is not present on a node, use `unix:///var/run/docker.sock` with equivalent access controls.
+`dockerproxy-rw` denotes a Docker socket proxy service exposing a controlled TCP Docker API endpoint. If that proxy is not present on a node, use `unix:///var/run/docker.sock` with equivalent access controls.
 
 **Root Cause of Bug**: docker-gen re-runs the template on events. When a container stops, docker-gen regenerates the template **without** the stopped container's data (even with `-include-stopped`), effectively deleting its Traefik route. This is because the template iterates over containers and only generates routes for those with `traefik.enable=true` — stopped containers lose their labels from the docker-gen context.
 
@@ -592,7 +592,7 @@ Container fails on Node A:
 
 ***
 
-## 8. Module 5: Cloudflare DDNS Multi-Record Load Balancing { #8-module-5-cloudflare-ddns-multi-record-load-balancing }
+## 8. Module 5: Cloudflare DDNS Multi-Record Load Balancing
 
 ### Problem
 
@@ -726,7 +726,7 @@ hera.bolabaden.org    A  192.0.2.3     proxied  comment: bolabaden-ddns:hera
 
 ***
 
-## 9. Module 6: DNS Routing Pattern & ACL { #9-module-6-dns-routing-pattern--acl }
+## 9. Module 6: DNS Routing Pattern & ACL
 
 ### Problem
 
@@ -809,7 +809,7 @@ location @authentik_fallback {
 
 ***
 
-## 10. Module 7: Traefik Catchall Router Fix { #10-module-7-traefik-catchall-router-fix }
+## 10. Module 7: Traefik Catchall Router Fix
 
 ### Problem
 
@@ -921,7 +921,7 @@ api-passthrough:
 
 ***
 
-## 11. Module 8: Internal Tailscale DNS { #11-module-8-internal-tailscale-dns }
+## 11. Module 8: Internal Tailscale DNS
 
 ### Problem
 
@@ -1020,7 +1020,7 @@ redis             IN  CNAME  vractormania.myscale.bolabaden.org.
 
 ***
 
-## 12. Module 9: Watchtower Fix { #12-module-9-watchtower-fix }
+## 12. Module 9: Watchtower Fix
 
 ### Problem
 
@@ -1155,7 +1155,7 @@ done
 
 ***
 
-## 13. Module 10: Rate Limiting, Auth & Paid Tiers { #13-module-10-rate-limiting-auth--paid-tiers }
+## 13. Module 10: Rate Limiting, Auth & Paid Tiers
 
 ### Problem
 
@@ -1260,7 +1260,7 @@ middlewares:
 
 ***
 
-## 14. Module 11: Meditation Wizard Lobby { #14-module-11-meditation-wizard-lobby }
+## 14. Module 11: Meditation Wizard Lobby
 
 ### Problem
 
@@ -1360,7 +1360,7 @@ async def packet_feed(websocket):
 
 ***
 
-## 15. Unified Bootstrap Flow { #15-unified-bootstrap-flow }
+## 15. Unified Bootstrap Flow
 
 ### Updated `cloud-init-bootstrap.sh` Flow
 
@@ -1399,7 +1399,7 @@ async def packet_feed(websocket):
 
 ***
 
-## 16. Templating for Others { #16-templating-for-others }
+## 16. Templating for Others
 
 ### Goal: Anyone Can Fork and Deploy
 
@@ -1448,7 +1448,7 @@ sudo BOOTSTRAP_CONFIG_FILE=./my-config.env ./cloud-init-bootstrap.sh $(hostname 
 
 ***
 
-## 17. Roadmap & Milestones { #17-roadmap--milestones }
+## 17. Roadmap & Milestones
 
 ### Phase 1: Foundation (Weeks 1-2)
 
@@ -1496,7 +1496,7 @@ sudo BOOTSTRAP_CONFIG_FILE=./my-config.env ./cloud-init-bootstrap.sh $(hostname 
 
 ***
 
-## 18. Appendices { #18-appendices }
+## 18. Appendices
 
 ### Appendix A: New Docker Images to Build
 
