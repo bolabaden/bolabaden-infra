@@ -442,6 +442,8 @@ headscale-litestream:
 
 ## 7. Module 4: Service Failover & Auto-Redeploy
 
+See the [Failover Agent Brainstorm](brainstorms/20260604-failover-agent-exploration.md) for the latest implementation strategy using the Constellation Unified Engine (CUE).
+
 ### Problem
 
 When a service/container fails on one node, there's no automatic failover to another node. The `docker-gen-failover` approach has a critical bug: it deletes Traefik routes when containers stop.
