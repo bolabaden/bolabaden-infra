@@ -7,11 +7,11 @@ last_updated: 2026-06-04
 
 ## Target problem
 
-Self-hosting operators want multi-node reliability for web and media services without the operational cost of Kubernetes or Swarm. The hard part is keeping routing, service placement, secrets, and failover behavior consistent across nodes so any request can be served even when it lands on the "wrong" node or a node fails.
+Self-hosting operators want multi-node reliability and automated self-healing for web and media services without the complexity of Kubernetes or Swarm. The hard part is overcoming the "manual synchronization" bottleneck—keeping routing, service placement, secrets, and failover behavior consistent and automated across nodes so any node can independently resolve and serve requests.
 
 ## Our approach
 
-We run a no-orchestrator, Git-centered architecture where each node shares the same edge capabilities, uses lightweight service-discovery state, and forwards traffic to healthy peers when needed. We win by making operations idempotent, observable, and template-ready so reliability improves through simple, repeatable workflows instead of control-plane complexity.
+We run a no-orchestrator, Git-centered architecture where each node shares the same automated edge capabilities, uses lightweight service-discovery state, and supports automated failover and re-deployment. We win by making operations idempotent, self-healing, and horizontally scalable so reliability improves through simple, automated workflows rather than manual control-plane complexity.
 
 ## Who it's for
 
@@ -19,37 +19,41 @@ We run a no-orchestrator, Git-centered architecture where each node shares the s
 
 ## Key metrics
 
+- **Automated recovery success rate** - Percent of service or node failures that are automatically detected and repaired without manual operator intervention; measured via health-check and auto-restart logs.
 - **Successful request continuity under node loss** - Percent of routed requests that still succeed during a simulated single-node failure; measured with synthetic checks and proxy logs.
 - **Service recovery time after failure** - Time from container/node failure detection to healthy traffic restoration for impacted services; measured from health-check and deployment logs.
-- **Configuration convergence time** - Time for service registry/config updates to propagate and become active on all nodes; measured from sync events and proxy reload timestamps.
-- **Operator intervention rate** - Count of manual incident actions per week for routing, failover, and secret/config drift; measured in ops runbook/incident notes.
-- **Template onboarding time** - Time for a new operator/node to reach a healthy baseline deployment using repo bootstrap docs; measured during onboarding runs.
+- **Configuration convergence time** - Time for service registry/config/secret updates to propagate and become active on all nodes; measured from git-sync and proxy reload timestamps.
+- **Template onboarding time** - Time for a new operator/node to reach a healthy baseline deployment using the unified bootstrap flow; measured during onboarding runs.
 
 ## Tracks
 
-### Distributed routing and failover reliability
+### Automation and self-healing infrastructure
 
-Harden L7/L4 forwarding, health checks, and fallback behavior so requests succeed regardless of entry node.
+Harden automated secret/env sync, service failover, and auto-redeploy capabilities (Modules 1, 2, 4, 9) to eliminate manual synchronization bottlenecks.
 
-_Why it serves the approach:_ This is the core mechanism that delivers high availability without introducing an orchestrator.
+_Why it serves the approach:_ Automation is the core mechanism that delivers high availability and self-healing without introducing a heavy orchestrator.
 
-### Sync and state consistency
+### Scalable networking and HA service mesh
 
-Improve secret/env/config synchronization and service-discovery propagation so each node reflects current intended runtime state quickly and safely.
+Optimize Headscale HA leader election, Cloudflare DDNS load balancing, and internal Tailscale DNS (Modules 3, 5, 8) for horizontal scalability and persistent routing.
 
-_Why it serves the approach:_ A lightweight architecture only works when node state converges reliably after changes.
+_Why it serves the approach:_ A scalable network layer ensures nodes can independently resolve and proxy traffic to peers reliably.
 
-### Operability and observability
+### Routing, ACLs, and access control
 
-Expand monitoring, diagnostics, and maintenance automation so failures are visible early and recovery is repeatable.
+Refine DNS routing patterns, ACLs, Traefik catchall routers, and authenticated rate limiting (Modules 6, 7, 10) to secure the distributed ingress.
 
-_Why it serves the approach:_ Idempotent operations depend on fast detection, clear signals, and low-friction remediation.
+_Why it serves the approach:_ Secure and deterministic routing is required for a predictable "any-node" ingress model.
 
-### Reusable platform packaging
+### Operability and platform packaging
 
-Refine documentation, templates, and bootstrap workflows so the stack is easy to reproduce for new domains and teams.
+Expand monitoring, unified bootstrap flows, and templating (Modules 11, 15, 16) so the platform is easy to reproduce and maintain.
 
-_Why it serves the approach:_ Template readiness is how the same architecture scales beyond one bespoke deployment.
+_Why it serves the approach:_ Idempotent operations depend on low-friction onboarding and a clear, observable operational state.
+
+---
+
+Detailed technical specs for all referenced modules (1-16) live in the [Infrastructure Master Plan](docs/INFRASTRUCTURE_MASTER_PLAN.md).
 
 ## Milestones
 
