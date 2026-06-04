@@ -1205,7 +1205,7 @@ configs:
                   "signature": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..acmV1DfOh52nwT-O3myHNg.Vb_c3MkkeLV9Nb4mBvEmbYoRcKh9I1CIxmLAH0CJLQaXBeiKzfT_JjIOCKw53qkossEchr768t2n3sS290hwOHE3HA6rhRwWRkotlSJU9lcMzcbxCiWezF8qr9ZV6MzO.48H-f2Psh4FE0CWD3uVDUA"
                 }
               },
-              "transportUrl": "https://aiostreams.elfhosted.com/stremio/6de0ccf1-34f9-42ce-bc68-97ed959024d9/eyJpdiI6IktVdGhFUERRTVQ3Z2NaVTZ2dFZJMkE9PSIsImVuY3J5cHRlZCI6IkQ1cFppNkx0YWhrRC93YkNac2JQTmVlbDgwRG05OHQyTTQvV2ovN29JRXN0NzF2UWhNaCtaT09mTm9PTUhPQ3h6bjVwR3VrWlAzMlZrRm0xR2JBRUZ3PT0iLCJ0eXBlIjoiYWlvRW5jcnlwdCJ9/manifest.json",
+              "transportUrl": "https://aiostreams.bolabaden.org/stremio/f604daa3-45c7-4161-ab58-a79e3ad59e11/eyJpdiI6IlJDajJiV1BVaGhQb0dFaW5xNHpGd0E9PSIsImVuY3J5cHRlZCI6IkhCZlBud3FTMDZxOHcwYTR3bUhqU3UycXRXSUVmbzNnbFpzY3hjd3EvM2k1ZG5FbW1rOGpVckhQSFJXNU9nTGl5RjZrdEwxZHRNdWV5ZDRwTVJKanR3PT0iLCJ0eXBlIjoiYWlvRW5jcnlwdCJ9/manifest.json",
               "flags": {
                 "official": false,
                 "protected": false
@@ -1298,7 +1298,7 @@ configs:
               configurationRequired: false
             }
           },
-          transportUrl: 'https://aiostreams.elfhosted.com/stremio/6de0ccf1-34f9-42ce-bc68-97ed959024d9/eyJpdiI6IktVdGhFUERRTVQ3Z2NaVTZ2dFZJMkE9PSIsImVuY3J5cHRlZCI6IkQ1cFppNkx0YWhrRC93YkNac2JQTmVlbDgwRG05OHQyTTQvV2ovN29JRXN0NzF2UWhNaCtaT09mTm9PTUhPQ3h6bjVwR3VrWlAzMlZrRm0xR2JBRUZ3PT0iLCJ0eXBlIjoiYWlvRW5jcnlwdCJ9/manifest.json',
+          transportUrl: 'https://aiostreams.bolabaden.org/stremio/f604daa3-45c7-4161-ab58-a79e3ad59e11/eyJpdiI6IlJDajJiV1BVaGhQb0dFaW5xNHpGd0E9PSIsImVuY3J5cHRlZCI6IkhCZlBud3FTMDZxOHcwYTR3bUhqU3UycXRXSUVmbzNnbFpzY3hjd3EvM2k1ZG5FbW1rOGpVckhQSFJXNU9nTGl5RjZrdEwxZHRNdWV5ZDRwTVJKanR3PT0iLCJ0eXBlIjoiYWlvRW5jcnlwdCJ9/manifest.json',
           flags: { official: false, protected: false }
         }
       ];
