@@ -66,7 +66,7 @@ Rather than writing a cluster manager from scratch, CUE leverages a hybrid archi
 
 * **The Database Layer (Kine-Backended)**: CUE replaces heavy, distributed `etcd` arrays with Rancher's `kine`, translating the complete Kubernetes API state into a lightweight SQL transaction stream (stored natively in SQLite or a shared PostgreSQL database).
 * **The Execution Engine (`containerd` & `podman` Core)**: Rather than running containers via a bloated Docker daemon, CUE interacts directly with the standard `containerd` API via OCI containers, or mimics daemonless execution namespaces using `podman`. This ensures extremely low idle CPU and memory consumption.
-* **The State Synchronization Layer**: Utilizing our proven Go-based orchestration primitives from [knowledgebase/infra/docs/ARCHITECTURE.md](knowledgebase/infra/docs/ARCHITECTURE.md), CUE synchronizes service health and local node capabilities across the server cluster using Gossip protocols (HashiCorp Memberlist) and Raft consensus for atomic updates.
+* **The State Synchronization Layer**: Utilizing our proven Go-based orchestration primitives from [Constellation Agent Architecture](infra/docs/ARCHITECTURE.md), CUE synchronizes service health and local node capabilities across the server cluster using Gossip protocols (HashiCorp Memberlist) and Raft consensus for atomic updates.
 
 ***
 
@@ -107,14 +107,14 @@ To achieve our goal of being "more unified than Swarm or K3s," CUE implements a 
 
 ### 🚀 Strategic "Clean" Manifests (`x-cue`)
 
-As documented in [knowledgebase/CUE_SPEC_EXTENSIONS.md](knowledgebase/CUE_SPEC_EXTENSIONS.md), CUE's true power lies in its **Recursive Capability**. We prioritize the work in existing `compose/` files and `docker-compose.yml` by treating them as the **Primary Declarative Manifest**.
+As documented in [CUE Specification Extensions](CUE_SPEC_EXTENSIONS.md), CUE's true power lies in its **Recursive Capability**. We prioritize the work in existing `compose/` files and `docker-compose.yml` by treating them as the **Primary Declarative Manifest**.
 
 Instead of manual K8s YAML or HCL jobs, CUE reads standard Compose files and extracts "Kube-Level" requirements from the `x-cue` extension namespace. This approach bridges the gap that frustrated previous Nomad/K8s attempts:
 
 1.  **Definitions remain human-readable.**
 2.  **No manual K8s/Nomad boilerplate is required.**
 3.  **The system remains portable.** (Standard Docker just ignores the `x-cue` keys).
-4.  **Implicit Hardware Intelligence.** Porting the logic from [infra/services.go](infra/services.go), CUE automatically adds GPU passthrough and Transcoding optimizations based on service identity.
+4.  **Implicit Hardware Intelligence.** Porting the logic from `infra/services.go`, CUE automatically adds GPU passthrough and transcoding optimizations based on service identity.
 
 ***
 
@@ -199,7 +199,7 @@ CUE's controller detects these labels and **atomically generates** the K8s Servi
 
 ## ⚡ Zero-ENV Single-Command Boostrapper
 
-To eliminate configuration drift, human error, and manual steps (detailed in [SECRETS\_QUICK\_START.txt](SECRETS_QUICK_START.txt)), CUE introduces a fully integrated, zero-configuration bootstrap command.
+To eliminate configuration drift, human error, and manual steps (detailed in [Docker Secrets Setup](DOCKER_SECRETS_README.md)), CUE introduces a fully integrated, zero-configuration bootstrap command.
 
 ```bash
 # To bootstrap a brand-new multi-node cluster, run a single script:
@@ -250,7 +250,7 @@ When adding a secondary node to the cluster, the operator simply executes:
 curl -fsSL https://get.bolabaden.org | sh -s join --token <TOKEN_FROM_MASTER> --master-ip <MASTER_TAILSCALE_IP>
 ```
 
-Server B automatically installs CUE, connects to the existing Private VPN mesh over Tailscale, downloads system configuration secrets securely, and joins the cluster database. Within seconds, it begins running applications scheduled across the cluster, completely eliminating the manual VPS setups highlighted in [cloud-init-bootstrap.sh](cloud-init-bootstrap.sh).
+Server B automatically installs CUE, connects to the existing private VPN mesh over Tailscale, downloads system configuration secrets securely, and joins the cluster database. Within seconds, it begins running applications scheduled across the cluster, completely eliminating the manual VPS setups highlighted in `cloud-init-bootstrap.sh`.
 
 ***
 
@@ -262,8 +262,8 @@ Every nodes running CUE automatically launches our core "system-plane" services,
 
 * **Role**: Standard border router, L7 load balancer, and TLS termination manager.
 * **Embedded Config**: Configured out-of-the-box with a dynamic Let's Encrypt Acme client integrated with the cluster's Cloudflare verification layer.
-* **Automatic Wildcards**: Routes external queries for `*.bolabaden.org` to local container endpoints, querying the cluster's internal state directory dynamically (replaces static files via Traefik.go's implementation in [knowledgebase/infra/docs/CONFIGURATION.md](knowledgebase/infra/docs/CONFIGURATION.md)).
-* **L4 Routing**: Exposes dynamic HAProxy tunnels (modeled on [compose/docker-compose.l4-ingress.yml](compose/docker-compose.l4-ingress.yml)) using Traefik's native TCP routers for database services.
+* **Automatic Wildcards**: Routes external queries for `*.bolabaden.org` to local container endpoints, querying the cluster's internal state directory dynamically (replaces static files via Traefik.go's implementation in [Constellation Agent Configuration](infra/docs/CONFIGURATION.md)).
+* **L4 Routing**: Exposes dynamic HAProxy tunnels (modeled on `compose/docker-compose.l4-ingress.yml`) using Traefik's native TCP routers for database services.
 
 ### 2. Watchtower (Zero-Downtime Updater)
 
@@ -317,7 +317,7 @@ Bringing CUE to fruition is structured into four distinct development phases, pr
 
 ### Phase 4: Production Verification & Scaling (Month 9+)
 
-* Move all 57+ docker-compose stacks ([docker-compose.yml](docker-compose.yml)) to run natively on CUE.
+* Move all 57+ docker-compose stacks (`docker-compose.yml`) to run natively on CUE.
 * Test geographical node outages, connection packet drops, and automatic failover times.
 * Release stable 1.0.0 distribution templates for the community.
 

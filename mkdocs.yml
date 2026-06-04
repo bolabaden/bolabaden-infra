@@ -76,6 +76,10 @@ nav:
     - Security Status: SECURITY_STATUS.md
 
   - Architecture:
+    - Orchestration Overview: orchestration/README.md
+    - Orchestration Model: orchestration/orchestration-model.md
+    - Orchestration Concept Mapping: orchestration/concept-mapping.md
+    - Constellation Control Layer: orchestration/constellation-control-layer.md
     - Infrastructure Master Plan: docs/INFRASTRUCTURE_MASTER_PLAN.md
     - Multi-Node Philosophy: plan-infrastructure-unification.md
     - Orchestration Research 2026: docs/orchestration_research_2026.md

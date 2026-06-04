@@ -27,6 +27,7 @@ Key properties:
 | I want to… | Go to |
 |---|---|
 | Understand the overall roadmap | [Infrastructure Master Plan](INFRASTRUCTURE_MASTER_PLAN.md) |
+| Understand the orchestration direction | [Orchestration Overview](../orchestration/README.md) |
 | Deploy a new node or service | [Constellation Agent → Deployment Guide](../infra/docs/DEPLOYMENT_GUIDE.md) |
 | Configure secrets | [Docker Secrets Setup](../DOCKER_SECRETS_README.md) |
 | Troubleshoot a service | [Constellation Agent → Troubleshooting](../infra/docs/TROUBLESHOOTING.md) |
@@ -92,6 +93,7 @@ The short version: orchestrators like Kubernetes introduce a *control plane para
 | Document | Status | Last Updated |
 |---|---|---|
 | [Infrastructure Master Plan](INFRASTRUCTURE_MASTER_PLAN.md) | Active | 2026-03-03 |
+| [Orchestration Overview](../orchestration/README.md) | Active | 2026-06-04 |
 | [Constellation Agent Docs](../infra/docs/README.md) | Active | Ongoing |
 | [Orchestration Research 2026](orchestration_research_2026.md) | Research/Reference | 2026 |
 | [Stateful HA Plan](stateful_ha_plan.md) | Planning | Active |
