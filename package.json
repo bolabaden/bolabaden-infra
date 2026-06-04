@@ -4,9 +4,9 @@
   "description": "Multi-node media stack infrastructure",
   "private": true,
   "dependencies": {
-    "@next/mdx": "^15.3.5",
+    "@next/mdx": "^16.2.2",
     "gray-matter": "^4.0.3",
-    "next-mdx-remote": "^5.0.0",
+    "next-mdx-remote": "^6.0.0",
     "remark": "^15.0.1",
     "remark-html": "^16.0.1"
   },
