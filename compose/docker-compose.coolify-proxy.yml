@@ -463,11 +463,15 @@ configs:
               traefikerrorreplace:
                 matchStatus:
                   - 418
-                replaceStatus: 404
+                # Use a synthetic status that is handled globally by bolabaden-error-pages.
+                # This keeps catchall UX while avoiding replacement of real API/backend 4xx/5xx responses.
+                replaceStatus: 503  # 404
           bolabaden-error-pages:
             errors:
               status:
-                - 400-599
+                # Only handle synthetic catchall status mapped above.
+                # Do not rewrite real service/API error responses.
+                - 503  # 400-599
               service: bolabaden-nextjs@file
               query: /api/error/{status}
           nginx-auth:
@@ -527,6 +531,7 @@ configs:
 
                 # Crowdsec LAPI key for the bouncer (default: "")
                 crowdsecLapiKey: ${CROWDSEC_LAPI_KEY}
+                crowdsecLapiKeyFile: /run/secrets/crowdsec-lapi-key
 
                 # Disable TLS verification for Crowdsec LAPI (default: false)
                 crowdsecLapiTlsInsecureVerify: ${CROWDSEC_LAPI_TLS_INSECURE_VERIFY:-false}
@@ -754,8 +759,8 @@ configs:
 
 services:
   cloudflare-ddns:
-    image: docker.io/favonia/cloudflare-ddns:1  # - "1" for the latest stable version whose major version is 1
-    #image: docker.io/favonia/cloudflare-ddns  # - "latest" for the latest stable version (which could become 2.x.y in the future and break things)
+    #image: ghcr.io/th3w1zard1/cloudflare-ddns:${CLOUDFLARE_DDNS_BRANCH:-main}  # Branch tag published by your fork workflow
+    image: docker.io/favonia/cloudflare-ddns
     container_name: cloudflare-ddns
     network_mode: host  # This bypasses network isolation and makes IPv6 easier (optional; see below)
     read_only: true  # Make the container filesystem read-only (optional but recommended)
@@ -810,8 +815,8 @@ services:
       #HEALTHCHECKS: 
 
       # The Uptime Kuma’s Push URL to ping when the updater successfully updates IP addresses, such as `https://<host>/push/<id>`.
-      # You can directly copy the “Push URL” from the Uptime Kuma configuration page.
-      # ⚠️ The “Heartbeat Interval” should match the update schedule specified by `UPDATE_CRON`.
+      # You can directly copy the "Push URL" from the Uptime Kuma configuration page.
+      # ⚠️ The "Heartbeat Interval" should match the update schedule specified by `UPDATE_CRON`.
       #UPTIMEKUMA: 'https://uptimekuma.$DOMAIN/push/1234567890'
 
       # Newline-separated [shoutrrr URLs](https://containrrr.dev/shoutrrr/latest/services/overview/) to which the updater sends notifications of IP address changes and other events.
@@ -884,24 +889,23 @@ services:
     volumes:
       - ${CONFIG_PATH:-./volumes}/traefik/tinyauth:/data
     environment:
-      SECRET_FILE: /run/secrets/tinyauth-secret
-      APP_URL: ${TINYAUTH_APP_URL:-https://auth.$DOMAIN}
-      USERS: $TINYAUTH_USERS
+      TINYAUTH_APPURL: ${TINYAUTH_APP_URL:-https://auth.$DOMAIN}
+      TINYAUTH_AUTH_USERS: $TINYAUTH_USERS
       # Google OAuth Configuration
-      GOOGLE_CLIENT_ID: ${TINYAUTH_GOOGLE_CLIENT_ID:?}
-      GOOGLE_CLIENT_SECRET_FILE: /run/secrets/tinyauth-google-client-secret
+      TINYAUTH_OAUTH_PROVIDERS_GOOGLE_CLIENTID: ${TINYAUTH_GOOGLE_CLIENT_ID:?}
+      TINYAUTH_OAUTH_PROVIDERS_GOOGLE_CLIENTSECRETFILE: /run/secrets/tinyauth-google-client-secret
       # GitHub OAuth Configuration
-      GITHUB_CLIENT_ID: ${TINYAUTH_GITHUB_CLIENT_ID:?}
-      GITHUB_CLIENT_SECRET_FILE: /run/secrets/tinyauth-github-client-secret
+      TINYAUTH_OAUTH_PROVIDERS_GITHUB_CLIENTID: ${TINYAUTH_GITHUB_CLIENT_ID:?}
+      TINYAUTH_OAUTH_PROVIDERS_GITHUB_CLIENTSECRETFILE: /run/secrets/tinyauth-github-client-secret
       # Additional recommended settings
-      SESSION_EXPIRY: ${TINYAUTH_SESSION_EXPIRY:-604800} # 2 weeks session expiry
-      COOKIE_SECURE: ${TINYAUTH_COOKIE_SECURE:-true} # Send cookie only with HTTPS
-      APP_TITLE: ${TINYAUTH_APP_TITLE:-$DOMAIN} # Customize login page title
-      LOGIN_MAX_RETRIES: ${TINYAUTH_LOGIN_MAX_RETRIES:-15} # Maximum login attempts before account lockout
-      LOGIN_TIMEOUT: ${TINYAUTH_LOGIN_TIMEOUT:-300} # Lock account for 5 minutes after too many failed attempts
-      OAUTH_AUTO_REDIRECT: ${TINYAUTH_OAUTH_AUTO_REDIRECT:-none} # Options: none, github, google, or generic
+      TINYAUTH_AUTH_SESSIONEXPIRY: ${TINYAUTH_SESSION_EXPIRY:-604800} # 2 weeks session expiry
+      TINYAUTH_AUTH_SECURECOOKIE: ${TINYAUTH_COOKIE_SECURE:-true} # Send cookie only with HTTPS
+      TINYAUTH_UI_TITLE: ${TINYAUTH_APP_TITLE:-$DOMAIN} # Customize login page title
+      TINYAUTH_AUTH_LOGINMAXRETRIES: ${TINYAUTH_LOGIN_MAX_RETRIES:-15} # Maximum login attempts before account lockout
+      TINYAUTH_AUTH_LOGINTIMEOUT: ${TINYAUTH_LOGIN_TIMEOUT:-300} # Lock account for 5 minutes after too many failed attempts
+      TINYAUTH_OAUTH_AUTOREDIRECT: ${TINYAUTH_OAUTH_AUTO_REDIRECT:-none} # Options: none, github, google, or generic
       # Uncomment below if you want to restrict OAuth login to specific users
-      OAUTH_WHITELIST: $TINYAUTH_OAUTH_WHITELIST  # e.g. user1,user2,/^admin.>
+      TINYAUTH_OAUTH_WHITELIST: $TINYAUTH_OAUTH_WHITELIST  # e.g. user1,user2,/^admin.>
     labels:
       traefik.enable: true
       traefik.http.services.tinyauth.loadbalancer.server.port: 3000
@@ -925,8 +929,16 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
+      # NOTE: traefik must share exactly ONE working network with crowdsec so
+      # Docker's embedded DNS returns only a reachable IP for the bouncer.
+      # The `default` bridge (172.17.0.0/16) inter-container traffic is
+      # blackholed by the CloudflareWARP/Tailscale fwmark policy routing
+      # (`ip rule ... fwmark 0x80000 unreachable`), which caused the Traefik
+      # crowdsec bouncer's LAPI calls to time out (fail-closed -> 403 on every
+      # request). `publicnet` is unaffected and is also Traefik's provider
+      # network, so the bouncer reaches the LAPI reliably here.
       - backend
-      - default
+      - publicnet
     expose:
       - ${CROWDSEC_LAPI_PORT:-8080}    # HTTP API for bouncers
       - ${CROWDSEC_APPSEC_PORT:-7422}  # AppSec WAF endpoint
@@ -934,7 +946,7 @@ services:
     environment:
       UID: ${PUID:-1001}
       GID: ${PGID:-999}
-      COLLECTIONS: crowdsecurity/appsec-crs crowdsecurity/appsec-generic-rules crowdsecurity/appsec-virtual-patching crowdsecurity/whitelist-good-actors crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/linux crowdsecurity/sshd
+      COLLECTIONS: crowdsecurity/appsec-crs crowdsecurity/appsec-generic-rules crowdsecurity/appsec-virtual-patching crowdsecurity/whitelist-good-actors crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/linux crowdsecurity/sshd crowdsecurity/traefik
     configs:
       # CrowdSec files are typically access restricted (644) by the root user.
       # If your log files are stored onto an NFS share, you may want to use poll_without_inotify: true for each log source as outlined by CrowdSec here.
@@ -991,6 +1003,37 @@ services:
       retries: 3
       start_period: 10s
     restart: always
+  crowdsec-init:
+    # 🔹🔹 CrowdSec Init UI 🔹🔹
+    # Web-based setup wizard for CrowdSec. Auto-exits when healthy.
+    # Access at http://<host>:${CROWDSEC_INIT_PORT:-3100}
+    build:
+      context: ${ROOT_PATH:-.}/scripts/crowdsec-init
+      dockerfile: Dockerfile
+    image: crowdsec-init:local
+    container_name: crowdsec-init
+    depends_on:
+      crowdsec:
+        condition: service_started
+    ports:
+      - "${CROWDSEC_INIT_PORT:-3100}:3000"
+    environment:
+      CONFIG_PATH: /work/config
+      SECRETS_PATH: /work/secrets
+      CROWDSEC_CONTAINER_NAME: crowdsec
+      CROWDSEC_BOUNCER_NAME: ${CROWDSEC_BOUNCER_NAME:-traefik-bouncer}
+      CROWDSEC_BOUNCER_ENABLED: ${CROWDSEC_BOUNCER_ENABLED:-true}
+      CROWDSEC_ORGANIZATION_ID: ${CROWDSEC_ORGANIZATION_ID:-}
+      CROWDSEC_AGENT_USERNAME: ${CROWDSEC_AGENT_USERNAME:-}
+      CROWDSEC_LAPI_KEY: ${CROWDSEC_LAPI_KEY:-}
+      CROWDSEC_WAIT_SECONDS: ${CROWDSEC_WAIT_SECONDS:-180}
+      AUTO_EXIT_DELAY: ${CROWDSEC_AUTO_EXIT_DELAY:-30}
+      CROWDSEC_LAPI_PORT: ${CROWDSEC_LAPI_PORT:-8080}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONFIG_PATH:-./volumes}:/work/config
+      - ${SECRETS_PATH:?}:/work/secrets
+    restart: no
   traefik:
     # 🔹🔹 Traefik 🔹🔹
     # https://doc.traefik.io
@@ -1010,6 +1053,7 @@ services:
       - publicnet
     secrets:
       - cloudflare-api-key
+      - crowdsec-lapi-key
     expose:
       - 8080          # Dashboard API
     ports:
@@ -1018,6 +1062,7 @@ services:
       - 443:443/udp   # HTTPS/3
     #  - 853:853       # DNS over TLS
     #  - 3000:3000     # Ping
+    #  - 127.0.0.1:8080:8080     # Traefik API (if you want to expose it outside the Docker network, but be careful with security)
     cap_add:
       - NET_ADMIN
     volumes:
@@ -1077,11 +1122,11 @@ services:
       - '--entryPoints.websecure.forwardedHeaders.trustedIPs=103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,2400:cb00::/32,2405:8100::/32,2405:b500::/32,2606:4700::/32,2803:f800::/32,2a06:98c0::/29,2c0f:f248::/32'
       - '--entryPoints.websecure.address=:443'
       - '--entryPoints.websecure.http.encodeQuerySemiColons=true'
-      - '--entryPoints.websecure.http.middlewares=bolabaden-error-pages@file,crowdsec@file,strip-www@file'
+      - '--entryPoints.websecure.http.middlewares=crowdsec@file,strip-www@file'
       - '--entryPoints.websecure.http.tls=true'
       - '--entryPoints.websecure.http.tls.certResolver=letsencrypt'
       - '--entryPoints.websecure.http.tls.domains[0].main=$DOMAIN'
-      - '--entryPoints.websecure.http.tls.domains[0].sans=www.$DOMAIN,*.$DOMAIN,*.$TS_HOSTNAME.$DOMAIN'
+      - '--entryPoints.websecure.http.tls.domains[0].sans=*.$DOMAIN,*.$TS_HOSTNAME.$DOMAIN'
       - '--entryPoints.websecure.http2.maxConcurrentStreams=100'
       - '--entryPoints.websecure.http3'
       - '--global.checkNewVersion=true'
@@ -1096,7 +1141,7 @@ services:
       - '--providers.file.directory=/traefik/dynamic/'
       - '--providers.file.watch=true'
       - '--experimental.plugins.bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin'
-      - '--experimental.plugins.bouncer.version=v1.4.6'
+      - '--experimental.plugins.bouncer.version=v1.5.1'
       - '--experimental.plugins.traefikerrorreplace.modulename=github.com/PseudoResonance/traefikerrorreplace'
       - '--experimental.plugins.traefikerrorreplace.version=v1.0.1'
       # TLS-specific option within the ServersTransport configuration.
