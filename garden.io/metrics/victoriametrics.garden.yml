@@ -1,13 +1,17 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: victoriametrics
 description: VictoriaMetrics time series database
 type: container
 dependencies:
-  - run.victoriametrics-init
+  - run.init-victoriametrics
 
 spec:
-  image: docker.io/victoriametrics/victoria-metrics:v1.119.0
+  replicas: 3
+  image: docker.io/victoriametrics/victoria-metrics:latest
+  hostname: victoriametrics
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     VM_RETENTION_PERIOD: ${var.VICTORIAMETRICS_RETENTION_PERIOD || "1y"}
     VM_MEMORY_ALLOWED_PERCENT: ${var.VICTORIAMETRICS_MEMORY_ALLOWED_PERCENT || "60"}
@@ -19,7 +23,7 @@ spec:
   volumes:
     - name: storage
       containerPath: /storage
-      sourcePath: ${var.config-path}/victoriametrics
+      hostPath: ${var.config-path}/victoriametrics
   command:
     - "--bigMergeConcurrency=${var.VICTORIAMETRICS_BIG_MERGE_CONCURRENCY || \"0\"}"
     - "--dedup.minScrapeInterval=${var.VICTORIAMETRICS_DEDUP_MIN_SCRAPE_INTERVAL || \"0s\"}"
@@ -35,13 +39,25 @@ spec:
     - "--promscrape.maxScrapeSize=${var.VICTORIAMETRICS_PROMSCRAPE_MAX_SCRAPE_SIZE || \"16777216\"}"
     - "--retentionPeriod=${var.VICTORIAMETRICS_RETENTION_PERIOD || \"1y\"}"
     - "--search.maxConcurrentRequests=${var.VICTORIAMETRICS_SEARCH_MAX_CONCURRENT_REQUESTS || \"8\"}"
+    - "--search.maxMemoryPerQuery=${var.VICTORIAMETRICS_SEARCH_MAX_MEMORY_PER_QUERY || \"1GB\"}"
+    - "--search.maxPointsPerTimeseries=${var.VICTORIAMETRICS_SEARCH_MAX_POINTS_PER_TIMESERIES || \"30000\"}"
+    - "--search.maxQueryDuration=${var.VICTORIAMETRICS_SEARCH_MAX_QUERY_DURATION || \"30s\"}"
+    - "--search.maxSeries=${var.VICTORIAMETRICS_SEARCH_MAX_SERIES || \"30000\"}"
+    - "--search.maxTagKeys=${var.VICTORIAMETRICS_SEARCH_MAX_TAG_KEYS || \"100000\"}"
+    - "--search.maxTagValues=${var.VICTORIAMETRICS_SEARCH_MAX_TAG_VALUES || \"100000\"}"
+    - "--search.maxUniqueTimeseries=${var.VICTORIAMETRICS_SEARCH_MAX_UNIQUE_TIMESERIES || \"300000\"}"
     - "--smallMergeConcurrency=${var.VICTORIAMETRICS_SMALL_MERGE_CONCURRENCY || \"0\"}"
     - "--storageDataPath=/storage"
-    - "--vmalert.proxyURL=${var.VICTORIAMETRICS_VMALERT_PROXY_URL || \"\"}"
-    - "--vmauth.userConfigReloadInterval=${var.VICTORIAMETRICS_VMAUTH_USER_CONFIG_RELOAD_INTERVAL || \"0s\"}"
-    - "--vmui.customDashboardsPath=${var.VICTORIAMETRICS_VMUI_CUSTOM_DASHBOARDS_PATH || \"\"}"
-  ingresses:
-    - path: /
-      port: http
-      hostname: victoriametrics.${var.domain}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: ${var.VICTORIAMETRICS_PORT || "8428"}
+    prometheus.io/path: /metrics
+  healthCheck:
+    exec:
+      command: [sh, -c, "wget --no-verbose --tries=1 --spider http://127.0.0.1:${var.VICTORIAMETRICS_PORT || \"8428\"}/health || exit 1"]
+    initialDelaySeconds: 40
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+    startPeriodSeconds: 40
   restartPolicy: always

@@ -1,23 +1,50 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: dozzle
 description: Real-time Docker container logs viewer
 type: container
+dependencies:
+  - deploy.dockerproxy-ro
 
 spec:
+  replicas: 3
   image: docker.io/amir20/dozzle
+  hostname: dozzle
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
-    TZ: ${var.tz}
+    DOZZLE_NO_ANALYTICS: ${var.DOZZLE_NO_ANALYTICS || "true"}
+    DOZZLE_FILTER: ${var.DOZZLE_FILTER || ""}
+    DOZZLE_ENABLE_ACTIONS: ${var.DOZZLE_ENABLE_ACTIONS || "false"}
+    DOZZLE_AUTH_HEADER_NAME: ${var.DOZZLE_AUTH_HEADER_NAME || ""}
+    DOZZLE_AUTH_HEADER_USER: ${var.DOZZLE_AUTH_USER || ""}
+    DOZZLE_AUTH_HEADER_EMAIL: ${var.DOZZLE_AUTH_EMAIL || ""}
+    DOZZLE_AUTH_PROVIDER: ${var.DOZZLE_AUTH_PROVIDER || "none"}
+    DOZZLE_LEVEL: ${var.DOZZLE_LEVEL || "info"}
+    DOZZLE_HOSTNAME: ${var.DOZZLE_HOSTNAME || ""}
+    DOZZLE_BASE: ${var.DOZZLE_BASE || "/"}
+    DOZZLE_ADDR: :${var.DOZZLE_PORT || "8080"}
+    DOZZLE_REMOTE_HOST: tcp://dockerproxy-ro:2375
   ports:
     - name: http
-      containerPort: 8080
-  volumes:
-    - name: docker-sock
-      containerPath: /var/run/docker.sock
-      sourcePath: ${var.docker-socket}
-      readOnly: true
+      containerPort: ${var.DOZZLE_PORT || "8080"}
   ingresses:
     - path: /
       port: http
       hostname: dozzle.${var.domain}
+    - path: /
+      port: http
+      hostname: dozzle.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.dozzle.middlewares: nginx-auth@file
+    traefik.http.services.dozzle.loadbalancer.server.port: ${var.DOZZLE_PORT || "8080"}
+    homepage.group: System Monitoring
+    homepage.name: Dozzle
+    homepage.icon: dozzle.png
+    homepage.href: https://dozzle.${var.domain}
+    homepage.description: Real-time web UI for viewing Docker container logs across the host
+    kuma.dozzle.http.name: dozzle.${var.ts-hostname}.${var.domain}
+    kuma.dozzle.http.url: https://dozzle.${var.domain}
+    kuma.dozzle.http.interval: "60"
   restartPolicy: always

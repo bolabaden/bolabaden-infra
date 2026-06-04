@@ -1,0 +1,36 @@
+kind: Deploy
+apiVersion: garden.io/v0
+name: promtail
+description: Promtail log shipper for Loki
+type: container
+dependencies:
+  - deploy.loki
+  - deploy.dockerproxy-ro
+
+spec:
+  replicas: 3
+  image: docker.io/grafana/promtail
+  hostname: promtail
+  extraHosts:
+    - host.docker.internal:host-gateway
+  env:
+    DOCKER_HOST: tcp://dockerproxy-ro:9323
+  ports:
+    - name: http
+      containerPort: 9080
+  volumes:
+    - name: config
+      containerPath: /etc/promtail/config.yaml
+      hostPath: ${var.config-path}/promtail/config.yaml
+    - name: docker-containers
+      containerPath: /var/lib/docker/containers
+      hostPath: /var/lib/docker/containers
+      readOnly: true
+    - name: var-log
+      containerPath: /var/log
+      hostPath: /var/log
+      readOnly: true
+  command:
+    - -config.file=/etc/promtail/config.yaml
+  restartPolicy: always
+

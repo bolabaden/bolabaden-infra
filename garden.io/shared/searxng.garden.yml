@@ -1,31 +1,52 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: searxng
 description: SearxNG privacy-focused metasearch engine
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/searxng/searxng
+  hostname: searxng
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
-    TZ: ${var.tz}
-    SEARXNG_BASE_URL: http://searxng:${var.SEARXNG_PORT || "8080"}
+    SEARXNG_BASE_URL: ${var.SEARXNG_INTERNAL_URL || ("http://searxng:" + string(var.SEARXNG_PORT || "8080"))}
     SEARXNG_SECRET: ${var.SEARXNG_SECRET}
   ports:
     - name: http
-      containerPort: 8080
+      containerPort: ${var.SEARXNG_PORT || "8080"}
   volumes:
     - name: config
       containerPath: /etc/searxng
-      sourcePath: ${var.config-path}/searxng/config
+      hostPath: ${var.config-path}/searxng/config
     - name: data
       containerPath: /var/cache/searxng
-      sourcePath: ${var.config-path}/searxng/data
+      hostPath: ${var.config-path}/searxng/data
   ingresses:
     - path: /
       port: http
       hostname: searxng.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /
+    - path: /
       port: http
+      hostname: searxng.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.services.searxng.loadbalancer.server.port: ${var.SEARXNG_PORT || 8080}
+    deunhealth.restart.on.unhealthy: "true"
+    homepage.group: Search
+    homepage.name: SearxNG
+    homepage.icon: searxng.png
+    homepage.href: https://searxng.${var.domain}/
+    homepage.description: Privacy-focused metasearch that aggregates results from many sources without tracking
+    kuma.searxng.http.name: searxng.${var.ts-hostname}.${var.domain}
+    kuma.searxng.http.url: https://searxng.${var.domain}
+    kuma.searxng.http.interval: "30"
+  healthCheck:
+    exec:
+      command: [sh, -c, "wget --no-verbose --tries=1 --spider http://127.0.0.1:${var.SEARXNG_PORT || \"8080\"}/ || exit 1"]
+    initialDelaySeconds: 0
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
   restartPolicy: always

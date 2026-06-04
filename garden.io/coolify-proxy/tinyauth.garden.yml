@@ -1,19 +1,23 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: tinyauth
 description: TinyAuth authentication service
 type: container
 
 spec:
-  image: ghcr.io/steveiliop56/tinyauth:v3
+  replicas: 3
+  image: ghcr.io/steveiliop56/tinyauth:latest
+  hostname: auth
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
-    SECRET: ${var.TINYAUTH_SECRET}
-    APP_URL: https://auth.${var.domain}
+    SECRET_FILE: /run/secrets/tinyauth-secret
+    APP_URL: ${var.TINYAUTH_APP_URL || "https://auth.${var.domain}"}
     USERS: ${var.TINYAUTH_USERS}
     GOOGLE_CLIENT_ID: ${var.TINYAUTH_GOOGLE_CLIENT_ID}
-    GOOGLE_CLIENT_SECRET: ${var.TINYAUTH_GOOGLE_CLIENT_SECRET}
+    GOOGLE_CLIENT_SECRET_FILE: /run/secrets/tinyauth-google-client-secret
     GITHUB_CLIENT_ID: ${var.TINYAUTH_GITHUB_CLIENT_ID}
-    GITHUB_CLIENT_SECRET: ${var.TINYAUTH_GITHUB_CLIENT_SECRET}
+    GITHUB_CLIENT_SECRET_FILE: /run/secrets/tinyauth-github-client-secret
     SESSION_EXPIRY: ${var.TINYAUTH_SESSION_EXPIRY || "604800"}
     COOKIE_SECURE: ${var.TINYAUTH_COOKIE_SECURE || "true"}
     APP_TITLE: ${var.TINYAUTH_APP_TITLE || "${var.domain}"}
@@ -27,9 +31,37 @@ spec:
   volumes:
     - name: data
       containerPath: /data
-      sourcePath: ${var.config-path}/traefik/tinyauth
+      hostPath: ${var.config-path}/traefik/tinyauth
+    - name: tinyauth-secret
+      containerPath: /run/secrets/tinyauth-secret
+      hostPath: ${var.config-path}/secrets/tinyauth-secret.txt
+      readOnly: true
+    - name: tinyauth-google-client-secret
+      containerPath: /run/secrets/tinyauth-google-client-secret
+      hostPath: ${var.config-path}/secrets/tinyauth-google-client-secret.txt
+      readOnly: true
+    - name: tinyauth-github-client-secret
+      containerPath: /run/secrets/tinyauth-github-client-secret
+      hostPath: ${var.config-path}/secrets/tinyauth-github-client-secret.txt
+      readOnly: true
   ingresses:
     - path: /
       port: http
       hostname: auth.${var.domain}
+    - path: /
+      port: http
+      hostname: auth.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.services.tinyauth.loadbalancer.server.port: "3000"
+    traefik.http.routers.tinyauth.rule: Host(`auth.${var.domain}`) || Host(`auth.${var.ts-hostname}.${var.domain}`)
+    traefik.http.middlewares.tinyauth.forwardAuth.address: http://auth:3000/api/auth/traefik
+    homepage.group: Security
+    homepage.name: TinyAuth
+    homepage.icon: https://tinyauth.app/img/logo.png
+    homepage.href: https://auth.${var.domain}/
+    homepage.description: Centralized login service (email, Google, GitHub) used by Traefik auth middleware and apps
+    kuma.tinyauth.http.name: auth.${var.ts-hostname}.${var.domain}
+    kuma.tinyauth.http.url: https://auth.${var.domain}
+    kuma.tinyauth.http.interval: "60"
   restartPolicy: always

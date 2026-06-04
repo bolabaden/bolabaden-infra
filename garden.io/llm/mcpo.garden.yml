@@ -1,27 +1,64 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: mcpo
 description: MCP Orchestrator
 type: container
 
 spec:
+  replicas: 3
   image: ghcr.io/open-webui/mcpo:main
+  hostname: mcpo
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     MCPO_API_KEY: ${var.MCPO_API_KEY}
   ports:
     - name: http
-      containerPort: 8000
+      containerPort: ${var.MCPO_PORT || "8000"}
   volumes:
     - name: config
       containerPath: /app/config/mcp_servers.json
-      sourcePath: ${var.config-path}/mcpo/mcp_servers.json
-  command: [--api-key, "${var.MCPO_API_KEY}", --host, 0.0.0.0, --port, 8000, --cors-allow-origins, "*", --config, /app/config/mcp_servers.json]
+      hostPath: ${var.config-path}/mcpo/mcp_servers.json
+      readOnly: true
+  command:
+    - --api-key
+    - "${var.MCPO_API_KEY}"
+    - --host
+    - 0.0.0.0
+    - --port
+    - ${var.MCPO_PORT || "8000"}
+    - --cors-allow-origins
+    - "*"
+    - --config
+    - /app/config/mcp_servers.json
+  workingDir: /app
   ingresses:
     - path: /
       port: http
       hostname: mcpo.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /openapi.json
+    - path: /
       port: http
+      hostname: mcpo.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.mcpo.middlewares: nginx-auth@file
+    traefik.http.routers.mcpo.rule: Host(`mcpo.${var.domain}`) || Host(`mcpo.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.mcpo.loadbalancer.server.port: ${var.MCPO_PORT || "8000"}
+    homepage.group: MCPO
+    homepage.name: MCPO
+    homepage.icon: mcpo.png
+    homepage.href: https://mcpo.${var.domain}/
+    homepage.description: MCP Orchestrator exposing model/context tools over the MCP protocol
+    kuma.mcpo.http.name: mcpo.${var.ts-hostname}.${var.domain}
+    kuma.mcpo.http.url: https://mcpo.${var.domain}
+    kuma.mcpo.http.interval: "30"
+  healthCheck:
+    exec:
+      command:
+        - sh
+        - -c
+        - 'curl -f http://127.0.0.1:${var.MCPO_PORT || "8000"}/openapi.json'
+    initialDelaySeconds: 40
+    timeoutSeconds: 10
+    startPeriodSeconds: 40
   restartPolicy: always

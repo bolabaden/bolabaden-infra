@@ -1,5 +1,5 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: grafana
 description: Grafana visualization and analytics platform
 type: container
@@ -8,19 +8,26 @@ dependencies:
   - deploy.victoriametrics
 
 spec:
+  replicas: 3
   image: docker.io/grafana/grafana
-  user: ${var.PUID || "1001"}:${var.PGID || "999"}
+  hostname: grafana
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
-    GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,natel-discrete-panel,flant-statusmap-panel,vonage-status-panel,michaeldmoore-multistat-panel,grafana-polystat-panel,marcusolsson-dynamictext-panel,yesoreyeram-boomtable-panel,redis-datasource,grafana-clock-panel,grafana-simple-json-datasource,btplc-status-dot-panel,camptocamp-prometheus-alertmanager-datasource
     GF_LOG_LEVEL: ${var.GF_LOG_LEVEL || "info"}
-    GF_PATHS_PROVISIONING: ${var.GF_PATHS_PROVISIONING || "/etc/grafana/provisioning"}
-    GF_SECURITY_ADMIN_USER: ${var.GF_SECURITY_ADMIN_USER || "admin"}
-    GF_SECURITY_ADMIN_PASSWORD: ${var.GF_SECURITY_ADMIN_PASSWORD}
+    GF_FEATURE_TOGGLES_ENABLE: ${var.GF_FEATURE_TOGGLES_ENABLE || ""}
+    GF_SECURITY_ENCRYPTION_PROVIDER: ""
+    GF_SECURITY_AVAILABLE_ENCRYPTION_PROVIDERS: ""
     GF_SERVER_DOMAIN: ${var.GF_FQDN || "grafana.${var.domain}"}
     GF_SERVER_ROOT_URL: ${var.GF_URL || "https://grafana.${var.domain}"}
+    GF_SECURITY_ADMIN_USER: ${var.GF_SECURITY_ADMIN_USER || "admin"}
+    GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana-admin-password
+    GF_SECURITY_SECRET_KEY__FILE: /run/secrets/grafana-secret-key
+    GF_SECRETS_MANAGER_SECRET_KEY__FILE: /run/secrets/grafana-secret-key
+    GF_PATHS_PROVISIONING: ${var.GF_PATHS_PROVISIONING || "/etc/grafana/provisioning"}
     GF_SERVER_SERVE_FROM_SUB_PATH: ${var.GF_SERVE_FROM_SUB_PATH || "false"}
-    GF_FEATURE_TOGGLES_ENABLE: ${var.GF_FEATURE_TOGGLES_ENABLE || ""}
     GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ${var.GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS || "victoriametrics-datasource"}
+    GF_PLUGINS_PREINSTALL: grafana-piechart-panel,grafana-worldmap-panel,natel-discrete-panel,flant-statusmap-panel,vonage-status-panel,michaeldmoore-multistat-panel,grafana-polystat-panel,marcusolsson-dynamictext-panel,yesoreyeram-boomtable-panel,grafana-clock-panel,grafana-simple-json-datasource,btplc-status-dot-panel,camptocamp-prometheus-alertmanager-datasource
     GF_SECURITY_COOKIE_SECURE: ${var.GF_SECURITY_COOKIE_SECURE || "true"}
     GF_SECURITY_COOKIE_SAMESITE: ${var.GF_SECURITY_COOKIE_SAMESITE || "lax"}
     GF_SECURITY_CONTENT_TYPE_PROTECTION: ${var.GF_SECURITY_CONTENT_TYPE_PROTECTION || "true"}
@@ -46,34 +53,67 @@ spec:
   volumes:
     - name: data
       containerPath: /var/lib/grafana
-      sourcePath: ${var.config-path}/grafana/data
+      hostPath: ${var.config-path}/grafana/data
     - name: config
       containerPath: /etc/grafana/grafana.ini
-      sourcePath: ${var.config-path}/grafana/grafana.ini
+      hostPath: ${var.config-path}/grafana/grafana.ini
     - name: datasources
       containerPath: /etc/grafana/provisioning/datasources
-      sourcePath: ${var.config-path}/grafana/provisioning/datasources
+      hostPath: ${var.config-path}/grafana/provisioning/datasources
     - name: dashboards-config
       containerPath: /etc/grafana/provisioning/dashboards
-      sourcePath: ${var.config-path}/grafana/provisioning/dashboards
+      hostPath: ${var.config-path}/grafana/provisioning/dashboards
     - name: dashboards
       containerPath: /var/lib/grafana/dashboards
-      sourcePath: ${var.config-path}/grafana/dashboards
+      hostPath: ${var.config-path}/grafana/dashboards
     - name: alerting
       containerPath: /etc/grafana/provisioning/alerting
-      sourcePath: ${var.config-path}/grafana/provisioning/alerting
+      hostPath: ${var.config-path}/grafana/provisioning/alerting
     - name: notifiers
       containerPath: /etc/grafana/provisioning/notifiers
-      sourcePath: ${var.config-path}/grafana/provisioning/notifiers
+      hostPath: ${var.config-path}/grafana/provisioning/notifiers
     - name: plugins
       containerPath: /etc/grafana/provisioning/plugins
-      sourcePath: ${var.config-path}/grafana/provisioning/plugins
+      hostPath: ${var.config-path}/grafana/provisioning/plugins
+    - name: logs
+      containerPath: /data/log
+      hostPath: ${var.config-path}/grafana/logs
+    - name: grafana-admin-password
+      containerPath: /run/secrets/grafana-admin-password
+      hostPath: ${var.config-path}/secrets/grafana-admin-password.txt
+      readOnly: true
+    - name: grafana-secret-key
+      containerPath: /run/secrets/grafana-secret-key
+      hostPath: ${var.config-path}/secrets/grafana-secret-key.txt
+      readOnly: true
   ingresses:
     - path: /
       port: http
       hostname: grafana.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /api/health
+    - path: /
       port: http
+      hostname: grafana.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.grafana.rule: Host(`grafana.${var.domain}`) || Host(`grafana.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.grafana.loadbalancer.server.port: "3000"
+    homepage.group: Infrastructure
+    homepage.name: Grafana
+    homepage.icon: grafana.png
+    homepage.href: https://grafana.${var.domain}
+    homepage.description: Grafana is an open-source platform for monitoring and observability.
+    kuma.grafana.http.name: grafana.${var.ts-hostname}.${var.domain}
+    kuma.grafana.http.url: https://grafana.${var.domain}
+    kuma.grafana.http.interval: "60"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3000"
+    prometheus.io/path: metrics
+  healthCheck:
+    exec:
+      command: [sh, -c, "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1"]
+    initialDelaySeconds: 40
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+    startPeriodSeconds: 40
   restartPolicy: always

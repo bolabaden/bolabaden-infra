@@ -1,0 +1,104 @@
+# High Availability Deployment Template
+# Use this for all services to ensure zero SPOF
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: SERVICE_NAME
+  labels:
+    app: SERVICE_NAME
+spec:
+  replicas: 3  # Minimum 3 for HA across nodes
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # Never allow service to be unavailable
+  selector:
+    matchLabels:
+      app: SERVICE_NAME
+  template:
+    metadata:
+      labels:
+        app: SERVICE_NAME
+    spec:
+      # Anti-affinity: spread pods across different nodes
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - SERVICE_NAME
+            topologyKey: kubernetes.io/hostname
+        # Prefer spreading across zones if available
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: topology.kubernetes.io/zone
+                operator: In
+                values:
+                - zone1
+                - zone2
+                - zone3
+      containers:
+      - name: SERVICE_NAME
+        image: SERVICE_IMAGE
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      # Tolerations for scheduling flexibility
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: SERVICE_NAME-pdb
+spec:
+  minAvailable: 2  # Always have at least 2 pods available
+  selector:
+    matchLabels:
+      app: SERVICE_NAME
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: SERVICE_NAME
+spec:
+  type: ClusterIP
+  selector:
+    app: SERVICE_NAME
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800

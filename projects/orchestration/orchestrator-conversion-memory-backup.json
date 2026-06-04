@@ -1,0 +1,136 @@
+{
+  "metadata": {
+    "description": "Comprehensive orchestrator conversion knowledge base backup",
+    "created": "2024-12-19",
+    "version": "1.0",
+    "entities": 4,
+    "relations": 12,
+    "total_observations": 2000
+  },
+  "entities": [
+    {
+      "name": "kubernetes",
+      "entityType": "orchestrator",
+      "observation_count": 500,
+      "key_concepts": [
+        "YAML manifests", "Pods", "Deployments", "Services", "ConfigMaps", "Secrets",
+        "PersistentVolumes", "Namespaces", "Ingress", "StatefulSets", "DaemonSets",
+        "Jobs", "CronJobs", "RBAC", "NetworkPolicies", "Resource limits"
+      ]
+    },
+    {
+      "name": "helm",
+      "entityType": "orchestrator", 
+      "observation_count": 400,
+      "key_concepts": [
+        "Chart.yaml", "values.yaml", "templates", "Go templating", "hooks",
+        "dependencies", "library charts", "release management", "conditional rendering"
+      ]
+    },
+    {
+      "name": "nomad",
+      "entityType": "orchestrator",
+      "observation_count": 600,
+      "key_concepts": [
+        "HCL format", "job types", "groups", "tasks", "service registration",
+        "Consul Connect", "Vault integration", "templates", "artifacts", "volumes"
+      ]
+    },
+    {
+      "name": "docker-compose",
+      "entityType": "orchestrator",
+      "observation_count": 500,
+      "key_concepts": [
+        "YAML services", "port mapping", "volume mounts", "environment variables",
+        "networks", "health checks", "profiles", "deploy configuration"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "from": "docker-compose",
+      "to": "kubernetes",
+      "relationType": "converts to",
+      "description": "Bidirectional conversion between Docker Compose and Kubernetes"
+    },
+    {
+      "from": "docker-compose", 
+      "to": "helm",
+      "relationType": "converts to",
+      "description": "Bidirectional conversion between Docker Compose and Helm"
+    },
+    {
+      "from": "docker-compose",
+      "to": "nomad", 
+      "relationType": "converts to",
+      "description": "Bidirectional conversion between Docker Compose and Nomad"
+    },
+    {
+      "from": "kubernetes",
+      "to": "helm",
+      "relationType": "converts to", 
+      "description": "Bidirectional conversion between Kubernetes and Helm"
+    },
+    {
+      "from": "kubernetes",
+      "to": "nomad",
+      "relationType": "converts to",
+      "description": "Bidirectional conversion between Kubernetes and Nomad"
+    },
+    {
+      "from": "helm",
+      "to": "nomad",
+      "relationType": "converts to",
+      "description": "Bidirectional conversion between Helm and Nomad"
+    }
+  ],
+  "conversion_patterns": {
+    "direct_mappings": [
+      "service -> deployment/pod",
+      "ports -> service ports", 
+      "volumes -> persistentVolumeClaims",
+      "environment -> env arrays",
+      "healthcheck -> livenessProbe/readinessProbe",
+      "networks -> networkPolicies",
+      "secrets -> secrets",
+      "configs -> configMaps"
+    ],
+    "workarounds": [
+      "network_mode: service:name -> sidecar pattern",
+      "depends_on -> init containers",
+      "profiles -> namespaces/labels",
+      "build context -> external build tools",
+      "external networks -> existing resources"
+    ],
+    "discrepancies": [
+      "Docker Compose profiles vs Kubernetes namespaces",
+      "Docker Compose build vs Kubernetes image building",
+      "Docker Compose network_mode vs Kubernetes networking",
+      "Nomad job types vs Kubernetes workload types",
+      "Helm templating vs static manifests"
+    ]
+  },
+  "command_line_equivalents": {
+    "docker-compose": {
+      "up": "kubectl apply -f, helm install, nomad job run",
+      "down": "kubectl delete -f, helm uninstall, nomad job stop", 
+      "logs": "kubectl logs, helm get logs, nomad job logs",
+      "ps": "kubectl get pods, helm list, nomad job status",
+      "exec": "kubectl exec, helm exec, nomad job exec"
+    }
+  },
+  "best_practices": [
+    "Use environment variables for configuration across all orchestrators",
+    "Use named volumes for persistent data across all orchestrators", 
+    "Use health checks for service monitoring across all orchestrators",
+    "Use resource limits for container management across all orchestrators",
+    "Use external secret management for sensitive data across all orchestrators",
+    "Use external configuration management for dynamic configs across all orchestrators"
+  ],
+  "schema_coverage": {
+    "kubernetes": "Complete Pod, Deployment, Service, ConfigMap, Secret, PersistentVolume, Namespace, Ingress, StatefulSet, DaemonSet, Job, CronJob, RBAC, NetworkPolicies, Resource limits, Security contexts, Probes, Volume types, Init containers, Sidecar patterns",
+    "helm": "Complete Chart.yaml, values.yaml, templates, built-in objects, template functions, conditional logic, loops, named templates, hooks, dependencies, library charts, value import/export",
+    "nomad": "Complete job specification, group configuration, task drivers, network configuration, service registration, Consul Connect, resource allocation, constraints, affinities, templates, artifacts, volumes, update strategies, periodic jobs, parameterized jobs, multi-region jobs, Vault integration, identity configuration",
+    "docker-compose": "Complete service configuration, image specification, port mapping, volume mounts, environment variables, networks, health checks, restart policies, deploy configuration, resource limits, placement constraints, secrets, configs, profiles, extension fields"
+  }
+} 

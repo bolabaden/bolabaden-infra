@@ -39,7 +39,7 @@ services:
     restart: always
 
   mariadb:
-    image: docker.io/mariadb:11
+    image: docker.io/mariadb:latest
     container_name: mariadb
     hostname: mariadb
     extra_hosts:
