@@ -75,22 +75,27 @@ Rather than writing a cluster manager from scratch, CUE leverages a hybrid archi
 Conventional Kubernetes requires complex CNI plugins (Calico, Flannel, Cilium) that create heavy overlay networks, often requiring specific MTU configurations and deep kernel hooks. CUE eliminates this by natively integrating **Tailscale (WireGuard)** as its primary backplane.
 
 ### 1. The Implicit Overlay (Mesh-by-Default)
+
 Every node joined to a CUE cluster automatically receives a unique internal IP in the `100.64.0.0/10` range. Unlike standard Docker bridge networks which are isolated per host, CUE's virtual network interfaces are globally reachable across the mesh.
 
 ### 2. Service-to-Service Anycast
-When a Compose service is defined, CUE registers it in the internal cluster DNS (`CoreDNS`). 
-- **Internal Resolution**: `mongodb.cluster.local` resolves to the Tailscale IPs of all healthy MongoDB pods across the entire cluster.
-- **Node-Local Priority**: Traffic defaults to a local pod if one is healthy (minimizing latency). If local pods fail, CUE's distributed router (Traefik) instantly reroutes the request over the encrypted mesh to a peer node.
+
+When a Compose service is defined, CUE registers it in the internal cluster DNS (`CoreDNS`).
+
+* **Internal Resolution**: `mongodb.cluster.local` resolves to the Tailscale IPs of all healthy MongoDB pods across the entire cluster.
+* **Node-Local Priority**: Traffic defaults to a local pod if one is healthy (minimizing latency). If local pods fail, CUE's distributed router (Traefik) instantly reroutes the request over the encrypted mesh to a peer node.
 
 ### 3. Solving the "Phantom Router" & "Hydration Collapse"
+
 As analyzed in [plan-infrastructure-unification.md](plan-infrastructure-unification.md), one of the greatest failures in simple proxy systems is the delay between a container crashing and the router updating.
 
-- **Pre-emptive Failover**: CUE's Traefik ingress doesn't just watch the local Docker socket; it watches the **Global Gossip State**. If a node goes offline, all other nodes are notified within milliseconds via Memberlist. 
-- **Synthetic Health Signals**: Beyond simple "is the process running?", CUE monitors the **Hydration Status** of frontend services. If a frontend bundle fails to load or returns a 404/500 repeatedly, the agent broadcasts a "Degraded" signal, prompting the ingress layer to bypass that node entirely before the user ever sees a broken page.
+* **Pre-emptive Failover**: CUE's Traefik ingress doesn't just watch the local Docker socket; it watches the **Global Gossip State**. If a node goes offline, all other nodes are notified within milliseconds via Memberlist.
+* **Synthetic Health Signals**: Beyond simple "is the process running?", CUE monitors the **Hydration Status** of frontend services. If a frontend bundle fails to load or returns a 404/500 repeatedly, the agent broadcasts a "Degraded" signal, prompting the ingress layer to bypass that node entirely before the user ever sees a broken page.
 
 ***
 
 ## 🏗️ The "Unified Fork" Strategy: Reconciling Swarm & K8s
+
 To achieve our goal of being "more unified than Swarm or K3s," CUE implements a hybrid control plane that picks the best features of both worlds:
 
 | Feature | Swarm Approach | K8s Approach | **CUE Unified Method** |
@@ -141,6 +146,7 @@ CUE solves this natively by running a **Virtual Docker Socket Daemon Instance** 
 * **Operations `/containers/<id>/restart`**: Deunhealth or general watchdog containers trigger immediate, safe Pod recreations by forwarding container REST requests directly into Kube-API pod deletion commands.
 
 ### 4. Advanced Compose-Spec Translation Matrix
+
 CUE doesn't just support basic services; it handles complex dependency trees and environment logic that standard K3s `kompose` tools often fail on:
 
 | Compose Feature | CUE Implementation Strategy | Benefit |
@@ -157,20 +163,25 @@ CUE doesn't just support basic services; it handles complex dependency trees and
 Infrastructure shouldn't just be powerful; it should be *intuitive*. CUE treats the developer's CLI as the primary interface, not a dense web portal or a mountain of YAML.
 
 ### 1. `cue` CLI: The Swiss Army Knife
+
 The `cue` binary acts as both the server and the primary client. It mimics the syntax of common tools to reduce muscle-memory friction:
-- `cue up -d`: Deploys the current project (maps to `kubectl apply`).
-- `cue ps`: Shows all services across the **entire cluster**, showing which node they are running on.
-- `cue logs -f`: Aggregates logs from all replicas of a service, even if they span 3 nodes.
-- `cue exec -it`: Spawns a terminal into a container regardless of its physical location in the mesh.
+
+* `cue up -d`: Deploys the current project (maps to `kubectl apply`).
+* `cue ps`: Shows all services across the **entire cluster**, showing which node they are running on.
+* `cue logs -f`: Aggregates logs from all replicas of a service, even if they span 3 nodes.
+* `cue exec -it`: Spawns a terminal into a container regardless of its physical location in the mesh.
 
 ### 2. Auto-Discovery & "Magic" Ingress
+
 In standard K8s, setting up an Ingress requires a `Service`, an `Ingress` object, and a `Cert-Manager` Issuer.
-**The CUE approach**: 
+**The CUE approach**:
 Simply add the Traefik labels you already use in Docker Compose:
+
 ```yaml
 labels:
   - "traefik.http.routers.myapp.rule=Host(`myapp.bolabaden.org`)"
 ```
+
 CUE's controller detects these labels and **atomically generates** the K8s Service, Ingress, and ACME Challenge records. It removes 30-40 lines of boilerplate YAML per service.
 
 ***
@@ -298,3 +309,14 @@ Bringing CUE to fruition is structured into four distinct development phases, pr
 * Move all 57+ docker-compose stacks ([docker-compose.yml](docker-compose.yml)) to run natively on CUE.
 * Test geographical node outages, connection packet drops, and automatic failover times.
 * Release stable 1.0.0 distribution templates for the community.
+
+***
+
+## 🔄 Migration Path: From Legacy to CUE
+
+Transitioning from the current manual "no-orchestrator" setup to CUE is designed to be a "Zero-Rename" process:
+
+1. **Phase 1 (Sidecar)**: Install CUE on an existing node. It will detect currently running Docker containers and "Claim" them in its read-only dashboard without stopping them.
+2. **Phase 2 (Shadow Mode)**: Apply your `docker-compose.yml` via `cue up -d`. CUE will verify it can reconcile the requirements (networks, volumes) before proceeding.
+3. **Phase 3 (Takeover)**: On confirmation, CUE stops the standalone Docker container and immediately reinstantiates it as a managed CUE Pod, mounting the existing local volumes.
+4. **Phase 4 (Expansion)**: Run `cue join` on other nodes. CUE detects the service mesh and automatically converts local network aliases into cluster-wide Anycast addresses.
