@@ -5,7 +5,7 @@
 Use this checklist to verify the conversion is complete and ready for deployment.
 
 ### File Structure
-- [x] `docker-compose.nomad.hcl` - Main job file (5,628 lines)
+- [x] `nomad.hcl` - Main job file (5,628 lines)
 - [x] `variables.auto.tfvars.hcl` - Non-sensitive config (482 lines)
 - [x] `secrets.auto.tfvars.hcl` - Sensitive data (461 lines)
 - [x] `.gitignore` - Secrets protection configured
@@ -202,8 +202,8 @@ Before deploying to production:
 - [ ] Necessary host ports are available (80, 443, etc.)
 
 ### Testing
-- [ ] Run `nomad job validate docker-compose.nomad.hcl`
-- [ ] Run `nomad job plan docker-compose.nomad.hcl`
+- [ ] Run `nomad job validate nomad.hcl`
+- [ ] Run `nomad job plan nomad.hcl`
 - [ ] Review the plan output
 - [ ] Start with a subset of services first (comment out groups)
 

@@ -1,0 +1,7 @@
+# Minimal Configuration Example
+# This is the absolute minimum configuration needed
+
+domain: example.com
+stack_name: my-stack
+
+# All other values will use defaults

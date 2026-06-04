@@ -1,5 +1,5 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: jackett
 description: Jackett torrent indexer aggregator
 type: container
@@ -7,7 +7,11 @@ dependencies:
   - deploy.flaresolverr
 
 spec:
+  replicas: 3
   image: lscr.io/linuxserver/jackett
+  hostname: jackett
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}
@@ -22,22 +26,47 @@ spec:
   volumes:
     - name: config
       containerPath: /config
-      sourcePath: ${var.config-path}/jackett/config
+      hostPath: ${var.config-path}/jackett/config
     - name: blackhole
       containerPath: /blackhole
       hostPath: /mnt/remote/blackhole
+    - name: serverconfig
+      containerPath: /defaults/ServerConfig.json
+      hostPath: ${var.config-path}/jackett/ServerConfig.json
+      readOnly: true
+    - name: indexer-blacklist
+      containerPath: /indexer-blacklist.txt
+      hostPath: ${var.config-path}/jackett/indexer-blacklist.txt
+      readOnly: true
+    - name: init-script
+      containerPath: /custom-cont-init.d/99-remove-slow-indexers
+      hostPath: ${var.config-path}/jackett/99-remove-slow-indexers.sh
+      readOnly: true
   resources:
     limits:
       cpu: 1000m
-      memory: 1Gi
+      memory: 1024Mi
     requests:
       memory: 128Mi
   ingresses:
     - path: /
       port: http
       hostname: jackett.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /api/v2.0/indexers/all/results/torznab?t=indexers
+    - path: /
       port: http
+      hostname: jackett.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.routers.jackett.rule: Host(`jackett.${var.domain}`) || Host(`jackett.${var.ts-hostname}.${var.domain}`)
+    traefik.http.services.jackett.loadbalancer.server.port: 9117
+    kuma.jackett.http.name: jackett.${var.ts-hostname}.${var.domain}
+    kuma.jackett.http.url: https://jackett.${var.domain}/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=${var.JACKETT_API_KEY}
+    kuma.jackett.http.interval: 30
+  healthCheck:
+    exec:
+      command: [sh, -c, "curl -fs http://127.0.0.1:9117/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=$${JACKETT_API_KEY} > /dev/null 2>&1 || exit 1"]
+    initialDelaySeconds: 0
+    periodSeconds: 30
+    timeoutSeconds: 10
+    startPeriodSeconds: 60
   restartPolicy: always

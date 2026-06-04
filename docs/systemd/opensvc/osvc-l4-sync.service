@@ -1,0 +1,11 @@
+[Unit]
+Description=Generate HAProxy L4 config from OpenSVC + Docker labels
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/ubuntu/my-media-stack
+ExecStart=/home/ubuntu/my-media-stack/scripts/osvc_l4_sync.sh
+
+

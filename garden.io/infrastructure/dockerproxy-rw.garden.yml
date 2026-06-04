@@ -1,12 +1,15 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: dockerproxy-rw
 description: Docker Socket Proxy with read/write access
 type: container
 
 spec:
+  replicas: 3
   image: lscr.io/linuxserver/socket-proxy
   privileged: true
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}
@@ -48,6 +51,6 @@ spec:
   volumes:
     - name: docker-sock
       containerPath: /var/run/docker.sock
-      sourcePath: ${var.docker-socket}
+      hostPath: ${var.docker-socket}
   restartPolicy: always
 

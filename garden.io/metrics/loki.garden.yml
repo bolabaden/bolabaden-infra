@@ -1,0 +1,25 @@
+kind: Deploy
+apiVersion: garden.io/v0
+name: loki
+description: Loki log aggregation system
+type: container
+
+spec:
+  replicas: 3
+  image: docker.io/grafana/loki
+  hostname: loki
+  ports:
+    - name: http
+      containerPort: 3100
+  volumes:
+    - name: config
+      containerPath: /etc/loki/config.yaml
+      hostPath: ${var.config-path}/loki/config.yaml
+      readOnly: true
+    - name: data
+      containerPath: /loki
+      hostPath: ${var.config-path}/loki/data
+  command:
+    - -config.file=/etc/loki/config.yaml
+  restartPolicy: always
+

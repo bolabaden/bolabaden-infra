@@ -18,7 +18,7 @@ nomad/
 ├── variables.auto.tfvars.hcl    # ✅ Safe to commit - configuration only
 ├── secrets.auto.tfvars.hcl      # ⚠️ NEVER commit - contains secrets
 ├── .gitignore                   # Protects secrets.auto.tfvars.hcl
-└── docker-compose.nomad.hcl     # Main Nomad job file
+└── nomad.hcl                    # Main Nomad job file
 ```
 
 ## Security Protection
@@ -54,13 +54,13 @@ git check-ignore nomad/secrets.auto.tfvars.hcl
 cd nomad
 
 # Both files are auto-loaded:
-nomad job run docker-compose.nomad.hcl
+nomad job run nomad.hcl
 
 # To override specific values:
 nomad job run \
   -var="domain=example.com" \
   -var="sudo_password=newpass" \
-  docker-compose.nomad.hcl
+  nomad.hcl
 ```
 
 ### Production Deployment
@@ -119,7 +119,7 @@ vault kv put secret/my-media-stack \
 export NOMAD_VAR_sudo_password="your-password"
 export NOMAD_VAR_openai_api_key="sk-..."
 
-nomad job run docker-compose.nomad.hcl
+nomad job run nomad.hcl
 ```
 
 ## Secrets in This File
@@ -199,7 +199,7 @@ All variables are mapped and ready to use with proper Nomad variable syntax.
 
 ## Variable Reference in Job Files
 
-In `docker-compose.nomad.hcl`, variables are referenced in TWO different ways:
+In `nomad.hcl`, variables are referenced in TWO different ways:
 
 ### HCL Variable References (var.x)
 Used for static configuration resolved at job submission:
@@ -238,7 +238,7 @@ Before deployment:
 - [ ] Verify `secrets.auto.tfvars.hcl` is in `.gitignore`
 - [ ] Update all placeholder passwords/keys with real values
 - [ ] Rotate any secrets that may have been exposed
-- [ ] Test with `nomad job validate docker-compose.nomad.hcl`
+- [ ] Test with `nomad job validate nomad.hcl`
 - [ ] For production, migrate to Nomad Variables or Vault
 - [ ] Document secret rotation procedures
 - [ ] Set up secret backup strategy

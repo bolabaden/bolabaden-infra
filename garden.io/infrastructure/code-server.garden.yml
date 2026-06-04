@@ -1,11 +1,15 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: code-server
 description: VS Code server for browser-based development
 type: container
 
 spec:
+  replicas: 3
   image: lscr.io/linuxserver/code-server
+  hostname: code-server
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
     PUID: ${var.PUID || "1001"}
@@ -13,7 +17,7 @@ spec:
     UMASK: ${var.UMASK || "002"}
     HASHED_PASSWORD: ${var.CODESERVER_HASHED_PASSWORD || ""}
     SUDO_PASSWORD_HASH: ${var.CODESERVER_SUDO_PASSWORD_HASH || ""}
-    PWA_APPNAME: code-server.${var.ts-hostname}.${var.domain}
+    PWA_APPNAME: ${var.CODESERVER_PWA_APPNAME || "code-server.${var.ts-hostname}.${var.domain}"}
     DEFAULT_WORKSPACE: ${var.CODESERVER_DEFAULT_WORKSPACE || "/workspace"}
   ports:
     - name: http
@@ -21,13 +25,14 @@ spec:
   volumes:
     - name: docker-sock
       containerPath: /var/run/docker.sock
-      sourcePath: ${var.docker-socket}
+      hostPath: ${var.docker-socket}
+      readOnly: false
     - name: config
       containerPath: /config
-      sourcePath: ${var.config-path}/code-server/dev/config
+      hostPath: ${var.config-path}/code-server/dev/config
     - name: workspace
-      containerPath: /workspace
-      sourcePath: ${var.root-path || "."}
+      containerPath: ${var.CODESERVER_DEFAULT_WORKSPACE || "/workspace"}
+      hostPath: ${var.root-path || "."}
   resources:
     limits:
       cpu: 2000m
@@ -38,4 +43,25 @@ spec:
     - path: /
       port: http
       hostname: code-server.${var.domain}
+    - path: /
+      port: http
+      hostname: code-server.${var.ts-hostname}.${var.domain}
+  annotations:
+    traefik.enable: "true"
+    traefik.http.middlewares.codeserver-redirect.redirectRegex.regex: '^https?://codeserver\.((?:${var.domain}|${var.ts-hostname}\.${var.domain}))(.*)$'
+    traefik.http.middlewares.codeserver-redirect.redirectRegex.replacement: 'https://code-server.$1$2'
+    traefik.http.middlewares.codeserver-redirect.redirectRegex.permanent: false
+    traefik.http.routers.code-server.middlewares: nginx-auth@file
+    traefik.http.services.code-server.loadbalancer.server.port: 8443
+    traefik.http.routers.codeserver-redirect.rule: Host(`codeserver.${var.domain}`) || Host(`codeserver.${var.ts-hostname}.${var.domain}`)
+    traefik.http.routers.codeserver-redirect.middlewares: codeserver-redirect@docker
+    traefik.http.routers.codeserver-redirect.service: code-server@docker
+    homepage.group: Infrastructure
+    homepage.name: Code Dev
+    homepage.icon: code-server.png
+    homepage.href: https://code-server.${var.domain}/
+    homepage.description: In-browser VS Code environment for editing and managing code on this server
+    kuma.code-server.http.name: code-server.${var.ts-hostname}.${var.domain}
+    kuma.code-server.http.url: https://code-server.${var.domain}
+    kuma.code-server.http.interval: "60"
   restartPolicy: always

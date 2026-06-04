@@ -1,11 +1,14 @@
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: comet
 description: Comet Stremio addon for torrent indexing
 type: container
 
 spec:
+  replicas: 3
   image: docker.io/g0ldyy/comet
+  extraHosts:
+    - host.docker.internal:host-gateway
   env:
     TZ: ${var.tz}
     UMASK: ${var.UMASK || "002"}
@@ -25,7 +28,7 @@ spec:
     CORS_ALLOW_HEADERS: "*"
     
     # Dashboard Settings
-    DASHBOARD_ADMIN_PASSWORD: ${var.sudo-password}
+    DASHBOARD_ADMIN_PASSWORD_FILE: /run/secrets/sudo-password
     
     # Database Configuration
     DATABASE_TYPE: sqlite
@@ -74,20 +77,34 @@ spec:
     STREMTHRU_URL: https://stremthru.${var.domain}
   ports:
     - name: http
-      containerPort: 2020
-      hostPort: 2020
+      containerPort: ${var.COMET_PORT || "2020"}
+      hostPort: ${var.COMET_PORT || "2020"}
       hostIp: 127.0.0.1
   volumes:
     - name: data
       containerPath: /data
-      sourcePath: ${var.config-path}/stremio/addons/comet/data
+      hostPath: ${var.config-path}/stremio/addons/comet/data
+    - name: sudo-password
+      containerPath: /run/secrets/sudo-password
+      hostPath: ${var.config-path}/secrets/sudo-password.txt
+      readOnly: true
   ingresses:
     - path: /
       port: http
       hostname: comet.${var.domain}
-  healthCheck:
-    httpGet:
-      path: /health
+    - path: /
       port: http
+      hostname: comet.${var.ts-hostname}.${var.domain}
+  healthCheck:
+    exec:
+      command:
+      - sh
+      - -c
+      - 'wget -qO- http://127.0.0.1:${var.COMET_PORT || "2020"}/health > /dev/null 2>&1 || exit 1'
+    initialDelaySeconds: 15
+    periodSeconds: 60
+    timeoutSeconds: 5
+    failureThreshold: 3
+    startPeriodSeconds: 15
   restartPolicy: always
 

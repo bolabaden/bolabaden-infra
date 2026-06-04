@@ -1,0 +1,35 @@
+# High Availability Kubernetes Cluster Configuration
+# Zero SPOF Setup
+
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+metadata:
+  name: ha-cluster
+kubernetesVersion: v1.27.3
+controlPlaneEndpoint: "micklethefickle.bolabaden.org:6443"
+etcd:
+  external:
+    endpoints:
+      - "https://micklethefickle.bolabaden.org:2379"
+      - "https://cloudserver1.bolabaden.org:2379"
+      - "https://cloudserver2.bolabaden.org:2379"
+networking:
+  podSubnet: "10.244.0.0/16"
+  serviceSubnet: "10.96.0.0/12"
+dns:
+  type: CoreDNS
+apiServer:
+  certSANs:
+    - "micklethefickle.bolabaden.org"
+    - "cloudserver1.bolabaden.org"
+    - "cloudserver2.bolabaden.org"
+    - "cloudserver3.bolabaden.org"
+    - "blackboar.bolabaden.org"
+    - "127.0.0.1"
+    - "10.96.0.1"
+controllerManager:
+  extraArgs:
+    node-monitor-grace-period: "40s"
+scheduler:
+  extraArgs:
+    bind-address: "0.0.0.0"
