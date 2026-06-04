@@ -1,0 +1,15 @@
+{
+    "recommendations": [
+        "mikestead.dotenv",
+        "bpruitt-goddard.mermaid-markdown-syntax-highlighting",
+        "alefragnani.bookmarks",
+        "anysphere.remote-ssh",
+        "anysphere.remote-wsl",
+        "4ops.terraform",
+        "xyz.local-history",
+        "ms-vscode.go",
+        "docker.docker",
+        "mads-hartmann.bash-ide-vscode",
+        "ms-vscode.vscode-chat-customizations-evaluations"
+    ]
+}

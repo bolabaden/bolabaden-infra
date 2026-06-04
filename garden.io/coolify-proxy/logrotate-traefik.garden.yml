@@ -1,20 +1,30 @@
+kind: Build
+apiVersion: garden.io/v0
+name: logrotate-traefik
+description: Logrotate for Traefik logs build
+type: container
+source:
+  path: ${var.src-path || "./src"}/reverse_proxy/logrotate-traefik
+
+---
 kind: Deploy
-apiVersion: garden.io/v2
+apiVersion: garden.io/v0
 name: logrotate-traefik
 description: Logrotate for Traefik logs with human-readable output
 type: container
+dependencies:
+  - build.logrotate-traefik
 
 spec:
-  image: docker.io/alpine
-  user: root:root
+  replicas: 3
+  image: ${actions.build.logrotate-traefik.outputs.deploymentImageId}
+  networkMode: none
   env:
     TZ: ${var.tz}
-  ports: []
   volumes:
     - name: logs
       containerPath: /var/log/traefik
-      sourcePath: ${var.config-path}/traefik/logs
-  command: ["/traefik_logrotate_tail.sh"]
+      hostPath: ${var.config-path}/traefik/logs
   resources:
     limits:
       cpu: 100m
