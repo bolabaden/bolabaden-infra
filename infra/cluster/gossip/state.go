@@ -14,6 +14,7 @@ type NodeMetadata struct {
 	Priority     int       `json:"priority"` // Lower = higher priority
 	Capabilities []string  `json:"capabilities"`
 	LastSeen     time.Time `json:"last_seen"`
+	Online       bool      `json:"online"`
 	Cordoned     bool      `json:"cordoned"` // If true, don't route new traffic here
 }
 
@@ -28,6 +29,15 @@ type ServiceHealth struct {
 	ConsecutiveFailures int               `json:"consecutive_failures"`        // Track consecutive health check failures
 	LastFailureTime     *time.Time        `json:"last_failure_time,omitempty"` // When the last failure occurred
 	LastSuccessTime     *time.Time        `json:"last_success_time,omitempty"` // When the last success occurred
+	CurrentLease        *ServiceLease     `json:"current_lease,omitempty"`     // Cluster-wide lease owner for this service
+}
+
+// ServiceLease describes the current cluster-wide lease owner for a service.
+type ServiceLease struct {
+	NodeName   string    `json:"node_name"`
+	Term       uint64    `json:"term"`
+	LeaseID    string    `json:"lease_id"`
+	ObservedAt time.Time `json:"observed_at"`
 }
 
 // WARPHealth represents the health status of the WARP gateway
@@ -62,6 +72,7 @@ func (cs *ClusterState) UpdateNode(node *NodeMetadata) {
 	defer cs.mu.Unlock()
 
 	node.LastSeen = time.Now()
+	node.Online = true
 	cs.Nodes[node.Name] = node
 	cs.Version++
 }
@@ -80,18 +91,39 @@ func (cs *ClusterState) RemoveNode(name string) {
 	cs.mu.Lock()
 	defer cs.mu.Unlock()
 
-	delete(cs.Nodes, name)
-	cs.Version++
-
-	// Remove all service health entries for this node
-	for key, health := range cs.ServiceHealth {
-		if health.NodeName == name {
-			delete(cs.ServiceHealth, key)
-		}
+	node, exists := cs.Nodes[name]
+	if !exists {
+		return
 	}
 
-	// Remove WARP health for this node
-	delete(cs.WARPHealth, name)
+	nodeCopy := *node
+	nodeCopy.Online = false
+	nodeCopy.Cordoned = true
+	nodeCopy.LastSeen = time.Now()
+	cs.Nodes[name] = &nodeCopy
+
+	for key, health := range cs.ServiceHealth {
+		if health.NodeName != name {
+			continue
+		}
+
+		healthCopy := *health
+		healthCopy.Healthy = false
+		healthCopy.CheckedAt = time.Now()
+		healthCopy.ConsecutiveFailures++
+		lastFailure := healthCopy.CheckedAt
+		healthCopy.LastFailureTime = &lastFailure
+		cs.ServiceHealth[key] = &healthCopy
+	}
+
+	if warpHealth, exists := cs.WARPHealth[name]; exists {
+		warpCopy := *warpHealth
+		warpCopy.Healthy = false
+		warpCopy.CheckedAt = time.Now()
+		cs.WARPHealth[name] = &warpCopy
+	}
+
+	cs.Version++
 }
 
 // UpdateServiceHealth updates the health status of a service on a node
@@ -105,6 +137,11 @@ func (cs *ClusterState) UpdateServiceHealth(health *ServiceHealth) {
 
 	// Track consecutive failures for migration triggers
 	if existing, exists := cs.ServiceHealth[key]; exists {
+		if health.CurrentLease == nil && existing.CurrentLease != nil {
+			leaseCopy := *existing.CurrentLease
+			health.CurrentLease = &leaseCopy
+		}
+
 		if health.Healthy {
 			// Service is now healthy, reset failure count
 			health.ConsecutiveFailures = 0
@@ -137,6 +174,47 @@ func (cs *ClusterState) UpdateServiceHealth(health *ServiceHealth) {
 	cs.Version++
 }
 
+// UpdateServiceLease updates the observed lease owner for all known instances of a service.
+func (cs *ClusterState) UpdateServiceLease(serviceName string, lease *ServiceLease) {
+	cs.mu.Lock()
+	defer cs.mu.Unlock()
+
+	var changed bool
+	for key, health := range cs.ServiceHealth {
+		if health.ServiceName != serviceName {
+			continue
+		}
+
+		if lease == nil {
+			if health.CurrentLease != nil {
+				healthCopy := *health
+				healthCopy.CurrentLease = nil
+				cs.ServiceHealth[key] = &healthCopy
+				changed = true
+			}
+			continue
+		}
+
+		leaseCopy := *lease
+		if health.CurrentLease != nil &&
+			health.CurrentLease.NodeName == leaseCopy.NodeName &&
+			health.CurrentLease.Term == leaseCopy.Term &&
+			health.CurrentLease.LeaseID == leaseCopy.LeaseID &&
+			health.CurrentLease.ObservedAt.Equal(leaseCopy.ObservedAt) {
+			continue
+		}
+
+		healthCopy := *health
+		healthCopy.CurrentLease = &leaseCopy
+		cs.ServiceHealth[key] = &healthCopy
+		changed = true
+	}
+
+	if changed {
+		cs.Version++
+	}
+}
+
 // GetServiceHealth retrieves the health status of a service on a node
 func (cs *ClusterState) GetServiceHealth(serviceName, nodeName string) (*ServiceHealth, bool) {
 	cs.mu.RLock()
@@ -154,11 +232,58 @@ func (cs *ClusterState) GetHealthyServiceNodes(serviceName string) []string {
 
 	var healthyNodes []string
 	for _, health := range cs.ServiceHealth {
-		if health.ServiceName == serviceName && health.Healthy {
+		node, exists := cs.Nodes[health.NodeName]
+		if health.ServiceName == serviceName && health.Healthy && exists && node.Online && !node.Cordoned {
 			healthyNodes = append(healthyNodes, health.NodeName)
 		}
 	}
 	return healthyNodes
+}
+
+// GetServiceInstances returns all known instances for a service across the cluster.
+func (cs *ClusterState) GetServiceInstances(serviceName string) []*ServiceHealth {
+	cs.mu.RLock()
+	defer cs.mu.RUnlock()
+
+	instances := make([]*ServiceHealth, 0)
+	for _, health := range cs.ServiceHealth {
+		if health.ServiceName != serviceName {
+			continue
+		}
+
+		healthCopy := *health
+		if health.CurrentLease != nil {
+			leaseCopy := *health.CurrentLease
+			healthCopy.CurrentLease = &leaseCopy
+		}
+		instances = append(instances, &healthCopy)
+	}
+
+	return instances
+}
+
+// GetServiceLease returns the most recently observed lease for a service, if any.
+func (cs *ClusterState) GetServiceLease(serviceName string) (*ServiceLease, bool) {
+	cs.mu.RLock()
+	defer cs.mu.RUnlock()
+
+	var latest *ServiceLease
+	for _, health := range cs.ServiceHealth {
+		if health.ServiceName != serviceName || health.CurrentLease == nil {
+			continue
+		}
+
+		if latest == nil || health.CurrentLease.ObservedAt.After(latest.ObservedAt) {
+			leaseCopy := *health.CurrentLease
+			latest = &leaseCopy
+		}
+	}
+
+	if latest == nil {
+		return nil, false
+	}
+
+	return latest, true
 }
 
 // UpdateWARPHealth updates the WARP gateway health for a node

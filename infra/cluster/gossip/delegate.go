@@ -3,6 +3,8 @@ package gossip
 import (
 	"encoding/json"
 	"log"
+	"sync"
+	"time"
 
 	"github.com/hashicorp/memberlist"
 )
@@ -12,6 +14,23 @@ type GossipDelegate struct {
 	state    *ClusterState
 	nodeName string
 	updates  chan *ClusterState // Channel for state updates
+	chunkMu  sync.Mutex
+	chunks   map[string]*stateChunkAccumulator
+}
+
+type stateChunkMessage struct {
+	Kind    string `json:"kind"`
+	ChunkID string `json:"chunk_id"`
+	Index   int    `json:"index"`
+	Total   int    `json:"total"`
+	Payload []byte `json:"payload"`
+}
+
+type stateChunkAccumulator struct {
+	total   int
+	parts   [][]byte
+	seen    int
+	updated time.Time
 }
 
 // NewGossipDelegate creates a new gossip delegate
@@ -20,6 +39,7 @@ func NewGossipDelegate(nodeName string, state *ClusterState) *GossipDelegate {
 		state:    state,
 		nodeName: nodeName,
 		updates:  make(chan *ClusterState, 100),
+		chunks:   make(map[string]*stateChunkAccumulator),
 	}
 }
 
@@ -76,17 +96,89 @@ func (gd *GossipDelegate) NodeMeta(limit int) []byte {
 // NotifyMsg is called when a message is received from another node
 func (gd *GossipDelegate) NotifyMsg(msg []byte) {
 	var incomingState ClusterState
-	if err := json.Unmarshal(msg, &incomingState); err != nil {
+	if err := json.Unmarshal(msg, &incomingState); err == nil {
+		if incomingState.Nodes != nil || incomingState.ServiceHealth != nil || incomingState.WARPHealth != nil || incomingState.Version != 0 {
+			gd.mergeIncomingState(&incomingState)
+			return
+		}
+	} else if !gd.handleChunkMessage(msg) {
 		log.Printf("Failed to unmarshal incoming state: %v", err)
 		return
 	}
 
+	if !gd.handleChunkMessage(msg) {
+		log.Printf("Failed to interpret incoming gossip message")
+	}
+}
+
+func (gd *GossipDelegate) handleChunkMessage(msg []byte) bool {
+	var chunk stateChunkMessage
+	if err := json.Unmarshal(msg, &chunk); err != nil {
+		return false
+	}
+	if chunk.Kind != "state_chunk" || chunk.Total <= 0 || chunk.Index < 0 || chunk.Index >= chunk.Total {
+		return false
+	}
+
+	gd.chunkMu.Lock()
+	defer gd.chunkMu.Unlock()
+
+	now := time.Now()
+	for chunkID, pending := range gd.chunks {
+		if now.Sub(pending.updated) > 30*time.Second {
+			delete(gd.chunks, chunkID)
+		}
+	}
+
+	pending, exists := gd.chunks[chunk.ChunkID]
+	if !exists {
+		pending = &stateChunkAccumulator{
+			total:   chunk.Total,
+			parts:   make([][]byte, chunk.Total),
+			updated: now,
+		}
+		gd.chunks[chunk.ChunkID] = pending
+	}
+
+	if pending.total != chunk.Total {
+		delete(gd.chunks, chunk.ChunkID)
+		return false
+	}
+
+	if pending.parts[chunk.Index] == nil {
+		pending.seen++
+	}
+	pending.parts[chunk.Index] = append([]byte(nil), chunk.Payload...)
+	pending.updated = now
+
+	if pending.seen != pending.total {
+		return true
+	}
+
+	delete(gd.chunks, chunk.ChunkID)
+
+	fullState := make([]byte, 0)
+	for _, part := range pending.parts {
+		fullState = append(fullState, part...)
+	}
+
+	var incomingState ClusterState
+	if err := json.Unmarshal(fullState, &incomingState); err != nil {
+		log.Printf("Failed to unmarshal reassembled state chunk %s: %v", chunk.ChunkID, err)
+		return true
+	}
+
+	gd.mergeIncomingState(&incomingState)
+	return true
+}
+
+func (gd *GossipDelegate) mergeIncomingState(incomingState *ClusterState) {
 	// Merge the incoming state with our local state
-	gd.state.MergeState(&incomingState)
+	gd.state.MergeState(incomingState)
 
 	// Notify listeners of state updates
 	select {
-	case gd.updates <- &incomingState:
+	case gd.updates <- incomingState:
 	default:
 		// Channel full, drop update
 		log.Printf("State update channel full, dropping update")
@@ -104,17 +196,38 @@ func (gd *GossipDelegate) GetBroadcasts(overhead, limit int) [][]byte {
 
 	if len(data) > limit {
 		// Chunk the state into multiple broadcasts
-		// Each chunk will be reassembled by the receiving node
 		chunks := chunkData(data, limit-overhead)
 		if len(chunks) == 0 {
 			log.Printf("Cluster state too large to broadcast even in chunks (%d > %d)", len(data), limit-overhead)
 			return nil
 		}
 		log.Printf("Chunking cluster state into %d broadcasts (%d bytes total)", len(chunks), len(data))
-		return chunks
+
+		chunkID := gd.nextChunkID()
+		messages := make([][]byte, 0, len(chunks))
+		for i, chunk := range chunks {
+			envelope, err := json.Marshal(stateChunkMessage{
+				Kind:    "state_chunk",
+				ChunkID: chunkID,
+				Index:   i,
+				Total:   len(chunks),
+				Payload: chunk,
+			})
+			if err != nil {
+				log.Printf("Failed to marshal chunk %d/%d: %v", i+1, len(chunks), err)
+				return nil
+			}
+			messages = append(messages, envelope)
+		}
+
+		return messages
 	}
 
 	return [][]byte{data}
+}
+
+func (gd *GossipDelegate) nextChunkID() string {
+	return gd.nodeName + "-" + time.Now().UTC().Format("20060102150405.000000000")
 }
 
 // chunkData splits data into chunks of specified size

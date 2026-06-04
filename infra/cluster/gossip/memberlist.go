@@ -56,6 +56,7 @@ func NewGossipCluster(config *Config) (*GossipCluster, error) {
 	mlConfig.BindAddr = config.BindAddr
 	mlConfig.BindPort = config.BindPort
 	mlConfig.AdvertiseAddr = config.TailscaleIP // Advertise Tailscale IP
+	mlConfig.AdvertisePort = config.BindPort
 	mlConfig.Delegate = gossipDelegate
 	mlConfig.Events = eventDelegate
 
@@ -150,7 +151,7 @@ func (gc *GossipCluster) GetHealthyNodes() []*memberlist.Node {
 	for _, member := range allMembers {
 		// Check if node is in suspicion or dead state
 		// memberlist doesn't expose this directly, so we check if the node is in our state
-		if _, exists := gc.state.GetNode(member.Name); exists {
+		if node, exists := gc.state.GetNode(member.Name); exists && node.Online && !node.Cordoned {
 			healthy = append(healthy, member)
 		}
 	}

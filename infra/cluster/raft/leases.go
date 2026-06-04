@@ -172,6 +172,15 @@ func (lm *LeaseManager) GetLeaseFencingToken(leaseType LeaseType, target string)
 	return lease.Term, lease.LeaseID, nil
 }
 
+// GetLease returns the current lease for a given type and target.
+func (lm *LeaseManager) GetLease(leaseType LeaseType, target string) *Lease {
+	if lm == nil || lm.consensus == nil {
+		return nil
+	}
+
+	return lm.consensus.GetLease(leaseType, target)
+}
+
 // renewalLoop periodically renews active leases
 func (lm *LeaseManager) renewalLoop() {
 	for {
@@ -198,7 +207,7 @@ func (lm *LeaseManager) renewalLoop() {
 				// Since LeaseType constant values don't contain ":", we can split
 				var leaseType LeaseType
 				var target string
-				
+
 				// Find first ":"
 				idx := -1
 				for i, r := range key {
@@ -247,7 +256,7 @@ func (lm *LeaseManager) Shutdown() {
 		// Parse type and target from key
 		var leaseType LeaseType
 		var target string
-		
+
 		idx := -1
 		for i, r := range key {
 			if r == ':' {

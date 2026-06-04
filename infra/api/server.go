@@ -123,7 +123,7 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 	nodeCount := len(allNodes)
 	healthyNodeCount := 0
 	for _, node := range allNodes {
-		if !node.Cordoned {
+		if node.Online && !node.Cordoned {
 			healthyNodeCount++
 		}
 	}
@@ -170,6 +170,7 @@ func (s *Server) handleNodes(w http.ResponseWriter, r *http.Request) {
 			"priority":     node.Priority,
 			"capabilities": node.Capabilities,
 			"last_seen":    node.LastSeen.Format(time.RFC3339),
+			"online":       node.Online,
 			"cordoned":     node.Cordoned,
 			"warp_healthy": warpHealth != nil && warpHealth.Healthy,
 		})
@@ -239,11 +240,12 @@ func (s *Server) handleNode(w http.ResponseWriter, r *http.Request) {
 	for _, health := range allServices {
 		if health.NodeName == nodeName {
 			nodeServices = append(nodeServices, map[string]interface{}{
-				"service_name": health.ServiceName,
-				"healthy":      health.Healthy,
-				"checked_at":   health.CheckedAt.Format(time.RFC3339),
-				"endpoints":    health.Endpoints,
-				"networks":     health.Networks,
+				"service_name":  health.ServiceName,
+				"healthy":       health.Healthy,
+				"checked_at":    health.CheckedAt.Format(time.RFC3339),
+				"endpoints":     health.Endpoints,
+				"networks":      health.Networks,
+				"current_lease": leaseToResponse(health.CurrentLease),
 			})
 		}
 	}
@@ -257,6 +259,7 @@ func (s *Server) handleNode(w http.ResponseWriter, r *http.Request) {
 		"priority":     node.Priority,
 		"capabilities": node.Capabilities,
 		"last_seen":    node.LastSeen.Format(time.RFC3339),
+		"online":       node.Online,
 		"cordoned":     node.Cordoned,
 		"warp_healthy": warpHealth != nil && warpHealth.Healthy,
 		"services":     nodeServices,
@@ -354,6 +357,39 @@ func splitPath(path string) []string {
 	return parts
 }
 
+func leaseToResponse(lease *gossip.ServiceLease) map[string]interface{} {
+	if lease == nil {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"node_name":   lease.NodeName,
+		"term":        lease.Term,
+		"lease_id":    lease.LeaseID,
+		"observed_at": lease.ObservedAt.Format(time.RFC3339),
+	}
+}
+
+func migrationToResponse(migration *failover.Migration) map[string]interface{} {
+	result := map[string]interface{}{
+		"service_name": migration.ServiceName,
+		"source_node":  migration.SourceNode,
+		"target_node":  migration.TargetNode,
+		"type":         string(migration.Type),
+		"status":       string(migration.Status),
+		"started_at":   migration.StartedAt.Format(time.RFC3339),
+	}
+
+	if migration.CompletedAt != nil {
+		result["completed_at"] = migration.CompletedAt.Format(time.RFC3339)
+	}
+	if migration.Error != nil {
+		result["error"] = migration.Error.Error()
+	}
+
+	return result
+}
+
 // handleServices handles service list requests
 func (s *Server) handleServices(w http.ResponseWriter, r *http.Request) {
 	state := s.gossipCluster.GetState()
@@ -367,11 +403,12 @@ func (s *Server) handleServices(w http.ResponseWriter, r *http.Request) {
 			serviceMap[serviceName] = make([]map[string]interface{}, 0)
 		}
 		serviceMap[serviceName] = append(serviceMap[serviceName], map[string]interface{}{
-			"node_name":  health.NodeName,
-			"healthy":    health.Healthy,
-			"checked_at": health.CheckedAt.Format(time.RFC3339),
-			"endpoints":  health.Endpoints,
-			"networks":   health.Networks,
+			"node_name":     health.NodeName,
+			"healthy":       health.Healthy,
+			"checked_at":    health.CheckedAt.Format(time.RFC3339),
+			"endpoints":     health.Endpoints,
+			"networks":      health.Networks,
+			"current_lease": leaseToResponse(health.CurrentLease),
 		})
 	}
 
@@ -389,6 +426,13 @@ func (s *Server) handleServices(w http.ResponseWriter, r *http.Request) {
 			"instances":     len(instances),
 			"healthy_count": healthyCount,
 			"nodes":         instances,
+			"current_lease": leaseToResponse(func() *gossip.ServiceLease {
+				lease, exists := state.GetServiceLease(serviceName)
+				if !exists {
+					return nil
+				}
+				return lease
+			}()),
 		})
 	}
 
@@ -409,30 +453,33 @@ func (s *Server) handleService(w http.ResponseWriter, r *http.Request) {
 	}
 
 	state := s.gossipCluster.GetState()
-	healthyNodes := state.GetHealthyServiceNodes(serviceName)
+	allInstances := state.GetServiceInstances(serviceName)
 
 	instances := make([]map[string]interface{}, 0)
-	for _, nodeName := range healthyNodes {
-		health, exists := state.GetServiceHealth(serviceName, nodeName)
-		if !exists {
-			continue
+	healthyCount := 0
+	for _, health := range allInstances {
+		if health.Healthy {
+			healthyCount++
 		}
-
 		instances = append(instances, map[string]interface{}{
-			"node_name":  health.NodeName,
-			"healthy":    health.Healthy,
-			"checked_at": health.CheckedAt.Format(time.RFC3339),
-			"endpoints":  health.Endpoints,
-			"networks":   health.Networks,
+			"node_name":     health.NodeName,
+			"healthy":       health.Healthy,
+			"checked_at":    health.CheckedAt.Format(time.RFC3339),
+			"endpoints":     health.Endpoints,
+			"networks":      health.Networks,
+			"current_lease": leaseToResponse(health.CurrentLease),
 		})
 	}
+
+	serviceLease, _ := state.GetServiceLease(serviceName)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"service_name":  serviceName,
 		"instances":     instances,
-		"healthy_count": len(instances),
+		"healthy_count": healthyCount,
+		"current_lease": leaseToResponse(serviceLease),
 	})
 }
 
@@ -479,9 +526,12 @@ func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	healthyNodes := 0
+	offlineNodes := 0
 	cordonedNodes := 0
 	for _, node := range allNodes {
-		if !node.Cordoned {
+		if !node.Online {
+			offlineNodes++
+		} else if !node.Cordoned {
 			healthyNodes++
 		} else {
 			cordonedNodes++
@@ -494,6 +544,7 @@ func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 		"nodes": map[string]interface{}{
 			"total":    len(allNodes),
 			"healthy":  healthyNodes,
+			"offline":  offlineNodes,
 			"cordoned": cordonedNodes,
 		},
 		"services": map[string]interface{}{
@@ -518,24 +569,10 @@ func (s *Server) handleMigrations(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		// Get all migrations (including failed/completed for visibility)
-		// First get active ones, then check for any failed/completed ones
-		activeMigrations := s.migrationManager.GetActiveMigrations()
-		migrations := make([]map[string]interface{}, 0, len(activeMigrations))
-
-		// Add active migrations
-		for _, migration := range activeMigrations {
-			mig := map[string]interface{}{
-				"service_name": migration.ServiceName,
-				"source_node":  migration.SourceNode,
-				"target_node":  migration.TargetNode,
-				"status":       string(migration.Status),
-				"started_at":   migration.StartedAt.Format(time.RFC3339),
-			}
-			if migration.CompletedAt != nil {
-				mig["completed_at"] = migration.CompletedAt.Format(time.RFC3339)
-			}
-			migrations = append(migrations, mig)
+		allMigrations := s.migrationManager.GetAllMigrations()
+		migrations := make([]map[string]interface{}, 0, len(allMigrations))
+		for _, migration := range allMigrations {
+			migrations = append(migrations, migrationToResponse(migration))
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -589,13 +626,7 @@ func (s *Server) handleMigrations(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		result := map[string]interface{}{
-			"service_name": migration.ServiceName,
-			"source_node":  migration.SourceNode,
-			"target_node":  migration.TargetNode,
-			"status":       string(migration.Status),
-			"started_at":   migration.StartedAt.Format(time.RFC3339),
-		}
+		result := migrationToResponse(migration)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusAccepted)
@@ -627,19 +658,7 @@ func (s *Server) handleMigration(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		result := map[string]interface{}{
-			"service_name": migration.ServiceName,
-			"source_node":  migration.SourceNode,
-			"target_node":  migration.TargetNode,
-			"status":       string(migration.Status),
-			"started_at":   migration.StartedAt.Format(time.RFC3339),
-		}
-		if migration.CompletedAt != nil {
-			result["completed_at"] = migration.CompletedAt.Format(time.RFC3339)
-		}
-		if migration.Error != nil {
-			result["error"] = migration.Error.Error()
-		}
+		result := migrationToResponse(migration)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

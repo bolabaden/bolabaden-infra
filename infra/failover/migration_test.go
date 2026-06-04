@@ -2,14 +2,41 @@ package failover
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
 	"cluster/infra/cluster/gossip"
+	"cluster/infra/cluster/raft"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+type stubLeaseProvider struct {
+	leases map[string]*raft.Lease
+}
+
+func (s *stubLeaseProvider) AcquireServiceLease(serviceName string) error {
+	return nil
+}
+
+func (s *stubLeaseProvider) GetLeaseFencingToken(leaseType raft.LeaseType, target string) (uint64, string, error) {
+	lease := s.GetLease(leaseType, target)
+	if lease == nil {
+		return 0, "", fmt.Errorf("lease %s:%s not found", leaseType, target)
+	}
+
+	return lease.Term, lease.LeaseID, nil
+}
+
+func (s *stubLeaseProvider) GetLease(leaseType raft.LeaseType, target string) *raft.Lease {
+	if s == nil {
+		return nil
+	}
+
+	return s.leases[string(leaseType)+":"+target]
+}
 
 func createTestMigrationManager() (*MigrationManager, *gossip.ClusterState) {
 	state := gossip.NewClusterState()
@@ -253,6 +280,38 @@ func TestMigrationManager_GetActiveMigrations(t *testing.T) {
 	}
 }
 
+func TestMigrationManager_GetAllMigrations_IncludesCompletedAndFailed(t *testing.T) {
+	manager, _ := createTestMigrationManager()
+
+	completedAt := time.Now().Add(-1 * time.Minute)
+	manager.migrations["peer-pickup"] = &Migration{
+		ServiceName: "peer-pickup",
+		SourceNode:  "node-a",
+		TargetNode:  "test-node",
+		Type:        MigrationTypePeerPickup,
+		Status:      MigrationStatusCompleted,
+		StartedAt:   completedAt.Add(-30 * time.Second),
+		CompletedAt: &completedAt,
+	}
+	manager.migrations["failed-relocation"] = &Migration{
+		ServiceName: "failed-relocation",
+		SourceNode:  "test-node",
+		TargetNode:  "node-b",
+		Type:        MigrationTypeRelocation,
+		Status:      MigrationStatusFailed,
+		StartedAt:   time.Now(),
+		Error:       fmt.Errorf("docker unavailable"),
+	}
+
+	all := manager.GetAllMigrations()
+	require.Len(t, all, 2)
+	assert.Equal(t, "failed-relocation", all[0].ServiceName)
+	assert.Equal(t, MigrationTypeRelocation, all[0].Type)
+	assert.Equal(t, "peer-pickup", all[1].ServiceName)
+	assert.Equal(t, MigrationTypePeerPickup, all[1].Type)
+	require.NotNil(t, all[1].CompletedAt)
+}
+
 func TestMigrationManager_CheckAndMigrate_HealthBased(t *testing.T) {
 	manager, state := createTestMigrationManager()
 
@@ -435,8 +494,185 @@ func TestMigrationManager_CheckAndMigrate_ReMigrateAfterCompletion(t *testing.T)
 }
 
 func TestMigrationStatus_Constants(t *testing.T) {
+	assert.Equal(t, MigrationType("relocation"), MigrationTypeRelocation)
+	assert.Equal(t, MigrationType("peer_pickup"), MigrationTypePeerPickup)
 	assert.Equal(t, MigrationStatus("pending"), MigrationStatusPending)
 	assert.Equal(t, MigrationStatus("running"), MigrationStatusRunning)
 	assert.Equal(t, MigrationStatus("completed"), MigrationStatusCompleted)
 	assert.Equal(t, MigrationStatus("failed"), MigrationStatusFailed)
+}
+
+func TestMigrationManager_EnforceServiceLeases_StopsLocalContainerWhenLeaseMoves(t *testing.T) {
+	manager, state := createTestMigrationManager()
+	manager.leaseManager = &stubLeaseProvider{
+		leases: map[string]*raft.Lease{
+			"service:test-service": {
+				Type:     raft.LeaseTypeService,
+				Target:   "test-service",
+				NodeName: "peer-node",
+				Term:     7,
+				LeaseID:  "lease-7",
+			},
+		},
+	}
+
+	state.UpdateServiceHealth(&gossip.ServiceHealth{
+		ServiceName: "test-service",
+		NodeName:    "test-node",
+		Healthy:     true,
+	})
+
+	findCalls := 0
+	stoppedID := ""
+	manager.findRunningContainerFn = func(ctx context.Context, serviceName string) (string, error) {
+		findCalls++
+		assert.Equal(t, "test-service", serviceName)
+		return "container-123", nil
+	}
+	manager.stopContainerFn = func(ctx context.Context, containerID string) error {
+		stoppedID = containerID
+		return nil
+	}
+
+	manager.EnforceServiceLeases(context.Background())
+
+	assert.Equal(t, 1, findCalls)
+	assert.Equal(t, "container-123", stoppedID)
+
+	health, exists := state.GetServiceHealth("test-service", "test-node")
+	require.True(t, exists)
+	assert.False(t, health.Healthy)
+	require.NotNil(t, health.CurrentLease)
+	assert.Equal(t, "peer-node", health.CurrentLease.NodeName)
+	assert.Equal(t, uint64(7), health.CurrentLease.Term)
+	assert.Equal(t, "lease-7", health.CurrentLease.LeaseID)
+}
+
+func TestMigrationManager_EnforceServiceLeases_SkipsLocalLeaseOwner(t *testing.T) {
+	manager, state := createTestMigrationManager()
+	manager.leaseManager = &stubLeaseProvider{
+		leases: map[string]*raft.Lease{
+			"service:test-service": {
+				Type:     raft.LeaseTypeService,
+				Target:   "test-service",
+				NodeName: "test-node",
+				Term:     7,
+				LeaseID:  "lease-7",
+			},
+		},
+	}
+
+	state.UpdateServiceHealth(&gossip.ServiceHealth{
+		ServiceName: "test-service",
+		NodeName:    "test-node",
+		Healthy:     true,
+	})
+
+	findCalls := 0
+	stopCalls := 0
+	manager.findRunningContainerFn = func(ctx context.Context, serviceName string) (string, error) {
+		findCalls++
+		return "container-123", nil
+	}
+	manager.stopContainerFn = func(ctx context.Context, containerID string) error {
+		stopCalls++
+		return nil
+	}
+
+	manager.EnforceServiceLeases(context.Background())
+
+	assert.Equal(t, 0, findCalls)
+	assert.Equal(t, 0, stopCalls)
+
+	health, exists := state.GetServiceHealth("test-service", "test-node")
+	require.True(t, exists)
+	assert.True(t, health.Healthy)
+	require.NotNil(t, health.CurrentLease)
+	assert.Equal(t, "test-node", health.CurrentLease.NodeName)
+	assert.Equal(t, uint64(7), health.CurrentLease.Term)
+	assert.Equal(t, "lease-7", health.CurrentLease.LeaseID)
+}
+
+func TestMigrationManager_CheckAndMigrate_TriggersPeerPickupForOfflineNode(t *testing.T) {
+	manager, state := createTestMigrationManager()
+	manager.leaseManager = &stubLeaseProvider{
+		leases: map[string]*raft.Lease{
+			"service:test-service": {
+				Type:     raft.LeaseTypeService,
+				Target:   "test-service",
+				NodeName: "test-node",
+				Term:     11,
+				LeaseID:  "lease-11",
+			},
+		},
+	}
+
+	state.UpdateNode(&gossip.NodeMetadata{Name: "test-node", Priority: 10, Cordoned: false})
+	state.UpdateNode(&gossip.NodeMetadata{Name: "node-b", Priority: 20, Cordoned: false})
+	state.UpdateServiceHealth(&gossip.ServiceHealth{
+		ServiceName: "test-service",
+		NodeName:    "node-b",
+		Healthy:     true,
+	})
+	state.RemoveNode("node-b")
+
+	pickedUp := ""
+	manager.runComposeUpFn = func(ctx context.Context, serviceName string) error {
+		pickedUp = serviceName
+		return nil
+	}
+
+	rule := MigrationRule{
+		ServiceName: "test-service",
+		Trigger:     MigrationTrigger{NodeUnhealthy: true},
+	}
+
+	manager.CheckAndMigrate(context.Background(), []MigrationRule{rule})
+	time.Sleep(100 * time.Millisecond)
+
+	assert.Equal(t, "test-service", pickedUp)
+
+	migration, exists := manager.GetMigrationStatus("test-service")
+	require.True(t, exists)
+	assert.Equal(t, "node-b", migration.SourceNode)
+	assert.Equal(t, "test-node", migration.TargetNode)
+	assert.Equal(t, MigrationTypePeerPickup, migration.Type)
+	assert.Equal(t, MigrationStatusCompleted, migration.Status)
+
+	health, exists := state.GetServiceHealth("test-service", "test-node")
+	require.True(t, exists)
+	require.NotNil(t, health.CurrentLease)
+	assert.Equal(t, "test-node", health.CurrentLease.NodeName)
+	assert.Equal(t, "lease-11", health.CurrentLease.LeaseID)
+}
+
+func TestMigrationManager_CheckAndMigrate_SkipsPeerPickupWhenAnotherNodePreferred(t *testing.T) {
+	manager, state := createTestMigrationManager()
+	state.UpdateNode(&gossip.NodeMetadata{Name: "test-node", Priority: 20, Cordoned: false})
+	state.UpdateNode(&gossip.NodeMetadata{Name: "node-a", Priority: 5, Cordoned: false})
+	state.UpdateNode(&gossip.NodeMetadata{Name: "node-b", Priority: 30, Cordoned: false})
+	state.UpdateServiceHealth(&gossip.ServiceHealth{
+		ServiceName: "test-service",
+		NodeName:    "node-b",
+		Healthy:     true,
+	})
+	state.RemoveNode("node-b")
+
+	called := false
+	manager.runComposeUpFn = func(ctx context.Context, serviceName string) error {
+		called = true
+		return nil
+	}
+
+	rule := MigrationRule{
+		ServiceName: "test-service",
+		Trigger:     MigrationTrigger{NodeUnhealthy: true},
+	}
+
+	manager.CheckAndMigrate(context.Background(), []MigrationRule{rule})
+	time.Sleep(50 * time.Millisecond)
+
+	assert.False(t, called)
+	_, exists := manager.GetMigrationStatus("test-service")
+	assert.False(t, exists)
 }

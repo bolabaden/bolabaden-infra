@@ -136,7 +136,7 @@ func TestE2E_FailoverScenario(t *testing.T) {
 	testNodeName := "test-node" // This matches the default in createTestMigrationManager
 
 	// Create migration manager with the same node name
-	migrationManager := failover.NewMigrationManager(nil, state, testNodeName)
+	migrationManager := failover.NewMigrationManager(nil, state, nil, testNodeName)
 	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
 	_ = NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
 
@@ -237,6 +237,119 @@ func TestE2E_FailoverScenario(t *testing.T) {
 	// Don't assert on active migrations count - failed/completed migrations are not "active"
 	// The migration framework is working correctly - it attempted migration and recorded the failure
 	// This is verified by the GetMigrationStatus check above, which confirmed the migration exists
+}
+
+func TestE2E_PeerPickupScenario(t *testing.T) {
+	gossipCluster := createTestGossipCluster()
+	defer gossipCluster.Shutdown()
+	consensusManager := createTestConsensusManager()
+	defer consensusManager.Shutdown()
+
+	state := gossipCluster.GetState()
+	testNodeName := gossipCluster.GetNodeName()
+	migrationManager := failover.NewMigrationManager(nil, state, nil, testNodeName)
+
+	recoveredService := ""
+	migrationManager.SetComposeUpRunner(func(ctx context.Context, serviceName string) error {
+		recoveredService = serviceName
+		return nil
+	})
+
+	wsServer := NewWebSocketServer(gossipCluster, consensusManager)
+	apiServer := NewServer(gossipCluster, consensusManager, migrationManager, wsServer, 8080)
+
+	state.UpdateNode(&gossip.NodeMetadata{
+		Name:     testNodeName,
+		Priority: 10,
+		Cordoned: false,
+	})
+	state.UpdateNode(&gossip.NodeMetadata{
+		Name:     "node-b",
+		Priority: 20,
+		Cordoned: false,
+	})
+	state.UpdateServiceHealth(&gossip.ServiceHealth{
+		ServiceName: "critical-service",
+		NodeName:    "node-b",
+		Healthy:     true,
+	})
+
+	// Simulate node-b disappearing while still being part of the retained cluster state.
+	state.RemoveNode("node-b")
+
+	rule := failover.MigrationRule{
+		ServiceName: "critical-service",
+		Trigger: failover.MigrationTrigger{
+			NodeUnhealthy: true,
+		},
+	}
+
+	migrationManager.CheckAndMigrate(context.Background(), []failover.MigrationRule{rule})
+
+	require.Eventually(t, func() bool {
+		migration, exists := migrationManager.GetMigrationStatus("critical-service")
+		return exists && migration.Status == failover.MigrationStatusCompleted
+	}, time.Second, 25*time.Millisecond)
+
+	assert.Equal(t, "critical-service", recoveredService)
+
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v1/migrations":
+			apiServer.handleMigrations(w, r)
+		case "/api/v1/services/critical-service":
+			apiServer.handleService(w, r)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer testServer.Close()
+
+	resp, err := http.Get(testServer.URL + "/api/v1/migrations")
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	var migrationsResp map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&migrationsResp)
+	require.NoError(t, err)
+
+	migrations := migrationsResp["migrations"].([]interface{})
+	require.NotEmpty(t, migrations)
+	migration := migrations[0].(map[string]interface{})
+	assert.Equal(t, "critical-service", migration["service_name"])
+	assert.Equal(t, "peer_pickup", migration["type"])
+	assert.Equal(t, "completed", migration["status"])
+	assert.Equal(t, "node-b", migration["source_node"])
+	assert.Equal(t, testNodeName, migration["target_node"])
+
+	resp, err = http.Get(testServer.URL + "/api/v1/services/critical-service")
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	var serviceResp map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&serviceResp)
+	require.NoError(t, err)
+	assert.Equal(t, "critical-service", serviceResp["service_name"])
+	assert.Equal(t, float64(0), serviceResp["healthy_count"])
+
+	instances := serviceResp["instances"].([]interface{})
+	require.Len(t, instances, 2)
+
+	foundRecoveredNode := false
+	foundOfflineSource := false
+	for _, raw := range instances {
+		instance := raw.(map[string]interface{})
+		switch instance["node_name"] {
+		case testNodeName:
+			foundRecoveredNode = true
+			assert.Equal(t, false, instance["healthy"])
+		case "node-b":
+			foundOfflineSource = true
+			assert.Equal(t, false, instance["healthy"])
+		}
+	}
+	assert.True(t, foundRecoveredNode)
+	assert.True(t, foundOfflineSource)
 }
 
 func TestE2E_MultipleClientsWebSocketUpdates(t *testing.T) {
