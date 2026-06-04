@@ -30,7 +30,7 @@ We run a no-orchestrator, Git-centered architecture where each node shares the s
 
 ### Automation and self-healing infrastructure
 
-Harden automated secret/env sync, service failover, and auto-redeploy capabilities (Modules 1, 2, 4, 9) to eliminate manual synchronization bottlenecks.
+Harden automated secret/env sync, service failover, and auto-redeploy capabilities (Modules 1, 2, 4, 9) to eliminate manual synchronization bottlenecks. See the [Failover Agent Brainstorm](docs/brainstorms/20260604-failover-agent-exploration.md) for Module 4 implementation details.
 
 *Why it serves the approach:* Automation is the core mechanism that delivers high availability and self-healing without introducing a heavy orchestrator.
 
