@@ -1,7 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
 
-
-
 secrets:
   sudo-password:
     file: ${SECRETS_PATH:?}/sudo-password.txt
@@ -44,10 +42,1417 @@ secrets:
   stremthru-auth-admin:
     file: ${SECRETS_PATH:?}/stremthru-auth-admin.txt
 
-
 configs:
   fuse.conf:
     file: /etc/fuse.conf
+  stremio-localstorage.json:
+    content: |
+      {
+        "schema_version": 16,
+        "installation_id": "3dd61281a4a594b1f6eb",
+        "streaming_server_urls": {
+          "uid": null,
+          "items": {
+            "https://stremio.${DOMAIN:-bolabaden.org}/": "2099-12-31T23:59:59.999Z"
+          }
+        },
+        "profile": {
+          "auth": null,
+          "addons": [
+            {
+              "manifest": {
+                "id": "com.linvo.cinemeta",
+                "version": "3.0.11",
+                "name": "Cinemeta",
+                "contactEmail": null,
+                "description": "The official addon for movie and series catalogs",
+                "logo": null,
+                "background": null,
+                "types": [
+                  "movie",
+                  "series"
+                ],
+                "resources": [
+                  "catalog",
+                  "meta",
+                  "addon_catalog"
+                ],
+                "idPrefixes": [
+                  "tt"
+                ],
+                "catalogs": [
+                  {
+                    "id": "top",
+                    "type": "movie",
+                    "name": "Popular",
+                    "extra": [
+                      {
+                        "name": "genre",
+                        "isRequired": false,
+                        "options": [
+                          "Action",
+                          "Adventure",
+                          "Animation",
+                          "Biography",
+                          "Comedy",
+                          "Crime",
+                          "Documentary",
+                          "Drama",
+                          "Family",
+                          "Fantasy",
+                          "History",
+                          "Horror",
+                          "Mystery",
+                          "Romance",
+                          "Sci-Fi",
+                          "Sport",
+                          "Thriller",
+                          "War",
+                          "Western"
+                        ],
+                        "optionsLimit": 1
+                      },
+                      {
+                        "name": "search",
+                        "isRequired": false,
+                        "options": [],
+                        "optionsLimit": 1
+                      },
+                      {
+                        "name": "skip",
+                        "isRequired": false,
+                        "options": [],
+                        "optionsLimit": 1
+                      }
+                    ]
+                  },
+                  {
+                    "id": "top",
+                    "type": "series",
+                    "name": "Popular",
+                    "extra": [
+                      {
+                        "name": "genre",
+                        "isRequired": false,
+                        "options": [
+                          "Action",
+                          "Adventure",
+                          "Animation",
+                          "Biography",
+                          "Comedy",
+                          "Crime",
+                          "Documentary",
+                          "Drama",
+                          "Family",
+                          "Fantasy",
+                          "History",
+                          "Horror",
+                          "Mystery",
+                          "Romance",
+                          "Sci-Fi",
+                          "Sport",
+                          "Thriller",
+                          "War",
+                          "Western",
+                          "Reality-TV",
+                          "Talk-Show",
+                          "Game-Show"
+                        ],
+                        "optionsLimit": 1
+                      },
+                      {
+                        "name": "search",
+                        "isRequired": false,
+                        "options": [],
+                        "optionsLimit": 1
+                      },
+                      {
+                        "name": "skip",
+                        "isRequired": false,
+                        "options": [],
+                        "optionsLimit": 1
+                      }
+                    ]
+                  },
+                  {
+                    "id": "year",
+                    "type": "movie",
+                    "name": "New",
+                    "extra": [
+                      {
+                        "name": "genre",
+                        "isRequired": true,
+                        "options": [
+                          "2024",
+                          "2023",
+                          "2022",
+                          "2021",
+                          "2020",
+                          "2019",
+                          "2018",
+                          "2017",
+                          "2016",
+                          "2015",
+                          "2014",
+                          "2013",
+                          "2012",
+                          "2011",
+                          "2010",
+                          "2009",
+                          "2008",
+                          "2007",
+                          "2006",
+                          "2005",
+                          "2004",
+                          "2003",
+                          "2002",
+                          "2001",
+                          "2000",
+                          "1999",
+                          "1998",
+                          "1997",
+                          "1996",
+                          "1995",
+                          "1994",
+                          "1993",
+                          "1992",
+                          "1991",
+                          "1990",
+                          "1989",
+                          "1988",
+                          "1987",
+                          "1986",
+                          "1985",
+                          "1984",
+                          "1983",
+                          "1982",
+                          "1981",
+                          "1980",
+                          "1979",
+                          "1978",
+                          "1977",
+                          "1976",
+                          "1975",
+                          "1974",
+                          "1973",
+                          "1972",
+                          "1971",
+                          "1970",
+                          "1969",
+                          "1968",
+                          "1967",
+                          "1966",
+                          "1965",
+                          "1964",
+                          "1963",
+                          "1962",
+                          "1961",
+                          "1960",
+                          "1959",
+                          "1958",
+                          "1957",
+                          "1956",
+                          "1955",
+                          "1954",
+                          "1953",
+                          "1952",
+                          "1951",
+                          "1950",
+                          "1949",
+                          "1948",
+                          "1947",
+                          "1946",
+                          "1945",
+                          "1944",
+                          "1943",
+                          "1942",
+                          "1941",
+                          "1940",
+                          "1939",
+                          "1938",
+                          "1937",
+                          "1936",
+                          "1935",
+                          "1934",
+                          "1933",
+                          "1932",
+                          "1931",
+                          "1930",
+                          "1929",
+                          "1928",
+                          "1927",
+                          "1926",
+                          "1925",
+                          "1924",
+                          "1923",
+                          "1922",
+                          "1921",
+                          "1920"
+                        ],
+                        "optionsLimit": 1
+                      },
+                      {
+                        "name": "skip",
+                        "isRequired": false,
+                        "options": [],
+                        "optionsLimit": 1
+                      }
+                    ]
+                  },
+                  {
+                    "id": "year",
+                    "type": "series",
+                    "name": "New",
+                    "extra": [
+                      {
+                        "name": "genre",
+                        "isRequired": true,
+                        "options": [
+                          "2024",
+                          "2023",
+                          "2022",
+                          "2021",
+                          "2020",
+                          "2019",
+                          "2018",
+                          "2017",
+                          "2016",
+                          "2015",
+                          "2014",
+                          "2013",
+                          "2012",
+                          "2011",
+                          "2010",
+                          "2009",
+                          "2008",
+                          "2007",
+                          "2006",
+                          "2005",
+                          "2004",
+                          "2003",
+                          "2002",
+                          "2001",
+                          "2000",
+                          "1999",
+                          "1998",
+                          "1997",
+                          "1996",
+                          "1995",
+                          "1994",
+                          "1993",
+                          "1992",
+                          "1991",
+                          "1990",
+                          "1989",
+                          "1988",
+                          "1987",
+                          "1986",
+                          "1985",
+                          "1984",
+                          "1983",
+                          "1982",
+                          "1981",
+                          "1980",
+                          "1979",
+                          "1978",
+                          "1977",
+                          "1976",
+                          "1975",
+                          "1974",
+                          "1973",
+                          "1972",
+                          "1971",
+                          "1970",
+                          "1969",
+                          "1968",
+                          "1967",
+                          "1966",
+                          "1965",
+                          "1964",
+                          "1963",
+                          "1962",
+                          "1961",
+                          "1960"
+                        ],
+                        "optionsLimit": 1
+                      },
+                      {
+                        "name": "skip",
+                        "isRequired": false,
+                        "options": [],
+                        "optionsLimit": 1
+                      }
+                    ]
+                  },
+                  {
+                    "id": "imdbRating",
+                    "type": "movie",
+                    "name": "Featured",
+                    "extra": [
+                      {
+                        "name": "genre",
+                        "isRequired": false,
+                        "options": [
+                          "Action",
+                          "Adventure",
+                          "Animation",
+                          "Biography",
+                          "Comedy",
+                          "Crime",
+                          "Documentary",
+                          "Drama",
+                          "Family",
+                          "Fantasy",
+                          "History",
+                          "Horror",
+                          "Mystery",
+                          "Romance",
+                          "Sci-Fi",
+                          "Sport",
+                          "Thriller",
+                          "War",
+                          "Western"
+                        ],
+                        "optionsLimit": 1
+                      },
+                      {
+                        "name": "skip",
+                        "isRequired": false,
+                        "options": [],
+                        "optionsLimit": 1
+                      }
+                    ]
+                  },
+                  {
+                    "id": "imdbRating",
+                    "type": "series",
+                    "name": "Featured",
+                    "extra": [
+                      {
+                        "name": "genre",
+                        "isRequired": false,
+                        "options": [
+                          "Action",
+                          "Adventure",
+                          "Animation",
+                          "Biography",
+                          "Comedy",
+                          "Crime",
+                          "Documentary",
+                          "Drama",
+                          "Family",
+                          "Fantasy",
+                          "History",
+                          "Horror",
+                          "Mystery",
+                          "Romance",
+                          "Sci-Fi",
+                          "Sport",
+                          "Thriller",
+                          "War",
+                          "Western",
+                          "Reality-TV",
+                          "Talk-Show",
+                          "Game-Show"
+                        ],
+                        "optionsLimit": 1
+                      },
+                      {
+                        "name": "skip",
+                        "isRequired": false,
+                        "options": [],
+                        "optionsLimit": 1
+                      }
+                    ]
+                  },
+                  {
+                    "id": "last-videos",
+                    "type": "series",
+                    "name": "Last videos",
+                    "extra": [
+                      {
+                        "name": "lastVideosIds",
+                        "isRequired": true,
+                        "options": [],
+                        "optionsLimit": 100
+                      }
+                    ]
+                  }
+                ],
+                "addonCatalogs": [
+                  {
+                    "id": "official",
+                    "type": "all",
+                    "name": "Official",
+                    "extraRequired": [],
+                    "extraSupported": []
+                  },
+                  {
+                    "id": "official",
+                    "type": "movie",
+                    "name": "Official",
+                    "extraRequired": [],
+                    "extraSupported": []
+                  },
+                  {
+                    "id": "official",
+                    "type": "series",
+                    "name": "Official",
+                    "extraRequired": [],
+                    "extraSupported": []
+                  },
+                  {
+                    "id": "official",
+                    "type": "channel",
+                    "name": "Official",
+                    "extraRequired": [],
+                    "extraSupported": []
+                  },
+                  {
+                    "id": "community",
+                    "type": "all",
+                    "name": "Community",
+                    "extraRequired": [],
+                    "extraSupported": []
+                  },
+                  {
+                    "id": "community",
+                    "type": "movie",
+                    "name": "Community",
+                    "extraRequired": [],
+                    "extraSupported": []
+                  },
+                  {
+                    "id": "community",
+                    "type": "series",
+                    "name": "Community",
+                    "extraRequired": [],
+                    "extraSupported": []
+                  },
+                  {
+                    "id": "community",
+                    "type": "channel",
+                    "name": "Community",
+                    "extraRequired": [],
+                    "extraSupported": []
+                  },
+                  {
+                    "id": "community",
+                    "type": "tv",
+                    "name": "Community",
+                    "extraRequired": [],
+                    "extraSupported": []
+                  },
+                  {
+                    "id": "community",
+                    "type": "Podcasts",
+                    "name": "Community",
+                    "extraRequired": [],
+                    "extraSupported": []
+                  },
+                  {
+                    "id": "community",
+                    "type": "other",
+                    "name": "Community",
+                    "extraRequired": [],
+                    "extraSupported": []
+                  }
+                ],
+                "behaviorHints": {
+                  "adult": false,
+                  "p2p": false,
+                  "configurable": false,
+                  "configurationRequired": false
+                }
+              },
+              "transportUrl": "https://v3-cinemeta.strem.io/manifest.json",
+              "flags": {
+                "official": true,
+                "protected": true
+              }
+            },
+            {
+              "manifest": {
+                "id": "com.linvo.stremiochannels",
+                "version": "1.30.7",
+                "name": "YouTube",
+                "contactEmail": null,
+                "description": "Watch your favourite YouTube channels ad-free and get notified when they upload new videos.",
+                "logo": null,
+                "background": null,
+                "types": [
+                  "channel"
+                ],
+                "resources": [
+                  "catalog",
+                  "meta"
+                ],
+                "idPrefixes": [
+                  "yt_id:"
+                ],
+                "catalogs": [
+                  {
+                    "id": "top",
+                    "type": "channel",
+                    "name": null,
+                    "extra": [
+                      {
+                        "name": "search",
+                        "isRequired": false,
+                        "options": [],
+                        "optionsLimit": 1
+                      },
+                      {
+                        "name": "genre",
+                        "isRequired": false,
+                        "options": [
+                          "Animation",
+                          "Automotive",
+                          "Beauty & Fashion",
+                          "Causes & Non-profits",
+                          "Comedy",
+                          "Cooking & Health",
+                          "Film & Entertainment",
+                          "From TV",
+                          "Gaming",
+                          "Lifestyle",
+                          "Music",
+                          "News & Politics",
+                          "Sports"
+                        ],
+                        "optionsLimit": 1
+                      },
+                      {
+                        "name": "skip",
+                        "isRequired": false,
+                        "options": [],
+                        "optionsLimit": 1
+                      }
+                    ]
+                  },
+                  {
+                    "id": "videos",
+                    "type": "channel",
+                    "name": null,
+                    "extra": [
+                      {
+                        "name": "search",
+                        "isRequired": true,
+                        "options": [],
+                        "optionsLimit": 1
+                      }
+                    ]
+                  }
+                ],
+                "addonCatalogs": [],
+                "behaviorHints": {
+                  "adult": false,
+                  "p2p": false,
+                  "configurable": false,
+                  "configurationRequired": false
+                }
+              },
+              "transportUrl": "https://v3-channels.strem.io/manifest.json",
+              "flags": {
+                "official": true,
+                "protected": false
+              }
+            },
+            {
+              "manifest": {
+                "id": "org.stremio.watchhub",
+                "version": "1.15.0",
+                "name": "WatchHub",
+                "contactEmail": null,
+                "description": "Find where to stream your favorite movies and shows amongst Netflix, iTunes, Hulu, Amazon, HBO GO and many others. Supports many countries.",
+                "logo": "https://www.strem.io/images/watchhub-logo.png",
+                "background": null,
+                "types": [
+                  "movie",
+                  "series"
+                ],
+                "resources": [
+                  "stream"
+                ],
+                "idPrefixes": [
+                  "tt"
+                ],
+                "catalogs": [],
+                "addonCatalogs": [],
+                "behaviorHints": {
+                  "adult": false,
+                  "p2p": false,
+                  "configurable": false,
+                  "configurationRequired": false
+                }
+              },
+              "transportUrl": "https://watchhub.strem.io/manifest.json",
+              "flags": {
+                "official": true,
+                "protected": false
+              }
+            },
+            {
+              "manifest": {
+                "id": "org.stremio.pubdomainmovies",
+                "version": "1.0.0",
+                "name": "Public Domain Movies",
+                "contactEmail": null,
+                "description": "Torrents for public domain movies. Includes a collection of more then 500 public domain movies.",
+                "logo": "https://johnserv531.github.io/gh-images/1586344884.jpg",
+                "background": null,
+                "types": [
+                  "movie"
+                ],
+                "resources": [
+                  "catalog",
+                  "stream"
+                ],
+                "idPrefixes": [
+                  "tt"
+                ],
+                "catalogs": [
+                  {
+                    "id": "publicdomainmovies",
+                    "type": "movie",
+                    "name": null,
+                    "extra": [
+                      {
+                        "name": "skip",
+                        "isRequired": false,
+                        "options": [],
+                        "optionsLimit": 1
+                      },
+                      {
+                        "name": "search",
+                        "isRequired": false,
+                        "options": [],
+                        "optionsLimit": 1
+                      }
+                    ]
+                  }
+                ],
+                "addonCatalogs": [],
+                "behaviorHints": {
+                  "adult": false,
+                  "p2p": false,
+                  "configurable": false,
+                  "configurationRequired": false
+                }
+              },
+              "transportUrl": "https://caching.stremio.net/publicdomainmovies.now.sh/manifest.json",
+              "flags": {
+                "official": true,
+                "protected": false
+              }
+            },
+            {
+              "manifest": {
+                "id": "org.stremio.opensubtitlesv3",
+                "version": "1.0.0",
+                "name": "OpenSubtitles v3",
+                "contactEmail": null,
+                "description": "OpenSubtitles v3 Addon for Stremio",
+                "logo": "http://www.strem.io/images/addons/opensubtitles-logo.png",
+                "background": null,
+                "types": [
+                  "movie",
+                  "series"
+                ],
+                "resources": [
+                  "subtitles"
+                ],
+                "idPrefixes": [
+                  "tt"
+                ],
+                "catalogs": [],
+                "addonCatalogs": [],
+                "behaviorHints": {
+                  "adult": false,
+                  "p2p": false,
+                  "configurable": false,
+                  "configurationRequired": false
+                }
+              },
+              "transportUrl": "https://opensubtitles-v3.strem.io/manifest.json",
+              "flags": {
+                "official": true,
+                "protected": false
+              }
+            },
+            {
+              "manifest": {
+                "id": "org.stremio.local",
+                "version": "1.10.0",
+                "name": "Local Files (without catalog support)",
+                "contactEmail": null,
+                "description": "Local add-on to find playable files: .torrent, .mp4, .mkv and .avi",
+                "logo": null,
+                "background": null,
+                "types": [
+                  "movie",
+                  "series",
+                  "other"
+                ],
+                "resources": [
+                  {
+                    "name": "meta",
+                    "types": [
+                      "other"
+                    ],
+                    "idPrefixes": [
+                      "local:",
+                      "bt:"
+                    ]
+                  },
+                  {
+                    "name": "stream",
+                    "types": [
+                      "movie",
+                      "series"
+                    ],
+                    "idPrefixes": [
+                      "tt"
+                    ]
+                  }
+                ],
+                "idPrefixes": null,
+                "catalogs": [],
+                "addonCatalogs": [],
+                "behaviorHints": {
+                  "adult": false,
+                  "p2p": false,
+                  "configurable": false,
+                  "configurationRequired": false
+                }
+              },
+              "transportUrl": "https://stremio.bolabaden.org/local-addon/manifest.json",
+              "flags": {
+                "official": true,
+                "protected": false
+              }
+            },
+            {
+              "manifest": {
+                "name": "BadenAIO",
+                "id": "aiostreams.bolabaden.org.f604daa3-45c",
+                "version": "2.25.4",
+                "description": "BadenAIO consolidates multiple Stremio addons and debrid services into a single, easily configurable addon. It allows highly customisable filtering, sorting, and formatting of results and supports proxying all your streams through MediaFlow Proxy or StremThru for improved compatibility and IP restriction bypassing.",
+                "catalogs": [
+                  {
+                    "type": "movie",
+                    "id": "b9ce3b0.nfx",
+                    "name": "Netflix"
+                  },
+                  {
+                    "type": "series",
+                    "id": "b9ce3b0.nfx",
+                    "name": "Netflix"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "b9ce3b0.hbm",
+                    "name": "HBO Max"
+                  },
+                  {
+                    "type": "series",
+                    "id": "b9ce3b0.hbm",
+                    "name": "HBO Max"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "b9ce3b0.dnp",
+                    "name": "Disney+"
+                  },
+                  {
+                    "type": "series",
+                    "id": "b9ce3b0.dnp",
+                    "name": "Disney+"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "b9ce3b0.amp",
+                    "name": "Prime Video"
+                  },
+                  {
+                    "type": "series",
+                    "id": "b9ce3b0.amp",
+                    "name": "Prime Video"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "b9ce3b0.atp",
+                    "name": "Apple TV+"
+                  },
+                  {
+                    "type": "series",
+                    "id": "b9ce3b0.atp",
+                    "name": "Apple TV+"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "b9ce3b0.pmp",
+                    "name": "Paramount+"
+                  },
+                  {
+                    "type": "series",
+                    "id": "b9ce3b0.pmp",
+                    "name": "Paramount+"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "b9ce3b0.pcp",
+                    "name": "Peacock"
+                  },
+                  {
+                    "type": "series",
+                    "id": "b9ce3b0.pcp",
+                    "name": "Peacock"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "b9ce3b0.hlu",
+                    "name": "Hulu"
+                  },
+                  {
+                    "type": "series",
+                    "id": "b9ce3b0.hlu",
+                    "name": "Hulu"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "b9ce3b0.netflix-top10-global",
+                    "name": "Netflix Top 10 Movies (Global)"
+                  },
+                  {
+                    "type": "series",
+                    "id": "b9ce3b0.netflix-top10-global",
+                    "name": "Netflix Top 10 Shows (Global)"
+                  }
+                ],
+                "resources": [
+                  {
+                    "name": "stream",
+                    "types": [
+                      "movie",
+                      "series",
+                      "anime",
+                      "tv",
+                      "events",
+                      "other"
+                    ],
+                    "idPrefixes": [
+                      "tt",
+                      "kitsu:",
+                      "mal:",
+                      "kitsu",
+                      "tmdb:",
+                      "tvdb:",
+                      "mf",
+                      "dl",
+                      "imdb",
+                      "mal",
+                      "tvdb",
+                      "tmdb"
+                    ]
+                  },
+                  {
+                    "name": "catalog",
+                    "types": [
+                      "movie",
+                      "series"
+                    ]
+                  },
+                  {
+                    "name": "meta",
+                    "types": [
+                      "movie",
+                      "series",
+                      "tv",
+                      "events",
+                      "other"
+                    ],
+                    "idPrefixes": [
+                      "mf",
+                      "dl",
+                      "alldebrid",
+                      "tvdb:",
+                      "tt",
+                      "aiostreamserror"
+                    ]
+                  }
+                ],
+                "types": [
+                  "movie",
+                  "series",
+                  "anime",
+                  "tv",
+                  "events",
+                  "other"
+                ],
+                "logo": "https://i.imgur.com/NjvkUC1.png",
+                "behaviorHints": {
+                  "configurable": true,
+                  "configurationRequired": false
+                },
+                "addonCatalogs": []
+              },
+              "transportUrl": "https://aiostreams.bolabaden.org/stremio/f604daa3-45c7-4161-ab58-a79e3ad59e11/eyJpdiI6IlJDajJiV1BVaGhQb0dFaW5xNHpGd0E9PSIsImVuY3J5cHRlZCI6IkhCZlBud3FTMDZxOHcwYTR3bUhqU3UycXRXSUVmbzNnbFpzY3hjd3EvM2k1ZG5FbW1rOGpVckhQSFJXNU9nTGl5RjZrdEwxZHRNdWV5ZDRwTVJKanR3PT0iLCJ0eXBlIjoiYWlvRW5jcnlwdCJ9/manifest.json",
+              "flags": {
+                "official": false,
+                "protected": false
+              }
+            },
+            {
+              "manifest": {
+                "name": "AIOStreams | ElfHosted",
+                "id": "com.aiostreams.viren070.6de0ccf1-34f",
+                "version": "2.27.3",
+                "description": "AIOStreams consolidates multiple Stremio addons and debrid services into a single, easily configurable addon. It allows highly customisable filtering, sorting, and formatting of results and supports proxying all your streams through MediaFlow Proxy or StremThru for improved compatibility and IP restriction bypassing.",
+                "catalogs": [
+                  {
+                    "type": "movie",
+                    "id": "ea4e3b0.nfx",
+                    "name": "Netflix"
+                  },
+                  {
+                    "type": "series",
+                    "id": "ea4e3b0.nfx",
+                    "name": "Netflix"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "ea4e3b0.hbm",
+                    "name": "HBO Max"
+                  },
+                  {
+                    "type": "series",
+                    "id": "ea4e3b0.hbm",
+                    "name": "HBO Max"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "ea4e3b0.dnp",
+                    "name": "Disney+"
+                  },
+                  {
+                    "type": "series",
+                    "id": "ea4e3b0.dnp",
+                    "name": "Disney+"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "ea4e3b0.hlu",
+                    "name": "Hulu"
+                  },
+                  {
+                    "type": "series",
+                    "id": "ea4e3b0.hlu",
+                    "name": "Hulu"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "ea4e3b0.amp",
+                    "name": "Prime Video"
+                  },
+                  {
+                    "type": "series",
+                    "id": "ea4e3b0.amp",
+                    "name": "Prime Video"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "ea4e3b0.atp",
+                    "name": "Apple TV+"
+                  },
+                  {
+                    "type": "series",
+                    "id": "ea4e3b0.atp",
+                    "name": "Apple TV+"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "ea4e3b0.pcp",
+                    "name": "Peacock"
+                  },
+                  {
+                    "type": "series",
+                    "id": "ea4e3b0.pcp",
+                    "name": "Peacock"
+                  },
+                  {
+                    "type": "movie",
+                    "id": "46dc7bf.alldebrid_watchlist_movies",
+                    "name": "AD Watchlist",
+                    "extra": [
+                      {
+                        "name": "skip",
+                        "isRequired": false
+                      }
+                    ]
+                  },
+                  {
+                    "type": "series",
+                    "id": "46dc7bf.alldebrid_watchlist_series",
+                    "name": "AD Watchlist",
+                    "extra": [
+                      {
+                        "name": "skip",
+                        "isRequired": false
+                      }
+                    ]
+                  },
+                  {
+                    "type": "tv",
+                    "id": "b52e3b0.usa",
+                    "name": "United States TV",
+                    "extra": [
+                      {
+                        "name": "genre",
+                        "isRequired": false,
+                        "options": [
+                          "Crime",
+                          "Documentaries",
+                          "Education",
+                          "Entertainment",
+                          "Family",
+                          "Health",
+                          "Kids",
+                          "Latino",
+                          "Lifestyle",
+                          "Local",
+                          "Movies",
+                          "Music",
+                          "News",
+                          "Outdoor",
+                          "Sports",
+                          "Travel"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "movie",
+                    "id": "ea4e3b0.netflix-top10-global",
+                    "name": "Netflix Top 10 Movies (Global)"
+                  },
+                  {
+                    "type": "series",
+                    "id": "ea4e3b0.netflix-top10-global",
+                    "name": "Netflix Top 10 Shows (Global)"
+                  }
+                ],
+                "resources": [
+                  {
+                    "name": "catalog",
+                    "types": [
+                      "movie",
+                      "series",
+                      "tv"
+                    ]
+                  },
+                  {
+                    "name": "stream",
+                    "types": [
+                      "movie",
+                      "series",
+                      "tv",
+                      "events",
+                      "anime"
+                    ],
+                    "idPrefixes": [
+                      "tt",
+                      "tmdb:",
+                      "tvdb:",
+                      "mal:",
+                      "mf",
+                      "dl",
+                      "kitsu:",
+                      "debtv:"
+                    ]
+                  },
+                  {
+                    "name": "meta",
+                    "types": [
+                      "movie",
+                      "series",
+                      "tv",
+                      "events"
+                    ],
+                    "idPrefixes": [
+                      "mf",
+                      "dl",
+                      "debtv:",
+                      "aiostreamserror"
+                    ]
+                  }
+                ],
+                "types": [
+                  "movie",
+                  "series",
+                  "tv",
+                  "events",
+                  "anime"
+                ],
+                "logo": "https://raw.githubusercontent.com/Viren070/AIOStreams/refs/heads/main/packages/frontend/public/logo.png",
+                "behaviorHints": {
+                  "configurable": true,
+                  "configurationRequired": false
+                },
+                "addonCatalogs": [],
+                "stremioAddonsConfig": {
+                  "issuer": "https://stremio-addons.net",
+                  "signature": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..acmV1DfOh52nwT-O3myHNg.Vb_c3MkkeLV9Nb4mBvEmbYoRcKh9I1CIxmLAH0CJLQaXBeiKzfT_JjIOCKw53qkossEchr768t2n3sS290hwOHE3HA6rhRwWRkotlSJU9lcMzcbxCiWezF8qr9ZV6MzO.48H-f2Psh4FE0CWD3uVDUA"
+                }
+              },
+              "transportUrl": "https://aiostreams.elfhosted.com/stremio/6de0ccf1-34f9-42ce-bc68-97ed959024d9/eyJpdiI6IktVdGhFUERRTVQ3Z2NaVTZ2dFZJMkE9PSIsImVuY3J5cHRlZCI6IkQ1cFppNkx0YWhrRC93YkNac2JQTmVlbDgwRG05OHQyTTQvV2ovN29JRXN0NzF2UWhNaCtaT09mTm9PTUhPQ3h6bjVwR3VrWlAzMlZrRm0xR2JBRUZ3PT0iLCJ0eXBlIjoiYWlvRW5jcnlwdCJ9/manifest.json",
+              "flags": {
+                "official": false,
+                "protected": false
+              }
+            }
+          ],
+          "addonsLocked": false,
+          "settings": {
+            "interfaceLanguage": "eng",
+            "streamingServerUrl": "https://stremio.bolabaden.org/",
+            "playerType": null,
+            "bingeWatching": true,
+            "playInBackground": true,
+            "hardwareDecoding": true,
+            "frameRateMatchingStrategy": "FrameRateOnly",
+            "nextVideoNotificationDuration": 35000,
+            "audioPassthrough": false,
+            "audioLanguage": "eng",
+            "secondaryAudioLanguage": null,
+            "subtitlesLanguage": "eng",
+            "secondarySubtitlesLanguage": null,
+            "subtitlesSize": 100,
+            "subtitlesFont": "Roboto",
+            "subtitlesBold": false,
+            "subtitlesOffset": 5,
+            "subtitlesTextColor": "#FFFFFFFF",
+            "subtitlesBackgroundColor": "#00000000",
+            "subtitlesOutlineColor": "#000000",
+            "subtitlesOpacity": 100,
+            "escExitFullscreen": true,
+            "seekTimeDuration": 10000,
+            "seekShortTimeDuration": 3000,
+            "pauseOnMinimize": false,
+            "surroundSound": false,
+            "streamingServerWarningDismissed": "2075-02-13T17:43:53.678Z",
+            "serverInForeground": false,
+            "sendCrashReports": false
+          }
+        }
+      }
+  stremio-addon-bootstrap.js:
+    content: |
+      const fs = require('fs');
+      const path = require('path');
+      const crypto = require('crypto');
+
+      const requiredAddons = [
+        {
+          manifest: {
+            id: 'org.bolabaden.baden-aio',
+            version: '1.0.0',
+            name: 'BadenAIO',
+            contactEmail: null,
+            description: 'BadenAIO streaming addon.',
+            logo: null,
+            background: null,
+            types: ['movie', 'series'],
+            resources: ['stream'],
+            idPrefixes: ['tt'],
+            catalogs: [],
+            addonCatalogs: [],
+            behaviorHints: {
+              adult: false,
+              p2p: false,
+              configurable: true,
+              configurationRequired: false
+            }
+          },
+          transportUrl: 'https://aiostreams.bolabaden.org/stremio/f604daa3-45c7-4161-ab58-a79e3ad59e11/eyJpdiI6IlJDajJiV1BVaGhQb0dFaW5xNHpGd0E9PSIsImVuY3J5cHRlZCI6IkhCZlBud3FTMDZxOHcwYTR3bUhqU3UycXRXSUVmbzNnbFpzY3hjd3EvM2k1ZG5FbW1rOGpVckhQSFJXNU9nTGl5RjZrdEwxZHRNdWV5ZDRwTVJKanR3PT0iLCJ0eXBlIjoiYWlvRW5jcnlwdCJ9/manifest.json',
+          flags: { official: false, protected: false }
+        },
+        {
+          manifest: {
+            id: 'viren070.aiostreams',
+            version: '1.0.0',
+            name: 'AIOStreams | ElfHosted',
+            contactEmail: null,
+            description: 'AIOStreams addon hosted by ElfHosted.',
+            logo: 'https://raw.githubusercontent.com/Viren070/AIOStreams/refs/heads/main/packages/frontend/public/logo.png',
+            background: null,
+            types: ['movie', 'series'],
+            resources: ['stream'],
+            idPrefixes: ['tt'],
+            catalogs: [],
+            addonCatalogs: [],
+            behaviorHints: {
+              adult: false,
+              p2p: false,
+              configurable: true,
+              configurationRequired: false
+            }
+          },
+          transportUrl: 'https://aiostreams.elfhosted.com/stremio/6de0ccf1-34f9-42ce-bc68-97ed959024d9/eyJpdiI6IktVdGhFUERRTVQ3Z2NaVTZ2dFZJMkE9PSIsImVuY3J5cHRlZCI6IkQ1cFppNkx0YWhrRC93YkNac2JQTmVlbDgwRG05OHQyTTQvV2ovN29JRXN0NzF2UWhNaCtaT09mTm9PTUhPQ3h6bjVwR3VrWlAzMlZrRm0xR2JBRUZ3PT0iLCJ0eXBlIjoiYWlvRW5jcnlwdCJ9/manifest.json',
+          flags: { official: false, protected: false }
+        }
+      ];
+
+      const blockedAddonIds = new Set([
+        'org.stremio.watchhub'
+      ]);
+
+      const blockedAddonTransportUrls = new Set([
+        'https://watchhub.strem.io/manifest.json'
+      ]);
+
+      const isBlockedAddon = (addon) => {
+        if (!addon || typeof addon !== 'object') {
+          return false;
+        }
+        const addonId = addon.manifest && addon.manifest.id;
+        return blockedAddonIds.has(addonId) || blockedAddonTransportUrls.has(addon.transportUrl);
+      };
+
+      const cloneAddon = (addon) => ({
+        manifest: JSON.parse(JSON.stringify(addon.manifest)),
+        transportUrl: addon.transportUrl,
+        flags: Object.assign({}, addon.flags)
+      });
+
+      const targets = [
+        '/srv/stremio-server/localStorage.json',
+        '/srv/stremio-server/build/localStorage.json'
+      ];
+
+      const ensureAddons = (obj) => {
+        if (!obj || typeof obj !== 'object') {
+          return false;
+        }
+        if (!obj.profile || typeof obj.profile !== 'object') {
+          obj.profile = {};
+        }
+        if (!Array.isArray(obj.profile.addons)) {
+          obj.profile.addons = [];
+        }
+
+        let changed = false;
+        const cleanedAddons = obj.profile.addons.filter((addon) => !isBlockedAddon(addon));
+        if (cleanedAddons.length !== obj.profile.addons.length) {
+          obj.profile.addons = cleanedAddons;
+          changed = true;
+        }
+
+        for (const addon of requiredAddons) {
+          const exists = obj.profile.addons.some((a) => a && a.transportUrl === addon.transportUrl);
+          if (!exists) {
+            obj.profile.addons.push(cloneAddon(addon));
+            changed = true;
+          }
+        }
+        return changed;
+      };
+
+      for (const filePath of targets) {
+        try {
+          if (!fs.existsSync(filePath)) {
+            continue;
+          }
+          const raw = fs.readFileSync(filePath, 'utf8');
+          const json = JSON.parse(raw);
+          if (ensureAddons(json)) {
+            fs.writeFileSync(filePath, JSON.stringify(json, null, 2));
+            console.log('[stremio-addon-bootstrap] updated ' + filePath);
+          } else {
+            console.log('[stremio-addon-bootstrap] already up-to-date ' + filePath);
+          }
+        } catch (error) {
+          console.log('[stremio-addon-bootstrap] warning for ' + filePath + ': ' + error.message);
+        }
+      }
+
+      const workerPatchMarker = 'BOLABADEN_STREMIO_DEFAULT_ADDONS_V2';
+      const workerAnchor = 't.get_state=function(e){return m(o.get_state(E(e)))}';
+      const workerReplacement = 't.get_state=function(e){return bolabadenDefaultAddons(e,m(o.get_state(E(e))))}';
+      const workerPatch = '\nfunction bolabadenDefaultAddons(field,state){\n' +
+        'var marker="' + workerPatchMarker + '";\n' +
+        'var required=' + JSON.stringify(requiredAddons) + ';\n' +
+        'var blockedAddonIds=' + JSON.stringify(Array.from(blockedAddonIds)) + ';\n' +
+        'var blockedAddonTransportUrls=' + JSON.stringify(Array.from(blockedAddonTransportUrls)) + ';\n' +
+        'function clone(value){return JSON.parse(JSON.stringify(value));}\n' +
+        'function addonTypes(addon){return addon&&addon.manifest&&Array.isArray(addon.manifest.types)?addon.manifest.types:[];}\n' +
+        'function isBlocked(addon){var addonId=addon&&addon.manifest?addon.manifest.id:null;var transportUrl=addon?addon.transportUrl:null;return blockedAddonIds.indexOf(addonId)!==-1||blockedAddonTransportUrls.indexOf(transportUrl)!==-1;}\n' +
+        'function removeBlocked(list){if(!Array.isArray(list))return false;var next=list.filter(function(addon){return !isBlocked(addon);});if(next.length===list.length)return false;list.length=0;next.forEach(function(addon){list.push(addon);});return true;}\n' +
+        'function pushMissing(list,installedOnly,selectedType){if(!Array.isArray(list))return false;var changed=false;required.forEach(function(addon){if(selectedType&&addonTypes(addon).indexOf(selectedType)===-1)return;if(!list.some(function(item){return item&&item.transportUrl===addon.transportUrl;})){var next=clone(addon);if(installedOnly)next.installed=true;list.push(next);changed=true;}});return changed;}\n' +
+        'try{if(field==="ctx"&&state&&state.profile){if(!Array.isArray(state.profile.addons))state.profile.addons=[];removeBlocked(state.profile.addons);pushMissing(state.profile.addons,false,null);return state;}if(field!=="installed_addons"||!state)return state;if(!Array.isArray(state.catalog))state.catalog=[];removeBlocked(state.catalog);var selectedType=state.selected&&state.selected.request?state.selected.request.type:null;pushMissing(state.catalog,true,selectedType);if(state.selectable&&Array.isArray(state.selectable.types)){["movie","series"].forEach(function(type){if(!state.selectable.types.some(function(item){return item&&item.type===type;})){state.selectable.types.push({type:type,selected:selectedType===type,deepLinks:{addons:"#/addons/"+type}});}});}return state;}catch(error){console.warn("[stremio-addon-bootstrap] core addon patch warning",error);return state;}\n' +
+        '}\n';
+
+      const patchWorker = (workerPath) => {
+        let source = fs.readFileSync(workerPath, 'utf8');
+        if (source.indexOf(workerPatchMarker) !== -1) {
+          console.log('[stremio-addon-bootstrap] core worker already patched ' + workerPath);
+          return false;
+        }
+        if (source.indexOf(workerAnchor) === -1) {
+          throw new Error('core worker get_state anchor not found in ' + workerPath);
+        }
+        source = source.replace(workerAnchor, workerReplacement);
+        source = source.replace(/\n\/\/# sourceMappingURL=worker\.js\.map\s*$$/, workerPatch + '\n//# sourceMappingURL=worker.js.map');
+        if (source.indexOf(workerPatchMarker) === -1) {
+          source += workerPatch;
+        }
+        fs.writeFileSync(workerPath, source);
+        console.log('[stremio-addon-bootstrap] patched core worker ' + workerPath);
+        return true;
+      };
+
+      const disableServiceWorkerCache = (serviceWorkerPath, workerAssetPath) => {
+        if (!fs.existsSync(serviceWorkerPath)) {
+          return;
+        }
+        const revision = crypto.createHash('md5').update(fs.readFileSync(workerAssetPath)).digest('hex');
+        const source = '// BOLABADEN_STREMIO_NETWORK_ONLY_SERVICE_WORKER_V1 ' + revision + '\n' +
+          'self.addEventListener("install",function(event){self.skipWaiting();});\n' +
+          'self.addEventListener("activate",function(event){event.waitUntil((async function(){var keys=await caches.keys();await Promise.all(keys.map(function(key){return caches.delete(key);}));await self.clients.claim();var clients=await self.clients.matchAll({type:"window",includeUncontrolled:true});clients.forEach(function(client){client.navigate(client.url);});})());});\n' +
+          'self.addEventListener("fetch",function(event){event.respondWith(fetch(event.request,{cache:"no-store"}));});\n';
+        fs.writeFileSync(serviceWorkerPath, source);
+        console.log('[stremio-addon-bootstrap] installed network-only service worker for patched worker ' + revision);
+      };
+
+      const injectClientCacheReset = (mainScriptPath) => {
+        if (!fs.existsSync(mainScriptPath)) {
+          return;
+        }
+        const marker = 'BOLABADEN_STREMIO_CLIENT_CACHE_RESET_V1';
+        let source = fs.readFileSync(mainScriptPath, 'utf8');
+        if (source.indexOf(marker) !== -1) {
+          return;
+        }
+        const resetScript = '/* ' + marker + ' */!function(){try{if("caches"in window)caches.keys().then(function(keys){keys.forEach(function(key){caches.delete(key);});});}catch(error){console.warn("[stremio-addon-bootstrap] cache reset warning",error);}}();\n';
+        fs.writeFileSync(mainScriptPath, resetScript + source);
+        console.log('[stremio-addon-bootstrap] injected client cache reset into ' + mainScriptPath);
+      };
+
+      try {
+        const buildDir = '/srv/stremio-server/build';
+        const entries = fs.existsSync(buildDir) ? fs.readdirSync(buildDir) : [];
+        for (const entry of entries) {
+          const workerPath = path.join(buildDir, entry, 'scripts', 'worker.js');
+          if (fs.existsSync(workerPath)) {
+            patchWorker(workerPath);
+            disableServiceWorkerCache(path.join(buildDir, 'service-worker.js'), workerPath);
+            injectClientCacheReset(path.join(buildDir, entry, 'scripts', 'main.js'));
+          }
+        }
+      } catch (error) {
+        console.log('[stremio-addon-bootstrap] core worker patch failed: ' + error.message);
+        process.exitCode = 1;
+      }
   jackett-serverconfig.json:
     content: |
       {
@@ -57,7 +1462,7 @@ configs:
         "AllowCORS": true,
         "APIKey": "$${JACKETT_API_KEY:-nnx0n84pcj7umynyd2pbid2nl1zzuemz}",
         "AdminPassword": "",
-        "InstanceId": "jackett-bolabaden-$${DOMAIN}",
+        "InstanceId": "jackett-bolabaden-${DOMAIN:-bolabaden.org}",
         "BlackholeDir": "/blackhole",
         "UpdateDisabled": false,
         "UpdatePrerelease": false,
@@ -94,7 +1499,7 @@ configs:
     content: |
       #!/usr/bin/with-contenv bash
       # Jackett initialization script - provisions config and removes slow indexers
-      
+
       # Copy default ServerConfig if not exists
       mkdir -p /config/Jackett /config/Jackett/Indexers
       if [ ! -f /config/Jackett/ServerConfig.json ]; then
@@ -102,7 +1507,7 @@ configs:
         chown abc:abc /config/Jackett/ServerConfig.json
         echo "Provisioned Jackett ServerConfig.json"
       fi
-      
+
       # Remove blacklisted indexers on every startup (self-healing)
       if [ -f /indexer-blacklist.txt ]; then
         while IFS= read -r indexer || [ -n "$$indexer" ]; do
@@ -138,7 +1543,7 @@ configs:
       info_age = 2d
       chunk_total_size = 20G
       db_purge = true
-      
+
       [gdrive]
       type = drive
       client_id = $RCLONE_GOOGLE_CLIENT_ID
@@ -149,7 +1554,7 @@ configs:
       token = $RCLONE_GOOGLE_TOKEN
       use_trash = false
       chunk_size = 16M
-      
+
       [gcrypt]
       type = crypt
       remote = gcache:
@@ -339,12 +1744,25 @@ services:
       publicnet: {}
       warp-nat-net:
         gw_priority: 1
-    # uncomment only if you are not using torrent plugins.
+    # Uncomment ports only if you are not using torrent plugins.
     ports:
       - 11470:11470/tcp
       - 12470:12470/tcp
     volumes:
       - ${CONFIG_PATH:-./volumes}/stremio/root/.stremio-server:/root/.stremio-server
+    configs:
+      - source: stremio-localstorage.json
+        target: /srv/stremio-server/localStorage.json
+        mode: 444
+      - source: stremio-addon-bootstrap.js
+        target: /srv/stremio-server/stremio-addon-bootstrap.js
+        mode: 555
+    command:
+      - /bin/sh
+      - -lc
+      - |
+        node /srv/stremio-server/stremio-addon-bootstrap.js || true
+        exec ./stremio-web-service-run.sh
     #  - ${SRC_PATH:-./projects}/stremio-docker/build:/srv/stremio-server/build
     environment:
       IPADDRESS: 127.0.0.1
@@ -368,15 +1786,24 @@ services:
       traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.regex: '^(http|https)://stremio\.($DOMAIN|$TS_HOSTNAME\.$DOMAIN)(/shell[^#?]*)(\\?[^#]*?streamingServer=[^&#]*)?([^#]*)(#.*)?$'
       traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.replacement: '$1://stremio.$2$3?streamingServer=https%3A%2F%2Fstremio.$2$5$6'
       traefik.http.middlewares.stremio-streaming-server-redirect.redirectRegex.permanent: false
+      # Best-effort decode pass for over-encoded mediaURL values in /hlsv2/probe requests.
+      # Limitation: redirectRegex performs client redirects and applies one replacement per request.
+      traefik.http.middlewares.stremio-probe-mediaurl-decode.redirectRegex.regex: '^(http|https)://stremio\.($DOMAIN|$TS_HOSTNAME\.$DOMAIN)(/hlsv2/probe\?[^#]*mediaURL=[^#]*?)%25([0-9A-Fa-f]{2})([^#]*)$'
+      traefik.http.middlewares.stremio-probe-mediaurl-decode.redirectRegex.replacement: '$1://stremio.$2$3%$4$5'
+      traefik.http.middlewares.stremio-probe-mediaurl-decode.redirectRegex.permanent: false
       # Stremio Web UI
       traefik.http.routers.stremio.service: stremio
       traefik.http.routers.stremio.rule: "Host(`stremio-web.$DOMAIN`) || Host(`stremio-web.$TS_HOSTNAME.$DOMAIN`) || Host(`stremio.$DOMAIN`) || Host(`stremio.$TS_HOSTNAME.$DOMAIN`)"
-      traefik.http.routers.stremio.middlewares: stremio-web-redirect@docker,stremio-shell-redirect@docker,stremio-streaming-server-redirect@docker
+      traefik.http.routers.stremio.middlewares: stremio-web-redirect@docker,stremio-shell-redirect@docker,stremio-streaming-server-redirect@docker,stremio-web-no-cache@docker
+      traefik.http.middlewares.stremio-web-no-cache.headers.customResponseHeaders.Cache-Control: "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+      traefik.http.middlewares.stremio-web-no-cache.headers.customResponseHeaders.Pragma: "no-cache"
+      traefik.http.middlewares.stremio-web-no-cache.headers.customResponseHeaders.Expires: "0"
       traefik.http.services.stremio.loadbalancer.server.scheme: https
       traefik.http.services.stremio.loadbalancer.server.port: 8080
 
       # Stremio HTTP Streaming Server (port 11470)
       traefik.http.routers.stremio-http11470.service: stremio-http11470
+      traefik.http.routers.stremio-http11470.middlewares: stremio-probe-mediaurl-decode@docker
       traefik.http.services.stremio-http11470.loadbalancer.server.scheme: http
       traefik.http.services.stremio-http11470.loadbalancer.server.port: 11470
       # Stremio API/streaming routes to 11470
@@ -384,6 +1811,7 @@ services:
 
       # Stremio HTTPS Streaming Server (port 12470)
       traefik.http.routers.stremio-https12470.service: stremio-https12470
+      traefik.http.routers.stremio-https12470.middlewares: stremio-probe-mediaurl-decode@docker
       traefik.http.services.stremio-https12470.loadbalancer.server.scheme: https
       traefik.http.services.stremio-https12470.loadbalancer.server.port: 12470
       # Stremio API/streaming routes to 12470
@@ -398,10 +1826,7 @@ services:
       kuma.stremio.http.interval: 60
     healthcheck:
       # Comprehensive HTTP healthcheck - installs curl if missing and validates actual service functionality
-      test: [
-        "CMD-SHELL",
-        "command -v curl >/dev/null || (apk add --no-cache curl >/dev/null 2>&1 || apt-get update >/dev/null 2>&1 && apt-get install -y curl >/dev/null 2>&1); (curl -fs http://127.0.0.1:11470/ >/dev/null 2>&1 || curl -fsk https://127.0.0.1:12470/ >/dev/null 2>&1) || exit 1"
-      ]
+      test: [ "CMD-SHELL", "command -v curl >/dev/null || (apk add --no-cache curl >/dev/null 2>&1 || apt-get update >/dev/null 2>&1 && apt-get install -y curl >/dev/null 2>&1); (curl -fs http://127.0.0.1:11470/ >/dev/null 2>&1 || curl -fsk https://127.0.0.1:12470/ >/dev/null 2>&1) || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -429,16 +1854,16 @@ services:
       PGID: ${PGID:-988}
       UMASK: ${UMASK:-002}
       # FlareSolverr Environment Variables
-      LOG_LEVEL: debug  # Verbosity of the logging. Use LOG_LEVEL=debug for more information.
-      LOG_HTML: false  # Only for debugging. If true all HTML that passes through the proxy will be logged to the console in debug level.
-      CAPTCHA_SOLVER: none  # Captcha solving method. It is used when a captcha is encountered.  Note: none of the captcha solvers work with the current version of Flaresolverr.
-      PORT: ${FLARESOLVERR_PORT:-8191}  # Listening port.
-      HOST: 0.0.0.0  # Listening interface.
-      HEADLESS: ${FLARESOLVERR_HEADLESS:-true}  # Only for debugging. To run the web browser in headless mode or visible.
-      BROWSER_TIMEOUT: ${FLARESOLVERR_BROWSER_TIMEOUT:-120000}  # If you are experiencing errors/timeouts because your system is slow, you can try to increase this value.
-      TEST_URL: ${FLARESOLVERR_TEST_URL:-https://www.google.com}  # FlareSolverr makes a request on start to make sure the web browser is working.
-      PROMETHEUS_ENABLED: ${FLARESOLVERR_PROMETHEUS_ENABLED:-true}  # Enable Prometheus exporter
-      PROMETHEUS_PORT: ${PROMETHEUS_PORT:-9090}  # Listening port for Prometheus exporter
+      LOG_LEVEL: debug # Verbosity of the logging. Use LOG_LEVEL=debug for more information.
+      LOG_HTML: false # Only for debugging. If true all HTML that passes through the proxy will be logged to the console in debug level.
+      CAPTCHA_SOLVER: none # Captcha solving method. It is used when a captcha is encountered.  Note: none of the captcha solvers work with the current version of Flaresolverr.
+      PORT: ${FLARESOLVERR_PORT:-8191} # Listening port.
+      HOST: 0.0.0.0 # Listening interface.
+      HEADLESS: ${FLARESOLVERR_HEADLESS:-true} # Only for debugging. To run the web browser in headless mode or visible.
+      BROWSER_TIMEOUT: ${FLARESOLVERR_BROWSER_TIMEOUT:-120000} # If you are experiencing errors/timeouts because your system is slow, you can try to increase this value.
+      TEST_URL: ${FLARESOLVERR_TEST_URL:-https://www.google.com} # FlareSolverr makes a request on start to make sure the web browser is working.
+      PROMETHEUS_ENABLED: ${FLARESOLVERR_PROMETHEUS_ENABLED:-true} # Enable Prometheus exporter
+      PROMETHEUS_PORT: ${PROMETHEUS_PORT:-9090} # Listening port for Prometheus exporter
     labels:
       traefik.enable: true
       traefik.http.routers.flaresolverr.middlewares: nginx-auth@file
@@ -453,7 +1878,7 @@ services:
       kuma.flaresolverr.http.url: https://flaresolverr.$DOMAIN
       kuma.flaresolverr.http.interval: 30
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:${FLARESOLVERR_PORT:-8191}/health > /dev/null 2>&1 || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://127.0.0.1:${FLARESOLVERR_PORT:-8191}/health > /dev/null 2>&1 || exit 1" ]
       interval: 30s
       timeout: 15s
       retries: 3
@@ -479,13 +1904,13 @@ services:
     configs:
       - source: jackett-serverconfig.json
         target: /defaults/ServerConfig.json
-        mode: 0644
+        mode: 644
       - source: jackett-indexer-blacklist.txt
         target: /indexer-blacklist.txt
-        mode: 0644
+        mode: 644
       - source: jackett-init.sh
         target: /custom-cont-init.d/99-remove-slow-indexers
-        mode: 0755
+        mode: 755
     volumes:
       - ${CONFIG_PATH:-./volumes}/jackett/config:/config
       - /mnt/remote/blackhole:/blackhole
@@ -508,7 +1933,7 @@ services:
       # Jackett is still accessible via direct URL, just not shown on Homepage dashboard
       # Per Jackett documentation, the /all endpoint should not be used - add indexers individually to client apps
     healthcheck:
-      test: ["CMD-SHELL", "curl -fs http://127.0.0.1:9117/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=$JACKETT_API_KEY > /dev/null 2>&1 || exit 1"]
+      test: [ "CMD-SHELL", "curl -fs http://127.0.0.1:9117/api/v2.0/indexers/all/results/torznab?t=indexers&apikey=$JACKETT_API_KEY > /dev/null 2>&1 || exit 1" ]
       interval: 30s
       timeout: 10s
       start_period: 60s
@@ -548,15 +1973,16 @@ services:
     mem_limit: 6G
     mem_reservation: 128M
     cpus: 2.0
-    healthcheck:  # docker exec prowlarr ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
-      test: ["CMD-SHELL", "curl -fs -H \"Authorization: Bearer ${PROWLARR_API_KEY:?}\" http://127.0.0.1:9696/api/v1/system/status || exit 1"]
+    healthcheck:
+      # docker exec prowlarr ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
+      test: [ "CMD-SHELL", "curl -fs -H \"Authorization: Bearer ${PROWLARR_API_KEY:?}\" http://127.0.0.1:9696/api/v1/system/status || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 120s
     restart: always
   aiostreams:
-    # 🔹🔹 AIOStreams 🔹🔹
+    # 🔹🔹 AIOStreams 🔹🔹 https://github.com/viren070/aiostreams
     image: ghcr.io/viren070/aiostreams
     container_name: aiostreams
     hostname: aiostreams
@@ -592,9 +2018,9 @@ services:
 
       # --- Addon Identification ---
       # Descriptive name for your addon instance.
-      ADDON_NAME: ${AIOSTREAMS_ADDON_NAME:-BadenAIO}  # Default: "BadenAIO"
+      ADDON_NAME: ${AIOSTREAMS_ADDON_NAME:-BadenAIO} # Default: "BadenAIO"
       # Unique identifier for your addon.
-      ADDON_ID: aiostreams.$DOMAIN  # Default: "aiostreams.viren070.com"
+      ADDON_ID: aiostreams.$DOMAIN # Default: "aiostreams.viren070.com"
 
       # --- Network Configuration ---
       # The port on which the addon will listen.
@@ -604,7 +2030,7 @@ services:
       # The base URL of your addon. Required for proper functioning.
       # Used for generating installation URLs, identifying self scraping, replacing genre links, generating stream URLs for built in addons etc.
       # Example: https://aiostreams.yourdomain.com
-      BASE_URL: https://aiostreams.$DOMAIN  # Default: ""
+      BASE_URL: https://aiostreams.$DOMAIN # Default: ""
 
       # Optionally override the internal URL. This URL is used when communicating with built-in addons. 
       # In most cases, the default is fine. 
@@ -619,11 +2045,20 @@ services:
       #   Or: [System.Guid]::NewGuid().ToString("N") + [System.Guid]::NewGuid().ToString("N") (ensure it's 64 chars)
       SECRET_KEY: ${AIOSTREAMS_SECRET_KEY:?}
 
-      # API key to protect your addon installation and usage.
-      # Leave empty to disable password protection.
-      # Can be any string.
-      # Supports multiple passwords separated by commas
-      # Example: ADDON_PASSWORD: "password1,password2"
+      # --- Dashboard / API Authentication (v2.30+) ---
+      # v2.30 introduces user accounts for the dashboard. Provide a comma-separated
+      # list of `username:password` pairs. All listed users are admins by default
+      # (restrict with AIOSTREAMS_AUTH_ADMINS). At least one pair is required to log
+      # in to the dashboard / Settings page.
+      AIOSTREAMS_AUTH: ${AIOSTREAMS_AUTH:-admin:${AIOSTREAMS_ADDON_PASSWORD:-changeme}}
+      # Optionally restrict which of the above users are admins (comma-separated usernames).
+      AIOSTREAMS_AUTH_ADMINS: ${AIOSTREAMS_AUTH_ADMINS:-}
+
+      # --- Legacy config access key (ADDON_PASSWORD) ---
+      # NOTE (v2.30 migration): keep ADDON_PASSWORD set for at least ONE startup after
+      # upgrading so the migration can run; the config access key is then set to this
+      # value. It may be removed afterwards.
+      # Supports multiple passwords separated by commas, e.g. "password1,password2".
       ADDON_PASSWORD: ${AIOSTREAMS_ADDON_PASSWORD}
 
       # --- Database ---
@@ -679,8 +2114,8 @@ services:
       # You may also limit the indexers used by adding a tag with the name "aiostreams" to the indexers in Prowlarr.
       # BUILTIN_PROWLARR_INDEXERS: 
       # The timeout for search requests.
-      BUILTIN_PROWLARR_SEARCH_TIMEOUT: 
-      # How long specific responses should be cached for. 
+      BUILTIN_PROWLARR_SEARCH_TIMEOUT: # How long specific responses should be cached for. 
+
       BUILTIN_PROWLARR_SEARCH_CACHE_TTL: 604800
       BUILTIN_PROWLARR_INDEXERS_CACHE_TTL: 1209600
 
@@ -743,85 +2178,60 @@ services:
       ANIME_DB_LEVEL_OF_DETAIL: required
       # Control how often the datasources for the local anime database will refresh.
 
-      ANIME_DB_FRIBB_MAPPINGS_REFRESH_INTERVAL: 86400000
-      ANIME_DB_MANAMI_DB_REFRESH_INTERVAL: 604800000
-      ANIME_DB_KITSU_IMDB_MAPPING_REFRESH_INTERVAL: 86400000
-      ANIME_DB_EXTENDED_ANITRAKT_MOVIES_REFRESH_INTERVAL: 86400000
-      ANIME_DB_EXTENDED_ANITRAKT_TV_REFRESH_INTERVAL: 86400000
+      # v2.30 expects these intervals in seconds (not milliseconds).
+      # Values below preserve prior behavior: 1 day / 7 days cadences.
+      ANIME_DB_FRIBB_MAPPINGS_REFRESH_INTERVAL: 86400
+      ANIME_DB_MANAMI_DB_REFRESH_INTERVAL: 604800
+      ANIME_DB_KITSU_IMDB_MAPPING_REFRESH_INTERVAL: 86400
+      ANIME_DB_EXTENDED_ANITRAKT_MOVIES_REFRESH_INTERVAL: 86400
+      ANIME_DB_EXTENDED_ANITRAKT_TV_REFRESH_INTERVAL: 86400
 
       # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : 
       #                     DEBRID & OTHER SERVICE API KEYS
       # ==============================================================================
 
-      # Provide a default TMDB access token to be used for the Title Matching filter if a user does not provide any.
-      TMDB_ACCESS_TOKEN_FILE: /run/secrets/tmdb-access-token
-      TMDB_API_KEY_FILE: /run/secrets/tmdb-api-key
+      # v2.30 NOTE: the per-service DEFAULT_<SERVICE>_* / FORCED_<SERVICE>_* variables
+      # were REMOVED and replaced by the consolidated DEFAULT_SERVICE_CREDENTIALS /
+      # FORCED_SERVICE_CREDENTIALS maps (one `serviceId.credentialId=value` per line).
+      # The old `*_FILE` secret-file convention is NO LONGER SUPPORTED by the app, so
+      # values must be supplied directly (env substitution below) or entered in the
+      # dashboard (Settings -> Services). Empty values leave the field blank/unlocked.
+
+      # Provide a default TMDB access token / API key for the Title Matching filter if a
+      # user does not provide any. These are individual runtime settings; if set here
+      # they become locked overrides in the dashboard. (`_FILE` is unsupported in v2.30.)
+      TMDB_ACCESS_TOKEN: ${TMDB_ACCESS_TOKEN:-}
+      TMDB_API_KEY: ${TMDB_API_KEY:-}
 
       # Provide a trakt client ID for authorised requests to get trakt aliases.
-      TRAKT_CLIENT_ID: 
+      TRAKT_CLIENT_ID:
 
-      # Configure API keys for debrid services and others you plan to use.
-      # 'DEFAULT_' values are pre-filled in the user's config page.
-      # 'FORCED_' values override user settings and hide the option.
+      # --- Default service credentials (pre-filled in the user's config page) ---
+      # Format: serviceId.credentialId=value (one per line). Old PUTIO_CLIENT_SECRET
+      # maps to putio.token. Values resolve from the matching env vars (or .env), and
+      # may instead be set in the dashboard.
+      DEFAULT_SERVICE_CREDENTIALS: |
+        realdebrid.apiKey=${REALDEBRID_API_KEY:-}
+        alldebrid.apiKey=${ALLDEBRID_API_KEY:-}
+        premiumize.apiKey=${PREMIUMIZE_API_KEY:-}
+        debridlink.apiKey=${DEBRIDLINK_API_KEY:-}
+        torbox.apiKey=${TORBOX_API_KEY:-}
+        offcloud.apiKey=${OFFCLOUD_API_KEY:-}
+        offcloud.email=${OFFCLOUD_EMAIL:-}
+        offcloud.password=${OFFCLOUD_PASSWORD:-}
+        putio.clientId=${PUTIO_CLIENT_ID:-}
+        putio.token=${PUTIO_CLIENT_SECRET:-}
+        easynews.username=${EASYNEWS_USERNAME:-}
+        easynews.password=${EASYNEWS_PASSWORD:-}
+        easydebrid.apiKey=${EASYDEBRID_API_KEY:-}
+        pikpak.email=${PIKPAK_EMAIL:-}
+        pikpak.password=${PIKPAK_PASSWORD:-}
+        seedr.encodedToken=${SEEDR_ENCODED_TOKEN:-}
 
-      # --- Real-Debrid ---
-      DEFAULT_REALDEBRID_API_KEY_FILE: /run/secrets/realdebrid-api-key
-      #FORCED_REALDEBRID_API_KEY_FILE: /run/secrets/realdebrid-api-key
-
-      # --- AllDebrid ---
-      DEFAULT_ALLDEBRID_API_KEY_FILE: /run/secrets/alldebrid-api-key
-      #FORCED_ALLDEBRID_API_KEY_FILE: /run/secrets/alldebrid-api-key
-
-      # --- Premiumize ---
-      DEFAULT_PREMIUMIZE_API_KEY_FILE: /run/secrets/premiumize-api-key
-      #FORCED_PREMIUMIZE_API_KEY_FILE: /run/secrets/premiumize-api-key
-
-      # --- Debrid-Link ---
-      DEFAULT_DEBRIDLINK_API_KEY_FILE: /run/secrets/debridlink-api-key
-      #FORCED_DEBRIDLINK_API_KEY_FILE: /run/secrets/debridlink-api-key
-
-      # --- Torbox ---
-      DEFAULT_TORBOX_API_KEY_FILE: /run/secrets/torbox-api-key
-      #FORCED_TORBOX_API_KEY_FILE: /run/secrets/torbox-api-key
-
-      # --- OffCloud ---
-      DEFAULT_OFFCLOUD_API_KEY_FILE: /run/secrets/offcloud-api-key
-      #FORCED_OFFCLOUD_API_KEY_FILE: /run/secrets/offcloud-api-key
-      DEFAULT_OFFCLOUD_EMAIL: $OFFCLOUD_EMAIL
-      #FORCED_OFFCLOUD_EMAIL: $OFFCLOUD_EMAIL
-      DEFAULT_OFFCLOUD_PASSWORD_FILE: /run/secrets/offcloud-password
-      #FORCED_OFFCLOUD_PASSWORD_FILE: /run/secrets/offcloud-password
-
-
-      # --- Put.io ---
-      DEFAULT_PUTIO_CLIENT_ID: $PUTIO_CLIENT_ID
-      #FORCED_PUTIO_CLIENT_ID: $PUTIO_CLIENT_ID
-      DEFAULT_PUTIO_CLIENT_SECRET: $PUTIO_CLIENT_SECRET
-      #FORCED_PUTIO_CLIENT_SECRET: $PUTIO_CLIENT_SECRET
-
-      # --- EasyNews ---
-      DEFAULT_EASYNEWS_USERNAME: ${EASYNEWS_USERNAME:-}
-      #FORCED_EASYNEWS_USERNAME: $EASYNEWS_USERNAME
-      DEFAULT_EASYNEWS_PASSWORD: ${EASYNEWS_PASSWORD:-}
-      #FORCED_EASYNEWS_PASSWORD: $EASYNEWS_PASSWORD
-
-      # --- EasyDebrid ---
-      DEFAULT_EASYDEBRID_API_KEY: $EASYDEBRID_API_KEY
-      #FORCED_EASYDEBRID_API_KEY: $EASYDEBRID_API_KEY
-
-      # --- Debrider ---
-      DEFAULT_DEBRIDER_API_KEY: 
-      FORCED_DEBRIDER_API_KEY: 
-
-      # --- PikPak ---
-      DEFAULT_PIKPAK_EMAIL: $PIKPAK_EMAIL
-      #FORCED_PIKPAK_EMAIL: $PIKPAK_EMAIL
-      DEFAULT_PIKPAK_PASSWORD: $PIKPAK_PASSWORD
-      #FORCED_PIKPAK_PASSWORD: $PIKPAK_PASSWORD
-
-      # --- Seedr ---
-      DEFAULT_SEEDR_ENCODED_TOKEN: $SEEDR_ENCODED_TOKEN
-      #FORCED_SEEDR_ENCODED_TOKEN: $SEEDR_ENCODED_TOKEN
+      # --- Forced service credentials (override user settings and hide the option) ---
+      # Same format as DEFAULT_SERVICE_CREDENTIALS. Uncomment to force values for all users.
+      # FORCED_SERVICE_CREDENTIALS: |
+      #   realdebrid.apiKey=${REALDEBRID_API_KEY:-}
 
 
       # ==============================================================================
@@ -868,13 +2278,14 @@ services:
       # Format: e.g. ["/(\\[(Aergia|smol|SoM|Vodes)\\]|-(Aergia(?!-raws)|smol|SoM)\\b|\\b(Arg0|LYS1TH3A|OZR|SCY|ZeroBuild)\\b)|(?<!Not)-Vodes\\b/i", "/(\\[(Legion|sam|Vanilla)\\]|-(Legion|sam|Vanilla)\\b)/"]
       # You may also set a list of URLs e.g. ["https://raw.githubusercontent.com/Vidhin05/Releases-Regex/main/merged-regexes.json"]
       # Description supports markdown format for links and code only. (i.e. [linktext](link) and `code`)
-      # ALLOWED_REGEX_PATTERNS: 
-      # ALLOWED_REGEX_PATTERNS_URLS: 
-      # ALLOWED_REGEX_PATTERNS_DESCRIPTION: 
+      # v2.30: ALLOWED_REGEX_PATTERNS* were renamed to WHITELISTED_REGEX_PATTERNS*.
+      # WHITELISTED_REGEX_PATTERNS: 
+      # WHITELISTED_REGEX_PATTERNS_URLS: 
+      # WHITELISTED_REGEX_PATTERNS_DESCRIPTION: 
 
       # How often patterns from URLs will be refreshed. 
       # Default: 86400000 (1 day)
-      # ALLOWED_REGEX_PATTERNS_URLS_REFRESH_INTERVAL: 
+      # WHITELISTED_SYNC_REFRESH_INTERVAL: 
       # --- Aliased Configurations (Vanity URLs) ---
       # Create shorter, memorable installation URLs.
       # Format: aliasName1:uuid1:encryptedPassword1,aliasName2:uuid2:encryptedPassword2
@@ -887,22 +2298,22 @@ services:
 
       # --- Default maximum cache size ----
       # The maximum number of items that can be held in a given cache instance, if not overriden by a specific cache instance
-      DEFAULT_MAX_CACHE_SIZE: 100000  # Default is 100000
+      DEFAULT_MAX_CACHE_SIZE: 100000 # Default is 100000
 
       # --- Proxy IP TTL (StremThru/MediaFlow Proxy)
       # The Time-To-Live (in seconds) of items in the Public IP cache.
       # Set to -1 to disable caching
-      PROXY_IP_CACHE_TTL: 900  # Default is 900
+      PROXY_IP_CACHE_TTL: 900 # Default is 900
 
       # --- Addon Resource Caching ---
       # Control the Caching of resources fetched from other addons
       # Set to -1 to disable caching.
-      MANIFEST_CACHE_TTL: 300  # Default is 300
-      SUBTITLE_CACHE_TTL: 300  # Default is 300
-      STREAM_CACHE_TTL: 1  # Default is 1
-      CATALOG_CACHE_TTL: 300  # Default is 300
-      META_CACHE_TTL: 300  # Default is 300
-      ADDON_CATALOG_CACHE_TTL: 300  # Default is 300
+      MANIFEST_CACHE_TTL: 300 # Default is 300
+      SUBTITLE_CACHE_TTL: 300 # Default is 300
+      STREAM_CACHE_TTL: 1 # Default is 1
+      CATALOG_CACHE_TTL: 300 # Default is 300
+      META_CACHE_TTL: 300 # Default is 300
+      ADDON_CATALOG_CACHE_TTL: 300 # Default is 300
 
       # timeout for background resource requests, uses the value of MAX_TIMEOUT if not set. 
       # This is the timeout for processing requests in the background after its initial timeout 
@@ -951,12 +2362,12 @@ services:
 
       # --- Log Level ---
       # Set the verbosity of logs. Options: "error", "warn", "info", "http", "verbose","debug", "silly"
-      LOG_LEVEL: info  # Default: http
+      LOG_LEVEL: info # Default: http
 
       # --- Log Format ---
       # Output logs in "json" or "text" format.
-      # Default: text
-      LOG_FORMAT: text
+      # Default (v2.30+): json (recommended for production)
+      LOG_FORMAT: json
 
       # --- Log Sensitive Information ---
       # Whether to include potentially sensitive info (like API keys) in logs.
@@ -968,7 +2379,6 @@ services:
       # Adjust the timezone used for logging
       # e.g. Europe/Paris, America/New_York
       LOG_TIMEZONE: Etc/UTC
-
 
       # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : 
       #                      URL MAPPINGS
@@ -1017,7 +2427,7 @@ services:
 
       # --- Stream Proxy Enabled ---
       # DEFAULT_PROXY_ENABLED: true  # Default state for enabling a stream proxy.
-      FORCE_PROXY_ENABLED: true   # Force stream proxy on/off for all users.
+      FORCE_PROXY_ENABLED: true # Force stream proxy on/off for all users.
 
       # --- Stream Proxy ID ---
       # 'mediaflow' or 'stremthru'
@@ -1058,8 +2468,6 @@ services:
       ENCRYPT_MEDIAFLOW_URLS: true
       ENCRYPT_STREMTHRU_URLS: true
 
-
-
       # ==============================================================================
       #                       ADVANCED CONFIGURATION & LIMITS
       # ==============================================================================
@@ -1077,13 +2485,13 @@ services:
 
       # --- Configuration Limits ---
       # Maximum number of addons allowed per AIOStreams configuration.
-      MAX_ADDONS: 100  # Default: 15
+      MAX_ADDONS: 100 # Default: 15
       # Maximum number of groups allowed per AIOStreams configuration
-      MAX_GROUPS: 50  # Default: 20
+      MAX_GROUPS: 50 # Default: 20
       # Maximum number of keyword filters per AIOStreams configuration.
-      MAX_KEYWORD_FILTERS: 50  # Default: 30
-      # Maximum number of stream expression filters per AIOStreams configuration
-      MAX_STREAM_EXPRESSION_FILTERS: 200  # Default: 30
+      MAX_KEYWORD_FILTERS: 50 # Default: 30
+      # Maximum number of stream expressions per AIOStreams configuration (renamed in v2.30)
+      MAX_STREAM_EXPRESSIONS: 200 # Default: 30
       # Maximum timeout (ms) an addon can be set to via override.
       MAX_TIMEOUT: 50000
       # Minimum timeout (ms) an addon can be set to via override.
@@ -1092,7 +2500,6 @@ services:
       # The minimum interval between precache attempts of the same episode by the same user in seconds.
       # Default: 1 day
       PRECACHE_NEXT_EPISODE_MIN_INTERVAL: 86400
-
 
       # ==============================================================================
       #                           RATE LIMIT CONFIGURATION
@@ -1150,7 +2557,6 @@ services:
       STREMIO_META_RATE_LIMIT_WINDOW: 5
       STREMIO_META_RATE_LIMIT_MAX_REQUESTS: 15
 
-
       # ==============================================================================
       #                         INACTIVE USER PRUNING
       # ==============================================================================
@@ -1167,7 +2573,6 @@ services:
       # Default: -1
       PRUNE_MAX_DAYS: -1
 
-
       # ==============================================================================
       #                      EXTERNAL ADDON SERVICE URLs & TIMEOUTS
       # ==============================================================================
@@ -1179,11 +2584,9 @@ services:
       # e.g. COMET_URL: '["https://comet.elfhosted.com", "https://comet.$DOMAIN"]'
       #COMET_URL: '["https://comet.elfhosted.com", "https://comet.$DOMAIN"]'
       # DEFAULT_COMET_TIMEOUT: 
-      # Advanced: Override Comet hostname/port/protocol if COMET_URL is internal but needs to be public-facing.
-      # Only uncomment and set if needed. Usually, leave these commented.
-      # FORCE_COMET_HOSTNAME: 
-      # FORCE_COMET_PORT: 
-      # FORCE_COMET_PROTOCOL:  # e.g., https
+      # Advanced (v2.30): FORCE_<ADDON>_HOSTNAME/PORT/PROTOCOL were removed. To rewrite
+      # an internal URL to a public-facing one, use the global STREAM_URL_MAPPINGS option
+      # above, e.g. STREAM_URL_MAPPINGS: '{"http://comet:2020":"https://comet.$DOMAIN"}'
 
       # ----------- MEDIAFUSION ------------
       # This can also be set to a list of URLs which would show as options to users when configuring
@@ -1191,7 +2594,8 @@ services:
       #MEDIAFUSION_URL: '["https://mediafusion.elfhosted.com", "https://mediafusion.$DOMAIN"]'
       # DEFAULT_MEDIAFUSION_TIMEOUT: 
       # API Password for self-hosted MediaFusion (for auto-configuration).
-      MEDIAFUSION_API_PASSWORD_FILE: /run/secrets/sudo-password
+      # v2.30: the `_FILE` suffix is no longer supported; provide the value directly.
+      MEDIAFUSION_API_PASSWORD: ${SUDO_PASSWORD:-}
 
       # ----------- JACKETTIO -------------
       # This can also be set to a list of URLs which would show as options to users when configuring
@@ -1204,25 +2608,19 @@ services:
       # DEFAULT_JACKETTIO_STREMTHRU_URL: https://stremthru.$DOMAIN  # https://stremthru.13377001.xyz
       # Self-hosted StremThru for Jackettio:
       # DEFAULT_JACKETTIO_STREMTHRU_URL: http://stremthru:8080
-      # Advanced: Override Jackettio hostname/port/protocol (similar to Comet).
-      # FORCE_JACKETTIO_HOSTNAME: 
-      # FORCE_JACKETTIO_PORT: 
-      # FORCE_JACKETTIO_PROTOCOL: 
+      # Advanced (v2.30): FORCE_<ADDON>_HOSTNAME/PORT/PROTOCOL were removed; use the global
+      # STREAM_URL_MAPPINGS option above to rewrite internal URLs to public-facing ones.
 
       # --------- STREMTHRU-STORE ---------
-      STREMTHRU_STORE_URL: ${STREMTHRU_STORE_HOST:-https://stremthru.$DOMAIN/stremio/store/}  # https://stremthru.elfhosted.com/stremio/store/  # https://stremthru.13377001.xyz/stremio/store/
+      STREMTHRU_STORE_URL: ${STREMTHRU_STORE_HOST:-https://stremthru.$DOMAIN/stremio/store/} # https://stremthru.elfhosted.com/stremio/store/  # https://stremthru.13377001.xyz/stremio/store/
       # DEFAULT_STREMTHRU_STORE_TIMEOUT: 
-      # Advanced: Override StremThru Store  hostname/port/protocol (similar to Comet).
-      # FORCE_STREMTHRU_STORE_HOSTNAME: 
-      # FORCE_STREMTHRU_STORE_PORT: 
-      # FORCE_STREMTHRU_STORE_PROTOCOL: 
+      # Advanced (v2.30): FORCE_<ADDON>_HOSTNAME/PORT/PROTOCOL were removed; use the global
+      # STREAM_URL_MAPPINGS option above to rewrite internal URLs to public-facing ones.
       # --------- STREMTHRU-TORZ -----
-      STREMTHRU_TORZ_URL: ${STREMTHRU_TORZ_HOST:-https://stremthru.$DOMAIN/stremio/torz/}  # https://stremthru.elfhosted.com/stremio/torz/    # https://stremthru.13377001.xyz/stremio/torz/
+      STREMTHRU_TORZ_URL: ${STREMTHRU_TORZ_HOST:-https://stremthru.$DOMAIN/stremio/torz/} # https://stremthru.elfhosted.com/stremio/torz/    # https://stremthru.13377001.xyz/stremio/torz/
       # DEFAULT_STREMTHRU_TORZ_TIMEOUT: 
-      # Advanced: Override StremThru Torz hostname/port/protocol (similar to Comet).
-      # FORCE_STREMTHRU_TORZ_HOSTNAME: 
-      # FORCE_STREMTHRU_TORZ_PORT: 
-      # FORCE_STREMTHRU_TORZ_PROTOCOL: 
+      # Advanced (v2.30): FORCE_<ADDON>_HOSTNAME/PORT/PROTOCOL were removed; use the global
+      # STREAM_URL_MAPPINGS option above to rewrite internal URLs to public-facing ones.
 
       # --------- EASYNEWS+ ADDON ---------
       # EASYNEWS_PLUS_URL: https://b89262c192b0-stremio-easynews-addon.baby-beamup.club/
@@ -1449,11 +2847,11 @@ services:
       # ============================== #
       # Cache Settings (Seconds)       #
       # ============================== #
-      METADATA_CACHE_TTL: 2592000  # 30 days
-      TORRENT_CACHE_TTL: 1296000  # 15 days
-      DEBRID_CACHE_TTL: 86400  # 1 day
-      SCRAPE_LOCK_TTL: 300  # 5 minutes - Duration for distributed scraping locks
-      SCRAPE_WAIT_TIMEOUT: 30  # 30 seconds - Max time to wait for other instance to complete scraping
+      METADATA_CACHE_TTL: 2592000 # 30 days
+      TORRENT_CACHE_TTL: 1296000 # 15 days
+      DEBRID_CACHE_TTL: 86400 # 1 day
+      SCRAPE_LOCK_TTL: 300 # 5 minutes - Duration for distributed scraping locks
+      SCRAPE_WAIT_TIMEOUT: 30 # 30 seconds - Max time to wait for other instance to complete scraping
 
       # ============================== #
       # Debrid Proxy Configuration     #
@@ -1466,7 +2864,7 @@ services:
       INDEXER_MANAGER_TYPE: prowlarr # Options: jackett, prowlarr, none
       INDEXER_MANAGER_URL: https://prowlarr.$DOMAIN
       INDEXER_MANAGER_API_KEY: ${PROWLARR_API_KEY:?}
-      INDEXER_MANAGER_TIMEOUT: 60  # Max time to get search results (seconds)
+      INDEXER_MANAGER_TIMEOUT: 60 # Max time to get search results (seconds)
       INDEXER_MANAGER_INDEXERS: ${COMET_INDEXERS:-["animetosho", "anirena", "bitsearch", "eztv", "nyaasi", "thepiratebay", "therarbg", "yts"]} # Jackett/Prowlarr indexers
 
       # ============================== #
@@ -1533,8 +2931,9 @@ services:
       kuma.comet.http.name: comet.$TS_HOSTNAME.$DOMAIN
       kuma.comet.http.url: https://comet.$DOMAIN
       kuma.comet.http.interval: 60
-    healthcheck:  # docker exec comet ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${COMET_PORT:-2020}/health > /dev/null 2>&1 || exit 1"]
+    healthcheck:
+      # docker exec comet ls -la /bin /usr/bin | grep -E 'curl|wget|nc|telnet|http|python|ncat|nmap'
+      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:${COMET_PORT:-2020}/health > /dev/null 2>&1 || exit 1" ]
       interval: 1m
       timeout: 5s
       retries: 3
@@ -1574,116 +2973,116 @@ services:
       PGID: ${PGID:-988}
       UMASK: ${UMASK:-002}
       # CORE APPLICATION SETTINGS
-      ADDON_NAME: MediaFusion | $DOMAIN  # The name of the MediaFusion addon
-      VERSION: 1.0.0  # The version of the MediaFusion addon
-      DESCRIPTION: "MediaFusion | $DOMAIN"  # A brief description of the MediaFusion addon to show on Stremio Addon page
-      BRANDING_DESCRIPTION: "MediaFusion is a AIO media stream aggregator addon for Stremio/Kodi."  # Additional branding description text
-      CONTACT_EMAIL: "webmaster@$DOMAIN"  # The contact email for the MediaFusion addon
-      HOST_URL: "https://mediafusion.$DOMAIN"  # The URL where MediaFusion is hosted (required)
-      POSTER_HOST_URL: "https://mediafusion.$DOMAIN"  # The URL where poster images are served from (default: Same as host_url)
-      SECRET_KEY_FILE: /run/secrets/mediafusion-secret-key  # A 32-character secret key for securely signing the session (required)
-      API_PASSWORD_FILE: /run/secrets/sudo-password  # The password for accessing the API endpoints (required)
-      LOGGING_LEVEL: DEBUG  # The logging level of the application (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-      LOGO_URL: "https://mediafusion.$DOMAIN/static/logo.png"  # The URL of the MediaFusion logo
-      IS_PUBLIC_INSTANCE: false  # Set to True for community instances that don't require authentication except for /scraper endpoint
-      MIN_SCRAPING_VIDEO_SIZE: 26214400  # Minimum video size in bytes (25 MB) for scraping
-      METADATA_PRIMARY_SOURCE: tmdb  # Primary source for metadata. Options: "imdb" or "tmdb"
+      ADDON_NAME: MediaFusion | $DOMAIN # The name of the MediaFusion addon
+      VERSION: 1.0.0 # The version of the MediaFusion addon
+      DESCRIPTION: "MediaFusion | $DOMAIN" # A brief description of the MediaFusion addon to show on Stremio Addon page
+      BRANDING_DESCRIPTION: "MediaFusion is a AIO media stream aggregator addon for Stremio/Kodi." # Additional branding description text
+      CONTACT_EMAIL: "webmaster@$DOMAIN" # The contact email for the MediaFusion addon
+      HOST_URL: "https://mediafusion.$DOMAIN" # The URL where MediaFusion is hosted (required)
+      POSTER_HOST_URL: "https://mediafusion.$DOMAIN" # The URL where poster images are served from (default: Same as host_url)
+      SECRET_KEY_FILE: /run/secrets/mediafusion-secret-key # A 32-character secret key for securely signing the session (required)
+      API_PASSWORD_FILE: /run/secrets/sudo-password # The password for accessing the API endpoints (required)
+      LOGGING_LEVEL: DEBUG # The logging level of the application (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+      LOGO_URL: "https://mediafusion.$DOMAIN/static/logo.png" # The URL of the MediaFusion logo
+      IS_PUBLIC_INSTANCE: false # Set to True for community instances that don't require authentication except for /scraper endpoint
+      MIN_SCRAPING_VIDEO_SIZE: 26214400 # Minimum video size in bytes (25 MB) for scraping
+      METADATA_PRIMARY_SOURCE: tmdb # Primary source for metadata. Options: "imdb" or "tmdb"
       # STREAMING PROVIDER SETTINGS
       #DISABLED_PROVIDERS: ""  # List of disabled streaming providers (p2p, realdebrid, seedr, debridlink, alldebrid, offcloud, pikpak, torbox, premiumize, qbittorrent, stremthru, easydebrid)
       # DATABASE AND CACHE SETTINGS
-      MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/mediafusion}  # MongoDB connection URI (required)
-      DB_MAX_CONNECTIONS: 50  # Maximum database connections. Default is 50
-      REDIS_URL: ${REDIS_INTERNAL_URL:-redis://redis:6379}  # Redis service URL for caching and tasks
-      REDIS_MAX_CONNECTIONS: 100  # Maximum Redis connections. Default is 100
+      MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/mediafusion} # MongoDB connection URI (required)
+      DB_MAX_CONNECTIONS: 50 # Maximum database connections. Default is 50
+      REDIS_URL: ${REDIS_INTERNAL_URL:-redis://redis:6379} # Redis service URL for caching and tasks
+      REDIS_MAX_CONNECTIONS: 100 # Maximum Redis connections. Default is 100
       # EXTERNAL SERVICE SETTINGS
-#      REQUESTS_PROXY_URL: "${MEDIAFUSION_REQUESTS_PROXY_URL:-}"  # Optional proxy URL for requests
-      PLAYWRIGHT_CDP_URL: "${PLAYWRIGHT_CDP_URL:-ws://playwright-service:3000?blockAds=true&stealth=true}"  # Playwright CDP service URL
-      FLARESOLVERR_URL: "${FLARESOLVERR_URL:-https://flaresolverr.$DOMAIN/v1}"  # FlareSolverr service URL
-      TMDB_API_KEY: "${TMDB_API_KEY:-}"  # TMDB API key for metadata fetching
+      #      REQUESTS_PROXY_URL: "${MEDIAFUSION_REQUESTS_PROXY_URL:-}"  # Optional proxy URL for requests
+      PLAYWRIGHT_CDP_URL: "${PLAYWRIGHT_CDP_URL:-ws://playwright-service:3000?blockAds=true&stealth=true}" # Playwright CDP service URL
+      FLARESOLVERR_URL: "${FLARESOLVERR_URL:-https://flaresolverr.$DOMAIN/v1}" # FlareSolverr service URL
+      TMDB_API_KEY: "${TMDB_API_KEY:-}" # TMDB API key for metadata fetching
       # PROWLARR SETTINGS
-      IS_SCRAP_FROM_PROWLARR: true  # Enable/disable Prowlarr scraping
-      PROWLARR_API_KEY: "${PROWLARR_API_KEY:?}"  # Prowlarr API key
-      PROWLARR_URL: https://prowlarr.$DOMAIN  # Prowlarr service URL
-      PROWLARR_LIVE_TITLE_SEARCH: false  # Enable live title search in Prowlarr
-      PROWLARR_BACKGROUND_TITLE_SEARCH: true  # Enable background title search
-      PROWLARR_SEARCH_QUERY_TIMEOUT: 30  # Search query timeout in seconds
-      PROWLARR_IMMEDIATE_MAX_PROCESS: 10  # Max immediate processes. Default is 10
-      PROWLARR_IMMEDIATE_MAX_PROCESS_TIME: 15  # Max process time in seconds. Default is 15
-      PROWLARR_SEARCH_INTERVAL_HOUR: 72  # Search interval in hours
-      PROWLARR_FEED_SCRAPE_INTERVAL_HOUR: 3  # Feed scraping interval in hours
+      IS_SCRAP_FROM_PROWLARR: true # Enable/disable Prowlarr scraping
+      PROWLARR_API_KEY: "${PROWLARR_API_KEY:?}" # Prowlarr API key
+      PROWLARR_URL: https://prowlarr.$DOMAIN # Prowlarr service URL
+      PROWLARR_LIVE_TITLE_SEARCH: false # Enable live title search in Prowlarr
+      PROWLARR_BACKGROUND_TITLE_SEARCH: true # Enable background title search
+      PROWLARR_SEARCH_QUERY_TIMEOUT: 30 # Search query timeout in seconds
+      PROWLARR_IMMEDIATE_MAX_PROCESS: 10 # Max immediate processes. Default is 10
+      PROWLARR_IMMEDIATE_MAX_PROCESS_TIME: 15 # Max process time in seconds. Default is 15
+      PROWLARR_SEARCH_INTERVAL_HOUR: 72 # Search interval in hours
+      PROWLARR_FEED_SCRAPE_INTERVAL_HOUR: 3 # Feed scraping interval in hours
       # JACKETT SETTINGS
-      IS_SCRAP_FROM_JACKETT: true  # Enable/disable Jackett scraping
-      JACKETT_URL: https://jackett.$DOMAIN  # Jackett service URL
-      JACKETT_API_KEY: "${JACKETT_API_KEY:?}"  # Jackett API key
-      JACKETT_SEARCH_INTERVAL_HOUR: 72  # Search interval in hours
-      JACKETT_SEARCH_QUERY_TIMEOUT: 30  # Search query timeout in seconds
-      JACKETT_IMMEDIATE_MAX_PROCESS: 10  # Max immediate processes. Default is 10
-      JACKETT_IMMEDIATE_MAX_PROCESS_TIME: 15  # Max process time in seconds. Default is 15
-      JACKETT_LIVE_TITLE_SEARCH: false  # Enable live title search
-      JACKETT_BACKGROUND_TITLE_SEARCH: true  # Enable background title search
-      JACKETT_FEED_SCRAPE_INTERVAL_HOUR: "3"  # Feed scraping interval in hours
+      IS_SCRAP_FROM_JACKETT: true # Enable/disable Jackett scraping
+      JACKETT_URL: https://jackett.$DOMAIN # Jackett service URL
+      JACKETT_API_KEY: "${JACKETT_API_KEY:?}" # Jackett API key
+      JACKETT_SEARCH_INTERVAL_HOUR: 72 # Search interval in hours
+      JACKETT_SEARCH_QUERY_TIMEOUT: 30 # Search query timeout in seconds
+      JACKETT_IMMEDIATE_MAX_PROCESS: 10 # Max immediate processes. Default is 10
+      JACKETT_IMMEDIATE_MAX_PROCESS_TIME: 15 # Max process time in seconds. Default is 15
+      JACKETT_LIVE_TITLE_SEARCH: false # Enable live title search
+      JACKETT_BACKGROUND_TITLE_SEARCH: true # Enable background title search
+      JACKETT_FEED_SCRAPE_INTERVAL_HOUR: "3" # Feed scraping interval in hours
       # ZILEAN SETTINGS
-      IS_SCRAP_FROM_ZILEAN: true  # Enable/disable Zilean scraping
-      ZILEAN_SEARCH_INTERVAL_HOUR: 24  # Search interval in hours
-      ZILEAN_URL: "${ZILEAN_URL:-https://zilean.elfhosted.com}"  # Zilean service URL (https://zilean.elfhosted.com has zero rate limits)
+      IS_SCRAP_FROM_ZILEAN: true # Enable/disable Zilean scraping
+      ZILEAN_SEARCH_INTERVAL_HOUR: 24 # Search interval in hours
+      ZILEAN_URL: "${ZILEAN_URL:-https://zilean.elfhosted.com}" # Zilean service URL (https://zilean.elfhosted.com has zero rate limits)
       # TORRENTIO SETTINGS
-      IS_SCRAP_FROM_TORRENTIO: true  # Enable/disable Torrentio scraping
-      TORRENTIO_SEARCH_INTERVAL_DAYS: 3  # Search interval in days
-      TORRENTIO_URL: "${TORRENTIO_URL:-https://torrentio.strem.fun}"  # Torrentio service URL
+      IS_SCRAP_FROM_TORRENTIO: true # Enable/disable Torrentio scraping
+      TORRENTIO_SEARCH_INTERVAL_DAYS: 3 # Search interval in days
+      TORRENTIO_URL: "${TORRENTIO_URL:-https://torrentio.strem.fun}" # Torrentio service URL
       # MEDIAFUSION SETTINGS
-      IS_SCRAP_FROM_MEDIAFUSION: true  # Enable/disable MediaFusion scraping
-      MEDIAFUSION_SEARCH_INTERVAL_DAYS: 3  # Search interval in days
-      MEDIAFUSION_URL: https://mediafusion.elfhosted.com  # MediaFusion service URL
-      SYNC_DEBRID_CACHE_STREAMS: true  # Enable syncing debrid cache streams
+      IS_SCRAP_FROM_MEDIAFUSION: true # Enable/disable MediaFusion scraping
+      MEDIAFUSION_SEARCH_INTERVAL_DAYS: 3 # Search interval in days
+      MEDIAFUSION_URL: https://mediafusion.elfhosted.com # MediaFusion service URL
+      SYNC_DEBRID_CACHE_STREAMS: true # Enable syncing debrid cache streams
       # BT4G SETTINGS
-      IS_SCRAP_FROM_BT4G: true  # Enable/disable BT4G scraping
-      BT4G_URL: https://bt4gprx.com  # BT4G service URL
-      BT4G_SEARCH_INTERVAL_HOUR: 72  # Search interval in hours
-      BT4G_SEARCH_TIMEOUT: 5  # Search timeout in seconds
-      BT4G_IMMEDIATE_MAX_PROCESS: 15  # Max immediate processes
-      BT4G_IMMEDIATE_MAX_PROCESS_TIME: 15  # Max process time in seconds
+      IS_SCRAP_FROM_BT4G: true # Enable/disable BT4G scraping
+      BT4G_URL: https://bt4gprx.com # BT4G service URL
+      BT4G_SEARCH_INTERVAL_HOUR: 72 # Search interval in hours
+      BT4G_SEARCH_TIMEOUT: 5 # Search timeout in seconds
+      BT4G_IMMEDIATE_MAX_PROCESS: 15 # Max immediate processes
+      BT4G_IMMEDIATE_MAX_PROCESS_TIME: 15 # Max process time in seconds
       # PREMIUMIZE SETTINGS
-      PREMIUMIZE_OAUTH_CLIENT_ID: "$PREMIUMIZE_OAUTH_CLIENT_ID"  # Premiumize OAuth client ID
-      PREMIUMIZE_OAUTH_CLIENT_SECRET: "$PREMIUMIZE_OAUTH_CLIENT_SECRET"  # Premiumize OAuth client secret
+      PREMIUMIZE_OAUTH_CLIENT_ID: "$PREMIUMIZE_OAUTH_CLIENT_ID" # Premiumize OAuth client ID
+      PREMIUMIZE_OAUTH_CLIENT_SECRET: "$PREMIUMIZE_OAUTH_CLIENT_SECRET" # Premiumize OAuth client secret
       # TELEGRAM SETTINGS
-      TELEGRAM_BOT_TOKEN: "$TELEGRAM_BOT_TOKEN"  # Telegram bot token for notifications about contribution streams
-      TELEGRAM_CHAT_ID: "$TELEGRAM_CHAT_ID"  # Telegram chat ID for notifications
+      TELEGRAM_BOT_TOKEN: "$TELEGRAM_BOT_TOKEN" # Telegram bot token for notifications about contribution streams
+      TELEGRAM_CHAT_ID: "$TELEGRAM_CHAT_ID" # Telegram chat ID for notifications
       # CONTENT FILTERING SETTINGS
-      ADULT_CONTENT_REGEX_KEYWORDS: "\\b(porn|xxx|sex|nude|naked|erotic|fetish|bdsm|milf|anal|oral|gangbang|threesome|masturbat|orgasm|cumshot|blowjob|handjob|footjob|creampie|facial|bukkake|hentai|yaoi|yuri|ecchi|doujin|camgirl|webcam|stripper|escort|prostitut|brothel|redlight|peepshow|voyeur|exhibitionist|swinger|orgy|hardcore|softcore|playboy|penthouse|hustler|brazzers|bangbros|realitykings|naughtyamerica|digitalplayground|wickedpictures|evilangel|kink|publicagent|fakehub|teamskeet|mofos|twistys|metart|sexart|x-art|joymii|nubiles|18eighteen|lolita|incest|taboo|kinky|slutty|horny|sexy|sensual|seductive|raw|perverted|depraved)\\b"  # Regex pattern for filtering adult content
-      ADULT_CONTENT_FILTER_IN_TORRENT_TITLE: true  # Enable adult content filtering in torrent titles
+      ADULT_CONTENT_REGEX_KEYWORDS: "\\b(porn|xxx|sex|nude|naked|erotic|fetish|bdsm|milf|anal|oral|gangbang|threesome|masturbat|orgasm|cumshot|blowjob|handjob|footjob|creampie|facial|bukkake|hentai|yaoi|yuri|ecchi|doujin|camgirl|webcam|stripper|escort|prostitut|brothel|redlight|peepshow|voyeur|exhibitionist|swinger|orgy|hardcore|softcore|playboy|penthouse|hustler|brazzers|bangbros|realitykings|naughtyamerica|digitalplayground|wickedpictures|evilangel|kink|publicagent|fakehub|teamskeet|mofos|twistys|metart|sexart|x-art|joymii|nubiles|18eighteen|lolita|incest|taboo|kinky|slutty|horny|sexy|sensual|seductive|raw|perverted|depraved)\\b" # Regex pattern for filtering adult content
+      ADULT_CONTENT_FILTER_IN_TORRENT_TITLE: true # Enable adult content filtering in torrent titles
       # FEATURE TOGGLES
-      VALIDATE_M3U8_URLS_LIVENESS: false  # Validate M3U8 URLs for liveness
-      ENABLE_RATE_LIMIT: true  # Enable/disable rate limiting
-      STORE_STREMTHRU_MAGNET_CACHE: true  # Store StremThru magnet cache
-      IS_SCRAP_FROM_YTS: true  # Enable/disable YTS scraping
-      SCRAPE_WITH_AKA_TITLES: true  # Include alternative titles in scraping
-      ENABLE_FETCHING_TORRENT_METADATA_FROM_P2P: false  # Enable fetching torrent metadata from P2P (Caution: may raise DMCA issues)
+      VALIDATE_M3U8_URLS_LIVENESS: false # Validate M3U8 URLs for liveness
+      ENABLE_RATE_LIMIT: true # Enable/disable rate limiting
+      STORE_STREMTHRU_MAGNET_CACHE: true # Store StremThru magnet cache
+      IS_SCRAP_FROM_YTS: true # Enable/disable YTS scraping
+      SCRAPE_WITH_AKA_TITLES: true # Include alternative titles in scraping
+      ENABLE_FETCHING_TORRENT_METADATA_FROM_P2P: false # Enable fetching torrent metadata from P2P (Caution: may raise DMCA issues)
       # TIME-RELATED SETTINGS
-      META_CACHE_TTL: 1800  # Metadata cache TTL in seconds (Default: 1800 seconds = 30 minutes)
-      WORKER_MAX_TASKS_PER_CHILD: 20  # Max tasks per worker child process. Default is 20
+      META_CACHE_TTL: 1800 # Metadata cache TTL in seconds (Default: 1800 seconds = 30 minutes)
+      WORKER_MAX_TASKS_PER_CHILD: 20 # Max tasks per worker child process. Default is 20
       # SCHEDULER SETTINGS
-      DISABLE_ALL_SCHEDULER: false  # Disable all schedulers
-      BACKGROUND_SEARCH_INTERVAL_HOURS: 72  # Background search interval in hours
-      BACKGROUND_SEARCH_CRONTAB: "*/5 * * * *"  # Background search schedule
-      TAMILMV_SCHEDULER_CRONTAB: "0 */3 * * *"  # TamilMV scheduler crontab expression
-      TAMIL_BLASTERS_SCHEDULER_CRONTAB: "0 */6 * * *"  # Tamil Blasters scheduler crontab expression
-      FORMULA_TGX_SCHEDULER_CRONTAB: "*/30 * * * *"  # Formula TGX scheduler crontab expression
-      NOWMETV_SCHEDULER_CRONTAB: "0 0 * * *"  # NowMeTV scheduler crontab expression
-      NOWSPORTS_SCHEDULER_CRONTAB: "0 10 * * *"  # NowSports scheduler crontab expression
-      TAMILULTRA_SCHEDULER_CRONTAB: "0 8 * * *"  # TamilUltra scheduler crontab expression
-      VALIDATE_TV_STREAMS_IN_DB_CRONTAB: "0 */6 * * *"  # Validate TV streams in DB crontab expression
-      SPORT_VIDEO_SCHEDULER_CRONTAB: "*/20 * * * *"  # Sport video scheduler crontab expression
-      DLHD_SCHEDULER_CRONTAB: "25 * * * *"  # DLHD scheduler crontab expression
-      MOTOGP_TGX_SCHEDULER_CRONTAB: "0 5 * * *"  # MotoGP TGX scheduler crontab expression
-      UPDATE_SEEDERS_CRONTAB: "0 0 * * *"  # Update seeders crontab expression
-      ARAB_TORRENTS_SCHEDULER_CRONTAB: "0 0 * * *"  # Arab Torrents scheduler crontab expression
-      WWE_TGX_SCHEDULER_CRONTAB: "10 */3 * * *"  # WWE TGX scheduler crontab expression
-      UFC_TGX_SCHEDULER_CRONTAB: "30 */3 * * *"  # UFC TGX scheduler crontab expression
-      MOVIES_TV_TGX_SCHEDULER_CRONTAB: "0 * * * *"  # Movies TV TGX scheduler crontab expression
-      PROWLARR_FEED_SCRAPER_CRONTAB: "0 */3 * * *"  # Prowlarr feed scraper crontab expression
-      JACKETT_FEED_SCRAPER_CRONTAB: "0 */3 * * *"  # Jackett feed scraper crontab expression
-      CLEANUP_EXPIRED_SCRAPER_TASK_CRONTAB: "0 * * * *"  # Cleanup expired scraper task crontab expression
-      CLEANUP_EXPIRED_CACHE_TASK_CRONTAB: "0 0 * * *"  # Cleanup expired cache task crontab expression
+      DISABLE_ALL_SCHEDULER: false # Disable all schedulers
+      BACKGROUND_SEARCH_INTERVAL_HOURS: 72 # Background search interval in hours
+      BACKGROUND_SEARCH_CRONTAB: "*/5 * * * *" # Background search schedule
+      TAMILMV_SCHEDULER_CRONTAB: "0 */3 * * *" # TamilMV scheduler crontab expression
+      TAMIL_BLASTERS_SCHEDULER_CRONTAB: "0 */6 * * *" # Tamil Blasters scheduler crontab expression
+      FORMULA_TGX_SCHEDULER_CRONTAB: "*/30 * * * *" # Formula TGX scheduler crontab expression
+      NOWMETV_SCHEDULER_CRONTAB: "0 0 * * *" # NowMeTV scheduler crontab expression
+      NOWSPORTS_SCHEDULER_CRONTAB: "0 10 * * *" # NowSports scheduler crontab expression
+      TAMILULTRA_SCHEDULER_CRONTAB: "0 8 * * *" # TamilUltra scheduler crontab expression
+      VALIDATE_TV_STREAMS_IN_DB_CRONTAB: "0 */6 * * *" # Validate TV streams in DB crontab expression
+      SPORT_VIDEO_SCHEDULER_CRONTAB: "*/20 * * * *" # Sport video scheduler crontab expression
+      DLHD_SCHEDULER_CRONTAB: "25 * * * *" # DLHD scheduler crontab expression
+      MOTOGP_TGX_SCHEDULER_CRONTAB: "0 5 * * *" # MotoGP TGX scheduler crontab expression
+      UPDATE_SEEDERS_CRONTAB: "0 0 * * *" # Update seeders crontab expression
+      ARAB_TORRENTS_SCHEDULER_CRONTAB: "0 0 * * *" # Arab Torrents scheduler crontab expression
+      WWE_TGX_SCHEDULER_CRONTAB: "10 */3 * * *" # WWE TGX scheduler crontab expression
+      UFC_TGX_SCHEDULER_CRONTAB: "30 */3 * * *" # UFC TGX scheduler crontab expression
+      MOVIES_TV_TGX_SCHEDULER_CRONTAB: "0 * * * *" # Movies TV TGX scheduler crontab expression
+      PROWLARR_FEED_SCRAPER_CRONTAB: "0 */3 * * *" # Prowlarr feed scraper crontab expression
+      JACKETT_FEED_SCRAPER_CRONTAB: "0 */3 * * *" # Jackett feed scraper crontab expression
+      CLEANUP_EXPIRED_SCRAPER_TASK_CRONTAB: "0 * * * *" # Cleanup expired scraper task crontab expression
+      CLEANUP_EXPIRED_CACHE_TASK_CRONTAB: "0 0 * * *" # Cleanup expired cache task crontab expression
     labels:
       traefik.enable: true
       traefik.http.routers.mediafusion.rule: Host(`mediafusion.$DOMAIN`) || Host(`mediafusion.$TS_HOSTNAME.$DOMAIN`)
@@ -1700,7 +3099,7 @@ services:
     mem_reservation: 512M
     cpus: 0.33
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8000/health > /dev/null 2>&1 || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://127.0.0.1:8000/health > /dev/null 2>&1 || exit 1" ]
       interval: 30s
       timeout: 5s
       start_period: 2m
@@ -1744,10 +3143,7 @@ services:
       kuma.mediaflow-proxy.http.url: https://mediaflow-proxy.$DOMAIN
       kuma.mediaflow-proxy.http.interval: 60
     healthcheck:
-      test: [
-        "CMD-SHELL",
-        "python3 -c \"import socket; s=socket.socket(); s.connect(('127.0.0.1', ${MEDIAFLOW_PROXY_PORT:-8888})); print('Healthcheck passed')\""
-      ]
+      test: [ "CMD-SHELL", "python3 -c \"import socket; s=socket.socket(); s.connect(('127.0.0.1', ${MEDIAFLOW_PROXY_PORT:-8888})); print('Healthcheck passed')\"" ]
       interval: 1m
       timeout: 10s
       retries: 5
@@ -1787,15 +3183,14 @@ services:
       # Required for the StremThru Lists addon to work correctly with Trakt OAuth.
       STREMTHRU_BASE_URL: https://stremthru.$DOMAIN
 
-
       # =============================
       #     LOGGING CONFIGURATION
       # ================================
 
       # The level of information to log. The options are: DEBUG, INFO, WARN, ERROR
-      STREMTHRU_LOG_LEVEL: INFO  # DEBUG, INFO, WARN, ERROR
+      STREMTHRU_LOG_LEVEL: INFO # DEBUG, INFO, WARN, ERROR
 
-      STREMTHRU_LOG_FORMAT: text  # The format of the log output. The options are: json, text
+      STREMTHRU_LOG_FORMAT: text # The format of the log output. The options are: json, text
 
       # ============================
       #       PROXY CONFIGURATION
@@ -1832,7 +3227,6 @@ services:
       # (This DOES affect the proxying of stream links generated by other apps/addons like AIOStreams)
       STREMTHRU_CONTENT_PROXY_CONNECTION_LIMIT: "*:10"
 
-
       # ============================
       #       TUNNEL CONFIGURATION
       # ================================
@@ -1840,9 +3234,9 @@ services:
       # The tunnel is separate to the actual proxying of your addons. It lets you configure a
       # HTTP proxy to use for requests. Configuring a hostname to not be tunneled doesn't affect the proxying of the addon itself, 
       # only that it won't also be tunneled through the HTTP proxy.
-      # 
+      #
       # If you do not need a tunnel, you can comment out the STREMTHRU_HTTP_PROXY variable.
-      # 
+      #
       # This is the URL of the tunnel.
       # warp: http://warp:1080 or gluetun: http://gluetun:8080
       # (Must have the warp or gluetun profile running to use it as a tunnel)
@@ -1908,7 +3302,6 @@ services:
       STREMTHRU_INTEGRATION_GITHUB_USER: th3w1zard1
       STREMTHRU_INTEGRATION_GITHUB_TOKEN: $GITHUB_TOKEN
 
-
       # ================================
       #             OTHER
       # ================================
@@ -1917,8 +3310,7 @@ services:
       # On the first request, it returns only local torrents, and pulls the rest in the background,  
       # so that on the second search it has all the results available. 
       # Makes response times faster, but less results on the first request.
-      STREMTHRU_STREMIO_TORZ_LAZY_PULL: true  # default is false
-
+      STREMTHRU_STREMIO_TORZ_LAZY_PULL: true # default is false
 
       # Note: (almost) all features are enabled by default, except anime and stremio_p2p. So you should only need to make use of dash (-) prefixed features to disable features
       # you do not want to use.
@@ -1953,7 +3345,7 @@ services:
       #    DATABASE CONFIGURATION
       # ================================
       STREMTHRU_DATABASE_URI: ${STREMTHRU_DATABASE_URI:-sqlite://./data/stremthru.db}
-      STREMTHRU_REDIS_URI: ${REDIS_INTERNAL_URL:-redis://redis:6379}  # Optional (caching)
+      STREMTHRU_REDIS_URI: ${REDIS_INTERNAL_URL:-redis://redis:6379} # Optional (caching)
     labels:
       traefik.enable: true
       traefik.http.routers.stremthru.rule: Host(`stremthru.$DOMAIN`) || Host(`stremthru.$TS_HOSTNAME.$DOMAIN`)
@@ -1967,7 +3359,7 @@ services:
       kuma.stremthru.http.url: https://stremthru.$DOMAIN
       kuma.stremthru.http.interval: 60
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080 > /dev/null 2>&1 || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:8080 > /dev/null 2>&1 || exit 1" ]
       interval: 1m
       timeout: 5s
       retries: 3
@@ -1976,7 +3368,7 @@ services:
   rclone-init:
     depends_on:
       - rclone
-    image: ghcr.io/coanghel/rclone-docker-automount/rclone-init  # 2024-01-24 04:28:24+00:00
+    image: ghcr.io/coanghel/rclone-docker-automount/rclone-init # 2024-01-24 04:28:24+00:00
     container_name: rclone-init
     hostname: rclone-init
     extra_hosts:
@@ -1986,8 +3378,9 @@ services:
     configs:
       - source: rclone-mounts.json
         target: /app/mounts.json
-        mode: 0400
-    volumes:  # only used by the healthcheck.
+        mode: 400
+    volumes:
+      # only used by the healthcheck.
       - /mnt/remote:/mnt/remote:rshared
     environment:
       RCLONE_USERNAME: ""
@@ -1995,14 +3388,14 @@ services:
       RCLONE_PORT: ${RCLONE_PORT:-5572}
       RCLONE_CONFIG_PATH: /config/rclone/rclone.conf
     healthcheck:
-      test: ["CMD-SHELL", "mountpoint -q /mnt/remote"]
+      test: [ "CMD-SHELL", "mountpoint -q /mnt/remote" ]
       interval: 5s
       timeout: 3s
       retries: 2
       start_period: 15s
     restart: always
   rclone:
-    image: docker.io/rclone/rclone  # supports 1 for 1.x.x, 1.71 for 1.71.x etc. `beta` for latest commit.
+    image: docker.io/rclone/rclone # supports 1 for 1.x.x, 1.71 for 1.71.x etc. `beta` for latest commit.
     container_name: rclone
     hostname: rclone
     extra_hosts:
@@ -2011,14 +3404,14 @@ services:
       - backend
       - publicnet
     expose:
-      - ${RCLONE_PORT:-5572}  # rclone webui
+      - ${RCLONE_PORT:-5572} # rclone webui
     configs:
       - source: rclone.conf
         target: /config/rclone/rclone.conf
-        mode: 0400
+        mode: 400
       - source: fuse.conf
         target: /etc/fuse.conf
-        mode: 0400
+        mode: 400
     devices:
       - /dev/fuse:/dev/fuse:rwm
     cap_add:
@@ -2057,7 +3450,7 @@ services:
       kuma.rclone.http.url: https://rclone.$DOMAIN
       kuma.rclone.http.interval: 60
     healthcheck:
-      test: ["CMD-SHELL", "mountpoint -q /mnt/remote"]
+      test: [ "CMD-SHELL", "mountpoint -q /mnt/remote" ]
       interval: 5s
       timeout: 3s
       retries: 2
