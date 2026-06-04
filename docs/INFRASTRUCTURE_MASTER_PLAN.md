@@ -1,17 +1,18 @@
 # Bolabaden Infrastructure Master Plan
 
-> **Version**: 1.0.0  
-> **Date**: 2026-03-03  
-> **Status**: Design & Planning  
+> **Version**: 1.0.0\
+> **Date**: 2026-03-03\
+> **Status**: Design & Planning\
 > **Goal**: Turn a multi-VPS Docker Compose stack into a fully automated, self-healing, horizontally-scalable personal cloud that anyone can template for their own domain.
 
----
+***
 
 ## Table of Contents
 
 1. [Executive Summary](#1-executive-summary)
 2. [Current State Analysis](#2-current-state-analysis)
 3. [Architecture Overview](#3-architecture-overview)
+   * [3.1 Knowledgebase Operations](#31-knowledgebase-operations)
 4. [Module 1: Secret & Env Sync Across VPS Nodes](#4-module-1-secret--env-sync-across-vps-nodes)
 5. [Module 2: Docker Compose File Sync](#5-module-2-docker-compose-file-sync)
 6. [Module 3: Headscale HA (Leader Election)](#6-module-3-headscale-ha-leader-election)
@@ -28,7 +29,9 @@
 17. [Roadmap & Milestones](#17-roadmap--milestones)
 18. [Appendices](#18-appendices)
 
----
+TOC convention: top-level entries use numbered list items, nested entries use bullet notation with explicit subsection numbers in link text, and h2 module sections use explicit `{ #... }` anchor IDs for stable cross-references.
+
+***
 
 ## 1. Executive Summary
 
@@ -47,7 +50,7 @@ Bolabaden is a multi-node Docker infrastructure that runs the same `docker-compo
 | **Inline Configs** | Docker Compose configs are inline YAML, not external files. |
 | **Template-Ready** | Anyone can fork, set their domain/secrets, and deploy their own cloud. |
 
----
+***
 
 ## 2. Current State Analysis
 
@@ -79,7 +82,7 @@ Bolabaden is a multi-node Docker infrastructure that runs the same `docker-compo
 3. **Traefik catchall router** intercepts frontend POST requests that should stay client-side (affects ai-researchwizard static frontend)
 4. **Cloudflare DDNS** overwrites existing A/AAAA records instead of appending (breaks multi-VPS DNS)
 
----
+***
 
 ## 3. Architecture Overview
 
@@ -94,7 +97,7 @@ Bolabaden is a multi-node Docker infrastructure that runs the same `docker-compo
                               │           │
                     ┌─────────▼───┐ ┌─────▼──────────┐
                     │   VPS 1     │ │   VPS 2        │ ...
-                    │ (athena)    │ │ (zeus)         │
+                    │ (vractormania)    │ │ (zeus)         │
                     ├─────────────┤ ├────────────────┤
                     │ Traefik     │ │ Traefik        │
                     │ CrowdSec    │ │ CrowdSec       │
@@ -118,23 +121,57 @@ Bolabaden is a multi-node Docker infrastructure that runs the same `docker-compo
 ```
 bolabaden.org                  → All VPS IPs (round-robin)
 *.bolabaden.org                → All VPS IPs (round-robin)
-athena.bolabaden.org           → VPS1 only (specific node)
-*.athena.bolabaden.org         → VPS1 only (services on specific node)
+vractormania.bolabaden.org           → VPS1 only (specific node)
+*.vractormania.bolabaden.org         → VPS1 only (services on specific node)
 grafana.bolabaden.org          → All VPS IPs (any node with grafana)
-grafana.athena.bolabaden.org   → VPS1 only (grafana on athena)
+grafana.vractormania.bolabaden.org   → VPS1 only (grafana on vractormania)
 ```
 
 ### Internal DNS (Tailscale/Headscale MagicDNS)
 
 ```
-athena.myscale.bolabaden.org                → Tailscale IP of VPS1
-grafana.athena.myscale.bolabaden.org        → Resolved by CoreDNS on each node
+vractormania.myscale.bolabaden.org                → Tailscale IP of VPS1
+grafana.vractormania.myscale.bolabaden.org        → Resolved by CoreDNS on each node
 grafana.myscale.bolabaden.org               → Any node running grafana
 ```
 
----
+### 3.1 Knowledgebase Operations { #31-knowledgebase-operations }
 
-## 4. Module 1: Secret & Env Sync Across VPS Nodes
+The infrastructure plan assumes the documentation surface remains continuously verifiable so operator runbooks stay trustworthy during rollout work.
+
+Operational checks:
+
+```bash
+docker compose config --quiet
+docker run --rm -v "$PWD:/docs" -w /docs squidfunk/mkdocs-material:latest build -f mkdocs.yml --strict
+```
+
+Expected behavior:
+
+* `docker compose config --quiet` may print environment-variable warnings but should not fail.
+* Strict MkDocs builds should complete with `Documentation built`.
+* The Material image may print an upstream warning banner that is informational when strict build still succeeds.
+
+Docs access model:
+
+* Local host check: `http://localhost:8001`
+* Routed host check: `https://docs.$DOMAIN`
+* Service is loopback-bound on host; external access should use Traefik routing via `docs.$DOMAIN`.
+
+Troubleshooting quick checks:
+
+* `docker compose ps mkdocs traefik tinyauth nginx-traefik-extensions`
+* `docker compose logs --tail=100 mkdocs traefik tinyauth nginx-traefik-extensions`
+* `docker compose logs --tail=100 crowdsec`
+
+Observability quick checks:
+
+* `docker compose ps traefik crowdsec mkdocs`
+* `docker compose logs --tail=200 traefik crowdsec`
+
+***
+
+## 4. Module 1: Secret & Env Sync Across VPS Nodes { #4-module-1-secret--env-sync-across-vps-nodes }
 
 ### Problem
 
@@ -142,10 +179,10 @@ Changing `OPENAI_API_KEY` or any secret requires manually updating every VPS's `
 
 ### Current Implementation
 
-- Secrets stored as individual files in `${SECRETS_PATH}/` (e.g., `secrets/cf-api-token.txt`)
-- Environment variables in `.env` file at stack root
-- Bootstrap merges `.secrets` into `.env` during deploy
-- `generate-secrets.sh` creates placeholder secret files
+* Secrets stored as individual files in `${SECRETS_PATH}/` (e.g., `secrets/cf-api-token.txt`)
+* Environment variables in `.env` file at stack root
+* Bootstrap merges `.secrets` into `.env` during deploy
+* `generate-secrets.sh` creates placeholder secret files
 
 ### Design
 
@@ -194,21 +231,21 @@ bolabaden-sync-agent:
 
 **Option A: Git-based (recommended for simplicity)**
 
-- Secrets are **encrypted** with `age`/`sops` and committed to a private branch or separate repo
-- Each node's sync-agent decrypts using a node-specific key stored in Tailscale's secret store
-- Changes detected via `git diff` on pull
+* Secrets are **encrypted** with `age`/`sops` and committed to a private branch or separate repo
+* Each node's sync-agent decrypts using a node-specific key stored in Tailscale's secret store
+* Changes detected via `git diff` on pull
 
 **Option B: Headscale Peer Broadcast**
 
-- Leader node pushes secrets over Tailscale WireGuard tunnel via simple HTTP API
-- Each node runs a lightweight receiver that writes to `${SECRETS_PATH}/`
-- Authenticated via Tailscale identity (no extra auth needed)
+* Leader node pushes secrets over Tailscale WireGuard tunnel via simple HTTP API
+* Each node runs a lightweight receiver that writes to `${SECRETS_PATH}/`
+* Authenticated via Tailscale identity (no extra auth needed)
 
 **Option C: Consul KV (if Consul is enabled)**
 
-- Secrets stored in Consul KV with ACLs
-- `consul-template` or sync-agent watches for changes
-- Already partially supported since bootstrap installs Consul
+* Secrets stored in Consul KV with ACLs
+* `consul-template` or sync-agent watches for changes
+* Already partially supported since bootstrap installs Consul
 
 #### Configuration Matrix
 
@@ -232,9 +269,9 @@ bolabaden-sync-agent:
 7. Add Headscale peer discovery for push mode
 8. Package as Docker image `ghcr.io/bolabaden/sync-agent`
 
----
+***
 
-## 5. Module 2: Docker Compose File Sync
+## 5. Module 2: Docker Compose File Sync { #5-module-2-docker-compose-file-sync }
 
 ### Problem
 
@@ -242,9 +279,9 @@ Changing `docker-compose.yml` or any `compose/*.yml` file requires manually pull
 
 ### Current Implementation
 
-- Bootstrap does `git pull --ff-only` on the infra repo
-- No automatic detection of compose file changes
-- No automatic `docker compose up` after changes
+* Bootstrap does `git pull --ff-only` on the infra repo
+* No automatic detection of compose file changes
+* No automatic `docker compose up` after changes
 
 ### Design
 
@@ -297,14 +334,14 @@ def detect_compose_changes(old_config, new_config):
 
 #### Safety Mechanisms
 
-- **Pre-validation**: Always run `docker compose config` before applying
-- **Canary deploy**: On multi-node, update one node first, health-check, then propagate
-- **Auto-rollback**: If service fails health check within 2 minutes of update, revert
-- **Excluded services**: Honor `STACK_EXCLUDE_SERVICES` env var from bootstrap
+* **Pre-validation**: Always run `docker compose config` before applying
+* **Canary deploy**: On multi-node, update one node first, health-check, then propagate
+* **Auto-rollback**: If service fails health check within 2 minutes of update, revert
+* **Excluded services**: Honor `STACK_EXCLUDE_SERVICES` env var from bootstrap
 
----
+***
 
-## 6. Module 3: Headscale HA (Leader Election)
+## 6. Module 3: Headscale HA (Leader Election) { #6-module-3-headscale-ha-leader-election }
 
 ### Problem
 
@@ -312,9 +349,9 @@ Headscale is a singleton service — if the node running it goes down, the entir
 
 ### Current Implementation
 
-- Single `headscale-server` container defined in `compose/docker-compose.headscale.yml`
-- SQLite database at `/var/lib/headscale/db.sqlite`
-- No replication or failover
+* Single `headscale-server` container defined in `compose/docker-compose.headscale.yml`
+* SQLite database at `/var/lib/headscale/db.sqlite`
+* No replication or failover
 
 ### Design: Leader Election via Lightweight Distributed Lock
 
@@ -359,6 +396,15 @@ Every CHECK_INTERVAL seconds on each node:
   │           └── If unhealthy for 3 consecutive checks: force-release lock
 ```
 
+#### Redis Outage Failure Mode
+
+If Redis is unavailable during election checks, nodes should fail closed to avoid split-brain.
+
+* Sentinel enters `degraded` mode and does not acquire or refresh leadership.
+* A node may keep running Headscale only while its last valid lock lease is still within TTL.
+* Once lease age exceeds `LOCK_TTL`, the local node must stop `headscale-server` until lock state can be verified.
+* Recovery tie-breaker after Redis returns: lowest stable node priority wins first lock attempt; others remain standby.
+
 #### Database Replication
 
 Since Headscale uses SQLite, use **Litestream** for real-time SQLite replication:
@@ -392,9 +438,9 @@ headscale-litestream:
 | Headscale container crashes | 10s (health check) | 5s (restart) | ~15s |
 | DB corruption | Immediate (Litestream) | 30s (restore from replica) | ~30s |
 
----
+***
 
-## 7. Module 4: Service Failover & Auto-Redeploy
+## 7. Module 4: Service Failover & Auto-Redeploy { #7-module-4-service-failover--auto-redeploy }
 
 ### Problem
 
@@ -416,6 +462,8 @@ docker-gen-failover:
     # Missing: -event-filter event=stop
     -watch /templates/traefik-failover-dynamic.conf.tmpl /traefik/dynamic/failover-fallbacks.yaml
 ```
+
+  `dockerproxy-rw` denotes a Docker socket proxy service exposing a controlled TCP Docker API endpoint. If that proxy is not present on a node, use `unix:///var/run/docker.sock` with equivalent access controls.
 
 **Root Cause of Bug**: docker-gen re-runs the template on events. When a container stops, docker-gen regenerates the template **without** the stopped container's data (even with `-include-stopped`), effectively deleting its Traefik route. This is because the template iterates over containers and only generates routes for those with `traefik.enable=true` — stopped containers lose their labels from the docker-gen context.
 
@@ -458,7 +506,7 @@ services:
     healthcheck_path: /api/health
     healthcheck_interval: 30s
     nodes:
-      athena:
+      vractormania:
         status: healthy       # healthy | unhealthy | stopped | unknown
         last_seen: 2026-03-03T12:00:00Z
         priority: 1           # lower = preferred
@@ -476,7 +524,7 @@ services:
     port: 8081
     singleton: true            # only one instance across all nodes
     nodes:
-      athena:
+      vractormania:
         status: healthy
         priority: 1
     failover:
@@ -499,17 +547,23 @@ http:
   services:
     grafana-failover:
       loadBalancer:
+        strategy: weighted-round-robin
         healthCheck:
           path: /api/health
           interval: 15s
           timeout: 5s
         servers:
           - url: http://grafana:3000          # Local (fast path)
-          - url: https://grafana.athena.bolabaden.org  # Peer via Traefik
+            weight: 100
+          - url: https://grafana.vractormania.bolabaden.org  # Peer via Traefik
+            weight: 40
           - url: https://grafana.zeus.bolabaden.org    # Another peer
+            weight: 40
 ```
 
 Traefik's built-in health checking will automatically route around failed backends.
+
+The weighting above keeps local service preference while still distributing failover traffic across healthy peers.
 
 #### Failover Sequence
 
@@ -536,9 +590,9 @@ Container fails on Node A:
          └── Traffic gradually returns to Node A
 ```
 
----
+***
 
-## 8. Module 5: Cloudflare DDNS Multi-Record Load Balancing
+## 8. Module 5: Cloudflare DDNS Multi-Record Load Balancing { #8-module-5-cloudflare-ddns-multi-record-load-balancing }
 
 ### Problem
 
@@ -602,6 +656,13 @@ def update_dns_record(zone_id, domain, current_ip, mode, node_comment):
                 cf_api.update(record.id, content=current_ip, comment=node_comment)
         else:
             cf_api.create(zone_id, type='A', name=domain, content=current_ip, comment=node_comment)
+
+  def is_node_alive(node_comment):
+    # Determine liveness from heartbeat freshness and recent health-check history.
+    node_id = parse_node_id(node_comment)
+    heartbeat_age = get_heartbeat_age_seconds(node_id)
+    probe_failures = get_consecutive_probe_failures(node_id)
+    return heartbeat_age < CF_DDNS_STALE_TIMEOUT and probe_failures < 2
 ```
 
 #### Docker Compose Update
@@ -636,28 +697,36 @@ cloudflare-ddns:
     CF_DDNS_HEALTH_CHECK_URL: ${CF_DDNS_HEALTH_CHECK_URL:-}  # URL to check if peer nodes are alive
 ```
 
+Health check endpoint contract for `CF_DDNS_HEALTH_CHECK_URL`:
+
+* Method: `GET`
+* Success criteria: HTTP `200-299`
+* Recommended payload: JSON object with at least `{ "status": "ok", "node": "<hostname>" }`
+* Timeout budget: 2 seconds per probe before treating node as unknown
+* Deletion guard: remove stale peer records only when both heartbeat age exceeds `CF_DDNS_STALE_TIMEOUT` and health check has failed in at least 2 consecutive probes
+
 #### Record Layout After Deploy (3 nodes)
 
 ```
 # bolabaden.org A records (Cloudflare load balances / failover)
-bolabaden.org     A  203.0.113.1  (athena) proxied  comment: bolabaden-ddns:athena
+bolabaden.org     A  203.0.113.1  (vractormania) proxied  comment: bolabaden-ddns:vractormania
 bolabaden.org     A  198.51.100.2 (zeus)   proxied  comment: bolabaden-ddns:zeus
 bolabaden.org     A  192.0.2.3    (hera)   proxied  comment: bolabaden-ddns:hera
 
 # Node-specific records (always single, always replace mode)
-athena.bolabaden.org  A  203.0.113.1   proxied  comment: bolabaden-ddns:athena
+vractormania.bolabaden.org  A  203.0.113.1   proxied  comment: bolabaden-ddns:vractormania
 zeus.bolabaden.org    A  198.51.100.2  proxied  comment: bolabaden-ddns:zeus
 hera.bolabaden.org    A  192.0.2.3     proxied  comment: bolabaden-ddns:hera
 
 # Wildcard records (all nodes)
-*.bolabaden.org   A  203.0.113.1  proxied  comment: bolabaden-ddns:athena
+*.bolabaden.org   A  203.0.113.1  proxied  comment: bolabaden-ddns:vractormania
 *.bolabaden.org   A  198.51.100.2 proxied  comment: bolabaden-ddns:zeus
 *.bolabaden.org   A  192.0.2.3    proxied  comment: bolabaden-ddns:hera
 ```
 
----
+***
 
-## 9. Module 6: DNS Routing Pattern & ACL
+## 9. Module 6: DNS Routing Pattern & ACL { #9-module-6-dns-routing-pattern--acl }
 
 ### Problem
 
@@ -670,9 +739,9 @@ Need a consistent, intuitive DNS routing pattern and API key-based ACL with auth
 | Pattern | Resolves To | Example |
 |---------|-------------|---------|
 | `$DOMAIN` | All VPS IPs | `bolabaden.org` |
-| `$TS_HOSTNAME.$DOMAIN` | Specific VPS | `athena.bolabaden.org` |
+| `$TS_HOSTNAME.$DOMAIN` | Specific VPS | `vractormania.bolabaden.org` |
 | `$SERVICE.$DOMAIN` | Any VPS running service | `grafana.bolabaden.org` |
-| `$SERVICE.$TS_HOSTNAME.$DOMAIN` | Service on specific VPS | `grafana.athena.bolabaden.org` |
+| `$SERVICE.$TS_HOSTNAME.$DOMAIN` | Service on specific VPS | `grafana.vractormania.bolabaden.org` |
 
 #### Traefik Default Rule (already exists, confirmed working)
 
@@ -738,9 +807,9 @@ location @authentik_fallback {
 }
 ```
 
----
+***
 
-## 10. Module 7: Traefik Catchall Router Fix
+## 10. Module 7: Traefik Catchall Router Fix { #10-module-7-traefik-catchall-router-fix }
 
 ### Problem
 
@@ -850,9 +919,9 @@ api-passthrough:
 3. Browser navigation still gets styled error pages
 4. No per-service configuration needed
 
----
+***
 
-## 11. Module 8: Internal Tailscale DNS
+## 11. Module 8: Internal Tailscale DNS { #11-module-8-internal-tailscale-dns }
 
 ### Problem
 
@@ -868,7 +937,7 @@ dns:
   base_domain: myscale.$DOMAIN
 ```
 
-This gives each node a hostname like `athena.myscale.bolabaden.org` on the Tailscale network.
+This gives each node a hostname like `vractormania.myscale.bolabaden.org` on the Tailscale network.
 
 ### Design: Add Service-Level DNS with CoreDNS
 
@@ -929,29 +998,29 @@ The sync-agent generates a zone file from running Docker containers:
 $ORIGIN myscale.bolabaden.org.
 
 ; Node records (resolved by Headscale MagicDNS)
-; athena.myscale.bolabaden.org → Tailscale IP
+; vractormania.myscale.bolabaden.org → Tailscale IP
 
 ; Service records on this node
-grafana.athena    IN  A  172.18.0.5    ; Docker container IP
-redis.athena      IN  A  172.18.0.10
-traefik.athena    IN  A  172.18.0.2
+grafana.vractormania    IN  A  172.18.0.5    ; Docker container IP
+redis.vractormania      IN  A  172.18.0.10
+traefik.vractormania    IN  A  172.18.0.2
 
 ; Service records (any node) — points to local Traefik which proxies
-grafana           IN  CNAME  athena.myscale.bolabaden.org.
-redis             IN  CNAME  athena.myscale.bolabaden.org.
+grafana           IN  CNAME  vractormania.myscale.bolabaden.org.
+redis             IN  CNAME  vractormania.myscale.bolabaden.org.
 ```
 
 #### DNS Pattern Summary
 
 | Query | Resolution |
 |-------|-----------|
-| `athena.myscale.bolabaden.org` | Headscale MagicDNS → Tailscale IP |
-| `grafana.athena.myscale.bolabaden.org` | CoreDNS → Docker container IP |
+| `vractormania.myscale.bolabaden.org` | Headscale MagicDNS → Tailscale IP |
+| `grafana.vractormania.myscale.bolabaden.org` | CoreDNS → Docker container IP |
 | `grafana.myscale.bolabaden.org` | CoreDNS → CNAME to nearest available node |
 
----
+***
 
-## 12. Module 9: Watchtower Fix
+## 12. Module 9: Watchtower Fix { #12-module-9-watchtower-fix }
 
 ### Problem
 
@@ -978,16 +1047,16 @@ watchtower:
 
 ### Root Cause Diagnosis
 
-**Issue 1: `REPO_PASS` is set to `SUDO_PASSWORD`**  
+**Issue 1: `REPO_PASS` is set to `SUDO_PASSWORD`**\
 This is likely the system password, not the Docker Hub/GHCR password. Watchtower auth fails silently.
 
-**Issue 2: `WATCHTOWER_POLL_INTERVAL` conflicts with `WATCHTOWER_SCHEDULE`**  
+**Issue 2: `WATCHTOWER_POLL_INTERVAL` conflicts with `WATCHTOWER_SCHEDULE`**\
 When both are set, behavior is undefined. Watchtower docs say SCHEDULE takes precedence, but the poll interval still runs.
 
-**Issue 3: No HTTP API for triggering updates**  
+**Issue 3: No HTTP API for triggering updates**\
 `WATCHTOWER_HTTP_API_UPDATE` is false and no token is set.
 
-**Issue 4: `watchtower-config.json` mapped from `~/.docker/config.json`**  
+**Issue 4: `watchtower-config.json` mapped from `~/.docker/config.json`**\
 This may not contain the correct auth for private registries.
 
 ### Fix
@@ -1033,7 +1102,7 @@ watchtower:
     
     # HTTP API: Enable for manual triggers
     WATCHTOWER_HTTP_API_UPDATE: true
-    WATCHTOWER_HTTP_API_TOKEN: ${WATCHTOWER_HTTP_API_TOKEN:-${NGINX_AUTH_API_KEY}}
+    WATCHTOWER_HTTP_API_TOKEN: ${WATCHTOWER_HTTP_API_TOKEN:-${WATCHTOWER_API_TOKEN:-}}
     WATCHTOWER_HTTP_API_PERIODIC_POLLS: true
     WATCHTOWER_HTTP_API_METRICS: true
     
@@ -1084,9 +1153,9 @@ for container in $(docker ps --format '{{.Names}}'); do
 done
 ```
 
----
+***
 
-## 13. Module 10: Rate Limiting, Auth & Paid Tiers
+## 13. Module 10: Rate Limiting, Auth & Paid Tiers { #13-module-10-rate-limiting-auth--paid-tiers }
 
 ### Problem
 
@@ -1189,9 +1258,9 @@ middlewares:
       query: /wait?reason=rate_limit&tier={tier}
 ```
 
----
+***
 
-## 14. Module 11: Meditation Wizard Lobby
+## 14. Module 11: Meditation Wizard Lobby { #14-module-11-meditation-wizard-lobby }
 
 ### Problem
 
@@ -1257,11 +1326,11 @@ meditation-lobby:
 
 #### Tech Stack
 
-- **Frontend**: Vanilla HTML/CSS/JS + Canvas API or Three.js for 3D wizard
-- **Animation**: CSS keyframes for meditation breathing + JS for particle system
-- **Packet Feed**: WebSocket to backend that tails CrowdSec decision stream + iptables counters
-- **Smile Mechanic**: More allowed packets → wider smile (CSS `transform: scaleX()` on mouth element)
-- **Forcefield**: SVG circle with `opacity` animated by blocked packet rate
+* **Frontend**: Vanilla HTML/CSS/JS + Canvas API or Three.js for 3D wizard
+* **Animation**: CSS keyframes for meditation breathing + JS for particle system
+* **Packet Feed**: WebSocket to backend that tails CrowdSec decision stream + iptables counters
+* **Smile Mechanic**: More allowed packets → wider smile (CSS `transform: scaleX()` on mouth element)
+* **Forcefield**: SVG circle with `opacity` animated by blocked packet rate
 
 #### Packet Feed Backend
 
@@ -1289,9 +1358,9 @@ async def packet_feed(websocket):
         await asyncio.sleep(0.5)  # 2 updates/sec
 ```
 
----
+***
 
-## 15. Unified Bootstrap Flow
+## 15. Unified Bootstrap Flow { #15-unified-bootstrap-flow }
 
 ### Updated `cloud-init-bootstrap.sh` Flow
 
@@ -1328,9 +1397,9 @@ async def packet_feed(websocket):
     └── Report node status to peers
 ```
 
----
+***
 
-## 16. Templating for Others
+## 16. Templating for Others { #16-templating-for-others }
 
 ### Goal: Anyone Can Fork and Deploy
 
@@ -1339,7 +1408,7 @@ async def packet_feed(websocket):
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `$DOMAIN` | Primary domain | `bolabaden.org` |
-| `$TS_HOSTNAME` | This node's hostname | `athena` |
+| `$TS_HOSTNAME` | This node's hostname | `vractormania` |
 | `$CLOUDFLARE_API_TOKEN` | Cloudflare API token | (secret) |
 | `$ACME_RESOLVER_EMAIL` | Let's Encrypt email | `admin@bolabaden.org` |
 | `$PRIMARY_USER` | Unix user | `ubuntu` |
@@ -1366,20 +1435,20 @@ sudo BOOTSTRAP_CONFIG_FILE=./my-config.env ./cloud-init-bootstrap.sh $(hostname 
 
 #### What's Included Out of the Box
 
-- Traefik reverse proxy with automatic TLS
-- CrowdSec WAF + rate limiting
-- Cloudflare DDNS (single or multi-record)
-- Headscale/Tailscale mesh networking
-- OAuth login (Google/GitHub via TinyAuth)
-- Grafana + VictoriaMetrics monitoring
-- Service health checking + auto-restart
-- Watchtower auto-updates
-- Automated storage maintenance
-- Homepage dashboard
+* Traefik reverse proxy with automatic TLS
+* CrowdSec WAF + rate limiting
+* Cloudflare DDNS (single or multi-record)
+* Headscale/Tailscale mesh networking
+* OAuth login (Google/GitHub via TinyAuth)
+* Grafana + VictoriaMetrics monitoring
+* Service health checking + auto-restart
+* Watchtower auto-updates
+* Automated storage maintenance
+* Homepage dashboard
 
----
+***
 
-## 17. Roadmap & Milestones
+## 17. Roadmap & Milestones { #17-roadmap--milestones }
 
 ### Phase 1: Foundation (Weeks 1-2)
 
@@ -1425,9 +1494,9 @@ sudo BOOTSTRAP_CONFIG_FILE=./my-config.env ./cloud-init-bootstrap.sh $(hostname 
 | Disaster recovery runbook | 🟡 High | 2 days |
 | Ansible playbooks for non-Docker tasks | 🟢 Medium | 3 days |
 
----
+***
 
-## 18. Appendices
+## 18. Appendices { #18-appendices }
 
 ### Appendix A: New Docker Images to Build
 
@@ -1504,6 +1573,6 @@ include:
 | Auth session hijacking | Secure cookies, HTTPS only, short session TTL |
 | DNS poisoning | DNSSEC enabled, Cloudflare proxy hides origin IPs |
 
----
+***
 
 *This document is the single source of truth for the Bolabaden infrastructure roadmap. All implementation PRs should reference the relevant module number.*

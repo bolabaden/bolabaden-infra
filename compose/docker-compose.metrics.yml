@@ -16371,12 +16371,12 @@ services:
       prometheus.io/scrape: true
       prometheus.io/port: ${VICTORIAMETRICS_PORT:-8428}
       prometheus.io/path: /metrics
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${VICTORIAMETRICS_PORT:-8428}/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+   # healthcheck:
+   #   test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:${VICTORIAMETRICS_PORT:-8428}/health || exit 1"]
+   #   interval: 30s
+   #   timeout: 10s
+   #   retries: 3
+   #   start_period: 40s
     restart: always
 
   # VictoriaMetrics Backup Service (Optional - enable for automated backups)
@@ -16456,7 +16456,7 @@ services:
       init_prometheus:
         condition: service_completed_successfully
       victoriametrics:
-        condition: service_healthy
+        condition: service_started
     image: docker.io/prom/prometheus
     container_name: prometheus
     hostname: prometheus
